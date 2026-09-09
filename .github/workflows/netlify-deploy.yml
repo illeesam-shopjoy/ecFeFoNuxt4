@@ -4,6 +4,9 @@ name: Deploy to Netlify
 # API/CLI 토큰으로는 재설정되지 않아(2026-09-09 확인), 대신 GitHub Actions에서
 # 직접 빌드하고 Netlify CLI로 배포하는 방식으로 CD를 구성한다.
 # 필요한 저장소 시크릿: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID
+# 배포결과 이메일 통지(선택, 2026-09-10 추가): NOTIFY_EMAIL_TO, NOTIFY_EMAIL_FROM,
+# NOTIFY_EMAIL_APP_PASSWORD(Gmail 앱 비밀번호) — 없으면 조용히 스킵됨.
+# 2026-09-10: DATABASE_URL 시크릿은 더 이상 안 씀(BFF 전환으로 Prisma 제거, server/utils/beApi.ts 참조).
 
 on:
   push:
@@ -27,18 +30,26 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build
         run: pnpm run build
         env:
           NETLIFY: "true"
           NITRO_PRESET: netlify
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Deploy to Netlify
         run: npx netlify-cli deploy --prod --dir=dist --functions=.netlify/functions-internal --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Notify deploy result (email)
+        if: always()
+        run: |
+          npm install --no-save nodemailer
+          node .github/scripts/notify-deploy-result.mjs
+        env:
+          DEPLOY_STATUS: ${{ job.status }}
+          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
+          NOTIFY_EMAIL_FROM: ${{ secrets.NOTIFY_EMAIL_FROM }}
+          NOTIFY_EMAIL_APP_PASSWORD: ${{ secrets.NOTIFY_EMAIL_APP_PASSWORD }}

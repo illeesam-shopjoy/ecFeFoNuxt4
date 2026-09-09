@@ -22,3 +22,6 @@ dist
 * 복사본.*
 # Local Netlify folder
 .netlify
+
+# npm 잔재 (이 프로젝트는 pnpm 전용, package.json packageManager 참조)
+package-lock.json

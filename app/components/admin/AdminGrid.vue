@@ -63,7 +63,7 @@
         <tbody>
           <tr
             v-for="(row, idx) in rows"
-            :key="rowKey ? row[rowKey] : idx"
+            :key="rowKey ? (row[rowKey] as PropertyKey) : idx"
             class="border-b border-gray-100 hover:bg-gray-100 transition"
             :class="{ 'cursor-pointer': rowClickable, 'bg-gray-50': idx % 2 === 1 }"
             @click="rowClickable ? $emit('rowClick', row) : undefined"

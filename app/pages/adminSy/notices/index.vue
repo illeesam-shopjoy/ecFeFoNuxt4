@@ -49,6 +49,9 @@
           삭제
         </button>
       </template>
+      <!-- 원본 코드값(GENERAL/ACTIVE 등) 대신 공통코드 라벨로 표시 -->
+      <template #cell-noticeType="{ value }">{{ codeStore.getStLabel[`NOTICE_TYPE_CD-${value}`] ?? value }}</template>
+      <template #cell-status="{ value }">{{ codeStore.getStLabel[`NOTICE_STATUS-${value}`] ?? value }}</template>
     </AdminGrid>
     <AdminPagination
       :page-no="page.pageNo"
