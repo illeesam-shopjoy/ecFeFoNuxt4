@@ -98,7 +98,7 @@ export const useProductsStore = defineStore("products", {
 
   getters: {
     getStRelatedProducts(state) {
-      return (categoryCode: string, productId: number) => state.products.filter((p) => (p.category?.categoryId ?? String(p.category?.categoryId))?.toLowerCase() === categoryCode.toLowerCase() && p.prodId !== productId).slice(0, 4);
+      return (categoryId: string, prodId: string) => state.products.filter((p) => p.category?.categoryId === categoryId && p.prodId !== prodId).slice(0, 4);
     },
   },
 });

@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="row">
-        <div v-for="(prdItem, i) in state.getStRelatedProducts(item.category.categoryId ?? String(item.category.categoryId), item.prodId)" :key="i" class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+        <div v-for="(prdItem, i) in state.getStRelatedProducts(item.category?.categoryId ?? '', item.prodId)" :key="i" class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
           <product-item :item="prdItem" />
         </div>
       </div>
