@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
-        <div class="col" v-for="(item, i) in store.products.filter((p) => p.saleOfPer).slice(0, 5)" :key="i">
+        <div class="col" v-for="(item, i) in store.products.filter((p) => p.saleDiscntRate).slice(0, 5)" :key="i">
           <product-item :item="item" />
         </div>
       </div>

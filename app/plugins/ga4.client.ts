@@ -48,7 +48,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // 상세 페이지 경로: 해당 페이지에서 useGa().sendPageView(제목) 로 전송
   const isDetailRoute = (path: string) =>
-    /^\/product-details\/[^/]+/.test(path) || /^\/blog-details\/[^/]+/.test(path);
+    /^\/prod-dtl\/[^/]+/.test(path) || /^\/blog-dtl\/[^/]+/.test(path);
 
   // 초기 페이지 (클라이언트 마운트 후)
   router.isReady().then(() => {

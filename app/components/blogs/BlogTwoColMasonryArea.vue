@@ -14,7 +14,7 @@
             <div class="blog__wrapper">
               <div class="blog__item mb-60">
                 <div class="blog__thumb fix">
-                  <nuxt-link :to="`/blog-details/${item.blogId}`" class="w-img">
+                  <nuxt-link :to="`/blog-dtl/${item.blogId}`" class="w-img">
                     <app-image
                       :src="item.img"
                       alt="blog"
@@ -25,18 +25,18 @@
                 </div>
                 <div class="blog__content">
                   <h4>
-                    <nuxt-link :to="`/blog-details/${item.blogId}`">
-                      <span v-html="item.title"></span>
+                    <nuxt-link :to="`/blog-dtl/${item.blogId}`">
+                      <span v-html="item.blogTitle"></span>
                     </nuxt-link>
                   </h4>
                   <div class="blog__meta">
                     <span
-                      >By <a href="#">{{ item.author }}</a></span
+                      >By <a href="#">{{ item.blogAuthor }}</a></span
                     >
-                    <span>/ {{ item.date }}</span>
+                    <span>/ {{ item.regDate }}</span>
                   </div>
-                  <p>{{ item.desc }} [...]</p>
-                  <nuxt-link :to="`/blog-details/${item.blogId}`" class="os-btn">더 보기</nuxt-link>
+                  <p>{{ item.blogSummary }} [...]</p>
+                  <nuxt-link :to="`/blog-dtl/${item.blogId}`" class="os-btn">더 보기</nuxt-link>
                 </div>
               </div>
             </div>
@@ -58,5 +58,5 @@ import AppImage from "~/components/ui/AppImage.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 
 const { blogs, pending } = useBlogs();
-const masonryBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blog === "블로그-메이슨리"));
+const masonryBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blogContent === "블로그-메이슨리"));
 </script>

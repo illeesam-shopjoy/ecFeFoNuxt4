@@ -19,24 +19,24 @@
       <div class="product__banner relative">
         <div class="product__banner-inner absolute fix hidden lg:block">
           <div class="product__banner-img fix">
-            <nuxt-link :to="`/product-details/${big_item?.productId}`">
+            <nuxt-link :to="`/prod-dtl/${big_item?.prodId}`">
               <app-image :src="big_item?.bigImg" alt="product-banner" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
             </nuxt-link>
           </div>
           <div class="product__banner-content absolute">
             <h4>
-              <nuxt-link :to="`/product-details/${big_item?.productId}`">
-                <span v-html="big_item?.title"></span>
+              <nuxt-link :to="`/prod-dtl/${big_item?.prodId}`">
+                <span v-html="big_item?.prodNm"></span>
               </nuxt-link>
             </h4>
-            <nuxt-link :to="`/product-details/${big_item?.productId}`" class="link-btn"> 바로 보기 </nuxt-link>
+            <nuxt-link :to="`/prod-dtl/${big_item?.prodId}`" class="link-btn"> 바로 보기 </nuxt-link>
           </div>
         </div>
         <div class="row">
           <div class="col-xl-6 offset-xl-6 col-lg-6 offset-lg-6">
             <div class="product__slider-2">
               <div class="row">
-                <div v-for="item in trending_products" :key="item.productId" class="col-lg-4 col-md-6 product__item">
+                <div v-for="item in trending_products" :key="item.prodId" class="col-lg-4 col-md-6 product__item">
                   <product-item :item="item" />
                 </div>
               </div>

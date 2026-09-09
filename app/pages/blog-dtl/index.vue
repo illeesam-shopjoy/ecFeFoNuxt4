@@ -13,7 +13,7 @@
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
-import BlogDetailsArea from "~/components/blog-details/BlogDetailsArea.vue";
+import BlogDetailsArea from "~/components/blog-dtl/BlogDetailsArea.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
 import { axiosSsr } from "~/utils/axiosSsr";
 import { type CoBlogType } from "~/types/coBlogType";

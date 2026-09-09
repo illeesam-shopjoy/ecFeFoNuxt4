@@ -41,5 +41,5 @@ import ProductItem from "./ProductItem.vue";
 useComponentTitle("할인");
 
 const store = useProductsStore();
-const sell_products = computed(() => store.products.filter((p) => typeof p.saleOfPer === "number" && p.saleOfPer > 0).slice(0, 12));
+const sell_products = computed(() => store.products.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));
 </script>

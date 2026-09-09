@@ -2,23 +2,23 @@
   <tr>
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <td class="product-thumbnail">
-      <nuxt-link :to="`/product-details/${item.productId}`">
-        <app-image :src="item.img" :alt="item.title" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
+      <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+        <app-image :src="item.img" :alt="item.prodNm" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
       </nuxt-link>
     </td>
     <td class="product-name">
-      <nuxt-link :to="`/product-details/${item.productId}`">
-        <span v-html="item.title"></span>
+      <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+        <span v-html="item.prodNm"></span>
       </nuxt-link>
     </td>
     <td class="product-price">
-      <span class="amount">{{ formatPrice(item.price) }}</span>
+      <span class="amount">{{ formatPrice(item.salePrice) }}</span>
     </td>
     <td class="product-quantity" @click.prevent="cartState.addStCartProduct(item)">
       <button class="os-btn os-btn-black" type="submit">장바구니에 담기</button>
     </td>
     <td class="product-subtotal">
-      <span class="amount">{{ formatPrice(item.price) }}</span>
+      <span class="amount">{{ formatPrice(item.salePrice) }}</span>
     </td>
     <td class="product-remove" @click.prevent="wishlistState.removeStWishlist(item)">
       <a href="#">

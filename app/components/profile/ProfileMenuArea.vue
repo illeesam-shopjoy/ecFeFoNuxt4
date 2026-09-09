@@ -68,21 +68,21 @@
                         <tr>
                           <td class="order__id">#3520</td>
                           <td>
-                            <nuxt-link href="/product-details" class="order__title">대학 세미나 시리즈 글로벌.</nuxt-link>
+                            <nuxt-link href="/prod-dtl" class="order__title">대학 세미나 시리즈 글로벌.</nuxt-link>
                           </td>
                           <td>{{ formatPrice(144000) }}</td>
                           <td>
-                            <nuxt-link href="/product-details" class="order__view-btn">보기</nuxt-link>
+                            <nuxt-link href="/prod-dtl" class="order__view-btn">보기</nuxt-link>
                           </td>
                         </tr>
                         <tr>
                           <td class="order__id">#2441</td>
                           <td>
-                            <nuxt-link href="/product-details" class="order__title">웹 코딩과 아파치 기초</nuxt-link>
+                            <nuxt-link href="/prod-dtl" class="order__title">웹 코딩과 아파치 기초</nuxt-link>
                           </td>
                           <td>{{ formatPrice(59540) }}</td>
                           <td>
-                            <nuxt-link href="/product-details" class="order__view-btn">보기</nuxt-link>
+                            <nuxt-link href="/prod-dtl" class="order__view-btn">보기</nuxt-link>
                           </td>
                         </tr>
                       </tbody>

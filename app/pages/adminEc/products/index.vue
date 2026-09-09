@@ -162,7 +162,7 @@ function openPreview(row: { productId: number }) {
   const margin = 24;
   const left = Math.max(0, (typeof screen !== "undefined" ? screen.availWidth : 1920) - w - margin);
   const top = margin;
-  const url = `${window.location.origin}/product-details/${row.productId}`;
+  const url = `${window.location.origin}/prod-dtl/${row.productId}`;
   window.open(url, "product-preview", `width=${w},height=${h},left=${left},top=${top},scrollbars=yes,resizable=yes`);
 }
 

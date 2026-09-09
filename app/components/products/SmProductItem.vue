@@ -2,14 +2,14 @@
   <div class="features__product-wrapper flex mb-20">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="features__product-thumb mr-15">
-      <nuxt-link :to="`/product-details/${prd.productId}`">
+      <nuxt-link :to="`/prod-dtl/${prd.prodId}`">
         <app-image :src="prd.img" alt="pro-sm-1" :img-style="{ width: '86px', height: '110px', objectFit: 'cover' }" :skeleton-style="{ width: '86px', height: '110px' }" />
       </nuxt-link>
     </div>
     <div class="features__product-content">
       <h5>
-        <nuxt-link :to="`/product-details/${prd.productId}`">
-          <span v-html="prd.title"></span>
+        <nuxt-link :to="`/prod-dtl/${prd.prodId}`">
+          <span v-html="prd.prodNm"></span>
         </nuxt-link>
       </h5>
       <div v-if="prd.topRated" class="rating rating-shop mb-5">
@@ -32,9 +32,9 @@
         </ul>
       </div>
       <div class="price">
-        <span>{{ formatPrice(prd.price) }}</span>
-        <span v-if="prd.saleOfPer" class="price-old">
-          {{ formatPrice(prd.price - (prd.price * prd.saleOfPer) / 100) }}
+        <span>{{ formatPrice(prd.salePrice) }}</span>
+        <span v-if="prd.saleDiscntRate" class="price-old">
+          {{ formatPrice(prd.salePrice - (prd.salePrice * prd.saleDiscntRate) / 100) }}
         </span>
         <div class="add-cart absolute transition-3">
           <a @click.prevent="state.addStCartProduct(prd)" href="#">+ 장바구니 추가</a>

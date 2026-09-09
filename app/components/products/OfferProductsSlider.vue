@@ -128,8 +128,8 @@ const trending_products = computed(() => [
   { id: 2, items: store.products.filter((p) => p.trending).slice(3, 6) },
 ]);
 const sale_products = computed(() => [
-  { id: 1, items: store.products.filter((p) => p.saleOfPer).slice(0, 3) },
-  { id: 2, items: store.products.filter((p) => p.saleOfPer).slice(3, 6) },
+  { id: 1, items: store.products.filter((p) => p.saleDiscntRate).slice(0, 3) },
+  { id: 2, items: store.products.filter((p) => p.saleDiscntRate).slice(3, 6) },
 ]);
 const top_products = computed(() => [
   { id: 1, items: store.products.filter((p) => p.topRated).slice(0, 3) },

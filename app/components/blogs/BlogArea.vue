@@ -60,7 +60,7 @@ defineProps({
 });
 
 const { blogs, pending } = useBlogs();
-const homeBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blog === "홈"));
+const homeBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blogContent === "홈"));
 </script>
 
 <style scoped>

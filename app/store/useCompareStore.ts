@@ -12,20 +12,20 @@ export const useCompareStore = defineStore("compare", {
   actions: {
     addStCompareProduct(payload: PdProductType) {
       // 비교에 추가 또는 이미 있으면 제거 (토글)
-      const isAdded = this.compare.findIndex((p) => p.productId === payload.productId);
+      const isAdded = this.compare.findIndex((p) => p.prodId === payload.prodId);
       if (isAdded !== -1) {
-        this.compare = this.compare.filter((p) => p.productId !== payload.productId);
-        useNuxtApp().$toast.error(`${payload.title} 비교에서 제거됨`);
+        this.compare = this.compare.filter((p) => p.prodId !== payload.prodId);
+        useNuxtApp().$toast.error(`${payload.prodNm} 비교에서 제거됨`);
       } else {
         this.compare.unshift(payload);
-        useNuxtApp().$toast.success(`${payload.title} 비교에 추가됨`);
+        useNuxtApp().$toast.success(`${payload.prodNm} 비교에 추가됨`);
       }
       localStorage.setItem("compare_products", JSON.stringify(this.compare));
     },
     removeStCompare(payload: PdProductType) {
       // 해당 상품을 비교 목록에서 제거
-      this.compare = this.compare.filter((p) => p.productId !== payload.productId);
-      useNuxtApp().$toast.error(`${payload.title} 비교에서 제거됨`);
+      this.compare = this.compare.filter((p) => p.prodId !== payload.prodId);
+      useNuxtApp().$toast.error(`${payload.prodNm} 비교에서 제거됨`);
       localStorage.setItem("compare_products", JSON.stringify(this.compare));
     },
   },

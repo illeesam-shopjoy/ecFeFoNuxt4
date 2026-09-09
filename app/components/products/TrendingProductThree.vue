@@ -20,34 +20,34 @@
         <div class="col-xl-6 col-lg-6">
           <div class="product__slider-3">
             <div class="row">
-              <div v-for="item in trending_products.slice(0, 2)" :key="item.productId" class="col-lg-6 col-md-6 product__item">
+              <div v-for="item in trending_products.slice(0, 2)" :key="item.prodId" class="col-lg-6 col-md-6 product__item">
                 <product-item :item="item" />
               </div>
             </div>
           </div>
           <div v-if="big_item_2" class="product__banner mb-30">
-            <nuxt-link :to="`/product-details/${big_item_2.productId}`" class="w-img">
+            <nuxt-link :to="`/prod-dtl/${big_item_2.prodId}`" class="w-img">
               <app-image :src="big_item_2.bigImg" alt="product_img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
             </nuxt-link>
           </div>
         </div>
         <div class="col-xl-6 col-lg-6">
           <div v-if="big_item_1" class="product__banner w-img pb-25 mb-30 relative">
-            <nuxt-link :to="`/product-details/${big_item_1.productId}`" class="w-img">
+            <nuxt-link :to="`/prod-dtl/${big_item_1.prodId}`" class="w-img">
               <app-image :src="big_item_1.bigImg" alt="product_img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
             </nuxt-link>
             <div class="product__banner-content absolute">
               <h4>
-                <nuxt-link :to="`/product-details/${big_item_1.productId}`">
-                  <span v-html="big_item_1.title"></span>
+                <nuxt-link :to="`/prod-dtl/${big_item_1.prodId}`">
+                  <span v-html="big_item_1.prodNm"></span>
                 </nuxt-link>
               </h4>
-              <nuxt-link :to="`/product-details/${big_item_1.productId}`" class="link-btn"> 바로 보기 </nuxt-link>
+              <nuxt-link :to="`/prod-dtl/${big_item_1.prodId}`" class="link-btn"> 바로 보기 </nuxt-link>
             </div>
           </div>
           <div class="product__slider-3">
             <div class="row">
-              <div v-for="item in trending_products.slice(2, 4)" :key="item.productId" class="col-lg-6 col-md-6 product__item">
+              <div v-for="item in trending_products.slice(2, 4)" :key="item.prodId" class="col-lg-6 col-md-6 product__item">
                 <product-item :item="item" />
               </div>
             </div>

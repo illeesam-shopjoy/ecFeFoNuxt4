@@ -34,7 +34,7 @@ defineProps({
 });
 
 const { blogs } = useBlogs();
-const standardBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blog === "블로그-스탠다드"));
+const standardBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blogContent === "블로그-스탠다드"));
 
 const filteredRows = reactive<CoBlogType[]>([]);
 const pageStart = ref(0);

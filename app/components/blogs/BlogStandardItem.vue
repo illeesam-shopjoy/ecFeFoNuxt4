@@ -2,7 +2,7 @@
   <div :class="`blog__item mb-60 ${style_2 ? '' : 'blog__border-bottom pb-60'}`">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="blog__thumb fix">
-      <nuxt-link :to="`/blog-details/${blog.blogId}`" class="w-img">
+      <nuxt-link :to="`/blog-dtl/${blog.blogId}`" class="w-img">
         <app-image
           :src="blog.img"
           alt="blog"
@@ -13,18 +13,18 @@
     </div>
     <div class="blog__content">
       <h4 :class="`${style_3 ? '' : 'blog__title'}`">
-        <nuxt-link :to="`/blog-details/${blog.blogId}`">
-          <span v-html="blog.title"></span>
+        <nuxt-link :to="`/blog-dtl/${blog.blogId}`">
+          <span v-html="blog.blogTitle"></span>
         </nuxt-link>
       </h4>
       <div class="blog__meta">
         <span
-          >By <a href="#">{{ blog.author }}</a></span
+          >By <a href="#">{{ blog.blogAuthor }}</a></span
         >
-        <span>/ {{ blog.date }}</span>
+        <span>/ {{ blog.regDate }}</span>
       </div>
-      <p>{{ style_3 ? blog.desc.slice(0, 80) : blog.desc }} [...]</p>
-      <nuxt-link :to="`/blog-details/${blog.blogId}`" class="os-btn">더 보기</nuxt-link>
+      <p>{{ style_3 ? blog.blogSummary.slice(0, 80) : blog.blogSummary }} [...]</p>
+      <nuxt-link :to="`/blog-dtl/${blog.blogId}`" class="os-btn">더 보기</nuxt-link>
     </div>
   </div>
 </template>

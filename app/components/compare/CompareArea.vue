@@ -16,9 +16,9 @@
                     <th>상품</th>
                     <td v-for="(item, i) in state.compare" :key="i">
                       <div class="tp-compare-thumb">
-                        <app-image :src="item.img" :alt="item.title" :skeleton-style="{ width: '100%', aspectRatio: '1/1' }" />
+                        <app-image :src="item.img" :alt="item.prodNm" :skeleton-style="{ width: '100%', aspectRatio: '1/1' }" />
                         <h4 class="tp-compare-product-title">
-                          <a href="#" v-html="item.title"></a>
+                          <a href="#" v-html="item.prodNm"></a>
                         </h4>
                       </div>
                     </td>
@@ -35,8 +35,8 @@
                     <th>가격</th>
                     <td v-for="(item, i) in state.compare" :key="i">
                       <div class="tp-compare-price">
-                        <span>{{ formatPrice(item.price) }}</span>
-                        <span v-if="item.oldPrice" class="old-price">{{ formatPrice(item.oldPrice) }}</span>
+                        <span>{{ formatPrice(item.salePrice) }}</span>
+                        <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
                       </div>
                     </td>
                   </tr>

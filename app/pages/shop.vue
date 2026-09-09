@@ -44,7 +44,7 @@ usePageTitle("쇼핑");
 const { pending } = await useAsyncData<PdProductType[]>(
   "shop-products",
   async () => {
-    const res = await axiosSsr.get<PdProductType[]>("/api/products");
+    const res = await axiosSsr.get<PdProductType[]>("/api/fo/ec/pd/prod/page");
     return res.data;
   },
   {

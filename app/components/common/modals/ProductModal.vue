@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
-    <div v-show="visible" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" :id="`${list ? `productModalListId-${item.productId}` : `productModalId-${item.productId}`}`" role="dialog" aria-hidden="true" @click.self="close">
+    <div v-show="visible" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" :id="`${list ? `productModalListId-${item.prodId}` : `productModalId-${item.prodId}`}`" role="dialog" aria-hidden="true" @click.self="close">
       <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto product-modal rounded-lg bg-white shadow-xl">
         <div class="product__modal-wrapper relative p-6">
           <div class="product__modal-close absolute top-4 right-4 z-10">

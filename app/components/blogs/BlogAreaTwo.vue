@@ -26,15 +26,15 @@
                     wrap-class="w-img"
                     :skeleton-style="{ width: '100%', aspectRatio: '16/10' }"
                   />
-                  <nuxt-link :to="`/blog-details/${item.blogId}`" class="btn">
+                  <nuxt-link :to="`/blog-dtl/${item.blogId}`" class="btn">
                     <i class="fa fa-link"></i>
                   </nuxt-link>
                 </div>
                 <div class="blog__post-content">
                   <div class="blog__wrapper">
                     <h5 class="blog__post-title">
-                      <nuxt-link :to="`/blog-details/${item.blogId}`">
-                        <span v-html="item.title"></span>
+                      <nuxt-link :to="`/blog-dtl/${item.blogId}`">
+                        <span v-html="item.blogTitle"></span>
                       </nuxt-link>
                     </h5>
                     <div class="article-meta flex justify-center">
@@ -42,7 +42,7 @@
                       <span> /</span>
                       <span class="article-publish">
                         <i class="fa fa-calendar-o"></i>
-                        {{ item.date }}
+                        {{ item.regDate }}
                       </span>
                     </div>
                   </div>
@@ -75,7 +75,7 @@ import { useBlogs } from "~/composables/useBlogs";
 import AppImage from "~/components/ui/AppImage.vue";
 
 const { blogs } = useBlogs();
-const homeBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blog === "홈-7"));
+const homeBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blogContent === "홈-7"));
 
 const slider_1 = ref<{ next(): void; prev(): void } | null>(null);
 function handleNext() {

@@ -1,6 +1,6 @@
-/** 브랜드 타입 */
+/** 브랜드 타입. 필드명은 ecBeBo(JPA) SyBrandDto.Item 기준 (2026-09 정렬). */
 export interface CoBrandType {
-  brandId?: number; // 브랜드ID
-  brandCode?: string; // 브랜드코드 (필터/연동용)
-  brandName: string; // 브랜드명
+  brandId?: string; // 브랜드ID (ecBeBo brandId)
+  brandCode?: string; // 브랜드코드 (ecBeBo brandCode)
+  brandNm: string; // 브랜드명 (ecBeBo brandNm)
 }

@@ -27,13 +27,13 @@ export const useCodeStore = defineStore("code", {
 
   getters: {
     /**
-     * 그룹별 코드 맵 { grpCode → SyCodeType[] }
-     * 예: getCodes["YN"] → [{ value:"Y", label:"예" }, ...]
+     * 그룹별 코드 맵 { codeGrp → SyCodeType[] }
+     * 예: getCodes["YN"] → [{ codeValue:"Y", codeLabel:"예" }, ...]
      */
     getStCodes: (state): Record<string, SyCodeType[]> =>
       state.codes.reduce(
         (acc, code) => {
-          const key = code.grpCode.trim();
+          const key = code.codeGrp.trim();
           if (!acc[key]) acc[key] = [];
           acc[key]!.push(code);
           return acc;
@@ -42,9 +42,9 @@ export const useCodeStore = defineStore("code", {
       ),
 
     /**
-     * "grpCode_value" → label 맵 (그룹+값으로 유일 조회)
+     * "codeGrp_codeValue" → codeLabel 맵 (그룹+값으로 유일 조회)
      * 예: fullMap["COLOR-color01"] → "빨강"
      */
-    getStLabel: (state): Record<string, string> => Object.fromEntries(state.codes.map((c) => [`${c.grpCode.trim()}-${c.value}`, c.label])),
+    getStLabel: (state): Record<string, string> => Object.fromEntries(state.codes.map((c) => [`${c.codeGrp.trim()}-${c.codeValue}`, c.codeLabel])),
   },
 });

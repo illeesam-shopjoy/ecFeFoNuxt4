@@ -24,7 +24,7 @@
             </div>
             <div v-if="big_prd_1" class="col-lg-12">
               <div class="product__big-image effectThree mb-40">
-                <nuxt-link :to="`/product-details/${big_prd_1.productId}`">
+                <nuxt-link :to="`/prod-dtl/${big_prd_1.prodId}`">
                   <app-image :src="big_prd_1.bigImg" alt="product img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
                 </nuxt-link>
               </div>
@@ -35,7 +35,7 @@
           <div class="row">
             <div v-if="big_prd_2" class="col-lg-12">
               <div class="product__big-image effectThree mb-40">
-                <nuxt-link :to="`/product-details/${big_prd_2.productId}`">
+                <nuxt-link :to="`/prod-dtl/${big_prd_2.prodId}`">
                   <app-image :src="big_prd_2.bigImg" alt="product img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
                 </nuxt-link>
               </div>
@@ -67,7 +67,7 @@ import ProductItemTwo from "./ProductItemTwo.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 
 const store = useProductsStore();
-const best_sale_prd = computed(() => store.products.filter((p) => p.bestSeller));
+const best_sale_prd = computed(() => store.products.filter((p) => p.isBest));
 const big_prd_1 = computed(() => best_sale_prd.value.filter((p) => p.bigImg)[0]);
 const big_prd_2 = computed(() => best_sale_prd.value.filter((p) => p.bigImg)[1]);
 const sm_best_prd = computed(() => best_sale_prd.value.filter((p) => !p.bigImg));

@@ -2,17 +2,17 @@
   <tr>
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <td class="product-thumbnail">
-      <nuxt-link :to="`/product-details/${item.productId}`">
-        <app-image :src="item.img" :alt="item.title" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
+      <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+        <app-image :src="item.img" :alt="item.prodNm" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
       </nuxt-link>
     </td>
     <td class="product-name">
-      <nuxt-link :to="`/product-details/${item.productId}`">
-        <span v-html="item.title"></span>
+      <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+        <span v-html="item.prodNm"></span>
       </nuxt-link>
     </td>
     <td class="product-price">
-      <span class="amount">{{ formatPrice(item.price) }}</span>
+      <span class="amount">{{ formatPrice(item.salePrice) }}</span>
     </td>
     <td class="product-quantity">
       <div class="cart-plus-minus">
@@ -22,7 +22,7 @@
       </div>
     </td>
     <td class="product-subtotal">
-      <span class="amount">{{ formatPrice((item.orderQuantity ?? 0) * item.price) }}</span>
+      <span class="amount">{{ formatPrice((item.orderQuantity ?? 0) * item.salePrice) }}</span>
     </td>
     <td class="product-remove" @click.prevent="state.removerStCartProducts(item)">
       <a href="#">

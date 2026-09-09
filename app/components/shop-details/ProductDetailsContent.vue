@@ -2,8 +2,8 @@
   <div :class="`product__modal-content ${style_2 ? 'product__modal-content-2' : ''}`">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <h4>
-      <nuxt-link :to="`/product-details/${item.productId}`">
-        <span v-html="item.title"></span>
+      <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+        <span v-html="item.prodNm"></span>
       </nuxt-link>
     </h4>
     <div class="rating rating-shop mb-15">
@@ -27,8 +27,8 @@
       <span class="rating-no ml-10"> {{ item.rating }}개 평점 </span>
     </div>
     <div class="product__price-2 mb-25">
-      <span>{{ formatPrice(item.price) }}</span>
-      <span v-if="item.oldPrice" class="old-price">{{ formatPrice(item.oldPrice) }}</span>
+      <span>{{ formatPrice(item.salePrice) }}</span>
+      <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
     </div>
     <div class="product__modal-des mb-30">
       <p>{{ item.smDesc }}</p>
@@ -43,14 +43,14 @@
               v-for="opt in item.optionColors"
               :key="opt.optionCode ?? opt.optionId"
               type="button"
-              :title="opt.optionName"
+              :title="opt.optionNm"
               class="color-swatch"
               :class="{ selected: selectedColor === (opt.optionCode ?? String(opt.optionId)) }"
               :style="{ '--swatch-color': colorMap[opt.optionCode ?? ''] ?? '#ccc' }"
               @click="selectedColor = opt.optionCode ?? String(opt.optionId)"
             ></button>
           </div>
-          <span v-if="selectedColor" class="selected-label">선택: {{ item.optionColors.find((o) => (o.optionCode ?? String(o.optionId)) === selectedColor)?.optionName }}</span>
+          <span v-if="selectedColor" class="selected-label">선택: {{ item.optionColors.find((o) => (o.optionCode ?? String(o.optionId)) === selectedColor)?.optionNm }}</span>
         </div>
         <!-- 사이즈 선택 (아래) -->
         <div class="product__modal-input size mb-20">
@@ -65,7 +65,7 @@
               :class="{ selected: selectedSize === (opt.optionCode ?? String(opt.optionId)) }"
               @click="selectedSize = opt.optionCode ?? String(opt.optionId)"
             >
-              {{ opt.optionName }}
+              {{ opt.optionNm }}
             </button>
           </div>
         </div>

@@ -7,19 +7,19 @@
       <ul :class="`mini-cart-list ${store.cartProducts.length === 1 ? 'slider-height_1' : store.cartProducts.length === 2 ? 'slider-height_2' : 'slider-height'}`">
         <li v-for="(item, i) in store.cartProducts" :key="i">
           <div class="cart-img f-left">
-            <nuxt-link :to="`/product-details/${item.productId}`">
-              <app-image :src="item.img" :alt="item.title" :img-style="{ width: '60px', height: '75px', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '75px' }" />
+            <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+              <app-image :src="item.img" :alt="item.prodNm" :img-style="{ width: '60px', height: '75px', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '75px' }" />
             </nuxt-link>
           </div>
           <div class="cart-content f-left text-left">
             <h5>
-              <nuxt-link :to="`/product-details/${item.productId}`">
-                <span v-html="item.title"></span>
+              <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+                <span v-html="item.prodNm"></span>
               </nuxt-link>
             </h5>
             <div class="cart-price">
               <span class="ammount">{{ item.orderQuantity }}<i class="fal fa-times"></i></span>
-              <span class="price">{{ formatPrice(item.price) }}</span>
+              <span class="price">{{ formatPrice(item.salePrice) }}</span>
             </div>
           </div>
           <div class="del-icon ml-auto mt-30" @click="store.removerStCartProducts(item)">

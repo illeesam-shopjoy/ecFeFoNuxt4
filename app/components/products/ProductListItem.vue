@@ -4,13 +4,13 @@
     <div class="row">
       <div class="col-xl-4 col-lg-4">
         <div class="product__thumb">
-          <nuxt-link :to="`/product-details/${item.productId}`" class="w-img">
+          <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="w-img">
             <app-image :src="item.img" alt="product-img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
             <app-image img-class="product__thumb-2" :src="item.thumbImg" alt="product-img" wrap-class="w-img" />
           </nuxt-link>
-          <div v-if="item.saleOfPer || item.new" class="product__sale">
-            <span v-if="item.new || item.saleOfPer" class="new">신상품</span>
-            <span v-if="item.saleOfPer" class="percent">-{{ item.saleOfPer }}%</span>
+          <div v-if="item.saleDiscntRate || item.isNew" class="product__sale">
+            <span v-if="item.isNew || item.saleDiscntRate" class="new">신상품</span>
+            <span v-if="item.saleDiscntRate" class="percent">-{{ item.saleDiscntRate }}%</span>
           </div>
         </div>
       </div>
@@ -18,22 +18,15 @@
         <div class="product__content relative">
           <div class="product__content-inner list">
             <h4>
-              <nuxt-link :to="`/product-details/${item.productId}`">
-                <span v-html="item.title"></span>
+              <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+                <span v-html="item.prodNm"></span>
               </nuxt-link>
             </h4>
             <div class="product__price-2 mb-10">
-              <span>{{ formatPrice(item.price) }}</span>
-              <span v-if="item.oldPrice" class="old-price">{{ formatPrice(item.oldPrice) }}</span>
+              <span>{{ formatPrice(item.salePrice) }}</span>
+              <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
             </div>
             <p>{{ item.smDesc }}</p>
-            <div class="product__list mb-30">
-              <ul>
-                <li v-for="(list, i) in item.details.detailsList?.slice(0, 3)" :key="i">
-                  <span>{{ list }}</span>
-                </li>
-              </ul>
-            </div>
           </div>
           <div class="add-cart-list flex flex-wrap items-center">
             <a @click.prevent="store.addStCartProduct(item)" href="#" class="add-cart-btn mr-10">+ 장바구니 추가</a>

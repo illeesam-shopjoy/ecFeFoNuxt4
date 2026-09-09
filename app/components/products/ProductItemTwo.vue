@@ -2,7 +2,7 @@
   <div class="product__wrapper">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="product__thumb">
-      <nuxt-link :to="`/product-details/${item.productId}`" class="w-img">
+      <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="w-img">
         <app-image :src="item.img" alt="product-img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
         <app-image img-class="product__thumb-2" :src="item.thumbImg" alt="product-img" wrap-class="w-img" />
       </nuxt-link>
@@ -12,9 +12,9 @@
           <i class="fal fa-eye"></i>
         </a>
       </div>
-      <div v-if="item.saleOfPer || item.new" class="product__sale product__sale-3">
-        <span v-if="item.new || item.saleOfPer" class="new">신상품</span>
-        <span v-if="item.saleOfPer" class="percent">-{{ item.saleOfPer }}%</span>
+      <div v-if="item.saleDiscntRate || item.isNew" class="product__sale product__sale-3">
+        <span v-if="item.isNew || item.saleDiscntRate" class="new">신상품</span>
+        <span v-if="item.saleDiscntRate" class="percent">-{{ item.saleDiscntRate }}%</span>
       </div>
     </div>
     <div class="product__content product__content-2 relative text-center">
@@ -27,14 +27,14 @@
           <a href="#"><i class="fal fa-star"></i></a>
         </div>
         <h4>
-          <nuxt-link :to="`/product-details/${item.productId}`">
-            <span v-html="item.title"></span>
+          <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+            <span v-html="item.prodNm"></span>
           </nuxt-link>
         </h4>
         <div class="product__price-3">
-          <span>{{ formatPrice(item.price) }}</span>
-          <span v-if="item.oldPrice" class="old-price"
-            ><del>{{ formatPrice(item.oldPrice) }}</del></span
+          <span>{{ formatPrice(item.salePrice) }}</span>
+          <span v-if="item.stdPrice" class="old-price"
+            ><del>{{ formatPrice(item.stdPrice) }}</del></span
           >
         </div>
       </div>

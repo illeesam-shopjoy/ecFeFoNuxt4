@@ -1,10 +1,10 @@
-/** 블로그 타입 */
+/** 블로그 타입. 필드명은 ecBeBo(JPA) CmBlogDto.Item 기준 (2026-09 정렬). */
 export interface CoBlogType {
-  blogId: number; // 블로그ID
-  img: string; // 이미지
-  title: string; // 제목
-  author: string; // 작성자
-  date: string; // 작성일
-  desc: string; // 설명
-  blog?: string; // 블로그 본문
+  blogId: string; // 블로그ID (ecBeBo blogId)
+  img: string; // 대표 이미지 — ecBeBo files[0].imgUrl (BFF가 뽑아낸 파생값, JPA 원본 컬럼 아님)
+  blogTitle: string; // 제목 (ecBeBo blogTitle)
+  blogAuthor: string; // 작성자 (ecBeBo blogAuthor)
+  regDate: string; // 작성일 (ecBeBo regDate)
+  blogSummary: string; // 요약 (ecBeBo blogSummary)
+  blogContent?: string; // 본문 HTML (ecBeBo blogContent)
 }

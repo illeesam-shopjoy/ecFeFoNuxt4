@@ -13,20 +13,20 @@ export const useWishlistStore = defineStore("wishlist", {
   actions: {
     addStWishlistProduct(payload: PdProductType) {
       // 위시리스트에 추가 또는 이미 있으면 제거 (토글)
-      const isAdded = this.wishlists.findIndex((p) => p.productId === payload.productId);
+      const isAdded = this.wishlists.findIndex((p) => p.prodId === payload.prodId);
       if (isAdded !== -1) {
-        this.wishlists = this.wishlists.filter((p) => p.productId !== payload.productId);
-        useNuxtApp().$toast.error(`${payload.title} 위시리스트에서 제거됨`);
+        this.wishlists = this.wishlists.filter((p) => p.prodId !== payload.prodId);
+        useNuxtApp().$toast.error(`${payload.prodNm} 위시리스트에서 제거됨`);
       } else {
         this.wishlists.push(payload);
-        useNuxtApp().$toast.success(`${payload.title} 위시리스트에 추가됨`);
+        useNuxtApp().$toast.success(`${payload.prodNm} 위시리스트에 추가됨`);
       }
       localStorage.setItem("wishlist_products", JSON.stringify(this.wishlists));
     },
     removeStWishlist(payload: PdProductType) {
       // 해당 상품을 위시리스트에서 제거
-      this.wishlists = this.wishlists.filter((p) => p.productId !== payload.productId);
-      useNuxtApp().$toast.error(`${payload.title} 위시리스트에서 제거됨`);
+      this.wishlists = this.wishlists.filter((p) => p.prodId !== payload.prodId);
+      useNuxtApp().$toast.error(`${payload.prodNm} 위시리스트에서 제거됨`);
       localStorage.setItem("wishlist_products", JSON.stringify(this.wishlists));
     },
   },

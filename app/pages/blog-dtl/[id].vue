@@ -18,7 +18,7 @@
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
-import BlogDetailsArea from "~/components/blog-details/BlogDetailsArea.vue";
+import BlogDetailsArea from "~/components/blog-dtl/BlogDetailsArea.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
 import { axiosSsr } from "~/utils/axiosSsr";
 import { type CoBlogType } from "~/types/coBlogType";
@@ -35,10 +35,10 @@ const { data: item, pending } = await useAsyncData<CoBlogType>(
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useGa } from "~/composables/useGa";
 useSeoMeta({
-  title: item.value ? `${item.value.title} | Outstock 블로그` : "블로그 상세",
-  ogTitle: item.value?.title ?? "블로그 상세",
-  description: item.value?.desc,
-  ogDescription: item.value?.desc,
+  title: item.value ? `${item.value.blogTitle} | Outstock 블로그` : "블로그 상세",
+  ogTitle: item.value?.blogTitle ?? "블로그 상세",
+  description: item.value?.blogSummary,
+  ogDescription: item.value?.blogSummary,
   ogImage: item.value?.img,
 });
 usePageTitle("블로그 상세");
@@ -48,7 +48,7 @@ const { sendPageView } = useGa();
 watch(
   item,
   (v) => {
-    if (v?.title) sendPageView(`${v.title} | Outstock 블로그`);
+    if (v?.blogTitle) sendPageView(`${v.blogTitle} | Outstock 블로그`);
   },
   { immediate: true }
 );

@@ -84,7 +84,7 @@ const mobile_menus: MenuDataType[] = [
           { link: "/shop-right", title: "쇼핑 (우측 사이드바)" },
           { link: "/shop-4-col", title: "쇼핑 4단" },
           { link: "/shop-3-col", title: "쇼핑 3단" },
-          { link: "/product-details", title: "상품 상세" },
+          { link: "/prod-dtl", title: "상품 상세" },
         ],
       },
       {
@@ -110,7 +110,7 @@ const mobile_menus: MenuDataType[] = [
           { link: "/blog-2-col", title: "블로그 2단" },
           { link: "/blog-3-col", title: "블로그 3단" },
           { link: "/blog-2-col-mas", title: "블로그 2단 메이슨리" },
-          { link: "/blog-details", title: "블로그 상세" },
+          { link: "/blog-dtl", title: "블로그 상세" },
         ],
       },
   {

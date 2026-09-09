@@ -57,10 +57,10 @@
           <ul v-else>
             <li v-for="(blog, i) in recentBlogs" :key="i" class="d-flex">
               <div class="rc__post-thumb mr-20">
-                <nuxt-link :to="`/blog-details/${blog.blogId}`">
+                <nuxt-link :to="`/blog-dtl/${blog.blogId}`">
                   <app-image
                     :src="blog.img"
-                    :alt="blog.title"
+                    :alt="blog.blogTitle"
                     :img-style="{ width: '70px', height: '70px', objectFit: 'cover' }"
                     :skeleton-style="{ width: '70px', height: '70px' }"
                   />
@@ -68,12 +68,12 @@
               </div>
               <div class="rc__post-content">
                 <h6>
-                  <nuxt-link :to="`/blog-details/${blog.blogId}`">
-                    <span v-html="blog.title.slice(0, 20)"></span>
+                  <nuxt-link :to="`/blog-dtl/${blog.blogId}`">
+                    <span v-html="blog.blogTitle.slice(0, 20)"></span>
                   </nuxt-link>
                 </h6>
                 <div class="rc__meta">
-                  <span>{{ blog.date }}</span>
+                  <span>{{ blog.regDate }}</span>
                 </div>
               </div>
             </li>

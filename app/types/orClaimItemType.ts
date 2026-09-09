@@ -6,7 +6,7 @@ export interface OrClaimItemType {
   claimType: "exchange" | "return" | "cancel"; // 클레임 유형 (교환/반품/취소)
   reason: string; // 사유
   status: "requested" | "approved" | "rejected" | "completed"; // 처리상태
-  productId?: number; // 상품ID
+  productId?: string; // 상품ID (ecBeBo prodId)
   productTitle?: string; // 상품명
   quantity?: number; // 수량
   createdAt?: string; // 생성일시

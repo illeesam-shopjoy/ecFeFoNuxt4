@@ -5,10 +5,10 @@
       <div class="row">
         <div class="col-xl-9 col-lg-8">
           <div class="postbox__title mb-55">
-            <h1><a v-html="item.title"></a></h1>
+            <h1><a v-html="item.blogTitle"></a></h1>
             <div class="blog__meta">
-              <span>작성자 <a href="#">{{ item.author }}</a></span>
-              <span>/ {{ item.date }}</span>
+              <span>작성자 <a href="#">{{ item.blogAuthor }}</a></span>
+              <span>/ {{ item.regDate }}</span>
             </div>
           </div>
 
@@ -42,7 +42,7 @@
             <!-- 본문 내 보조 이미지: AppImage (스켈레톤 + noImage) -->
             <div class="postbox__details-img w-img mb-60">
               <app-image
-                src="/cdn/img/blog/blog-details-sm.jpg"
+                src="/cdn/img/blog/blog-dtl-sm.jpg"
                 alt="블로그 상세 이미지"
                 wrap-class="w-full"
                 :skeleton-style="{ width: '100%', aspectRatio: '16/7' }"
@@ -223,7 +223,7 @@ const relatedBlogs = computed(() =>
 const currentUrl = computed(() =>
   import.meta.client ? window.location.href : ""
 );
-const pageTitle = computed(() => props.item?.title ?? "");
+const pageTitle = computed(() => props.item?.blogTitle ?? "");
 
 function shareOnFacebook() {
   window.open(

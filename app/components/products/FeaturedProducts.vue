@@ -65,7 +65,7 @@ import { useProductsStore } from "~/store/useProductsStore";
 
 const slider_1 = ref<{ next(): void; prev(): void } | null>(null);
 const store = useProductsStore();
-const products = computed(() => store.products.filter((p) => p.bestSeller).filter((p) => !p.bigImg));
+const products = computed(() => store.products.filter((p) => p.isBest).filter((p) => !p.bigImg));
 function handleNext() {
   slider_1.value?.next();
 }

@@ -10,20 +10,20 @@
           <li v-for="(item, i) in featured_prd" :key="i" class="mb-20">
             <div class="featires__product-wrapper d-flex">
               <div class="features__product-thumb mr-15">
-                <nuxt-link :to="`/product-details/${item.productId}`">
+                <nuxt-link :to="`/prod-dtl/${item.prodId}`">
                   <app-image :src="item.img" alt="pro-sm-1" :img-style="{ width: '86px', height: '110px', objectFit: 'cover' }" :skeleton-style="{ width: '86px', height: '110px' }" />
                 </nuxt-link>
               </div>
               <div class="features__product-content">
                 <h5>
-                  <nuxt-link :to="`/product-details/${item.productId}`">
-                    <span v-html="item.title"></span>
+                  <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+                    <span v-html="item.prodNm"></span>
                   </nuxt-link>
                 </h5>
                 <div class="price">
-                  <span>{{ formatPrice(item.price) }}</span>
-                  <span v-if="item.oldPrice" class="old-price">
-                    <del>{{ formatPrice(item.oldPrice) }}</del>
+                  <span>{{ formatPrice(item.salePrice) }}</span>
+                  <span v-if="item.stdPrice" class="old-price">
+                    <del>{{ formatPrice(item.stdPrice) }}</del>
                   </span>
                 </div>
               </div>

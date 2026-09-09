@@ -13,10 +13,10 @@
         <tbody>
           <tr v-for="(item, i) in state.cartProducts" :key="i" class="cart_item">
             <td class="product-name">
-              {{ item.title }} <strong class="product-quantity"> x {{ item.orderQuantity }}</strong>
+              {{ item.prodNm }} <strong class="product-quantity"> x {{ item.orderQuantity }}</strong>
             </td>
             <td class="product-total">
-              <span class="amount">{{ formatPrice(item.price) }}</span>
+              <span class="amount">{{ formatPrice(item.salePrice) }}</span>
             </td>
           </tr>
         </tbody>

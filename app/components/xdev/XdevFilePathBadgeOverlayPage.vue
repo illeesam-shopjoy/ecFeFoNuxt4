@@ -77,10 +77,10 @@ const PAGES_FILE_MAP: { filePath: string; routePath: string }[] = [
   { filePath: "blog-no-sidebar.vue", routePath: "/blog-no-sidebar" },
   { filePath: "blog-left-sidebar.vue", routePath: "/blog-left-sidebar" },
   { filePath: "blog-2-col-mas.vue", routePath: "/blog-2-col-mas" },
-  { filePath: "blog-details/index.vue", routePath: "/blog-details" },
-  { filePath: "blog-details/[id].vue", routePath: "/blog-details/:id" },
-  { filePath: "product-details/index.vue", routePath: "/product-details" },
-  { filePath: "product-details/[id].vue", routePath: "/product-details/:id" },
+  { filePath: "blog-dtl/index.vue", routePath: "/blog-dtl" },
+  { filePath: "blog-dtl/[id].vue", routePath: "/blog-dtl/:id" },
+  { filePath: "prod-dtl/index.vue", routePath: "/prod-dtl" },
+  { filePath: "prod-dtl/[id].vue", routePath: "/prod-dtl/:id" },
   { filePath: "home-2.vue", routePath: "/home-2" },
   { filePath: "home-3.vue", routePath: "/home-3" },
   { filePath: "home-4.vue", routePath: "/home-4" },
@@ -140,7 +140,7 @@ function buildPagesTree(): SelectTreeItem[] {
   }
   const dirOrder = [
     "index", "404", "contact", "login", "register", "account", "cart", "checkout", "compare", "wishlist",
-    "shop", "shop-right", "shop-3-col", "shop-4-col", "blog", "blog-details", "product-details",
+    "shop", "shop-right", "shop-3-col", "shop-4-col", "blog", "blog-dtl", "prod-dtl",
     "home-2", "home-3", "home-4", "home-5", "home-6", "home-7",
     "adminEc", "adminSy", "adminCo", "popupAdmin", "xdev-open-comp",
   ];
@@ -168,7 +168,7 @@ const pageTreeItems = computed(() => buildPagesTree());
 // components 폴더 구조: app/components 하위 경로 (실제 구조 반영)
 const COMPONENT_PATHS = [
   "back-to-top/BackToTop",
-  "blog-details/BlogDetailsArea",
+  "blog-dtl/BlogDetailsArea",
   "blogs/BlogArea",
   "blogs/BlogAreaTwo",
   "blogs/BlogItem",
@@ -310,7 +310,7 @@ function buildComponentsTree(): SelectTreeItem[] {
   const topLevelDirs = Array.from(byKey.entries())
     .filter(([key]) => !key.includes("/"))
     .map(([, n]) => n);
-  const order = ["back-to-top", "blog-details", "blogs", "cart-wishlists", "category", "checkout", "client-brands", "common", "contact", "compare", "forms", "hero-banner", "login-register", "profile", "products", "shop", "shop-banner", "shop-details", "social", "subscribe", "testimonial", "ui", "video-box", "xdev"];
+  const order = ["back-to-top", "blog-dtl", "blogs", "cart-wishlists", "category", "checkout", "client-brands", "common", "contact", "compare", "forms", "hero-banner", "login-register", "profile", "products", "shop", "shop-banner", "shop-details", "social", "subscribe", "testimonial", "ui", "video-box", "xdev"];
   const result: SelectTreeItem[] = [];
   for (const key of order) {
     const node = byKey.get(key);

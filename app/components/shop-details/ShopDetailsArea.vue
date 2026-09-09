@@ -62,17 +62,8 @@
         <!-- 상품설명 섹션 -->
         <div ref="secDes" id="sec-des" class="detail-section">
           <h2 class="detail-section__title">상품설명</h2>
-          <div class="product__details-des">
-            <p>{{ item.details?.detailsText }}</p>
-            <div class="product__details-des-list mb-20">
-              <ul>
-                <li v-for="(list, i) in item.details?.detailsList || []" :key="i">
-                  <span>{{ list }}</span>
-                </li>
-              </ul>
-            </div>
-            <p>{{ item.details?.detailsText2 }}</p>
-          </div>
+          <!-- ecBeBo contentHtml은 단일 HTML 블록(2026-09 BFF 전환 — 예전 3분할(text/list/text2) 구조 없음) -->
+          <div class="product__details-des" v-html="item.contentHtml"></div>
         </div>
 
         <!-- 추가정보 섹션 -->

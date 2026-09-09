@@ -17,11 +17,11 @@
             <li>
               <div class="comments-box">
                 <div class="comments-avatar">
-                  <app-image :src="review.img" :alt="review.name" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
+                  <app-image :src="review.img" :alt="review.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                 </div>
                 <div class="comments-text">
                   <div class="avatar-name">
-                    <h5>{{ review.name }}</h5>
+                    <h5>{{ review.writerNm }}</h5>
                     <span class="comment-actions">
                       <button type="button" class="reply" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
                       <button type="button" class="delete-btn" @click.prevent="deleteReview(review.reviewId, false)">삭제</button>
@@ -34,7 +34,7 @@
                       </li>
                     </ul>
                   </div>
-                  <p>{{ review.content || '내용 없음' }}</p>
+                  <p>{{ review.reviewContent || '내용 없음' }}</p>
                 </div>
                 <div v-if="(review.attachments?.length ?? 0) > 0" class="comments-attachments">
                   <div class="review-thumb-list">
@@ -59,14 +59,14 @@
             <li v-for="reply in (review.replies ?? [])" :key="reply.reviewId" class="children">
               <div class="comments-box">
                 <div class="comments-avatar">
-                  <app-image :src="reply.img" :alt="reply.name" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
+                  <app-image :src="reply.img" :alt="reply.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                 </div>
                 <div class="comments-text">
                   <div class="avatar-name">
-                    <h5>{{ reply.name }}</h5>
+                    <h5>{{ reply.writerNm }}</h5>
                     <button type="button" class="delete-btn" @click.prevent="deleteReview(reply.reviewId, true)">삭제</button>
                   </div>
-                  <p>{{ reply.content || '' }}</p>
+                  <p>{{ reply.reviewContent || '' }}</p>
                 </div>
               </div>
             </li>
@@ -88,7 +88,7 @@
         </div>
       </div>
       <review-form
-        :product-id="item.productId"
+        :prod-id="item.prodId"
         :rating="reviewRating"
         :parent-review-id="replyingToReviewId ?? undefined"
         @submitted="onReviewSubmitted"
@@ -156,12 +156,12 @@ function openAllMedia() {
 }
 
 const reviewRating = ref(0);
-const replyingToReviewId = ref<number | null>(null);
+const replyingToReviewId = ref<string | null>(null);
 
 function setReviewRating(n: number) {
   reviewRating.value = n;
 }
-function startReply(reviewId: number) {
+function startReply(reviewId: string) {
   replyingToReviewId.value = reviewId;
 }
 
@@ -173,9 +173,11 @@ function onReviewSubmitted() {
   router.go(0);
 }
 
-const deletingId = ref<number | null>(null);
+const deletingId = ref<string | null>(null);
 
-async function deleteReview(reviewId: number, isReply: boolean) {
+// 리뷰(review)는 /api/base/ec/pd/review/{id}, 답글(reply)은 /api/base/ec/pd/review-comment/{id} —
+// ecBeBo에서 둘이 서로 다른 컨트롤러라(PdReviewController vs PdReviewCommentController) 경로도 분리했다.
+async function deleteReview(reviewId: string, isReply: boolean) {
   const ok = await useConfirm().openConfirm({
     title: '삭제 확인',
     message: isReply ? '이 답글을 삭제할까요?' : '이 리뷰를 삭제할까요? 달린 답글도 함께 삭제됩니다.',
@@ -186,10 +188,8 @@ async function deleteReview(reviewId: number, isReply: boolean) {
   if (!ok || deletingId.value !== null) return;
   deletingId.value = reviewId;
   try {
-    const res = await $fetch<{ success?: boolean; message?: string }>(
-      `/api/products/${props.item.productId}/reviews/${reviewId}`,
-      { method: 'DELETE' }
-    );
+    const path = isReply ? `/api/base/ec/pd/review-comment/${reviewId}` : `/api/base/ec/pd/review/${reviewId}`;
+    const res = await $fetch<{ success?: boolean; message?: string }>(path, { method: 'DELETE' });
     if (res?.success) {
       $toast?.success?.(res.message ?? '삭제되었습니다.');
       router.go(0);

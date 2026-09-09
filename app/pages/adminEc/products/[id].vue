@@ -26,7 +26,7 @@
           </div>
         </dl>
         <p class="mt-4">
-          <NuxtLink :to="`/product-details/${product.productId}`" class="text-amber-600 hover:underline">프론트 상품페이지 보기</NuxtLink>
+          <NuxtLink :to="`/prod-dtl/${product.productId}`" class="text-amber-600 hover:underline">프론트 상품페이지 보기</NuxtLink>
         </p>
         <div class="flex gap-2 mt-6">
           <NuxtLink :to="`/adminEc/products/${product.productId}-edit`" class="px-4 py-2 bg-amber-600 text-white rounded text-sm hover:bg-amber-700">수정</NuxtLink>

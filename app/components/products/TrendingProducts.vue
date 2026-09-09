@@ -16,7 +16,7 @@
       </div>
       <div :class="`product__slider ${style_2 ? 'product__slider-4' : ''}`">
         <div class="row">
-          <div v-for="item in trending_prd.slice(0, perView)" :key="item.productId" :class="`${style_3 ? 'col-xl-2 col-lg-3 col-md-4' : 'col-lg-3 col-md-4'} product__item`">
+          <div v-for="item in trending_prd.slice(0, perView)" :key="item.prodId" :class="`${style_3 ? 'col-xl-2 col-lg-3 col-md-4' : 'col-lg-3 col-md-4'} product__item`">
             <product-item :item="item" />
           </div>
         </div>
