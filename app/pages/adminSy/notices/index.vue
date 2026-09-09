@@ -11,16 +11,14 @@
           <span class="text-sm text-gray-600">공지유형</span>
           <select v-model="search.noticeType" class="border rounded px-3 py-1.5 w-28">
             <option value="">전체</option>
-            <option value="1">알림</option>
-            <option value="2">공지</option>
+            <option v-for="c in noticeTypeCodes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </label>
         <label class="flex flex-col gap-1">
           <span class="text-sm text-gray-600">공지상태</span>
           <select v-model="search.status" class="border rounded px-3 py-1.5 w-28">
             <option value="">전체</option>
-            <option value="0">정상</option>
-            <option value="1">비표시</option>
+            <option v-for="c in noticeStatusCodes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </label>
       </div>
@@ -67,10 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, computed } from "vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { PAGE_TYPE_DEFAULT } from "~/types/page";
+import { useCodeStore } from "~/store/useCodeStore";
 definePageMeta({ layout: "admin" });
+
+// <select> 옵션은 하드코딩 대신 공통코드(ecBeBo sy_code)에서 가져온다(2026-09, ecFeBo 참고 요청사항).
+const codeStore = useCodeStore();
+if (import.meta.client) codeStore.loadStCodes();
+const noticeTypeCodes = computed(() => codeStore.getStCodes["NOTICE_TYPE_CD"] ?? []);
+const noticeStatusCodes = computed(() => codeStore.getStCodes["NOTICE_STATUS"] ?? []);
 usePageTitle("공지사항관리");
 
 const columns = [

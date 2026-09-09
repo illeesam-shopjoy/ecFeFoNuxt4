@@ -25,7 +25,7 @@
           </div>
           <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
             <dt class="text-gray-500 shrink-0">공지상태</dt>
-            <dd class="min-w-0 break-words">{{ notice.status === "0" ? "정상" : "비표시" }}</dd>
+            <dd class="min-w-0 break-words">{{ noticeStatusLabel(notice.status) }}</dd>
           </div>
           <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-start min-w-0 overflow-hidden pr-2">
             <dt class="text-gray-500 shrink-0 pt-1">첨부파일</dt>
@@ -80,8 +80,7 @@
             <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
               <label class="text-sm text-gray-500 shrink-0">공지유형</label>
               <select v-model="form.noticeType" class="border rounded px-3 py-2 min-w-[8rem] w-full max-w-full">
-                <option value="1">알림</option>
-                <option value="2">공지</option>
+                <option v-for="c in noticeTypeCodes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </div>
             <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-start min-w-0 overflow-hidden pr-2">
@@ -91,8 +90,7 @@
             <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
               <label class="text-sm text-gray-500 shrink-0">공지상태</label>
               <select v-model="form.status" class="border rounded px-3 py-2 min-w-[8rem] w-full max-w-full">
-                <option value="0">정상</option>
-                <option value="1">비표시</option>
+                <option v-for="c in noticeStatusCodes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </div>
             <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
@@ -145,7 +143,14 @@
 import * as yup from "yup";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useAdminListNav } from "~/composables/useAdminListNav";
+import { useCodeStore } from "~/store/useCodeStore";
 definePageMeta({ layout: "admin" });
+
+// <select> 옵션은 하드코딩 대신 공통코드(ecBeBo sy_code)에서 가져온다(2026-09, ecFeBo 참고 요청사항).
+const codeStore = useCodeStore();
+if (import.meta.client) codeStore.loadStCodes();
+const noticeTypeCodes = computed(() => codeStore.getStCodes["NOTICE_TYPE_CD"] ?? []);
+const noticeStatusCodes = computed(() => codeStore.getStCodes["NOTICE_STATUS"] ?? []);
 
 const noticeSchema = yup.object({
   noticeTitle: yup.string().required("공지사항제목을 입력해 주세요").label("공지사항제목"),
@@ -177,7 +182,7 @@ type Notice = {
 };
 
 type AttachRow = {
-  attachId: number;
+  attachId: string;
   fileNm: string;
   physicalNm: string;
   ext: string;
@@ -193,16 +198,19 @@ const saving = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const form = reactive({
   noticeTitle: "",
-  noticeType: "1",
+  noticeType: "GENERAL",
   noticeContent: "",
-  status: "0",
+  status: "ACTIVE",
   remark: "",
 });
 const attachments = reactive<{ list: AttachRow[] }>({ list: [] });
 const pendingFiles = ref<File[]>([]);
 
 function noticeTypeLabel(t: string) {
-  return t === "1" ? "알림" : t === "2" ? "공지" : t;
+  return codeStore.getStLabel[`NOTICE_TYPE_CD-${t}`] ?? t;
+}
+function noticeStatusLabel(t: string) {
+  return codeStore.getStLabel[`NOTICE_STATUS-${t}`] ?? t;
 }
 
 function formatSize(n: number | undefined) {
@@ -267,7 +275,7 @@ function removePending(idx: number) {
   pendingFiles.value = pendingFiles.value.filter((_, i) => i !== idx);
 }
 
-async function removeAttach(attachId: number) {
+async function removeAttach(attachId: string) {
   const ok = await useConfirm().openConfirm({
     title: "삭제 확인",
     message: "이 첨부파일을 삭제할까요?",
@@ -276,7 +284,7 @@ async function removeAttach(attachId: number) {
     variant: "danger",
   });
   if (!ok) return;
-  await $fetch(`/api/sy/attachments/${attachId}`, { method: "DELETE" });
+  await $fetch(`/api/base/sy/attach/${attachId}`, { method: "DELETE" });
   attachments.list = attachments.list.filter((a) => a.attachId !== attachId);
 }
 

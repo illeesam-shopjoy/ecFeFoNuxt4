@@ -69,7 +69,7 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('쿠폰');
 import { ref, reactive } from "vue";
-import type { SySyCheckoutLoginFormType } from "~/types/sySyCheckoutLoginFormType";
+import type { SyCheckoutLoginFormType } from "~/types/syCheckoutLoginFormType";
 
 const checkoutLogin = ref(false);
 const checkoutCoupon = ref(false);

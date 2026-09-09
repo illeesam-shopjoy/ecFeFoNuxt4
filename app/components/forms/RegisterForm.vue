@@ -33,7 +33,7 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('회원가입 폼');
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
-import type { MbMbRegisterFormType } from "~/types/mbMbRegisterFormType";
+import type { MbRegisterFormType } from "~/types/mbRegisterFormType";
 
 const schema = yup.object({
   name: yup.string().required("이름을 입력해 주세요").label("이름"),

@@ -86,10 +86,10 @@ export const useCartStore = defineStore("cart", {
       // 장바구니 총 수량·총 금액 계산
       return state.cartProducts.reduce(
         (cartTotal, cartItem) => {
-          const { price, orderQuantity } = cartItem;
+          const { salePrice, orderQuantity } = cartItem;
           if (typeof orderQuantity !== "undefined") {
-            const itemTotal = price * orderQuantity;
-            cartTotal.prodStock += orderQuantity;
+            const itemTotal = salePrice * orderQuantity;
+            cartTotal.quantity += orderQuantity;
             cartTotal.total += itemTotal;
           }
           return cartTotal;
