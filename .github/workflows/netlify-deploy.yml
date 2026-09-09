@@ -34,10 +34,11 @@ jobs:
         run: pnpm run build
         env:
           NETLIFY: "true"
+          NITRO_PRESET: netlify
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod --dir=dist --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+        run: npx netlify-cli deploy --prod --dir=dist --functions=.netlify/functions-internal --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
