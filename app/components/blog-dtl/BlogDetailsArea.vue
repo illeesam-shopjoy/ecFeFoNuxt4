@@ -213,7 +213,7 @@ const props = defineProps<{
 // 추천 글: SSR로 블로그 목록 로드 (axiosSsr 사용)
 const { data: allBlogs, pending: relatedPending } = useAsyncData<CoBlogType[]>(
   "blog-related",
-  () => axiosSsr.get<CoBlogType[]>("/api/blogs").then((r) => r.data)
+  () => axiosSsr.get<CoBlogType[]>("/api/fo/ec/cm/bltn/page").then((r) => r.data)
 );
 
 const relatedBlogs = computed(() =>

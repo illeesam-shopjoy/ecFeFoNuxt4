@@ -43,8 +43,8 @@
             <tbody>
               <tr v-for="row in detailDisplayList" :key="row.codeId" class="border-b hover:bg-gray-50">
                 <td class="p-2">{{ row.codeId }}</td>
-                <td class="p-2">{{ row.value }}</td>
-                <td class="p-2">{{ row.label }}</td>
+                <td class="p-2">{{ row.codeValue }}</td>
+                <td class="p-2">{{ row.codeLabel }}</td>
                 <td class="p-2">
                   <button type="button" class="text-amber-600 hover:underline mr-2" @click="openDetailForm(row)">수정</button>
                   <button type="button" class="text-red-600 hover:underline" @click="deleteCode(row)">삭제</button>
@@ -63,12 +63,12 @@
         <h3 class="font-bold mb-4">{{ editForm.codeId ? "수정" : "추가" }}</h3>
         <div class="space-y-3">
           <label class="block">
-            <span class="text-sm text-gray-600">value</span>
-            <input v-model="editForm.value" type="text" class="border rounded px-3 py-2 w-full" />
+            <span class="text-sm text-gray-600">codeValue</span>
+            <input v-model="editForm.codeValue" type="text" class="border rounded px-3 py-2 w-full" />
           </label>
           <label class="block">
             <span class="text-sm text-gray-600">코드명 <span class="text-red-500">*</span></span>
-            <input v-model="editForm.label" type="text" class="border rounded px-3 py-2 w-full" />
+            <input v-model="editForm.codeLabel" type="text" class="border rounded px-3 py-2 w-full" />
           </label>
         </div>
         <div class="flex gap-2 mt-4">
@@ -91,17 +91,17 @@ const codeSchema = yup.object({
   label: yup.string().required("코드명을 입력해 주세요").label("코드명"),
 });
 
-type CodeRow = { codeId: number; grpCode: string; value: string; label: string };
+type CodeRow = { codeId: string; codeGrp: string; codeValue: string; codeLabel: string };
 
 const searchGrp = ref("");
 const allCodes = reactive<CodeRow[]>([]);
 const selectedGrp = ref("");
-const editForm = ref<{ codeId?: number; grpCode: string; value: string; label: string } | null>(null);
+const editForm = ref<{ codeId?: string; codeGrp: string; codeValue: string; codeLabel: string } | null>(null);
 
 const groupPageNo = ref(1);
 const groupPageSize = ref(10);
 const groupList = computed(() => {
-  const set = new Set(allCodes.map((c) => c.grpCode));
+  const set = new Set(allCodes.map((c) => c.codeGrp));
   return Array.from(set).sort();
 });
 const groupTotalCount = computed(() => groupList.value.length);
@@ -112,7 +112,7 @@ const groupDisplayList = computed(() => {
 
 const detailPageNo = ref(1);
 const detailPageSize = ref(10);
-const detailList = computed(() => allCodes.filter((c) => c.grpCode === selectedGrp.value));
+const detailList = computed(() => allCodes.filter((c) => c.codeGrp === selectedGrp.value));
 const detailTotalCount = computed(() => detailList.value.length);
 const detailDisplayList = computed(() => {
   const start = (detailPageNo.value - 1) * detailPageSize.value;
@@ -136,7 +136,7 @@ function onDetailPageSizeChange(v: number) {
 
 async function fetchCodes() {
   try {
-    const res = await $fetch<CodeRow[]>("/api/codes");
+    const res = await $fetch<CodeRow[]>("/api/co/sy/code");
     const data = res ?? [];
     allCodes.splice(0, allCodes.length, ...data);
     const firstGrp = groupList.value[0];
@@ -155,13 +155,13 @@ function resetSearch() {
 
 function openDetailForm(row?: CodeRow) {
   if (!selectedGrp.value && !row) return;
-  editForm.value = row ? { codeId: row.codeId, grpCode: row.grpCode, value: row.value, label: row.label } : { grpCode: selectedGrp.value, value: "", label: "" };
+  editForm.value = row ? { codeId: row.codeId, codeGrp: row.codeGrp, codeValue: row.codeValue, codeLabel: row.codeLabel } : { codeGrp: selectedGrp.value, codeValue: "", codeLabel: "" };
 }
 
 async function saveCode() {
   if (!editForm.value) return;
   try {
-    await codeSchema.validate({ label: editForm.value.label });
+    await codeSchema.validate({ label: editForm.value.codeLabel });
   } catch (e: unknown) {
     const err = e as yup.ValidationError;
     await useAlert().openAlert(err.message ?? "입력값을 확인해 주세요.");
@@ -176,7 +176,7 @@ async function saveCode() {
 async function deleteCode(row: CodeRow) {
   const ok = await useConfirm().openConfirm({
     title: "삭제 확인",
-    message: `코드 [${row.label}]을 삭제할까요?`,
+    message: `코드 [${row.codeLabel}]을 삭제할까요?`,
     confirmText: "삭제",
     cancelText: "취소",
     variant: "danger",

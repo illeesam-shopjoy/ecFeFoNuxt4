@@ -10,26 +10,26 @@
         <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 text-sm">
           <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
             <dt class="text-gray-500 shrink-0">상품ID</dt>
-            <dd class="min-w-0 break-words">{{ product.productId }}</dd>
+            <dd class="min-w-0 break-words">{{ product.prodId }}</dd>
           </div>
           <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
             <dt class="text-gray-500 shrink-0">상품명</dt>
-            <dd class="min-w-0 break-words">{{ product.title }}</dd>
+            <dd class="min-w-0 break-words">{{ product.prodNm }}</dd>
           </div>
           <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
             <dt class="text-gray-500 shrink-0">가격</dt>
-            <dd class="min-w-0 break-words">{{ Number(product.price).toLocaleString() }}원</dd>
+            <dd class="min-w-0 break-words">{{ Number(product.salePrice).toLocaleString() }}원</dd>
           </div>
           <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
             <dt class="text-gray-500 shrink-0">수량</dt>
-            <dd class="min-w-0 break-words">{{ product.quantity }}</dd>
+            <dd class="min-w-0 break-words">{{ product.prodStock }}</dd>
           </div>
         </dl>
         <p class="mt-4">
-          <NuxtLink :to="`/prod-dtl/${product.productId}`" class="text-amber-600 hover:underline">프론트 상품페이지 보기</NuxtLink>
+          <NuxtLink :to="`/prod-dtl/${product.prodId}`" class="text-amber-600 hover:underline">프론트 상품페이지 보기</NuxtLink>
         </p>
         <div class="flex gap-2 mt-6">
-          <NuxtLink :to="`/adminEc/products/${product.productId}-edit`" class="px-4 py-2 bg-amber-600 text-white rounded text-sm hover:bg-amber-700">수정</NuxtLink>
+          <NuxtLink :to="`/adminEc/products/${product.prodId}-edit`" class="px-4 py-2 bg-amber-600 text-white rounded text-sm hover:bg-amber-700">수정</NuxtLink>
         </div>
       </template>
       <!-- 신규/수정 폼: 라벨 고정폭(5.5rem) + 입력 min-w-0 으로 정렬·영역 밖 넘침 방지 -->
@@ -38,7 +38,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
             <div v-if="mode === 'edit'" class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
               <label class="text-sm text-gray-500 shrink-0">상품ID</label>
-              <input :value="product?.productId" type="text" class="border rounded px-3 py-2 min-w-[8rem] w-full max-w-full bg-gray-100 text-gray-600" disabled />
+              <input :value="product?.prodId" type="text" class="border rounded px-3 py-2 min-w-[8rem] w-full max-w-full bg-gray-100 text-gray-600" disabled />
             </div>
             <div class="grid grid-cols-[5.5rem_1fr] gap-2 items-center min-w-0 overflow-hidden pr-2">
               <label class="text-sm text-gray-500 shrink-0">상품명 <span class="text-red-500">*</span></label>
@@ -87,13 +87,13 @@ const mode = computed(() => {
 });
 const entityId = computed(() => (rawId.value === "new" ? "" : rawId.value.replace(/-edit$/, "")));
 
-const product = ref<{ productId: number; title: string; price: number; quantity: number } | null>(null);
+const product = ref<{ prodId: string; prodNm: string; salePrice: number; prodStock: number } | null>(null);
 const loading = ref(false);
 const form = reactive({ title: "", price: 0, quantity: 0 });
 
 const pageTitle = computed(() => {
   if (mode.value === "new") return "상품 등록";
-  if (product.value) return `상품상세(${product.value.productId})`;
+  if (product.value) return `상품상세(${product.value.prodId})`;
   return entityId.value ? `상품상세(${entityId.value})` : "상품 상세";
 });
 useHead(() => ({ title: pageTitle.value }));
@@ -103,12 +103,12 @@ async function load() {
   if (!entityId.value) return;
   loading.value = true;
   try {
-    const res = await $fetch<{ productId: number; title: string; price: number; quantity: number }>(`/api/products/${entityId.value}`);
+    const res = await $fetch<{ prodId: string; prodNm: string; salePrice: number; prodStock: number }>(`/api/fo/ec/pd/prod/${entityId.value}`);
     product.value = res ?? null;
     if (product.value && mode.value === "edit") {
-      form.title = product.value.title;
-      form.price = product.value.price;
-      form.quantity = product.value.quantity;
+      form.title = product.value.prodNm;
+      form.price = product.value.salePrice;
+      form.quantity = product.value.prodStock;
     }
   } catch {
     product.value = null;

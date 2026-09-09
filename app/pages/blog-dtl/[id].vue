@@ -26,10 +26,10 @@ import { type CoBlogType } from "~/types/coBlogType";
 const route = useRoute();
 const id = route.params.id as string;
 
-// SSR: 서버에서 /api/blogs/:id 조회 → SEO 메타 적용
+// SSR: 서버에서 /api/fo/ec/cm/bltn/:id 조회 → SEO 메타 적용
 const { data: item, pending } = await useAsyncData<CoBlogType>(
   `blog-${id}`,
-  () => axiosSsr.get<CoBlogType>(`/api/blogs/${id}`).then((r) => r.data)
+  () => axiosSsr.get<CoBlogType>(`/api/fo/ec/cm/bltn/${id}`).then((r) => r.data)
 );
 
 import { usePageTitle } from "~/composables/usePageTitle";

@@ -18,10 +18,14 @@ import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
 import { axiosSsr } from "~/utils/axiosSsr";
 import { type CoBlogType } from "~/types/coBlogType";
 
-const { data: item, pending } = useAsyncData<CoBlogType>(
-  "blog-details-preview",
-  () => axiosSsr.get<CoBlogType>("/api/blogs/13").then((r) => r.data)
-);
+// ecBeBo blogId는 문자열이라 고정 ID로 바로 조회할 수 없어 목록에서 첫 건을 가져와
+// 그 blogId로 상세를 다시 조회한다(2026-09 BFF 전환, prod-dtl/index.vue와 동일 패턴).
+const { data: item, pending } = useAsyncData<CoBlogType | null>("blog-details-preview", async () => {
+  const list = await axiosSsr.get<CoBlogType[]>("/api/fo/ec/cm/bltn/page").then((r) => r.data);
+  const first = list[0];
+  if (!first) return null;
+  return axiosSsr.get<CoBlogType>(`/api/fo/ec/cm/bltn/${first.blogId}`).then((r) => r.data);
+});
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({ title: "블로그 상세" });

@@ -1,0 +1,30 @@
+﻿
+> @ build C:\_pjt_github\illeesam-shopjoy\ecFeFoNuxt4
+> nuxt build
+
+T  Building Nuxt for production...
+|
+•  Nuxt 4.3.1 (with Nitro 2.13.1, Vite 7.3.1 and Vue 3.5.29)
+[nuxt:tailwindcss] i Using default Tailwind CSS file
+
+[Env] NUXT_* 환경변수:
+[Env] useRuntimeConfig().public.NAME (적용값): { cdnBase: '/cdn/img', apiBase: '', mode: 'default', envNm: '.env', appTitle: '정담' }
+
+[Swagger] API 문서: http://localhost:3000/api/docs 
+
+|
+•  Nitro preset: node-server
+corepack : 
+At line:2 char:1
++ corepack pnpm run build *> C:\_pjt_github\illeesam-shopjoy\ecFeFoNuxt ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ WARN  Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+i Building client...
+i vite v7.3.1 building client environment for production...
+i transforming...

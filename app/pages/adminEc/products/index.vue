@@ -15,15 +15,15 @@
       :rows="list"
       :card-rows="cardList"
       :page-type="page.pageType"
-      row-key="productId"
-      title-column-key="title"
+      row-key="prodId"
+      title-column-key="prodNm"
       :show-detail-col="true"
       :show-edit-col="true"
-      :detail-route="(row: any) => `/adminEc/products/${row.productId}`"
-      :edit-route="(row: any) => `/adminEc/products/${row.productId}-edit`"
+      :detail-route="(row: any) => `/adminEc/products/${row.prodId}`"
+      :edit-route="(row: any) => `/adminEc/products/${row.prodId}-edit`"
       :detail-open-new-tab="true"
-      :detail-tab-title="(row: any) => `상품상세(${row.productId})`"
-      :edit-tab-title="(row: any) => `상품상세(${row.productId})`"
+      :detail-tab-title="(row: any) => `상품상세(${row.prodId})`"
+      :edit-tab-title="(row: any) => `상품상세(${row.prodId})`"
       selectable
       @select-change="(ids) => selectedIds.splice(0, selectedIds.length, ...ids)"
     >
@@ -44,7 +44,7 @@
           미리보기
         </button>
       </template>
-      <template #cell-price="{ value }">
+      <template #cell-salePrice="{ value }">
         {{ Number(value).toLocaleString() }}원
       </template>
     </AdminGrid>
@@ -69,13 +69,13 @@ import { PAGE_TYPE_PRODUCT } from "~/types/page";
 definePageMeta({ layout: "admin" });
 usePageTitle("상품관리");
 
-type ProductRow = { productId: number; title: string; price: number; quantity: number };
+type ProductRow = { prodId: string; prodNm: string; salePrice: number; prodStock: number };
 
 const columns = [
-  { key: "productId", label: "상품ID" },
-  { key: "title", label: "상품명" },
-  { key: "price", label: "가격" },
-  { key: "quantity", label: "수량" },
+  { key: "prodId", label: "상품ID" },
+  { key: "prodNm", label: "상품명" },
+  { key: "salePrice", label: "가격" },
+  { key: "prodStock", label: "수량" },
 ];
 
 const search = reactive({ title: "" });
@@ -92,9 +92,9 @@ const { openDetailTab } = useOpenDetailTab();
 const hasMoreCard = computed(() => cardList.length < page.totalCount);
 
 async function fetchFull() {
-  const res = await $fetch<ProductRow[]>("/api/products");
+  const res = await $fetch<ProductRow[]>("/api/fo/ec/pd/prod/page");
   let items = res ?? [];
-  if (search.title) items = items.filter((p) => p.title?.toLowerCase().includes(search.title.toLowerCase()));
+  if (search.title) items = items.filter((p) => p.prodNm?.toLowerCase().includes(search.title.toLowerCase()));
   productFullList.value = items;
   page.totalCount = items.length;
   return items;
@@ -156,13 +156,13 @@ function goNew(e?: MouseEvent) {
   openDetailTab("/adminEc/products/new", "상품 등록", e?.ctrlKey ?? false);
 }
 
-function openPreview(row: { productId: number }) {
+function openPreview(row: { prodId: string }) {
   const w = 1900;
   const h = 1000;
   const margin = 24;
   const left = Math.max(0, (typeof screen !== "undefined" ? screen.availWidth : 1920) - w - margin);
   const top = margin;
-  const url = `${window.location.origin}/prod-dtl/${row.productId}`;
+  const url = `${window.location.origin}/prod-dtl/${row.prodId}`;
   window.open(url, "product-preview", `width=${w},height=${h},left=${left},top=${top},scrollbars=yes,resizable=yes`);
 }
 

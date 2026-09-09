@@ -158,7 +158,7 @@ export function mapProduct(p: BeProdItem): Record<string, unknown> {
     prodNm: p.prodNm,
     salePrice,
     stdPrice,
-    // 실 스키마엔 상품 평균평점 필드가 없음(리뷰 요약 API 별도) — 목록에서는 0, 상세는 reviews 병합 시 채움(server/api/products/[id].get.ts 참조)
+    // 실 스키마엔 상품 평균평점 필드가 없음(리뷰 요약 API 별도) — 목록에서는 0, 상세는 reviews 병합 시 채움(server/api/fo/ec/pd/prod/[id].get.ts 참조)
     rating: 0,
     prodStock: p.prodStock ?? 0,
     smDesc: toShortText(p.advrtStmt) ?? toShortText(p.contentHtml) ?? "",

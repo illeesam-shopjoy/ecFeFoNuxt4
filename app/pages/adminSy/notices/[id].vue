@@ -229,7 +229,7 @@ useHead(() => ({ title: pageTitle.value }));
 
 async function loadAttachments(noticeId: string) {
   try {
-    const { list } = await $fetch<{ list: AttachRow[] }>(`/api/sy/notices/${noticeId}/attachments`);
+    const { list } = await $fetch<{ list: AttachRow[] }>(`/api/base/sy/notice/${noticeId}/attachments`);
     attachments.list = list ?? [];
   } catch {
     attachments.list = [];
@@ -245,7 +245,7 @@ async function load() {
   if (!entityId.value) return;
   loading.value = true;
   try {
-    const data = await $fetch<Notice>(`/api/sy/notices/${entityId.value}`);
+    const data = await $fetch<Notice>(`/api/base/sy/notice/${entityId.value}`);
     notice.value = data;
     if (notice.value && mode.value === "edit") {
       form.noticeTitle = notice.value.noticeTitle;
@@ -292,7 +292,7 @@ async function uploadPendingFiles(noticeId: string) {
   if (!pendingFiles.value.length) return;
   const formData = new FormData();
   for (const f of pendingFiles.value) formData.append("files", f);
-  await $fetch(`/api/sy/notices/${noticeId}/attachments`, {
+  await $fetch(`/api/base/sy/notice/${noticeId}/attachments`, {
     method: "POST",
     body: formData,
   });
@@ -311,7 +311,7 @@ async function save() {
   saving.value = true;
   try {
     if (mode.value === "new") {
-      const { noticeId } = await $fetch<{ noticeId: string }>("/api/sy/notices", {
+      const { noticeId } = await $fetch<{ noticeId: string }>("/api/base/sy/notice", {
         method: "POST",
         body: {
           noticeTitle: form.noticeTitle.trim(),
@@ -324,7 +324,8 @@ async function save() {
       await uploadPendingFiles(noticeId);
       await navigateTo(`/adminSy/notices/${noticeId}`);
     } else {
-      await $fetch(`/api/sy/notices/${entityId.value}`, {
+      const updateUrl: string = `/api/base/sy/notice/${entityId.value}`;
+      await $fetch(updateUrl, {
         method: "PUT",
         body: {
           noticeTitle: form.noticeTitle.trim(),

@@ -1,0 +1,61 @@
+﻿
+> @ typecheck C:\_pjt_github\illeesam-shopjoy\ecFeFoNuxt4
+> nuxt typecheck
+
+[nuxt:tailwindcss] i Using default Tailwind CSS file
+
+[Env] NUXT_* 환경변수:
+[Env] useRuntimeConfig().public.NAME (적용값): { cdnBase: '/cdn/img', apiBase: '', mode: 'default', envNm: '.env', appTitle: '정담' }
+
+[Swagger] API 문서: http://localhost:3000/api/docs 
+
+corepack : npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See
+ `npm help npmrc` for supported config options.
+At line:2 char:1
++ corepack pnpm run typecheck *> C:\_pjt_github\illeesam-shopjoy\ecFeFo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm
+ help npmrc` for supported config options.
+npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npm
+rc` for supported config options.
+app/components/admin/AdminChartLine.vue(36,51): error TS18048: 'c' is possibly 'undefined'.
+app/components/common/modals/VideoModal.vue(32,7): error TS18047: 'videoOverlay' is possibly 'null'.
+app/components/forms/ContactForm.vue(2,38): error TS2322: Type '(values: CoInquiryType, { resetForm }: { resetForm: () => void; }) => Promise<void>' is not assignable to type 'SubmissionHandler<GenericObject, GenericObject, unknown>'.
+  Types of parameters 'values' and 'values' are incompatible.
+    Type 'GenericObject' is missing the following properties from type 'CoInquiryType': name, email, subject, msg
+app/components/forms/RegisterForm.vue(2,38): error TS2322: Type '(values: MbRegisterFormType, { resetForm }: { resetForm: () => void; }) => Promise<void>' is not assignable to type 'SubmissionHandler<GenericObject, GenericObject, unknown>'.
+  Types of parameters 'values' and 'values' are incompatible.
+    Type 'GenericObject' is missing the following properties from type 'MbRegisterFormType': name, email, password
+app/components/video-box/VideoBox.vue(33,22): error TS2339: Property 'playVideo' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'.
+server/utils/authJwt.ts(27,9): error TS18048: 'sig' is possibly 'undefined'.
+server/utils/authJwt.ts(27,72): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(arrayBuffer: WithImplicitCoercion<ArrayBufferLike>, byteOffset?: number | undefined, length?: number | undefined): Buffer<ArrayBufferLike>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'WithImplicitCoercion<ArrayBufferLike>'.
+      Type 'undefined' is not assignable to type 'WithImplicitCoercion<ArrayBufferLike>'.
+  Overload 2 of 4, '(string: WithImplicitCoercion<string>, encoding?: BufferEncoding | undefined): Buffer<ArrayBuffer>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'WithImplicitCoercion<string>'.
+      Type 'undefined' is not assignable to type 'WithImplicitCoercion<string>'.
+server/utils/redis.ts(17,15): error TS2352: Conversion of type 'RedisClientType<{ graph: { CONFIG_GET: typeof import("C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/@redis+graph@1.1.1_@redis+client@1.6.1/node_modules/@redis/graph/dist/commands/CONFIG_GET"); ... 16 more ...; slowLog: typeof import("C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/@re...' to type 'RedisClient' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  The types returned by 'connect()' are incompatible between these types.
+    Type 'Promise<RedisClientType<{ graph: { CONFIG_GET: typeof import("C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/@redis+graph@1.1.1_@redis+client@1.6.1/node_modules/@redis/graph/dist/commands/CONFIG_GET"); ... 16 more ...; slowLog: typeof import("C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/....' is not comparable to type 'Promise<void>'.
+      Type 'RedisClientType<{ graph: { CONFIG_GET: typeof import("C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/@redis+graph@1.1.1_@redis+client@1.6.1/node_modules/@redis/graph/dist/commands/CONFIG_GET"); ... 16 more ...; slowLog: typeof import("C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/@re...' is not comparable to type 'void'.
+
+ ERROR  Process exited with non-zero status (2)
+
+    at G._waitForOutput (/C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/tinyexec@1.0.2/node_modules/ti
+nyexec/dist/main.js:574:92)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Object.run (/C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/@nuxt+cli@3.33.1_@nuxt+sche_07
+dffa47d869082a289461305cc3535c/node_modules/@nuxt/cli/dist/typecheck-C8wVgBzd.mjs:66:3)
+    at async runCommand (/C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/citty@0.2.1/node_modules/citty
+/dist/index.mjs:188:47)
+    at async runCommand (/C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/citty@0.2.1/node_modules/citty
+/dist/index.mjs:185:21)
+    at async runMain (/C:/_pjt_github/illeesam-shopjoy/ecFeFoNuxt4/node_modules/.pnpm/citty@0.2.1/node_modules/citty/di
+st/index.mjs:285:10) 
+
+
+ ELIFECYCLE  Command failed with exit code 1.

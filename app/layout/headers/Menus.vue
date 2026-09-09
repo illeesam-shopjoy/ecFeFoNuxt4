@@ -29,13 +29,13 @@ import { type SyMenuTreeType } from "~/types/syMenuTreeType";
 
 const BG = "/cdn/img/bg/mega-menu-bg.jpg";
 
-// 이미 있으면 재호출 안 함 (화면 오픈마다 /api/menus 호출 방지)
+// 이미 있으면 재호출 안 함 (화면 오픈마다 /api/fo/menu 호출 방지)
 const menusCache = useState<SyMenuTreeType[] | null>("menus-cache", () => null);
 
 const { data: menus } = useAsyncData<SyMenuTreeType[]>(
   "menus",
   async () => {
-    const list = await axiosSsr.get<SyMenuTreeType[]>("/api/menus").then((r) => r.data);
+    const list = await axiosSsr.get<SyMenuTreeType[]>("/api/fo/menu").then((r) => r.data);
     menusCache.value = list;
     return list;
   },

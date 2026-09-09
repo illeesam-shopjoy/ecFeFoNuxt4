@@ -64,7 +64,7 @@ interface CategoryTreeResponse {
 
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
-  () => axiosSsr.get<CategoryTreeResponse>("/api/category-tree").then((r) => r.data),
+  () => axiosSsr.get<CategoryTreeResponse>("/api/fo/ec/pd/category-tree").then((r) => r.data),
   { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
 );
 

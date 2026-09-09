@@ -58,7 +58,7 @@ interface CategoryTreeItem {
 
 const { data: catData } = useAsyncData<{ categoryTree: CategoryTreeItem[] }>(
   "category-tree",
-  () => axiosSsr.get<{ categoryTree: CategoryTreeItem[] }>("/api/category-tree").then((r) => r.data),
+  () => axiosSsr.get<{ categoryTree: CategoryTreeItem[] }>("/api/fo/ec/pd/category-tree").then((r) => r.data),
   { default: () => ({ categoryTree: [] }) }
 );
 

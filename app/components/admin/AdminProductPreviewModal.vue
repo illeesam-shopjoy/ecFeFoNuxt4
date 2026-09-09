@@ -38,7 +38,7 @@
                 <dl class="space-y-2 text-sm">
                   <div class="flex">
                     <dt class="w-24 text-gray-500 shrink-0">상품ID</dt>
-                    <dd>{{ product.productId }}</dd>
+                    <dd>{{ product.prodId }}</dd>
                   </div>
                   <div class="flex">
                     <dt class="w-24 text-gray-500 shrink-0">재고수량</dt>
@@ -62,7 +62,7 @@
 import { ref } from "vue";
 
 interface ProductRow {
-  productId: number;
+  prodId: string;
   title: string;
   price: number;
   quantity: number;
@@ -74,22 +74,22 @@ const visible = ref(false);
 const loading = ref(false);
 const product = ref<ProductRow | null>(null);
 
-async function loadProduct(id: number) {
+async function loadProduct(id: string) {
   loading.value = true;
   product.value = null;
   try {
-    const res = await $fetch<ProductRow & { img?: string; smDesc?: string }>(`/api/products/${id}`);
-    product.value = res ?? { productId: id, title: "-", price: 0, quantity: 0 };
+    const res = await $fetch<{ prodId: string; prodNm: string; salePrice: number; prodStock: number; img?: string; smDesc?: string }>(`/api/fo/ec/pd/prod/${id}`);
+    product.value = res ? { prodId: res.prodId, title: res.prodNm, price: res.salePrice, quantity: res.prodStock, img: res.img, smDesc: res.smDesc } : { prodId: id, title: "-", price: 0, quantity: 0 };
   } catch {
-    product.value = { productId: id, title: "(조회 실패)", price: 0, quantity: 0 };
+    product.value = { prodId: id, title: "(조회 실패)", price: 0, quantity: 0 };
   } finally {
     loading.value = false;
   }
 }
 
-function show(rowOrId: ProductRow | number) {
+function show(rowOrId: ProductRow | string) {
   visible.value = true;
-  if (typeof rowOrId === "number") {
+  if (typeof rowOrId === "string") {
     loadProduct(rowOrId);
   } else {
     product.value = { ...rowOrId };

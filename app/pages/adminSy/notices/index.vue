@@ -119,7 +119,7 @@ async function fetchPage(pageNo: number): Promise<NoticeRow[]> {
   if (search.noticeTitle) q.set("noticeTitle", search.noticeTitle);
   if (search.noticeType) q.set("noticeType", search.noticeType);
   if (search.status !== "") q.set("status", search.status);
-  const res = await $fetch<{ list: NoticeRow[]; totalCount: number }>(`/api/sy/notices?${q}`);
+  const res = await $fetch<{ list: NoticeRow[]; totalCount: number }>(`/api/base/sy/notice/page?${q}`);
   page.totalCount = res.totalCount ?? 0;
   return res.list ?? [];
 }
@@ -193,7 +193,7 @@ async function doDelete() {
   if (!ok) return;
   try {
     for (const id of selectedIds) {
-      await $fetch(`/api/sy/notices/${id}`, { method: "DELETE" });
+      await $fetch(`/api/base/sy/notice/${id}`, { method: "DELETE" });
     }
     selectedIds.splice(0, selectedIds.length);
     await fetchList();

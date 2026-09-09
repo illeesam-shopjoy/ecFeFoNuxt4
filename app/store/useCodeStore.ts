@@ -1,6 +1,6 @@
 /**
  * 공통 코드 Pinia 스토어.
- * grpCode / value / label 구조의 코드 목록을 /api/codes 에서 로드·캐시합니다.
+ * codeGrp / codeValue / codeLabel 구조의 코드 목록을 /api/co/sy/code 에서 로드·캐시합니다.
  */
 import { defineStore } from "pinia";
 import { axiosCsr } from "~/utils/axiosCsr";
@@ -16,7 +16,7 @@ export const useCodeStore = defineStore("code", {
     async loadStCodes() {
       if (this.loaded) return;
       try {
-        const res = await axiosCsr.get<SyCodeType[]>("/api/codes");
+        const res = await axiosCsr.get<SyCodeType[]>("/api/co/sy/code");
         this.codes = res.data;
         this.loaded = true;
       } catch (err) {

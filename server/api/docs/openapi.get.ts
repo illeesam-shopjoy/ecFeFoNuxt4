@@ -12,37 +12,36 @@ export default defineEventHandler((event) => {
     },
     servers: [{ url: baseUrl, description: "현재 서버" }],
     paths: {
-      "/api/products": {
+      // 2026-09 BFF 전환: 경로를 ecBeBo 실제 API 경로와 동일하게 맞춤 (server/utils/beApi.ts 참조)
+      "/api/fo/ec/pd/prod/page": {
         get: {
           summary: "상품 목록",
           tags: ["products"],
           responses: { "200": { description: "상품 목록" } },
         },
       },
-      "/api/products/{id}": {
+      "/api/fo/ec/pd/prod/{id}": {
         get: {
           summary: "상품 상세",
           tags: ["products"],
-          parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-          responses: { "200": { description: "상품 상세" }, "404": { description: "없음" } },
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "ecBeBo prodId" }],
+          responses: { "200": { description: "상품 상세 (reviews 포함)" }, "404": { description: "없음" } },
         },
       },
-      "/api/products/{id}/reviews": {
+      "/api/base/ec/pd/review": {
         post: {
-          summary: "리뷰 등록",
+          summary: "리뷰 등록 (로그인 필요)",
           tags: ["products"],
-          parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" }, description: "상품 ID" }],
           requestBody: {
             required: true,
             content: {
               "application/json": {
                 schema: {
                   type: "object",
-                  required: ["name", "email", "title", "content", "rating"],
+                  required: ["prodId", "content", "rating"],
                   properties: {
-                    name: { type: "string", description: "이름" },
-                    email: { type: "string", format: "email", description: "이메일" },
-                    title: { type: "string", description: "제목" },
+                    prodId: { type: "string", description: "상품 ID" },
+                    reviewTitle: { type: "string", description: "제목" },
                     content: { type: "string", description: "내용" },
                     rating: { type: "number", minimum: 0.5, maximum: 5, multipleOf: 0.5, description: "별점 (0.5 단위)" },
                   },
@@ -50,62 +49,62 @@ export default defineEventHandler((event) => {
               },
             },
           },
-          responses: { "200": { description: "등록 성공" }, "400": { description: "입력 오류" }, "500": { description: "서버 오류" } },
+          responses: { "200": { description: "등록 성공" }, "400": { description: "입력 오류" }, "401": { description: "로그인 필요" } },
         },
       },
-      "/api/blogs": {
+      "/api/fo/ec/cm/bltn/page": {
         get: {
           summary: "블로그 목록",
           tags: ["blogs"],
           responses: { "200": { description: "블로그 목록" } },
         },
       },
-      "/api/blogs/{id}": {
+      "/api/fo/ec/cm/bltn/{id}": {
         get: {
           summary: "블로그 상세",
           tags: ["blogs"],
-          parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" }, description: "ecBeBo blogId" }],
           responses: { "200": { description: "블로그 상세" }, "404": { description: "없음" } },
         },
       },
-      "/api/categories": {
+      "/api/fo/ec/pd/category": {
         get: {
-          summary: "카테고리 목록",
+          summary: "카테고리 목록 (상품 목록에서 즉석 집계)",
           tags: ["common"],
           responses: { "200": { description: "카테고리 목록" } },
         },
       },
-      "/api/category-tree": {
+      "/api/fo/ec/pd/category-tree": {
         get: {
-          summary: "카테고리 트리",
+          summary: "카테고리 트리 (상품 목록에서 즉석 집계)",
           tags: ["common"],
           responses: { "200": { description: "categoryTree, categoryIdToName" } },
         },
       },
-      "/api/brands": {
+      "/api/fo/sy/brand": {
         get: {
-          summary: "브랜드 목록",
+          summary: "브랜드 목록 (상품 목록에서 즉석 집계)",
           tags: ["common"],
           responses: { "200": { description: "브랜드 목록" } },
         },
       },
-      "/api/codes": {
+      "/api/co/sy/code": {
         get: {
-          summary: "코드 목록",
+          summary: "공통 코드 전체 목록",
           tags: ["common"],
           responses: { "200": { description: "코드 목록" } },
         },
       },
-      "/api/menus": {
+      "/api/fo/menu": {
         get: {
-          summary: "메뉴 목록",
+          summary: "상단 메뉴 (정적)",
           tags: ["common"],
           responses: { "200": { description: "메뉴 목록" } },
         },
       },
-      "/api/options": {
+      "/api/fo/ec/pd/prod-opt": {
         get: {
-          summary: "옵션 목록",
+          summary: "옵션(사이즈/색상) 필터 목록",
           tags: ["common"],
           responses: { "200": { description: "옵션 목록" } },
         },
