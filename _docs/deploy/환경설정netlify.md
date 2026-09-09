@@ -1,7 +1,7 @@
-# Netlify 배포 환경설정 가이드 (ecFeFoNext4)
+# Netlify 배포 환경설정 가이드 (ecFeFoNuxt4)
 
-> 대상 프로젝트: **ecfefonext4** (Netlify) ← `github.com/illeesam-shopjoy/ecFeFoNext4` (`main` 브랜치)
-> ⚠️ 프로젝트/저장소 이름이 과거 `ecFeFoNuxt4` / `illeesam4-cmd` 에서 `ecFeFoNext4` / `illeesam-shopjoy` 로 바뀐 이력이 있음 (아래 5번 트러블슈팅 1번 항목의 옛 에러 메시지는 리네임 전 실제 로그라 원문 그대로 남겨둠)
+> 대상 프로젝트: **ecfefonuxt4** (Netlify) ← `github.com/illeesam-shopjoy/ecFeFoNuxt4` (`main` 브랜치)
+> ⚠️ 프로젝트/저장소 이름 변경 이력: `illeesam4-cmd/ecFeFoNuxt4`(최초) → `illeesam-shopjoy/ecFeFoNext4`(2026-09-09, 오타로 이름이 바뀜) → `illeesam-shopjoy/ecFeFoNuxt4`(2026-09-09, 오타 수정 후 재생성 — 현재). `ecFeFoNext4` 저장소/Netlify 사이트는 삭제됨. 아래 5번 트러블슈팅 1번 항목의 옛 에러 메시지는 최초 리네임 전 실제 로그라 원문 그대로 남겨둠
 > 배포 방식: GitHub 저장소 연동 **Continuous Deployment** (Nuxt 4 SSR, Nitro `netlify` 프리셋)
 
 ```

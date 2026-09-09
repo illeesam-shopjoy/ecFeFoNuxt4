@@ -1,0 +1,43 @@
+name: Deploy to Netlify
+
+# Netlify의 네이티브 "Link a different repository" 기능(GitHub App 기반 CD)이
+# API/CLI 토큰으로는 재설정되지 않아(2026-09-09 확인), 대신 GitHub Actions에서
+# 직접 빌드하고 Netlify CLI로 배포하는 방식으로 CD를 구성한다.
+# 필요한 저장소 시크릿: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Build
+        run: pnpm run build
+        env:
+          NETLIFY: "true"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Deploy to Netlify
+        run: npx netlify-cli deploy --prod --dir=dist --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
