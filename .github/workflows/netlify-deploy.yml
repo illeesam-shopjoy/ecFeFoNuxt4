@@ -46,7 +46,7 @@ jobs:
       - name: Notify deploy result (email)
         if: always()
         run: |
-          npm install --no-save nodemailer
+          npm install nodemailer --no-save --prefix .github/scripts
           node .github/scripts/notify-deploy-result.mjs
         env:
           DEPLOY_STATUS: ${{ job.status }}
