@@ -39,6 +39,7 @@ import { type CoHeroSliderDataType } from "~/types/coHeroSliderDataType";
 import TrendingProducts from "~/components/products/TrendingProducts.vue";
 import ShopBanner from "~/components/shop-banner/ShopBanner.vue";
 import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -46,7 +47,9 @@ useHead({
 });
 usePageTitle("홈 5");
 
-const slider_data = reactive<CoHeroSliderDataType[]>([
+// 전시 위젯(area_cd=HERO_SLIDER_HOME5)에서 슬라이드 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_SLIDES: CoHeroSliderDataType[] = [
   {
     heroSliderId: "heroSliderId01",
     bgImg: "/cdn/img/slider/slider-1.jpg",
@@ -65,5 +68,11 @@ const slider_data = reactive<CoHeroSliderDataType[]>([
     title: "하이빔<br> by 송성일",
     subtile: "하이빔은 각도 조절이 가능한 책상·선반용 조명으로, 다양한 조명 연출이 가능합니다.",
   },
-]);
+];
+
+const { data: fetchedSlides } = await useAsyncData<CoHeroSliderDataType[] | null>(
+  "dp-hero-slider-home5",
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataType[]>("HERO_SLIDER_HOME5")
+);
+const slider_data = reactive<CoHeroSliderDataType[]>(fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
 </script>

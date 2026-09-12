@@ -347,6 +347,7 @@ import { useProductsStore } from "~/store/useProductsStore";
 import ProductItemTwo from "~/components/products/ProductItemTwo.vue";
 import VideoModal from "~/components/modals/VideoModal.vue";
 import { useBlogs } from "~/composables/useBlogs";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -354,9 +355,10 @@ useHead({
 });
 usePageTitle("홈 7");
 
-// 히어로 슬라이더 7
+// 히어로 슬라이더 7 — 전시 위젯(area_cd=HERO_SLIDER_HOME7)에서 로드, 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
 const heroSliderRef = ref<{ next(): void; prev(): void } | null>(null);
-const heroSliderData = reactive<CoHeroSliderDataTypeThree[]>([
+const DEFAULT_HERO_SLIDES: CoHeroSliderDataTypeThree[] = [
   {
     heroSliderId: "heroSliderId01",
     bgImg: "/cdn/img/slider/05/slide111.webp",
@@ -379,7 +381,12 @@ const heroSliderData = reactive<CoHeroSliderDataTypeThree[]>([
     title: "세상은<br/>만들어 갑니다.",
     subtitle: "다양한 라이프스타일을 경험해 보세요.",
   },
-]);
+];
+const { data: fetchedHeroSlides } = await useAsyncData<CoHeroSliderDataTypeThree[] | null>(
+  "dp-hero-slider-home7",
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataTypeThree[]>("HERO_SLIDER_HOME7")
+);
+const heroSliderData = reactive<CoHeroSliderDataTypeThree[]>(fetchedHeroSlides.value?.length ? fetchedHeroSlides.value : DEFAULT_HERO_SLIDES);
 function handleHeroNext() {
   heroSliderRef.value?.next();
 }
@@ -419,14 +426,15 @@ function handleFeaturedPrev() {
   featuredSliderRef.value?.prev();
 }
 
-// 추천 후기
+// 추천 후기 — 전시 위젯(area_cd=TESTIMONIAL_HOME7)에서 로드, 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
 const testimonialSliderRef = ref<{ next(): void; prev(): void } | null>(null);
 interface TestimonialDataType {
   id: number;
   img: string;
   desc: string;
 }
-const testimonialData = reactive<TestimonialDataType[]>([
+const DEFAULT_TESTIMONIALS: TestimonialDataType[] = [
   {
     id: 1,
     img: "/cdn/img/testimonial/testi1.webp",
@@ -442,7 +450,12 @@ const testimonialData = reactive<TestimonialDataType[]>([
     img: "/cdn/img/testimonial/testi3.webp",
     desc: "많은 분들이 찾고 계신 바로 그 상품, 지금 이 순간에만 만나실 수 있습니다. 놓치면 다시는 같은 조건으로 만나기 어려울지도 모릅니다",
   },
-]);
+];
+const { data: fetchedTestimonials } = await useAsyncData<TestimonialDataType[] | null>(
+  "dp-testimonial-home7",
+  () => dpAreaSvc.getFirstWidgetConfig<TestimonialDataType[]>("TESTIMONIAL_HOME7")
+);
+const testimonialData = reactive<TestimonialDataType[]>(fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS);
 
 // 블로그 영역 2
 const { blogs } = useBlogs();

@@ -30,10 +30,14 @@ useComponentTitle('히어로 슬라이더');
 import { reactive } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataType } from "~/types/coHeroSliderDataType";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 defineProps({
   style_2: { type: Boolean, default: false },
 });
-const slider_data = reactive<CoHeroSliderDataType[]>([
+
+// 전시 위젯(area_cd=HERO_SLIDER_MAIN)에서 슬라이드 로드 — 관리자가 "전시패널관리"에서 수정 가능.
+// 미등록/조회실패 시 아래 기본값(DEFAULT_SLIDES)으로 폴백(2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_SLIDES: CoHeroSliderDataType[] = [
   {
     heroSliderId: "heroSliderId01",
     bgImg: "/cdn/img/slider/slider-1.jpg",
@@ -52,5 +56,11 @@ const slider_data = reactive<CoHeroSliderDataType[]>([
     title: "하이빔<br /> by  태희",
     subtile: "하이빔은 각도 조절이 가능한 책상·선반용 조명으로, 다양한 조명 연출이 가능합니다.",
   },
-]);
+];
+
+const { data: fetchedSlides } = await useAsyncData<CoHeroSliderDataType[] | null>(
+  "dp-hero-slider-main",
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataType[]>("HERO_SLIDER_MAIN")
+);
+const slider_data = reactive<CoHeroSliderDataType[]>(fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
 </script>

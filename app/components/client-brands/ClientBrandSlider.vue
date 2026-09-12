@@ -48,10 +48,14 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('브랜드 슬라이더');
 import { Carousel, Slide } from "vue3-carousel";
 import AppImage from "~/components/ui/AppImage.vue";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 defineProps({
   style_2: { type: Boolean, default: false },
 });
-const brands = [
+
+// 전시 위젯(area_cd=BRAND_LOGO_MAIN)에서 브랜드 로고 목록 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_BRANDS: string[] = [
   "/cdn/img/client/client-1.jpg",
   "/cdn/img/client/client-2.jpg",
   "/cdn/img/client/client-3.jpg",
@@ -59,4 +63,9 @@ const brands = [
   "/cdn/img/client/client-5.jpg",
   "/cdn/img/client/client-2.jpg",
 ];
+const { data: fetchedBrands } = await useAsyncData<string[] | null>(
+  "dp-brand-logo-main",
+  () => dpAreaSvc.getFirstWidgetConfig<string[]>("BRAND_LOGO_MAIN")
+);
+const brands = fetchedBrands.value?.length ? fetchedBrands.value : DEFAULT_BRANDS;
 </script>

@@ -67,6 +67,7 @@ import OfferProductsSlider from "~/components/products/OfferProductsSlider.vue";
 import ClientBrandSlider from "~/components/client-brands/ClientBrandSlider.vue";
 import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
 import BlogArea from "~/components/blogs/BlogArea.vue";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -76,38 +77,31 @@ usePageTitle("홈 3");
 
 const testimonialBg = "/cdn/img/testimonial/testimonial-bg.jpg";
 const currentSlide = ref(0);
-const nav_data = [
-  { id: 1, img: "/cdn/img/testimonial/person-1.jpg" },
-  { id: 2, img: "/cdn/img/testimonial/person-2.jpg" },
-  { id: 3, img: "/cdn/img/testimonial/person-3.jpg" },
-  { id: 4, img: "/cdn/img/testimonial/person-4.jpg" },
+
+// 후기 — 전시 위젯(area_cd=TESTIMONIAL_HOME3)에서 로드, 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]). nav_data(썸네일)/testimonial_data(내용)는
+// 템플릿을 그대로 두기 위해 병합된 원본 배열에서 파생시킨다.
+interface TestimonialHome3Item {
+  id: number;
+  name: string;
+  title: string;
+  desc: string;
+  img: string;
+}
+const DEFAULT_TESTIMONIALS: TestimonialHome3Item[] = [
+  { id: 1, img: "/cdn/img/testimonial/person-1.jpg", name: "Mason Robinson", title: "UX 디자이너", desc: "명확한 가독성과 사용자 경험을 고려한 디자인이 인상적이었습니다. 많은 조사가 독자들이 더 나은 경험을 선호한다는 것을 보여줍니다." },
+  { id: 2, img: "/cdn/img/testimonial/person-2.jpg", name: "David Cruso", title: "웹 개발자", desc: "구조가 분명하고 유지보수가 쉽습니다. 실제 사용자 조사 결과도 긍정적이었고, 서비스 품질에 만족합니다." },
+  { id: 3, img: "/cdn/img/testimonial/person-3.jpg", name: "Naim Ahmed", title: "웹 개발자", desc: "직관적인 구성과 빠른 반응 속도가 좋았습니다. 재방문률이 높은 이유를 체험으로 이해했습니다." },
+  { id: 4, img: "/cdn/img/testimonial/person-4.jpg", name: "Salim Rana", title: "워드프레스 전문가", desc: "전문성과 세심한 배려가 돋보이는 서비스였습니다. 추천할 만한 퀄리티라고 자신 있게 말씀드립니다." },
 ];
-const testimonial_data = [
-  {
-    id: 1,
-    name: "Mason Robinson",
-    title: "UX 디자이너",
-    desc: "명확한 가독성과 사용자 경험을 고려한 디자인이 인상적이었습니다. 많은 조사가 독자들이 더 나은 경험을 선호한다는 것을 보여줍니다.",
-  },
-  {
-    id: 2,
-    name: "David Cruso",
-    title: "웹 개발자",
-    desc: "구조가 분명하고 유지보수가 쉽습니다. 실제 사용자 조사 결과도 긍정적이었고, 서비스 품질에 만족합니다.",
-  },
-  {
-    id: 3,
-    name: "Naim Ahmed",
-    title: "웹 개발자",
-    desc: "직관적인 구성과 빠른 반응 속도가 좋았습니다. 재방문률이 높은 이유를 체험으로 이해했습니다.",
-  },
-  {
-    id: 4,
-    name: "Salim Rana",
-    title: "워드프레스 전문가",
-    desc: "전문성과 세심한 배려가 돋보이는 서비스였습니다. 추천할 만한 퀄리티라고 자신 있게 말씀드립니다.",
-  },
-];
+const { data: fetchedTestimonials } = await useAsyncData<TestimonialHome3Item[] | null>(
+  "dp-testimonial-home3",
+  () => dpAreaSvc.getFirstWidgetConfig<TestimonialHome3Item[]>("TESTIMONIAL_HOME3")
+);
+const testimonialSource = fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS;
+const nav_data = testimonialSource.map((t) => ({ id: t.id, img: t.img }));
+const testimonial_data = testimonialSource.map((t) => ({ id: t.id, name: t.name, title: t.title, desc: t.desc }));
+
 function slideTo(val: number) {
   currentSlide.value = val;
 }

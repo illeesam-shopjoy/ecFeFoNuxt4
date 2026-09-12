@@ -43,6 +43,7 @@ import ShopBanner from "~/components/shop-banner/ShopBanner.vue";
 import OfferProductsSlider from "~/components/products/OfferProductsSlider.vue";
 import BlogArea from "~/components/blogs/BlogArea.vue";
 import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -50,7 +51,9 @@ useHead({
 });
 usePageTitle("홈 4");
 
-const slider_data = reactive<CoHeroSliderDataType[]>([
+// 전시 위젯(area_cd=HERO_SLIDER_HOME4)에서 슬라이드 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_SLIDES: CoHeroSliderDataType[] = [
   {
     heroSliderId: "heroSliderId01",
     bgImg: "/cdn/img/slider/04/slider-01.jpg",
@@ -69,5 +72,11 @@ const slider_data = reactive<CoHeroSliderDataType[]>([
     title: "하이빔<br /> by  태희",
     subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다.",
   },
-]);
+];
+
+const { data: fetchedSlides } = await useAsyncData<CoHeroSliderDataType[] | null>(
+  "dp-hero-slider-home4",
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataType[]>("HERO_SLIDER_HOME4")
+);
+const slider_data = reactive<CoHeroSliderDataType[]>(fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
 </script>
