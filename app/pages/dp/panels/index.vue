@@ -255,6 +255,19 @@ const slots: SlotDef[] = [
     ],
   },
   {
+    areaCd: "BRAND_LOGO_HOME7",
+    label: "홈7 브랜드 로고 슬라이더 2",
+    widgetTypeCd: "BRAND_LOGO",
+    defaultJson: [
+      "/cdn/img/client/client-1.jpg",
+      "/cdn/img/client/client-2.jpg",
+      "/cdn/img/client/client-3.jpg",
+      "/cdn/img/client/client-4.jpg",
+      "/cdn/img/client/client-5.jpg",
+      "/cdn/img/client/client-2.jpg",
+    ],
+  },
+  {
     areaCd: "BLOG_SIDEBAR_CATEGORY",
     label: "블로그 사이드바 카테고리 (blog-dtl, BlogStandardArea)",
     widgetTypeCd: "CATEGORY_TREE",

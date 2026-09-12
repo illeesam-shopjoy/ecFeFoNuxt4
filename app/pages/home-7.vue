@@ -468,9 +468,10 @@ function handleBlogPrev() {
   blogSliderRef.value?.prev();
 }
 
-// 브랜드 슬라이더 2
+// 브랜드 슬라이더 2 — 전시 위젯(area_cd=BRAND_LOGO_HOME7)에서 로드, 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
 const brandSliderRef = ref<{ next(): void; prev(): void } | null>(null);
-const brandImages = [
+const DEFAULT_BRAND_IMAGES: string[] = [
   "/cdn/img/client/client-1.jpg",
   "/cdn/img/client/client-2.jpg",
   "/cdn/img/client/client-3.jpg",
@@ -478,6 +479,11 @@ const brandImages = [
   "/cdn/img/client/client-5.jpg",
   "/cdn/img/client/client-2.jpg",
 ];
+const { data: fetchedBrandImages } = await useAsyncData<string[] | null>(
+  "dp-brand-logo-home7",
+  () => dpAreaSvc.getFirstWidgetConfig<string[]>("BRAND_LOGO_HOME7")
+);
+const brandImages = fetchedBrandImages.value?.length ? fetchedBrandImages.value : DEFAULT_BRAND_IMAGES;
 function handleBrandNext() {
   brandSliderRef.value?.next();
 }
