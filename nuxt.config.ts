@@ -3,6 +3,10 @@ import { fileURLToPath } from "node:url";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-12-12",
+  // 2026-09-13: ecBeBo(로컬 IntelliJ 구동 시 기본 3000)와 포트 충돌 방지 — 로컬 dev 서버는 3100 사용.
+  devServer: {
+    port: 3100,
+  },
   vite: {
     server: {
       open: "chrome",
