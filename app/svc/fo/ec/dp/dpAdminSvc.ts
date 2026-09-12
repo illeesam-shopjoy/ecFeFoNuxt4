@@ -1,8 +1,9 @@
 /**
  * dpAdminSvc.ts — 전시패널관리(어드민) API 호출 객체.
  *
- * 2026-09-13 신설 — "전시관리 > 전시관리 > 전시패널관리" 화면(app/pages/adminEc/dp/panels/index.vue)
- * 전용. 로그인한 FO 회원이면 접근 가능(FoDpAdminController, FO_ONLY) — 진짜 BO 관리자 권한분리는
+ * 2026-09-13 신설 — "전시패널관리" 화면(app/pages/dp/panels/index.vue, 원래 adminEc/dp/panels
+ * 였다가 adminSy/adminEc/adminCo/popupAdmin 스캐폴드 전체 삭제 시 dp/panels로 이동) 전용.
+ * 로그인한 FO 회원이면 접근 가능(FoDpAdminController, FO_ONLY) — 진짜 BO 관리자 권한분리는
  * 프론트에 BO 로그인 흐름이 생긴 뒤 교체할 것([[ecfefonuxt4-dp-widget-migration]] 메모리 참조).
  */
 import { useAuthHeaders } from "~/composables/useAuthHeaders";

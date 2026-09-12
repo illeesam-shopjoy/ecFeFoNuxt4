@@ -87,28 +87,9 @@ const PAGES_FILE_MAP: { filePath: string; routePath: string }[] = [
   { filePath: "home-5.vue", routePath: "/home-5" },
   { filePath: "home-6.vue", routePath: "/home-6" },
   { filePath: "home-7.vue", routePath: "/home-7" },
-  // adminEc (이커머스 관리)
-  { filePath: "adminEc/index.vue", routePath: "/adminEc" },
-  { filePath: "adminEc/members/index.vue", routePath: "/adminEc/members" },
-  { filePath: "adminEc/members/[id].vue", routePath: "/adminEc/members/:id" },
-  { filePath: "adminEc/products/index.vue", routePath: "/adminEc/products" },
-  { filePath: "adminEc/products/[id].vue", routePath: "/adminEc/products/:id" },
-  { filePath: "adminEc/orders/index.vue", routePath: "/adminEc/orders" },
-  { filePath: "adminEc/orders/[id].vue", routePath: "/adminEc/orders/:id" },
-  // adminSy (시스템 관리)
-  { filePath: "adminSy/users/index.vue", routePath: "/adminSy/users" },
-  { filePath: "adminSy/users/[id].vue", routePath: "/adminSy/users/:id" },
-  { filePath: "adminSy/notices/index.vue", routePath: "/adminSy/notices" },
-  { filePath: "adminSy/notices/[id].vue", routePath: "/adminSy/notices/:id" },
-  { filePath: "adminSy/menus/index.vue", routePath: "/adminSy/menus" },
-  { filePath: "adminSy/menus/[id].vue", routePath: "/adminSy/menus/:id" },
-  { filePath: "adminSy/codes/index.vue", routePath: "/adminSy/codes" },
-  // adminCo (공통업무)
-  { filePath: "adminCo/login.vue", routePath: "/adminCo/login" },
-  { filePath: "adminCo/sites/index.vue", routePath: "/adminCo/sites" },
-  { filePath: "adminCo/sites/[id].vue", routePath: "/adminCo/sites/:id" },
-  // popupAdmin
-  { filePath: "popupAdmin/sy/menuSelPopup.vue", routePath: "/popupAdmin/sy/menuSelPopup" },
+  // dp (전시패널관리) — 2026-09-13: adminSy/adminEc/adminCo/popupAdmin 스캐폴드 전부 제거,
+  // 실사용 중인 전시패널관리만 dp/panels 로 옮겨서 유지([[ecfefonuxt4-dp-widget-migration]] 참조)
+  { filePath: "dp/panels/index.vue", routePath: "/dp/panels" },
   // xdev
   { filePath: "xdev-open-comp.vue", routePath: "/xdev-open-comp" },
 ];
@@ -142,7 +123,7 @@ function buildPagesTree(): SelectTreeItem[] {
     "index", "404", "contact", "login", "register", "account", "cart", "checkout", "compare", "wishlist",
     "shop", "shop-right", "shop-3-col", "shop-4-col", "blog", "blog-dtl", "prod-dtl",
     "home-2", "home-3", "home-4", "home-5", "home-6", "home-7",
-    "adminEc", "adminSy", "adminCo", "popupAdmin", "xdev-open-comp",
+    "dp", "xdev-open-comp",
   ];
   const result: SelectTreeItem[] = [];
   const leafIds = new Set(leaves.map((l) => l.id));

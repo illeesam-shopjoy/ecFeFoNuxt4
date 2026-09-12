@@ -11,7 +11,7 @@
           :key="item.path"
           :to="item.path"
           class="admin-nav-item flex items-center gap-2 px-3 py-2 rounded-md text-sm transition"
-          :class="{ 'bg-slate-700 text-amber-400': item.path === '/adminEc' ? route.path === '/adminEc' : route.path.startsWith(item.path) }"
+          :class="{ 'bg-slate-700 text-amber-400': route.path.startsWith(item.path) }"
         >
           <span class="opacity-80">{{ item.icon }}</span>
           {{ item.label }}
@@ -28,17 +28,9 @@
 
 <script setup lang="ts">
 const route = useRoute();
-const menuItems = [
-  { path: "/adminEc", label: "홈", icon: "🏠" },
-  { path: "/adminCo/sites", label: "사이트관리", icon: "🌐" },
-  { path: "/adminSy/users", label: "사용자관리", icon: "👤" },
-  { path: "/adminSy/notices", label: "공지사항관리", icon: "📢" },
-  { path: "/adminSy/menus", label: "메뉴관리", icon: "📑" },
-  { path: "/adminEc/members", label: "회원관리", icon: "👥" },
-  { path: "/adminSy/codes", label: "코드관리", icon: "📋" },
-  { path: "/adminEc/products", label: "상품관리", icon: "📦" },
-  { path: "/adminEc/orders", label: "주문관리", icon: "🛒" },
-];
+// 2026-09-13: adminSy/adminEc/adminCo/popupAdmin 스캐폴드 전부 제거(요청사항) —
+// 실사용 중인 전시패널관리만 남김. [[ecfefonuxt4-dp-widget-migration]] 참조.
+const menuItems = [{ path: "/dp/panels", label: "전시패널관리", icon: "🖼️" }];
 </script>
 
 <style scoped>

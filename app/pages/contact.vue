@@ -96,6 +96,7 @@ import type { CoContactInfoItemType } from "~/types/coContactInfoItemType";
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import type { CoInquiryType } from "~/types/coInquiryType";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -103,7 +104,9 @@ useHead({
 });
 usePageTitle("문의하기");
 
-const contactInfo: CoContactInfoItemType[] = [
+// 전시 위젯(area_cd=CONTACT_INFO_MAIN)에서 연락처 정보 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_CONTACT_INFO: CoContactInfoItemType[] = [
   {
     icon: "fal fa-map-marker-alt",
     title: "주소",
@@ -120,6 +123,11 @@ const contactInfo: CoContactInfoItemType[] = [
     subtitle: "(010) 3805 0206",
   },
 ];
+const { data: fetchedContactInfo } = await useAsyncData<CoContactInfoItemType[] | null>(
+  "dp-contact-info-main",
+  () => dpAreaSvc.getFirstWidgetConfig<CoContactInfoItemType[]>("CONTACT_INFO_MAIN")
+);
+const contactInfo: CoContactInfoItemType[] = fetchedContactInfo.value?.length ? fetchedContactInfo.value : DEFAULT_CONTACT_INFO;
 
 const schema = yup.object({
   name: yup.string().required("이름을 입력해 주세요").label("이름"),

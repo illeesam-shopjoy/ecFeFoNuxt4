@@ -156,7 +156,7 @@ usePageTitle("전시패널관리");
 interface SlotDef {
   areaCd: string;
   label: string;
-  widgetTypeCd: "SLIDER" | "TESTIMONIAL" | "BRAND_LOGO";
+  widgetTypeCd: "SLIDER" | "TESTIMONIAL" | "BRAND_LOGO" | "CONTACT_INFO";
   defaultJson: unknown;
 }
 
@@ -242,6 +242,16 @@ const slots: SlotDef[] = [
       "/cdn/img/client/client-3.jpg",
       "/cdn/img/client/client-4.jpg",
       "/cdn/img/client/client-5.jpg",
+    ],
+  },
+  {
+    areaCd: "CONTACT_INFO_MAIN",
+    label: "문의하기 페이지 연락처 정보",
+    widgetTypeCd: "CONTACT_INFO",
+    defaultJson: [
+      { icon: "fal fa-map-marker-alt", title: "주소", subtitle: "성남시 중원구 성남대로 997 (여수동)" },
+      { icon: "fal fa-envelope-open-text", title: "이메일", subtitle: "illeesam@gmail.com" },
+      { icon: "fal fa-phone-alt", title: "연락처", subtitle: "(010) 3805 0206" },
     ],
   },
 ];
