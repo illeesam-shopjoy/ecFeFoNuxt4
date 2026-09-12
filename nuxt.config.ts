@@ -92,7 +92,7 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
       mode: process.env.NUXT_PUBLIC_MODE ?? "default",
       envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
-      appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "정담",
+      appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */
       tossPaymentClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY ?? "",
       /** Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비어 있으면 스크립트 미로드 */
@@ -114,7 +114,7 @@ export default defineNuxtConfig({
         apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
         mode: process.env.NUXT_PUBLIC_MODE ?? "default",
         envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
-        appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "정담",
+        appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       });
       console.log("\n[Swagger] API 문서:", swaggerUrl, "\n");
     },

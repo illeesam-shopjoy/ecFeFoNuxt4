@@ -7,7 +7,7 @@
           <div class="col-xl-8 col-lg-8 col-12 mx-auto">
             <div class="subscribe__content text-center">
               <h2>할인 정보 받기</h2>
-              <p>정담 뉴스레터에 구독하시면 신상품, 특가 및 할인 정보를 받아보실 수 있습니다.</p>
+              <p>shopjoy 뉴스레터에 구독하시면 신상품, 특가 및 할인 정보를 받아보실 수 있습니다.</p>
               <div class="subscribe__form">
                 <form @submit.prevent="handleFormSubmit">
                   <input required type="email" v-model="inputVal" placeholder="뉴스레터 구독 이메일..." />

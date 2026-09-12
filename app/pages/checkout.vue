@@ -426,7 +426,7 @@ async function handleFormSubmit() {
     await requestCardPayment({
       amount: total,
       orderId,
-      orderName: "정담 주문",
+      orderName: "shopjoy 주문",
       successUrl: `${origin}/checkout/success`,
       failUrl: `${origin}/checkout/fail`,
     });

@@ -34,7 +34,7 @@
                 </nuxt-link>
               </div>
               <div class="footer__widget-content">
-                <p>정담은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.</p>
+                <p>shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.</p>
                 <div class="footer__contact">
                   <ul>
                     <li>
@@ -125,7 +125,7 @@
           <div class="col-xl-6 col-lg-7 col-md-8">
             <div class="footer__copyright footer__copyright-3">
               <p>
-                저작권권 © {{ new Date().getFullYear() }} <nuxt-link href="/" class="link">정담</nuxt-link> 모든 권리 보유.
+                저작권권 © {{ new Date().getFullYear() }} <nuxt-link href="/" class="link">shopjoy</nuxt-link> 모든 권리 보유.
                 <nuxt-link href="/" class="link">jungdam</nuxt-link>
               </p>
             </div>

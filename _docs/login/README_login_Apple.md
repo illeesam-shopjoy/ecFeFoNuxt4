@@ -1,6 +1,6 @@
 # Apple 로그인 (Sign in with Apple) 연동 가이드
 
-정담(Outstock) 프로젝트에서 **Apple 로그인**을 사용하기 위한 Apple Developer 설정, 환경 변수, 테스트 방법을 정리합니다.
+shopjoy(Outstock) 프로젝트에서 **Apple 로그인**을 사용하기 위한 Apple Developer 설정, 환경 변수, 테스트 방법을 정리합니다.
 
 ---
 

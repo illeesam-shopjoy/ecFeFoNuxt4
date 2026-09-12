@@ -27,7 +27,7 @@ import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
-  title: "정담",
+  title: "shopjoy",
 });
 usePageTitle("홈");
 </script>
