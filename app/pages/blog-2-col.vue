@@ -2,7 +2,28 @@
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="블로그 2단" subtitle="블로그 2단" />
-    <blog-two-col-area />
+    <section class="blog__area pt-100 pb-100">
+      <div class="max-w-7xl mx-auto px-4">
+        <!-- 로딩 중 스켈레톤 -->
+        <div v-if="pending" class="row">
+          <div v-for="n in 4" :key="n" class="col-xl-6 col-lg-6 col-md-6">
+            <skeleton-card />
+          </div>
+        </div>
+        <template v-else>
+          <div class="row">
+            <div v-for="(blog, i) in filteredRows.slice(pageStart, pageStart + countOfPage)" :key="i" class="col-xl-6 col-lg-6 col-md-6">
+              <blog-standard-item :blog="blog" :style_2="true" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xl-12">
+              <pagination :items="standardBlogs" :count-of-page="4" @paginatedData="paginatedData" />
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
   </layout>
 </template>
 
@@ -11,11 +32,28 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import BlogTwoColArea from "~/components/blogs/BlogTwoColArea.vue";
+import { ref, reactive, computed } from "vue";
+import { useBlogs } from "~/composables/useBlogs";
+import { type CoBlogType } from "~/types/coBlogType";
+import Pagination from "~/components/ui/Pagination.vue";
+import BlogStandardItem from "~/components/blogs/BlogStandardItem.vue";
+import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "블로그 2단",
 });
 usePageTitle("블로그 2단");
+
+const { blogs, pending } = useBlogs();
+const standardBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blogContent === "블로그-스탠다드"));
+
+const filteredRows = reactive<CoBlogType[]>([]);
+const pageStart = ref(0);
+const countOfPage = ref(4);
+function paginatedData(rows: unknown[], start: number, count: number) {
+  filteredRows.splice(0, filteredRows.length, ...(rows ?? []) as CoBlogType[]);
+  pageStart.value = start;
+  countOfPage.value = count;
+}
 </script>
