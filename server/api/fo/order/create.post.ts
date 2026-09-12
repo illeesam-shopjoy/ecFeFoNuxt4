@@ -2,12 +2,12 @@ import { beApi, authHeaderFrom } from "~~/server/utils/beApi";
 import { logger } from "~~/server/utils/logger";
 
 /**
- * 주문 생성. ecBeBo POST /api/fo/order/create 프록시 (경로 그대로 일치).
+ * 주문 생성. ecBeBo POST /api/fo/order/create 프록시 (경로 그대로 일치, FO_ONLY 인가).
  *
- * ⚠️ 미해결/제한 사항 (2026-09 BFF 전환 1차분, [[ecfefonuxt4-bff-migration-plan]] 참조):
- *  1) 로그인 필요(MEMBER, 미인증 시 401) — ecFeFoNuxt4 로그인이 아직 ecBeBo와 브릿지되지
- *     않아 지금은 항상 401. 결제(Toss) 자체는 이 호출과 무관하게 이미 성공했으므로,
- *     이 실패가 "결제 완료" 화면 자체를 막지 않도록 호출부(checkout/success.vue)에서
+ * ⚠️ 미해결/제한 사항 ([[ecfefonuxt4-bff-migration-plan]] 참조):
+ *  1) 로그인 필요(MEMBER) — 2026-09-12 로그인 브릿지 완료로 세션이 있으면 정상 동작.
+ *     다만 결제(Toss) 자체는 이 호출과 무관하게 이미 성공했으므로, 세션 만료 등으로 이
+ *     호출이 실패해도 "결제 완료" 화면 자체를 막지 않도록 호출부(checkout/success.vue)에서
  *     실패를 흡수하게 했다.
  *  2) ecBeBo FoOdOrderService.placeOrder()는 od_order "헤더" 한 줄만 저장하고 주문
  *     품목(od_order_item)은 별도 처리하지 않는다(2026-09 실제 서비스 코드 확인) — 즉

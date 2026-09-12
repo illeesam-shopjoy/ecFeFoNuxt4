@@ -1,7 +1,7 @@
 import { beApi, authHeaderFrom } from "~~/server/utils/beApi";
 import { logger } from "~~/server/utils/logger";
 
-/** 공지 등록(관리자). ecBeBo POST /api/base/sy/notice 프록시. */
+/** 공지 등록(관리자). ecBeBo POST /api/fo/sy/notice 프록시. */
 export default defineEventHandler(async (event) => {
   const method = event.method;
   const url = getRequestURL(event)?.pathname ?? "";
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const created = await beApi.post<{ noticeId: string }>(
-    "/base/sy/notice",
+    "/fo/sy/notice",
     {
       noticeTitle: body.noticeTitle.trim(),
       noticeTypeCd: body.noticeType || "GENERAL",

@@ -15,11 +15,12 @@ interface BeNoticeItem {
 }
 
 /**
- * 공지 목록(관리자). ecBeBo GET /api/base/sy/notice/page 프록시.
- * ⚠️ /api/base/** 는 로그인 필요(2026-09 401 확인) — 이 프로젝트의 관리자 로그인
- * (app/pages/adminCo/login.vue)은 ecBeBo와 무관한 자체 인증이라, 로그인을 ecBeBo로
- * 브릿지하기 전까지는 이 라우트도 항상 401이다(상품 리뷰/주문 생성과 동일한 미해결 사항 —
- * [[ecfefonuxt4-bff-migration-plan]] 참조).
+ * 공지 목록. ecBeBo GET /api/fo/sy/notice/page(FoSyNoticeController) 프록시.
+ * 2026-09-12: 내부 공용 레이어(/api/base/sy/notice) 대신 FO 전용 레이어로 교체 — 로그인한
+ * FO 회원이면 누구나 접근 가능(진짜 관리자 권한 분리는 안 함, 사용자 요청). 이 화면
+ * (adminSy/notices)은 app/pages/adminCo/login.vue의 별도 관리자 로그인과 무관하게, 지금은
+ * ecFeFoNuxt4의 FO 회원 로그인(useAuthStore) 세션이 있어야 열람/수정된다 — 호출부(index.vue,
+ * [id].vue)가 useAuthHeaders()로 그 토큰을 실어 보낸다.
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
   const pageSize = Math.min(100, Math.max(1, Number(query.pageSize) || 10));
 
   const page = await beApi.get<BePage<BeNoticeItem>>(
-    "/base/sy/notice/page",
+    "/fo/sy/notice/page",
     { pageNo, pageSize, noticeTitle: query.noticeTitle || undefined, noticeTypeCd: query.noticeType || undefined, status: query.status || undefined },
     authHeaderFrom(event),
   );

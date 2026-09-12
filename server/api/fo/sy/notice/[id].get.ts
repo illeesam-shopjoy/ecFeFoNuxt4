@@ -13,7 +13,7 @@ interface BeNoticeItem {
   updDate?: string | null;
 }
 
-/** 공지 상세(관리자). ecBeBo GET /api/base/sy/notice/{id} 프록시. */
+/** 공지 상세(관리자). ecBeBo GET /api/fo/sy/notice/{id} 프록시. */
 export default defineEventHandler(async (event) => {
   const method = event.method;
   const url = getRequestURL(event)?.pathname ?? "";
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
   if (!id) throw createError({ statusCode: 400, statusMessage: "잘못된 공지 ID입니다." });
 
-  const row = await beApi.get<BeNoticeItem>(`/base/sy/notice/${id}`, undefined, authHeaderFrom(event)).catch((e: unknown) => {
+  const row = await beApi.get<BeNoticeItem>(`/fo/sy/notice/${id}`, undefined, authHeaderFrom(event)).catch((e: unknown) => {
     const err = e as { statusCode?: number };
     if (err?.statusCode === 404) throw createError({ statusCode: 404, statusMessage: "공지를 찾을 수 없습니다." });
     throw e;

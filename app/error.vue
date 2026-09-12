@@ -13,7 +13,7 @@
             <h2>찾으시는 페이지가 없습니다</h2>
             <p>
               요청하신 페이지가 이동되었거나 홈페이지로 돌아가시거나, 문제가 계속되면
-              <span class="highlight comment">illeddam@gmail.com</span>으로 문의해 주세요.
+              <span class="highlight comment">illeesam@gmail.com</span>으로 문의해 주세요.
             </p>
 
             <div class="error__search">

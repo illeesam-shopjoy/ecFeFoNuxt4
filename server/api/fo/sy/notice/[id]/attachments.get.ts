@@ -13,7 +13,7 @@ interface BeAttachItem {
   sortOrd?: number | null;
 }
 
-/** 공지 첨부파일 목록. ecBeBo GET /api/base/sy/attach/page?refTableNm=sy_notice&refId={id} 프록시. */
+/** 공지 첨부파일 목록. ecBeBo GET /api/fo/sy/attach/page?refTableNm=sy_notice&refId={id} 프록시. */
 export default defineEventHandler(async (event) => {
   const method = event.method;
   const url = getRequestURL(event)?.pathname ?? "";
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
   if (!id) throw createError({ statusCode: 400, statusMessage: "잘못된 공지 ID입니다." });
 
-  const page = await beApi.get<BePage<BeAttachItem>>("/base/sy/attach/page", { refTableNm: "sy_notice", refId: id, pageSize: 100 }, authHeaderFrom(event));
+  const page = await beApi.get<BePage<BeAttachItem>>("/fo/sy/attach/page", { refTableNm: "sy_notice", refId: id, pageSize: 100 }, authHeaderFrom(event));
   const list = page.pageList.map((r) => ({
     attachId: r.attachId,
     fileNm: r.fileNm,

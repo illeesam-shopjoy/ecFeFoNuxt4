@@ -113,6 +113,7 @@ import { type PdProductType } from "~/types/pdProductType";
 import ReviewForm from "../forms/ReviewForm.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import MediaViewerModal from "~/components/ui/MediaViewerModal.vue";
+import { useAuthHeaders } from "~/composables/useAuthHeaders";
 
 const VIDEO_EXT = new Set(['mp4', 'webm', 'mov']);
 function isVideoUrl(url: string): boolean {
@@ -189,7 +190,7 @@ async function deleteReview(reviewId: string, isReply: boolean) {
   deletingId.value = reviewId;
   try {
     const path = isReply ? `/api/fo/ec/pd/review-comment/${reviewId}` : `/api/fo/ec/pd/review/${reviewId}`;
-    const res = await $fetch<{ success?: boolean; message?: string }>(path, { method: 'DELETE' });
+    const res = await $fetch<{ success?: boolean; message?: string }>(path, { method: 'DELETE', headers: useAuthHeaders() });
     if (res?.success) {
       $toast?.success?.(res.message ?? '삭제되었습니다.');
       router.go(0);

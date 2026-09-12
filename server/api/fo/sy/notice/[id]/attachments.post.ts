@@ -24,9 +24,9 @@ interface CfUploadResponse {
  *   1) 파일 바이트를 ecBeCdn `POST /api/cdn/upload`로 전달 — 이 엔드포인트는 permitAll이라
  *      인증 없이도 된다("EcBeBo가 파일을 받아 EcBeCdn에 업로드 요청"하는 프록시 구조를
  *      그대로 이 BFF가 대신 수행).
- *   2) 업로드로 받은 fileUrl 등을 ecBeBo `POST /api/base/sy/attach`에 메타데이터로 등록
- *      (refTableNm=sy_notice, refId=공지ID) — 이 단계는 로그인 필요(401 확인함, 2026-09).
- *      관리자 로그인을 ecBeBo로 브릿지하기 전까지는 1)은 성공해도 2)에서 막힌다.
+ *   2) 업로드로 받은 fileUrl 등을 ecBeBo `POST /api/fo/sy/attach`(FoSyAttachController)에
+ *      메타데이터로 등록(refTableNm=sy_notice, refId=공지ID) — 로그인(FO 회원) 필요.
+ *      2026-09-12: 내부 공용 레이어(/api/base/sy/attach) 대신 FO 전용 레이어로 교체.
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -56,9 +56,9 @@ export default defineEventHandler(async (event) => {
     });
     const fileUrl = resolveProdCdnUrl(cdnRes.fileUrl) ?? "";
 
-    // 2) ecBeBo sy_attach에 메타데이터 등록 (관리자 로그인 필요 — 위 주석 참조)
+    // 2) ecBeBo sy_attach에 메타데이터 등록 (FO 회원 로그인 필요 — 위 주석 참조)
     const attach = await beApi.post<{ attachId: string }>(
-      "/base/sy/attach",
+      "/fo/sy/attach",
       {
         refTableNm: "sy_notice",
         refId: noticeId,

@@ -26,6 +26,7 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle("리뷰 폼");
 import { useNuxtApp } from "#app/nuxt";
+import { useAuthHeaders } from "~/composables/useAuthHeaders";
 
 const props = defineProps<{
   prodId: string;
@@ -59,6 +60,7 @@ async function handleSubmit() {
       const res = await $fetch<{ success?: boolean; message?: string }>("/api/fo/ec/pd/review-comment", {
         method: "POST",
         body: { reviewId: props.parentReviewId, content: contentTrim },
+        headers: useAuthHeaders(),
       });
       if (res?.success) {
         useNuxtApp().$toast?.success?.(res.message ?? "답글이 등록되었습니다.");
@@ -69,6 +71,7 @@ async function handleSubmit() {
       const res = await $fetch<{ success?: boolean; message?: string }>("/api/fo/ec/pd/review", {
         method: "POST",
         body: { prodId: props.prodId, content: contentTrim, rating: props.rating },
+        headers: useAuthHeaders(),
       });
       if (res?.success) {
         useNuxtApp().$toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");

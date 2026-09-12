@@ -144,6 +144,7 @@ import * as yup from "yup";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useAdminListNav } from "~/composables/useAdminListNav";
 import { useCodeStore } from "~/store/useCodeStore";
+import { useAuthHeaders } from "~/composables/useAuthHeaders";
 definePageMeta({ layout: "admin" });
 
 // <select> 옵션은 하드코딩 대신 공통코드(ecBeBo sy_code)에서 가져온다(2026-09, ecFeBo 참고 요청사항).
@@ -229,7 +230,7 @@ useHead(() => ({ title: pageTitle.value }));
 
 async function loadAttachments(noticeId: string) {
   try {
-    const { list } = await $fetch<{ list: AttachRow[] }>(`/api/fo/sy/notice/${noticeId}/attachments`);
+    const { list } = await $fetch<{ list: AttachRow[] }>(`/api/fo/sy/notice/${noticeId}/attachments`, { headers: useAuthHeaders() });
     attachments.list = list ?? [];
   } catch {
     attachments.list = [];
@@ -245,7 +246,7 @@ async function load() {
   if (!entityId.value) return;
   loading.value = true;
   try {
-    const data = await $fetch<Notice>(`/api/fo/sy/notice/${entityId.value}`);
+    const data = await $fetch<Notice>(`/api/fo/sy/notice/${entityId.value}`, { headers: useAuthHeaders() });
     notice.value = data;
     if (notice.value && mode.value === "edit") {
       form.noticeTitle = notice.value.noticeTitle;
@@ -284,7 +285,7 @@ async function removeAttach(attachId: string) {
     variant: "danger",
   });
   if (!ok) return;
-  await $fetch(`/api/fo/sy/attach/${attachId}`, { method: "DELETE" });
+  await $fetch(`/api/fo/sy/attach/${attachId}`, { method: "DELETE", headers: useAuthHeaders() });
   attachments.list = attachments.list.filter((a) => a.attachId !== attachId);
 }
 
@@ -295,6 +296,7 @@ async function uploadPendingFiles(noticeId: string) {
   await $fetch(`/api/fo/sy/notice/${noticeId}/attachments`, {
     method: "POST",
     body: formData,
+    headers: useAuthHeaders(),
   });
   pendingFiles.value = [];
   await loadAttachments(noticeId);
@@ -320,6 +322,7 @@ async function save() {
           status: form.status,
           remark: form.remark.trim() || undefined,
         },
+        headers: useAuthHeaders(),
       });
       await uploadPendingFiles(noticeId);
       await navigateTo(`/adminSy/notices/${noticeId}`);
@@ -334,6 +337,7 @@ async function save() {
           status: form.status,
           remark: form.remark.trim() || undefined,
         },
+        headers: useAuthHeaders(),
       });
       await uploadPendingFiles(entityId.value!);
       await navigateTo(`/adminSy/notices/${entityId.value}`);

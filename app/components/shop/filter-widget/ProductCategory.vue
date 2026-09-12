@@ -46,25 +46,14 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 카테고리');
 import { reactive, computed } from "vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { useProductsStore } from "~/store/useProductsStore";
+import { pdCategoryApi, type CategoryTreeResponse } from "~/api/pdCategoryApi";
 
 const state = useProductsStore();
 
-interface CategoryTreeItem {
-  categoryId: string;
-  parentTitle: string;
-  value: string;
-  children: string[];
-}
-interface CategoryTreeResponse {
-  categoryTree: CategoryTreeItem[];
-  categoryIdToName: Record<string, string>;
-}
-
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
-  () => axiosSsr.get<CategoryTreeResponse>("/api/fo/ec/pd/category-tree").then((r) => r.data),
+  () => pdCategoryApi.getCategoryTree(),
   { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
 );
 

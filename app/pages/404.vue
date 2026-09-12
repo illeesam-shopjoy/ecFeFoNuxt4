@@ -15,7 +15,7 @@
               <h2>찾으시는 페이지가 없습니다</h2>
               <p>
                 요청하신 페이지가 이동되었거나 더 이상 존재하지 않습니다. 홈페이지로 돌아가시거나, 문제가 계속되면
-                <span class="highlight comment">illeddam@gmail.com</span>으로 문의해 주세요.
+                <span class="highlight comment">illeesam@gmail.com</span>으로 문의해 주세요.
               </p>
               <div class="error__search">
                 <nuxt-link to="/" class="os-btn os-btn-3 os-btn-black"> 홈으로 돌아가기 </nuxt-link>

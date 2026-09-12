@@ -72,6 +72,7 @@ import { reactive, computed } from "vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { PAGE_TYPE_DEFAULT } from "~/types/page";
 import { useCodeStore } from "~/store/useCodeStore";
+import { useAuthHeaders } from "~/composables/useAuthHeaders";
 definePageMeta({ layout: "admin" });
 
 // <select> 옵션은 하드코딩 대신 공통코드(ecBeBo sy_code)에서 가져온다(2026-09, ecFeBo 참고 요청사항).
@@ -122,7 +123,7 @@ async function fetchPage(pageNo: number): Promise<NoticeRow[]> {
   if (search.noticeTitle) q.set("noticeTitle", search.noticeTitle);
   if (search.noticeType) q.set("noticeType", search.noticeType);
   if (search.status !== "") q.set("status", search.status);
-  const res = await $fetch<{ list: NoticeRow[]; totalCount: number }>(`/api/fo/sy/notice/page?${q}`);
+  const res = await $fetch<{ list: NoticeRow[]; totalCount: number }>(`/api/fo/sy/notice/page?${q}`, { headers: useAuthHeaders() });
   page.totalCount = res.totalCount ?? 0;
   return res.list ?? [];
 }
@@ -196,7 +197,7 @@ async function doDelete() {
   if (!ok) return;
   try {
     for (const id of selectedIds) {
-      await $fetch(`/api/fo/sy/notice/${id}`, { method: "DELETE" });
+      await $fetch(`/api/fo/sy/notice/${id}`, { method: "DELETE", headers: useAuthHeaders() });
     }
     selectedIds.splice(0, selectedIds.length);
     await fetchList();

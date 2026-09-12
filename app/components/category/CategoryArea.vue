@@ -38,8 +38,8 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('카테고리');
 import { computed } from "vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import AppImage from "~/components/ui/AppImage.vue";
+import { pdCategoryApi, type CategoryTreeResponse } from "~/api/pdCategoryApi";
 
 defineProps({
   style_2: { type: Boolean, default: false },
@@ -47,19 +47,10 @@ defineProps({
   style_4: { type: Boolean, default: false },
 });
 
-interface CategoryTreeItem {
-  categoryId: string;
-  img: string;
-  parentTitle: string;
-  value: string;
-  children: string[];
-  smDesc?: string;
-}
-
-const { data: catData } = useAsyncData<{ categoryTree: CategoryTreeItem[] }>(
+const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
-  () => axiosSsr.get<{ categoryTree: CategoryTreeItem[] }>("/api/fo/ec/pd/category-tree").then((r) => r.data),
-  { default: () => ({ categoryTree: [] }) }
+  () => pdCategoryApi.getCategoryTree(),
+  { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
 );
 
 const categoryItems = computed(() => (catData.value?.categoryTree ?? []).slice(0, 3));
