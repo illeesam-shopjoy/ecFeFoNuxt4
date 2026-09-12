@@ -164,50 +164,44 @@ import { ref, computed } from "vue";
 import { useBlogs } from "~/composables/useBlogs";
 import AppImage from "~/components/ui/AppImage.vue";
 import { type CoCategoryTreeType } from "~/types/coCategoryTreeType";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 const { blogs, pending } = useBlogs();
 
 const recentBlogs = computed(() => (blogs.value ?? []).slice(3, 6));
 
-const catNameMap: Record<string, string> = {
-  category01: "조명",
-  category02: "의자",
-  category03: "의류",
-  category07: "데코 & 악세서리",
-  category08: "조명 & 의자",
-  category09: "의류 & 오일",
-  category10: "남성 패션",
-  category11: "여성 패션",
+// 전시 위젯(area_cd=BLOG_SIDEBAR_CATEGORY)에서 카테고리 트리 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+interface BlogSidebarCategoryConfig {
+  categoryTreeData: CoCategoryTreeType[];
+  catNameMap: Record<string, string>;
+}
+const DEFAULT_CONFIG: BlogSidebarCategoryConfig = {
+  catNameMap: {
+    category01: "조명",
+    category02: "의자",
+    category03: "의류",
+    category07: "데코 & 악세서리",
+    category08: "조명 & 의자",
+    category09: "의류 & 오일",
+    category10: "남성 패션",
+    category11: "여성 패션",
+  },
+  categoryTreeData: [
+    { categoryId: "catSide01", parentTitle: "악세서리", value: "accessories", children: ["category01", "category02", "category03"] },
+    { categoryId: "catSide02", parentTitle: "의류", value: "cloth", children: ["category01", "category02", "category03"] },
+    { categoryId: "catSide03", parentTitle: "남성", value: "men", children: ["category01", "category02", "category03"] },
+    { categoryId: "catSide04", parentTitle: "뮤직", value: "music", children: ["category01", "category02", "category03"] },
+  ],
 };
+const { data: fetchedConfig } = await useAsyncData<BlogSidebarCategoryConfig | null>(
+  "dp-blog-sidebar-category",
+  () => dpAreaSvc.getFirstWidgetConfig<BlogSidebarCategoryConfig>("BLOG_SIDEBAR_CATEGORY")
+);
+const catNameMap: Record<string, string> = fetchedConfig.value?.catNameMap ?? DEFAULT_CONFIG.catNameMap;
+const categoryTreeData: CoCategoryTreeType[] = fetchedConfig.value?.categoryTreeData?.length ? fetchedConfig.value.categoryTreeData : DEFAULT_CONFIG.categoryTreeData;
 
 const expandedIndex = ref<number>(0);
-
-const categoryTreeData: CoCategoryTreeType[] = [
-  {
-    categoryId: "catSide01",
-    parentTitle: "악세서리",
-    value: "accessories",
-    children: ["category01", "category02", "category03"],
-  },
-  {
-    categoryId: "catSide02",
-    parentTitle: "의류",
-    value: "cloth",
-    children: ["category01", "category02", "category03"],
-  },
-  {
-    categoryId: "catSide03",
-    parentTitle: "남성",
-    value: "men",
-    children: ["category01", "category02", "category03"],
-  },
-  {
-    categoryId: "catSide04",
-    parentTitle: "뮤직",
-    value: "music",
-    children: ["category01", "category02", "category03"],
-  },
-];
 
 function toggle(i: number) {
   expandedIndex.value = expandedIndex.value === i ? -1 : i;

@@ -156,7 +156,7 @@ usePageTitle("전시패널관리");
 interface SlotDef {
   areaCd: string;
   label: string;
-  widgetTypeCd: "SLIDER" | "TESTIMONIAL" | "BRAND_LOGO" | "CONTACT_INFO";
+  widgetTypeCd: "SLIDER" | "TESTIMONIAL" | "BRAND_LOGO" | "CONTACT_INFO" | "CATEGORY_TREE";
   defaultJson: unknown;
 }
 
@@ -253,6 +253,29 @@ const slots: SlotDef[] = [
       { icon: "fal fa-envelope-open-text", title: "이메일", subtitle: "illeesam@gmail.com" },
       { icon: "fal fa-phone-alt", title: "연락처", subtitle: "(010) 3805 0206" },
     ],
+  },
+  {
+    areaCd: "BLOG_SIDEBAR_CATEGORY",
+    label: "블로그 사이드바 카테고리 (blog-dtl, BlogStandardArea)",
+    widgetTypeCd: "CATEGORY_TREE",
+    defaultJson: {
+      catNameMap: {
+        category01: "조명",
+        category02: "의자",
+        category03: "의류",
+        category07: "데코 & 악세서리",
+        category08: "조명 & 의자",
+        category09: "의류 & 오일",
+        category10: "남성 패션",
+        category11: "여성 패션",
+      },
+      categoryTreeData: [
+        { categoryId: "catSide01", parentTitle: "악세서리", value: "accessories", children: ["category01", "category02", "category03"] },
+        { categoryId: "catSide02", parentTitle: "의류", value: "cloth", children: ["category01", "category02", "category03"] },
+        { categoryId: "catSide03", parentTitle: "남성", value: "men", children: ["category01", "category02", "category03"] },
+        { categoryId: "catSide04", parentTitle: "뮤직", value: "music", children: ["category01", "category02", "category03"] },
+      ],
+    },
   },
 ];
 
