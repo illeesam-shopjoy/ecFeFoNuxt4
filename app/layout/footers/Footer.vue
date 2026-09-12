@@ -13,31 +13,15 @@
                 </nuxt-link>
               </div>
               <div class="footer__widget-content">
-                <p>shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.</p>
+                <p>{{ footerData.introText }}</p>
                 <div class="footer__contact">
                   <ul>
-                    <li>
+                    <li v-for="(item, i) in footerData.contactInfo" :key="i">
                       <div class="icon">
-                        <i class="fal fa-map-marker-alt"></i>
+                        <i :class="item.icon"></i>
                       </div>
                       <div class="text">
-                        <span>주소: 성남시 중원구 성남대로 997 (여수동)</span>
-                      </div>
-                    </li>
-                    <li>
-                      <div class="icon">
-                        <i class="fal fa-envelope-open-text"></i>
-                      </div>
-                      <div class="text">
-                        <span>이메일: illeesam@gmail.com</span>
-                      </div>
-                    </li>
-                    <li>
-                      <div class="icon">
-                        <i class="fal fa-phone-alt"></i>
-                      </div>
-                      <div class="text">
-                        <span>연락처: (010) 3805 0206</span>
+                        <span>{{ item.label }}: {{ item.value }}</span>
                       </div>
                     </li>
                   </ul>
@@ -45,39 +29,16 @@
               </div>
             </div>
           </div>
-          <!-- 2열: 안내 -->
-          <div>
+          <!-- 2열~3열: 안내/고객센터 -->
+          <div v-for="(section, i) in footerData.sections" :key="i">
             <div class="footer__widget mb-30">
-              <div class="footer__widget-title">
-                <h5>안내</h5>
+              <div :class="i === 0 ? 'footer__widget-title' : 'footer__widget-title mb-25'">
+                <h5>{{ section.title }}</h5>
               </div>
               <div class="footer__widget-content">
                 <div class="footer__links">
                   <ul>
-                    <li><a href="#">회사 소개</a></li>
-                    <li><a href="#">채용</a></li>
-                    <li><a href="#">배송 안내</a></li>
-                    <li><a href="#">개인정보처리방침</a></li>
-                    <li><a href="#">이용약관</a></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- 3열: 고객센터 -->
-          <div>
-            <div class="footer__widget mb-30">
-              <div class="footer__widget-title mb-25">
-                <h5>고객센터</h5>
-              </div>
-              <div class="footer__widget-content">
-                <div class="footer__links">
-                  <ul>
-                    <li><a href="#">배송 정책</a></li>
-                    <li><a href="#">도움말 및 문의</a></li>
-                    <li><a href="#">반품 및 환불</a></li>
-                    <li><a href="#">온라인 스토어</a></li>
-                    <li><a href="#">이용약관</a></li>
+                    <li v-for="(link, j) in section.links" :key="j"><a :href="link.href">{{ link.label }}</a></li>
                   </ul>
                 </div>
               </div>
@@ -115,9 +76,64 @@
 </template>
 
 <script setup lang="ts">
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
+
 defineProps({
   box_style: { type: Boolean, default: false },
 });
+
+interface FooterLinkSection {
+  title: string;
+  links: { href: string; label: string }[];
+}
+interface FooterContactItem {
+  icon: string;
+  label: string;
+  value: string;
+}
+interface FooterData {
+  introText: string;
+  contactInfo: FooterContactItem[];
+  sections: FooterLinkSection[];
+}
+
+// 전시 위젯(area_cd=FOOTER_LINKS_MAIN)에서 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_FOOTER_DATA: FooterData = {
+  introText: "shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.",
+  contactInfo: [
+    { icon: "fal fa-map-marker-alt", label: "주소", value: "성남시 중원구 성남대로 997 (여수동)" },
+    { icon: "fal fa-envelope-open-text", label: "이메일", value: "illeesam@gmail.com" },
+    { icon: "fal fa-phone-alt", label: "연락처", value: "(010) 3805 0206" },
+  ],
+  sections: [
+    {
+      title: "안내",
+      links: [
+        { href: "#", label: "회사 소개" },
+        { href: "#", label: "채용" },
+        { href: "#", label: "배송 안내" },
+        { href: "#", label: "개인정보처리방침" },
+        { href: "#", label: "이용약관" },
+      ],
+    },
+    {
+      title: "고객센터",
+      links: [
+        { href: "#", label: "배송 정책" },
+        { href: "#", label: "도움말 및 문의" },
+        { href: "#", label: "반품 및 환불" },
+        { href: "#", label: "온라인 스토어" },
+        { href: "#", label: "이용약관" },
+      ],
+    },
+  ],
+};
+const { data: fetchedFooterData } = await useAsyncData<FooterData | null>(
+  "dp-footer-links-main",
+  () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_MAIN")
+);
+const footerData: FooterData = fetchedFooterData.value ?? DEFAULT_FOOTER_DATA;
 
 const currentUrl = computed(() =>
   import.meta.client ? window.location.href : ""

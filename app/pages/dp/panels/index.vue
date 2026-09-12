@@ -156,7 +156,7 @@ usePageTitle("전시패널관리");
 interface SlotDef {
   areaCd: string;
   label: string;
-  widgetTypeCd: "SLIDER" | "TESTIMONIAL" | "BRAND_LOGO" | "CONTACT_INFO" | "CATEGORY_TREE";
+  widgetTypeCd: "SLIDER" | "TESTIMONIAL" | "BRAND_LOGO" | "CONTACT_INFO" | "CATEGORY_TREE" | "FOOTER_LINKS";
   defaultJson: unknown;
 }
 
@@ -288,6 +288,52 @@ const slots: SlotDef[] = [
         { categoryId: "catSide03", parentTitle: "남성", value: "men", children: ["category01", "category02", "category03"] },
         { categoryId: "catSide04", parentTitle: "뮤직", value: "music", children: ["category01", "category02", "category03"] },
       ],
+    },
+  },
+  {
+    areaCd: "FOOTER_LINKS_MAIN",
+    label: "기본 푸터 (Footer.vue — Layout/LayoutTwo/LayoutThree/LayoutFive/LayoutSix)",
+    widgetTypeCd: "FOOTER_LINKS",
+    defaultJson: {
+      introText: "shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.",
+      contactInfo: [
+        { icon: "fal fa-map-marker-alt", label: "주소", value: "성남시 중원구 성남대로 997 (여수동)" },
+        { icon: "fal fa-envelope-open-text", label: "이메일", value: "illeesam@gmail.com" },
+        { icon: "fal fa-phone-alt", label: "연락처", value: "(010) 3805 0206" },
+      ],
+      sections: [
+        { title: "안내", links: [{ href: "#", label: "회사 소개" }, { href: "#", label: "채용" }, { href: "#", label: "배송 안내" }, { href: "#", label: "개인정보처리방침" }, { href: "#", label: "이용약관" }] },
+        { title: "고객센터", links: [{ href: "#", label: "배송 정책" }, { href: "#", label: "도움말 및 문의" }, { href: "#", label: "반품 및 환불" }, { href: "#", label: "온라인 스토어" }, { href: "#", label: "이용약관" }] },
+      ],
+    },
+  },
+  {
+    areaCd: "FOOTER_LINKS_TWO",
+    label: "푸터 2 (FooterTwo.vue — LayoutFour)",
+    widgetTypeCd: "FOOTER_LINKS",
+    defaultJson: [
+      { id: 1, title: "마이페이지", links: [{ link: "#", list: "마이페이지" }, { link: "#", list: "주문/결제" }, { link: "#", list: "장바구니" }, { link: "#", list: "위시리스트" }, { link: "#", list: "맞춤 링크" }] },
+      { id: 2, title: "바로가기", links: [{ link: "#", list: "매장 위치" }, { link: "#", list: "마이페이지" }, { link: "#", list: "주문 조회" }, { link: "#", list: "사이즈 가이드" }, { link: "#", list: "자주 묻는 질문" }] },
+      { id: 3, title: "안내", links: [{ link: "#", list: "회사 소개" }, { link: "#", list: "채용" }, { link: "#", list: "배송 안내" }, { link: "#", list: "개인정보처리방침" }, { link: "#", list: "이용약관" }] },
+      { id: 4, title: "고객센터", links: [{ link: "#", list: "배송 정책" }, { link: "#", list: "도움말 및 문의" }, { link: "#", list: "반품 및 환불" }, { link: "#", list: "온라인 스토어" }, { link: "#", list: "이용약관" }] },
+    ],
+  },
+  {
+    areaCd: "FOOTER_LINKS_THREE",
+    label: "푸터 3 (FooterThree.vue — LayoutSeven)",
+    widgetTypeCd: "FOOTER_LINKS",
+    defaultJson: {
+      introText: "shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.",
+      contactInfo: [
+        { icon: "fal fa-map-marker-alt", label: "주소", value: "성남시 중원구 성남대로 997 (여수동)" },
+        { icon: "fal fa-envelope-open-text", label: "이메일", value: "illeesam@gmail.com" },
+        { icon: "fal fa-phone-alt", label: "연락처", value: "(010) 3805 0206" },
+      ],
+      sections: [
+        { title: "안내", links: [{ href: "#", label: "회사 소개" }, { href: "#", label: "채용" }, { href: "#", label: "배송 안내" }, { href: "#", label: "개인정보처리방침" }, { href: "#", label: "이용약관" }] },
+        { title: "고객센터", links: [{ href: "#", label: "배송 정책" }, { href: "#", label: "도움말 및 문의" }, { href: "#", label: "반품 및 환불" }, { href: "#", label: "온라인 스토어" }, { href: "#", label: "이용약관" }] },
+      ],
+      newsletter: { title: "뉴스레터", desc: "발행 시마다 무료 소식을 받아보세요. 1,000명 이상이 구독 중입니다." },
     },
   },
 ];

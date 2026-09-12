@@ -50,51 +50,65 @@
 
 <script setup lang="ts">
 import Social from "~/components/social/Social.vue";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
-const widget_data = [
-      {
-        id: 1,
-        title: "마이페이지",
-        links: [
-          { link: "#", list: "마이페이지" },
-          { link: "#", list: "주문/결제" },
-          { link: "#", list: "장바구니" },
-          { link: "#", list: "위시리스트" },
-          { link: "#", list: "맞춤 링크" },
-        ],
-      },
-      {
-        id: 2,
-        title: "바로가기",
-        links: [
-          { link: "#", list: "매장 위치" },
-          { link: "#", list: "마이페이지" },
-          { link: "#", list: "주문 조회" },
-          { link: "#", list: "사이즈 가이드" },
-          { link: "#", list: "자주 묻는 질문" },
-        ],
-      },
-      {
-        id: 3,
-        title: "안내",
-        links: [
-          { link: "#", list: "회사 소개" },
-          { link: "#", list: "채용" },
-          { link: "#", list: "배송 안내" },
-          { link: "#", list: "개인정보처리방침" },
-          { link: "#", list: "이용약관" },
-        ],
-      },
-      {
-        id: 4,
-        title: "고객센터",
-        links: [
-          { link: "#", list: "배송 정책" },
-          { link: "#", list: "도움말 및 문의" },
-          { link: "#", list: "반품 및 환불" },
-          { link: "#", list: "온라인 스토어" },
-          { link: "#", list: "이용약관" },
-        ],
+interface FooterLinkGroup {
+  id: number;
+  title: string;
+  links: { link: string; list: string }[];
+}
+
+// 전시 위젯(area_cd=FOOTER_LINKS_TWO)에서 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_WIDGET_DATA: FooterLinkGroup[] = [
+  {
+    id: 1,
+    title: "마이페이지",
+    links: [
+      { link: "#", list: "마이페이지" },
+      { link: "#", list: "주문/결제" },
+      { link: "#", list: "장바구니" },
+      { link: "#", list: "위시리스트" },
+      { link: "#", list: "맞춤 링크" },
+    ],
+  },
+  {
+    id: 2,
+    title: "바로가기",
+    links: [
+      { link: "#", list: "매장 위치" },
+      { link: "#", list: "마이페이지" },
+      { link: "#", list: "주문 조회" },
+      { link: "#", list: "사이즈 가이드" },
+      { link: "#", list: "자주 묻는 질문" },
+    ],
+  },
+  {
+    id: 3,
+    title: "안내",
+    links: [
+      { link: "#", list: "회사 소개" },
+      { link: "#", list: "채용" },
+      { link: "#", list: "배송 안내" },
+      { link: "#", list: "개인정보처리방침" },
+      { link: "#", list: "이용약관" },
+    ],
+  },
+  {
+    id: 4,
+    title: "고객센터",
+    links: [
+      { link: "#", list: "배송 정책" },
+      { link: "#", list: "도움말 및 문의" },
+      { link: "#", list: "반품 및 환불" },
+      { link: "#", list: "온라인 스토어" },
+      { link: "#", list: "이용약관" },
+    ],
   },
 ];
+const { data: fetchedWidgetData } = await useAsyncData<FooterLinkGroup[] | null>(
+  "dp-footer-links-two",
+  () => dpAreaSvc.getFirstWidgetConfig<FooterLinkGroup[]>("FOOTER_LINKS_TWO")
+);
+const widget_data = fetchedWidgetData.value?.length ? fetchedWidgetData.value : DEFAULT_WIDGET_DATA;
 </script>
