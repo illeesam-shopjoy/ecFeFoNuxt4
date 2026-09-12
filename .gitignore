@@ -12,6 +12,8 @@ dist
 .env.local
 .env.development
 .env.production
+# scripts/deploy-sites.mjs 전용 비밀(Netlify 토큰/Gmail 앱 비밀번호) — .env.deploy.example 만 커밋
+.env.deploy
 
 # 추가 ###########
 *.bak
