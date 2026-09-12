@@ -241,10 +241,11 @@ async function sendSummaryEmail(results) {
   }
   const allOk = results.every((r) => r.ok === true);
   const anyFail = results.some((r) => r.ok === false);
-  // 2026-09-12(요청사항: '🌈✅ 및 로그파일도 보내줘야해') — 전체 성공일 때만 🌈✅(축하) 마커,
-  // 실패/불확실은 기존대로 ❌/⚠ 그대로 둔다.
-  const overall = allOk ? '🌈✅ 전체 성공' : anyFail ? '❌ 실패 있음' : '⚠ 일부 확인불가';
-  const subject = `[ShopJoy 배포] ${overall} — ${results.map((r) => r.label).join(', ')}`;
+  // 2026-09-12(요청사항: '제목앞단에 🌈✅ 아이콘 표시해줘야해') — 전체 성공일 때 제목 맨 앞에
+  // 🌈✅, 실패/불확실은 기존대로 ❌/⚠를 맨 앞에 둔다.
+  const icon = allOk ? '🌈✅' : anyFail ? '❌' : '⚠';
+  const overall = allOk ? '전체 성공' : anyFail ? '실패 있음' : '일부 확인불가';
+  const subject = `${icon} [ShopJoy 배포] ${overall} — ${results.map((r) => r.label).join(', ')}`;
   const body = results.map((r) => (
     `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠'} ${r.label}\n` +
     `  ${r.detail}\n` +

@@ -28,17 +28,27 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      # 2026-09-12: 이후 3단계(Install/Build/Deploy) 출력을 deploy.log 로도 남겨서 Notify 단계가
+      # 메일에 실제 로그파일을 첨부할 수 있게 한다 — `tee -a`로 콘솔(Actions 로그)에는 그대로 보이면서
+      # 파일에도 누적. set -o pipefail 필수: 없으면 `cmd | tee` 파이프의 종료코드가 tee 것으로 덮여
+      # cmd가 실패해도 스텝이 성공 처리된다.
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          set -o pipefail
+          pnpm install --frozen-lockfile 2>&1 | tee -a deploy.log
 
       - name: Build
-        run: pnpm run build
+        run: |
+          set -o pipefail
+          pnpm run build 2>&1 | tee -a deploy.log
         env:
           NETLIFY: "true"
           NITRO_PRESET: netlify
 
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod --dir=dist --functions=.netlify/functions-internal --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+        run: |
+          set -o pipefail
+          npx netlify-cli deploy --prod --dir=dist --functions=.netlify/functions-internal --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN 2>&1 | tee -a deploy.log
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
@@ -50,6 +60,7 @@ jobs:
           node .github/scripts/notify-deploy-result.mjs
         env:
           DEPLOY_STATUS: ${{ job.status }}
+          DEPLOY_LOG_FILE: deploy.log
           NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
           NOTIFY_EMAIL_FROM: ${{ secrets.NOTIFY_EMAIL_FROM }}
           NOTIFY_EMAIL_APP_PASSWORD: ${{ secrets.NOTIFY_EMAIL_APP_PASSWORD }}
