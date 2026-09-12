@@ -84,7 +84,7 @@
     </header>
 
     <!-- 검색 팝업 시작 -->
-    <search-popup ref="search_popup" />
+    <search-modal ref="search_popup" />
     <!-- 검색 팝업 끝 -->
 
     <!-- 오프캔버스 시작 -->
@@ -98,7 +98,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useCartStore } from "~/store/useCartStore";
 import Menus from "./Menus.vue";
 import CartMini from "./header-com/CartMini.vue";
-import SearchPopup from "~/components/common/modals/SearchPopup.vue";
+import SearchModal from "~/components/modals/SearchModal.vue";
 import UserDropdown from "./header-com/UserDropdown.vue";
 import ExtraInfo from "./header-com/ExtraInfo.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";

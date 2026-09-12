@@ -345,7 +345,7 @@ import AppImage from "~/components/ui/AppImage.vue";
 import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
 import { useProductsStore } from "~/store/useProductsStore";
 import ProductItemTwo from "~/components/products/ProductItemTwo.vue";
-import VideoModal from "~/components/common/modals/VideoModal.vue";
+import VideoModal from "~/components/modals/VideoModal.vue";
 import { useBlogs } from "~/composables/useBlogs";
 
 import { usePageTitle } from "~/composables/usePageTitle";

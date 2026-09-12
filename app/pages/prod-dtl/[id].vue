@@ -248,7 +248,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
-import MediaViewerModal from "~/components/ui/MediaViewerModal.vue";
+import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
 import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
 
 const route = useRoute();

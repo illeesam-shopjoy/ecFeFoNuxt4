@@ -52,7 +52,7 @@ useComponentTitle('상품 아이템 2');
 import { ref } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
 import { useCartStore } from "~/store/useCartStore";
-import ProductModal from "../common/modals/ProductModal.vue";
+import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 
 defineProps<{

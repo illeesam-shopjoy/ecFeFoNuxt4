@@ -1,6 +1,6 @@
 <template>
   <div id="video-overlay" class="video-overlay" @click="closeVideo">
-    <xdev-file-path-badge file-path="app/components/common/modals/VideoModal.vue" :absolute="true" />
+    <xdev-file-path-badge file-path="app/components/modals/VideoModal.vue" :absolute="true" />
     <a class="video-overlay-close" @click.prevent="closeVideo">x</a>
   </div>
 </template>

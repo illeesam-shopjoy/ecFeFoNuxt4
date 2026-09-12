@@ -57,7 +57,7 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 목록 아이템');
 import { ref } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
-import ProductModal from "../common/modals/ProductModal.vue";
+import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import { useCartStore } from "~/store/useCartStore";
 import { useCompareStore } from "~/store/useCompareStore";

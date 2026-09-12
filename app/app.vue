@@ -2,7 +2,7 @@
   <NuxtPage />
   <XdevFilePathBadgeOverlay />
   <!-- 전역 확인/알림 다이얼로그 (useConfirm / useAlert) -->
-  <ConfirmDialog
+  <ConfirmModal
     :open="confirmState.open"
     :title="confirmState.title"
     :message="confirmState.message"
@@ -12,7 +12,7 @@
     @confirm="confirmHandleConfirm"
     @cancel="confirmHandleCancel"
   />
-  <AlertDialog
+  <AlertModal
     :open="alertState.open"
     :title="alertState.title"
     :message="alertState.message"
@@ -23,8 +23,8 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
-import ConfirmDialog from "~/components/ui/ConfirmDialog.vue";
-import AlertDialog from "~/components/ui/AlertDialog.vue";
+import ConfirmModal from "~/components/modals/ConfirmModal.vue";
+import AlertModal from "~/components/modals/AlertModal.vue";
 
 const { public: { appTitle } } = useRuntimeConfig();
 

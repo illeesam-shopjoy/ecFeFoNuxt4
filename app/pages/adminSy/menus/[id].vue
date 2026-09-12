@@ -176,7 +176,7 @@
       <p v-if="mode === 'view' && !menu && !loading" class="text-gray-500">데이터가 없습니다.</p>
       <p v-if="loading" class="text-gray-500">로딩 중...</p>
     </div>
-    <AdminIframeLayer
+    <AdminIframeModal
       v-model="menuSelLayerVisible"
       :src="menuSelIframeUrl"
       title="상위 메뉴 선택"

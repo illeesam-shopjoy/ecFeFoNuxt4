@@ -52,7 +52,7 @@ import { type PdProductType } from "~/types/pdProductType";
 import { useCartStore } from "~/store/useCartStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
 import { useCompareStore } from "~/store/useCompareStore";
-import ProductModal from "../common/modals/ProductModal.vue";
+import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 
 defineProps<{

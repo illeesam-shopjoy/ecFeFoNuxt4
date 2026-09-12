@@ -38,7 +38,7 @@
         </label>
       </div>
     </AdminSearchBar>
-    <AdminIframeLayer
+    <AdminIframeModal
       v-model="upMenuPopupVisible"
       :src="upMenuPopupSrc"
       title="상위 메뉴 선택"
@@ -93,7 +93,7 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import { usePageTitle } from "~/composables/usePageTitle";
-import AdminIframeLayer from "~/components/admin/AdminIframeLayer.vue";
+import AdminIframeModal from "~/components/modals/AdminIframeModal.vue";
 import { PAGE_TYPE_DEFAULT } from "~/types/page";
 definePageMeta({ layout: "admin" });
 usePageTitle("메뉴관리");

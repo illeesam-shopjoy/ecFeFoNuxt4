@@ -179,7 +179,7 @@ import { ref } from "vue";
 import { useCartStore } from "~/store/useCartStore";
 import { useAuthStore } from "~/store/useAuthStore";
 import AppImage from "~/components/ui/AppImage.vue";
-import ProfileEditModal from "~/components/common/modals/ProfileEditModal.vue";
+import ProfileEditModal from "~/components/modals/ProfileEditModal.vue";
 import { useRouter } from "vue-router";
 
 import { usePageTitle } from "~/composables/usePageTitle";
