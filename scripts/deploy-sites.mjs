@@ -241,21 +241,31 @@ async function sendSummaryEmail(results) {
   }
   const allOk = results.every((r) => r.ok === true);
   const anyFail = results.some((r) => r.ok === false);
-  const overall = allOk ? '✅ 전체 성공' : anyFail ? '❌ 실패 있음' : '⚠ 일부 확인불가';
+  // 2026-09-12(요청사항: '🌈✅ 및 로그파일도 보내줘야해') — 전체 성공일 때만 🌈✅(축하) 마커,
+  // 실패/불확실은 기존대로 ❌/⚠ 그대로 둔다.
+  const overall = allOk ? '🌈✅ 전체 성공' : anyFail ? '❌ 실패 있음' : '⚠ 일부 확인불가';
   const subject = `[ShopJoy 배포] ${overall} — ${results.map((r) => r.label).join(', ')}`;
   const body = results.map((r) => (
     `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠'} ${r.label}\n` +
     `  ${r.detail}\n` +
     (r.url ? `  링크: ${r.url}\n` : '')
-  )).join('\n') + `\n로그 파일: ${logPath}`;
+  )).join('\n') + `\n로그 파일: ${logPath} (첨부됨)`;
 
   try {
     const { default: nodemailer } = await import('nodemailer');
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: EMAIL_FROM, pass: EMAIL_APP_PASSWORD } });
-    await transporter.sendMail({ from: EMAIL_FROM, to: EMAIL_TO, subject, text: body });
-    log(`[알림] 이메일 발송 완료 → ${EMAIL_TO}`);
+    // logStream이 아직 열려 있어 flush(파일에 완전히 써짐)를 보장한 뒤 첨부해야 마지막 줄까지 누락 없이 실림.
+    await new Promise((resolve) => logStream.end(resolve));
+    await transporter.sendMail({
+      from: EMAIL_FROM,
+      to: EMAIL_TO,
+      subject,
+      text: body,
+      attachments: [{ filename: path.basename(logPath), path: logPath }],
+    });
+    console.log(`[알림] 이메일 발송 완료(로그파일 첨부) → ${EMAIL_TO}`); // logStream을 이미 닫아서 log()말고 console.log
   } catch (e) {
-    log(`[알림] ⚠ 이메일 발송 실패(무시하고 계속): ${e?.message ?? e}`);
+    console.warn(`[알림] ⚠ 이메일 발송 실패(무시하고 계속): ${e?.message ?? e}`);
   }
 }
 
@@ -304,7 +314,9 @@ async function main() {
 
   await sendSummaryEmail(results);
 
-  logStream.end();
+  // sendSummaryEmail이 실제 발송에 성공한 경우 첨부 전에 이미 logStream을 닫아뒀음(flush 보장) —
+  // 자격정보 없어 스킵한 경우 등 아직 안 닫혔을 때만 여기서 닫는다(이중 종료 방지).
+  if (!logStream.writableEnded) logStream.end();
   process.exit(results.some((r) => r.ok === false) ? 1 : 0);
 }
 
