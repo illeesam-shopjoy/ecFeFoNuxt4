@@ -19,8 +19,10 @@
       <ErrorMessage name="password" class="text-danger" />
     </div>
 
+    <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
+
     <div class="mt-10"></div>
-    <button type="submit" class="os-btn w-full">회원가입</button>
+    <button type="submit" class="os-btn w-full" :disabled="loading">{{ loading ? "가입 중..." : "회원가입" }}</button>
     <div class="or-divide"><span>또는</span></div>
     <nuxt-link href="/login" class="os-btn os-btn-black w-full">로그인</nuxt-link>
   </Form>
@@ -31,9 +33,17 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('회원가입 폼');
+import { ref } from "vue";
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import type { MbRegisterFormType } from "~/types/mbRegisterFormType";
+import { useAuthStore } from "~/store/useAuthStore";
+import { useRouter } from "vue-router";
+
+const authStore = useAuthStore();
+const router = useRouter();
+const errorMsg = ref("");
+const loading = ref(false);
 
 const schema = yup.object({
   name: yup.string().required("이름을 입력해 주세요").label("이름"),
@@ -42,7 +52,17 @@ const schema = yup.object({
 });
 
 async function onSubmit(values: MbRegisterFormType, { resetForm }: { resetForm: () => void }) {
-  await useAlert().openAlert(JSON.stringify(values, null, 2));
-  resetForm();
+  const { name, email, password } = values;
+  loading.value = true;
+  errorMsg.value = "";
+  const result = await authStore.register(name, email, password);
+  loading.value = false;
+  if (result.ok) {
+    resetForm();
+    await useAlert().openAlert("가입이 완료되었습니다. 로그인해 주세요.");
+    router.push("/login");
+  } else {
+    errorMsg.value = result.message ?? "회원가입에 실패했습니다.";
+  }
 }
 </script>

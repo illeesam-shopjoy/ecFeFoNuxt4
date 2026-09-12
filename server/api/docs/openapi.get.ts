@@ -28,7 +28,7 @@ export default defineEventHandler((event) => {
           responses: { "200": { description: "상품 상세 (reviews 포함)" }, "404": { description: "없음" } },
         },
       },
-      "/api/base/ec/pd/review": {
+      "/api/fo/ec/pd/review": {
         post: {
           summary: "리뷰 등록 (로그인 필요)",
           tags: ["products"],

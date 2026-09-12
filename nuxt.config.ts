@@ -80,16 +80,9 @@ export default defineNuxtConfig({
     appleTeamId: process.env.APPLE_TEAM_ID ?? "",
     appleKeyId: process.env.APPLE_KEY_ID ?? "",
     applePrivateKey: process.env.APPLE_PRIVATE_KEY ?? "",
-    /** Redis 사용 여부 (로그인 세션/리프레시 토큰) */
-    useRedis: process.env.USE_REDIS === "true" || process.env.USE_REDIS === "1",
-    /** Redis 연결 URL */
-    redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
-    /** JWT 서명용 시크릿 (API 로그인/리프레시 시) */
-    authJwtSecret: process.env.AUTH_JWT_SECRET ?? "",
-    /** 액세스 토큰 유효 시간(초). 기본 15분 */
-    authAccessTokenTtlSec: Number(process.env.AUTH_ACCESS_TOKEN_TTL_MINUTES ?? 15) * 60,
-    /** 리프레시 토큰·세션 유효 시간(초). 기본 7일 */
-    authRefreshTokenTtlSec: Number(process.env.AUTH_REFRESH_TOKEN_TTL_DAYS ?? 7) * 24 * 60 * 60,
+    // 2026-09-12: 자체 Redis/JWT 로그인 제거 — 인증은 전부 ecBeBo(FoAuthController)를 통하고
+    // 이 Nuxt 서버는 beApi.ts로 프록시만 한다(server/api/auth/*.ts 참조). useRedis/redisUrl/
+    // authJwtSecret/authAccessTokenTtlSec/authRefreshTokenTtlSec 런타임설정은 그래서 폐기.
     public: {
       cdnBase: process.env.NUXT_PUBLIC_CDN_BASE ?? "/cdn/img",
       // 2026-09 BFF 전환: 실제 상품/리뷰 이미지가 올라가는 ecBeCdn(CDN 서버) base.

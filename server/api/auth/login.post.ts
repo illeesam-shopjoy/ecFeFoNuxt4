@@ -1,69 +1,40 @@
 /**
- * 로그인 API. 이메일/비밀번호 검증 후 액세스 토큰·리프레시 토큰·사용자 정보 반환.
- * Redis 사용 시 세션·리프레시 토큰을 Redis에 보관.
+ * 로그인 API. ecBeBo FoAuthController(POST /api/co/fo-auth/login) 프록시.
+ * 2026-09-12 BFF 전환: 기존 데모계정(demoN@mail.com)·자체 Redis/JWT 발급을 전부 제거하고
+ * ecBeBo가 발급한 accessToken·회원 프로필을 그대로 프록시한다 — ecBeBo가 유일한 인증 소스.
+ * siteId는 FO 로그인 화면에 사이트 선택란이 없어 생략(로그인 요청의 siteId는 선택값이라
+ * 생략하면 FoAuthService.login()이 사이트 일치 검사를 건너뛴다).
  */
-import { signAuthJwt } from "~~/server/utils/authJwt";
-import { setAuthSession, setRefreshToken, type AuthSessionUser } from "~~/server/utils/authRedis";
-import { getRedis } from "~~/server/utils/redis";
-import { randomBytes } from "node:crypto";
+import { beApi } from "~~/server/utils/beApi";
 
-function buildDemoUser(num: number): AuthSessionUser {
-  return {
-    userId: num,
-    username: `홍길동${num}`,
-    email: `demo${num}@mail.com`,
-    role: "user",
-    phone: `010-1234-${num.toString().padStart(4, "0")}`,
-    address: `성남시 중원구 성남대로 997-${num}`,
-  };
+interface BeLoginRes {
+  accessToken: string;
+  memberId: string;
+  userNm: string;
+  userEmail: string;
+  userPhone?: string;
+  siteId?: string;
 }
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig();
-  const secret = config.authJwtSecret as string;
-  const body = await readBody(event).catch(() => ({})) as { email?: string; password?: string };
-  const email = String(body?.email ?? "").trim();
-  const password = String(body?.password ?? "");
+  const body = (await readBody(event).catch(() => ({}))) as { email?: string; password?: string };
+  const loginId = String(body?.email ?? "").trim();
+  const loginPwd = String(body?.password ?? "");
 
-  if (!email || !password) {
+  if (!loginId || !loginPwd) {
     throw createError({ statusCode: 400, statusMessage: "이메일과 비밀번호를 입력해 주세요." });
   }
 
-  const match = email.match(/^demo(\d+)@mail\.com$/);
-  if (!match || password !== "123456") {
-    throw createError({ statusCode: 401, statusMessage: "이메일 또는 비밀번호가 올바르지 않습니다." });
-  }
-  const num = parseInt(match[1]!, 10);
-  if (num < 1 || num > 99) {
-    throw createError({ statusCode: 401, statusMessage: "이메일 또는 비밀번호가 올바르지 않습니다." });
-  }
-
-  const user = buildDemoUser(num);
-  const sessionId = randomBytes(24).toString("base64url");
-  const refreshToken = randomBytes(32).toString("base64url");
-
-  if (!secret) {
-    throw createError({ statusCode: 500, statusMessage: "인증 설정이 없습니다. AUTH_JWT_SECRET을 설정해 주세요." });
-  }
-
-  const accessTtlSec = (config.authAccessTokenTtlSec as number) || 15 * 60;
-  const refreshTtlSec = (config.authRefreshTokenTtlSec as number) || 7 * 24 * 60 * 60;
-
-  const token = signAuthJwt(
-    { sessionId, userId: user.userId, email: user.email, sub: String(user.userId), username: user.username, role: user.role },
-    secret,
-    accessTtlSec
-  );
-
-  const useRedis = await getRedis().then((r) => !!r);
-  if (useRedis) {
-    await setAuthSession(sessionId, { user, refreshToken }, refreshTtlSec);
-    await setRefreshToken(refreshToken, { sessionId, userId: user.userId, email: user.email }, refreshTtlSec);
-  }
+  const result = await beApi.post<BeLoginRes>("/co/fo-auth/login", { loginId, loginPwd });
 
   return {
-    token,
-    refreshToken: useRedis ? refreshToken : undefined,
-    user,
+    token: result.accessToken,
+    user: {
+      memberId: result.memberId,
+      userNm: result.userNm,
+      userEmail: result.userEmail,
+      userPhone: result.userPhone,
+      siteId: result.siteId,
+    },
   };
 });

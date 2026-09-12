@@ -4,14 +4,14 @@
     <template v-if="authStore.isStLoggedIn">
       <button class="user-name-btn" @click.stop="open = !open">
         <i class="fas fa-user"></i>
-        <span>{{ authStore.user?.username }}</span>
+        <span>{{ authStore.user?.userNm }}</span>
         <i :class="`fas fa-chevron-${open ? 'up' : 'down'} caret`"></i>
       </button>
 
       <div v-show="open" class="user-panel">
         <div class="user-panel-head">
-          <p class="user-panel-name">{{ authStore.user?.username }}</p>
-          <p class="user-panel-email">{{ authStore.user?.email }}</p>
+          <p class="user-panel-name">{{ authStore.user?.userNm }}</p>
+          <p class="user-panel-email">{{ authStore.user?.userEmail }}</p>
         </div>
         <ul class="user-panel-list">
           <li>

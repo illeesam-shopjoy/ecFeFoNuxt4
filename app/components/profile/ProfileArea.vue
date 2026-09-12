@@ -15,7 +15,7 @@
                 />
               </div>
               <div class="profile__basic-content">
-                <h3 class="profile__basic-title">다시 오신 것을 환영합니다 <span>{{ authStore.user?.username ?? '사용자' }}</span></h3>
+                <h3 class="profile__basic-title">다시 오신 것을 환영합니다 <span>{{ authStore.user?.userNm ?? '사용자' }}</span></h3>
                 <p>{{ state.cartProducts.length }}개 상품 담김 <nuxt-link href="/cart">장바구니 보기</nuxt-link></p>
               </div>
             </div>

@@ -175,7 +175,7 @@ function onReviewSubmitted() {
 
 const deletingId = ref<string | null>(null);
 
-// 리뷰(review)는 /api/base/ec/pd/review/{id}, 답글(reply)은 /api/base/ec/pd/review-comment/{id} —
+// 리뷰(review)는 /api/fo/ec/pd/review/{id}, 답글(reply)은 /api/fo/ec/pd/review-comment/{id} —
 // ecBeBo에서 둘이 서로 다른 컨트롤러라(PdReviewController vs PdReviewCommentController) 경로도 분리했다.
 async function deleteReview(reviewId: string, isReply: boolean) {
   const ok = await useConfirm().openConfirm({
@@ -188,7 +188,7 @@ async function deleteReview(reviewId: string, isReply: boolean) {
   if (!ok || deletingId.value !== null) return;
   deletingId.value = reviewId;
   try {
-    const path = isReply ? `/api/base/ec/pd/review-comment/${reviewId}` : `/api/base/ec/pd/review/${reviewId}`;
+    const path = isReply ? `/api/fo/ec/pd/review-comment/${reviewId}` : `/api/fo/ec/pd/review/${reviewId}`;
     const res = await $fetch<{ success?: boolean; message?: string }>(path, { method: 'DELETE' });
     if (res?.success) {
       $toast?.success?.(res.message ?? '삭제되었습니다.');

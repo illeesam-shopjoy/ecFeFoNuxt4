@@ -28,22 +28,24 @@
                   <div class="profile__info-wrapper white-bg">
                     <div class="profile__info-item">
                       <p>이름</p>
-                      <h4>{{ authStore.user?.username ?? '-' }}</h4>
+                      <h4>{{ authStore.user?.userNm ?? '-' }}</h4>
                     </div>
                     <div class="profile__info-item">
                       <p>이메일</p>
                       <h4>
-                        <a v-if="authStore.user?.email" :href="`mailto:${authStore.user.email}`">{{ authStore.user.email }}</a>
+                        <a v-if="authStore.user?.userEmail" :href="`mailto:${authStore.user.userEmail}`">{{ authStore.user.userEmail }}</a>
                         <span v-else>-</span>
                       </h4>
                     </div>
                     <div class="profile__info-item">
                       <p>연락처</p>
-                      <h4>{{ authStore.user?.phone ?? '-' }}</h4>
+                      <h4>{{ authStore.user?.userPhone ?? '-' }}</h4>
                     </div>
                     <div class="profile__info-item">
+                      <!-- ecBeBo 로그인 응답에 주소가 없음(mb_member.member_addr는 별도 회원상세 조회가 있어야 채워짐,
+                           이번 전환 범위 밖) — 항상 '-' 표시. 회원 상세 프로필 조회 API가 생기면 그때 채울 것. -->
                       <p>주소</p>
-                      <h4>{{ authStore.user?.address ?? '-' }}</h4>
+                      <h4>-</h4>
                     </div>
                   </div>
                 </div>

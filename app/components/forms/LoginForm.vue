@@ -66,14 +66,6 @@
     <div class="or-divide"><span>또는</span></div>
     <nuxt-link href="/register" class="os-btn os-btn-black w-full"> 회원가입 </nuxt-link>
   </Form>
-
-  <!-- 데모 계정 안내 -->
-  <div class="demo-notice" style="margin-top: 20px; padding: 16px 18px; background: #f8f9fa; border: 1px dashed #ccc; border-radius: 6px">
-    <p style="font-size: 0.83rem; font-weight: 700; color: #444; margin-bottom: 6px">🔑 데모 계정 안내</p>
-    <p style="font-size: 0.8rem; color: #666; margin: 3px 0">이메일: demo<strong>1</strong>@mail.com ~ demo<strong>99</strong>@mail.com</p>
-    <p style="font-size: 0.8rem; color: #666; margin: 3px 0">비밀번호: <strong>123456</strong></p>
-    <p style="font-size: 0.76rem; color: #999; margin-top: 6px">예시: demo1@mail.com / 123456</p>
-  </div>
 </template>
 
 <script setup lang="ts">

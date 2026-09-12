@@ -54,7 +54,6 @@
     "axios": "^1.13.6",
     "chart.js": "^4.5.1",
     "pinia": "^3.0.4",
-    "redis": "^4.7.1",
     "sass": "^1.58.3",
     "vee-validate": "^4.7.4",
     "vue3-carousel": "^0.2.11",

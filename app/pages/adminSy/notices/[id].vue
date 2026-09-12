@@ -229,7 +229,7 @@ useHead(() => ({ title: pageTitle.value }));
 
 async function loadAttachments(noticeId: string) {
   try {
-    const { list } = await $fetch<{ list: AttachRow[] }>(`/api/base/sy/notice/${noticeId}/attachments`);
+    const { list } = await $fetch<{ list: AttachRow[] }>(`/api/fo/sy/notice/${noticeId}/attachments`);
     attachments.list = list ?? [];
   } catch {
     attachments.list = [];
@@ -245,7 +245,7 @@ async function load() {
   if (!entityId.value) return;
   loading.value = true;
   try {
-    const data = await $fetch<Notice>(`/api/base/sy/notice/${entityId.value}`);
+    const data = await $fetch<Notice>(`/api/fo/sy/notice/${entityId.value}`);
     notice.value = data;
     if (notice.value && mode.value === "edit") {
       form.noticeTitle = notice.value.noticeTitle;
@@ -284,7 +284,7 @@ async function removeAttach(attachId: string) {
     variant: "danger",
   });
   if (!ok) return;
-  await $fetch(`/api/base/sy/attach/${attachId}`, { method: "DELETE" });
+  await $fetch(`/api/fo/sy/attach/${attachId}`, { method: "DELETE" });
   attachments.list = attachments.list.filter((a) => a.attachId !== attachId);
 }
 
@@ -292,7 +292,7 @@ async function uploadPendingFiles(noticeId: string) {
   if (!pendingFiles.value.length) return;
   const formData = new FormData();
   for (const f of pendingFiles.value) formData.append("files", f);
-  await $fetch(`/api/base/sy/notice/${noticeId}/attachments`, {
+  await $fetch(`/api/fo/sy/notice/${noticeId}/attachments`, {
     method: "POST",
     body: formData,
   });
@@ -311,7 +311,7 @@ async function save() {
   saving.value = true;
   try {
     if (mode.value === "new") {
-      const { noticeId } = await $fetch<{ noticeId: string }>("/api/base/sy/notice", {
+      const { noticeId } = await $fetch<{ noticeId: string }>("/api/fo/sy/notice", {
         method: "POST",
         body: {
           noticeTitle: form.noticeTitle.trim(),
@@ -324,7 +324,7 @@ async function save() {
       await uploadPendingFiles(noticeId);
       await navigateTo(`/adminSy/notices/${noticeId}`);
     } else {
-      const updateUrl: string = `/api/base/sy/notice/${entityId.value}`;
+      const updateUrl: string = `/api/fo/sy/notice/${entityId.value}`;
       await $fetch(updateUrl, {
         method: "PUT",
         body: {
