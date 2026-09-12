@@ -198,8 +198,8 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('블로그 상세');
 import { computed } from "vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { type CoBlogType } from "~/types/coBlogType";
+import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 import BlogItem from "../blogs/BlogItem.vue";
 import BlogSidebar from "../common/sidebar/BlogSidebar.vue";
 import BlogDetailsForm from "../forms/BlogDetailsForm.vue";
@@ -213,7 +213,7 @@ const props = defineProps<{
 // 추천 글: SSR로 블로그 목록 로드 (axiosSsr 사용)
 const { data: allBlogs, pending: relatedPending } = useAsyncData<CoBlogType[]>(
   "blog-related",
-  () => axiosSsr.get<CoBlogType[]>("/api/fo/ec/cm/bltn/page").then((r) => r.data)
+  () => coBlogSvc.getPage()
 );
 
 const relatedBlogs = computed(() =>

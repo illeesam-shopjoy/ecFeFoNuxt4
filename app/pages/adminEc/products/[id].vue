@@ -69,6 +69,7 @@
 import * as yup from "yup";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useAdminListNav } from "~/composables/useAdminListNav";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 definePageMeta({ layout: "admin" });
 usePageTitle("상품 상세");
 const { goToList } = useAdminListNav();
@@ -103,7 +104,7 @@ async function load() {
   if (!entityId.value) return;
   loading.value = true;
   try {
-    const res = await $fetch<{ prodId: string; prodNm: string; salePrice: number; prodStock: number }>(`/api/fo/ec/pd/prod/${entityId.value}`);
+    const res = await pdProductSvc.getById(entityId.value);
     product.value = res ?? null;
     if (product.value && mode.value === "edit") {
       form.title = product.value.prodNm;

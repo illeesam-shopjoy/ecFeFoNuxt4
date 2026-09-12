@@ -23,16 +23,16 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import ShopDetailsArea from "~/components/shop-details/ShopDetailsArea.vue";
 import SkeletonProductDetail from "~/components/ui/SkeletonProductDetail.vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { type PdProductType } from "~/types/pdProductType";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 
 // SSR: 첫 번째 상품 조회 — ecBeBo prodId는 문자열이라 고정 ID로 바로 조회할 수 없어
 // 목록에서 첫 건을 가져와 그 prodId로 상세를 다시 조회한다(2026-09 BFF 전환).
 const { data: item, pending } = await useAsyncData<PdProductType | null>("product-detail-index", async () => {
-  const list = await axiosSsr.get<PdProductType[]>("/api/fo/ec/pd/prod/page").then((r) => r.data);
+  const list = await pdProductSvc.getPage();
   const first = list[0];
   if (!first) return null;
-  return axiosSsr.get<PdProductType>(`/api/fo/ec/pd/prod/${first.prodId}`).then((r) => r.data);
+  return pdProductSvc.getById(first.prodId);
 });
 
 import { usePageTitle } from "~/composables/usePageTitle";

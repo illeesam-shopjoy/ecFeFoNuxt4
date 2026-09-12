@@ -72,7 +72,7 @@ import { reactive, computed } from "vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { PAGE_TYPE_DEFAULT } from "~/types/page";
 import { useCodeStore } from "~/store/useCodeStore";
-import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import { syNoticeSvc, type SyNoticeRow } from "~/svc/fo/ec/sy/syNoticeSvc";
 definePageMeta({ layout: "admin" });
 
 // <select> 옵션은 하드코딩 대신 공통코드(ecBeBo sy_code)에서 가져온다(2026-09, ecFeBo 참고 요청사항).
@@ -92,8 +92,8 @@ const columns = [
 ];
 
 const search = reactive({ noticeTitle: "", noticeType: "", status: "" });
-const list = reactive<NoticeRow[]>([]);
-const cardList = reactive<NoticeRow[]>([]);
+const list = reactive<SyNoticeRow[]>([]);
+const cardList = reactive<SyNoticeRow[]>([]);
 const selectedIds = reactive<(string | number)[]>([]);
 const page = reactive({ pageNo: 1, pageSize: 10, totalCount: 0, pageType: PAGE_TYPE_DEFAULT as import("~/types/page").PageType });
 const { isCardView } = useBreakpoint();
@@ -103,27 +103,14 @@ const { openDetailTab } = useOpenDetailTab();
 
 const hasMoreCard = computed(() => cardList.length < page.totalCount);
 
-type NoticeRow = {
-  noticeId: string;
-  noticeTitle: string;
-  noticeType: string;
-  noticeContent?: string;
-  status: string;
-  createBy?: string;
-  createTime?: string;
-  updateBy?: string;
-  updateTime?: string;
-  remark?: string;
-};
-
-async function fetchPage(pageNo: number): Promise<NoticeRow[]> {
-  const q = new URLSearchParams();
-  q.set("pageNo", String(pageNo));
-  q.set("pageSize", String(page.pageSize));
-  if (search.noticeTitle) q.set("noticeTitle", search.noticeTitle);
-  if (search.noticeType) q.set("noticeType", search.noticeType);
-  if (search.status !== "") q.set("status", search.status);
-  const res = await $fetch<{ list: NoticeRow[]; totalCount: number }>(`/api/fo/sy/notice/page?${q}`, { headers: useAuthHeaders() });
+async function fetchPage(pageNo: number): Promise<SyNoticeRow[]> {
+  const res = await syNoticeSvc.getPage({
+    pageNo,
+    pageSize: page.pageSize,
+    noticeTitle: search.noticeTitle || undefined,
+    noticeType: search.noticeType || undefined,
+    status: search.status || undefined,
+  });
   page.totalCount = res.totalCount ?? 0;
   return res.list ?? [];
 }
@@ -197,7 +184,7 @@ async function doDelete() {
   if (!ok) return;
   try {
     for (const id of selectedIds) {
-      await $fetch(`/api/fo/sy/notice/${id}`, { method: "DELETE", headers: useAuthHeaders() });
+      await syNoticeSvc.remove(String(id));
     }
     selectedIds.splice(0, selectedIds.length);
     await fetchList();

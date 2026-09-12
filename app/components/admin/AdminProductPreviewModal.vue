@@ -60,6 +60,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 
 interface ProductRow {
   prodId: string;
@@ -78,7 +79,7 @@ async function loadProduct(id: string) {
   loading.value = true;
   product.value = null;
   try {
-    const res = await $fetch<{ prodId: string; prodNm: string; salePrice: number; prodStock: number; img?: string; smDesc?: string }>(`/api/fo/ec/pd/prod/${id}`);
+    const res = await pdProductSvc.getById(id);
     product.value = res ? { prodId: res.prodId, title: res.prodNm, price: res.salePrice, quantity: res.prodStock, img: res.img, smDesc: res.smDesc } : { prodId: id, title: "-", price: 0, quantity: 0 };
   } catch {
     product.value = { prodId: id, title: "(조회 실패)", price: 0, quantity: 0 };

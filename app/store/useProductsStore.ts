@@ -4,8 +4,8 @@
  * SSR 필요 페이지(shop, prod-dtl/[id])는 useAsyncData + axiosSsr 를 직접 사용.
  */
 import { defineStore } from "pinia";
-import { axiosCsr } from "~/utils/axiosCsr";
 import { type PdProductType } from "~/types/pdProductType";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 
 export const useProductsStore = defineStore("products", {
   state: () => ({
@@ -21,9 +21,9 @@ export const useProductsStore = defineStore("products", {
     async loadStProducts() {
       if (this.loaded) return;
       try {
-        const res = await axiosCsr.get<PdProductType[]>("/api/fo/ec/pd/prod/page");
-        this.products = res.data;
-        this.filterProducts = res.data;
+        const data = await pdProductSvc.getPage();
+        this.products = data;
+        this.filterProducts = data;
         this.loaded = true;
       } catch (err) {
         console.error("[useProducts] 상품 로드 실패:", err);

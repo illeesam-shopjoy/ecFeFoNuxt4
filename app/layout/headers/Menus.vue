@@ -24,8 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import { axiosSsr } from "~/utils/axiosSsr";
 import { type SyMenuTreeType } from "~/types/syMenuTreeType";
+import { foMenuSvc } from "~/svc/fo/foMenuSvc";
 
 const BG = "/cdn/img/bg/mega-menu-bg.jpg";
 
@@ -35,7 +35,7 @@ const menusCache = useState<SyMenuTreeType[] | null>("menus-cache", () => null);
 const { data: menus } = useAsyncData<SyMenuTreeType[]>(
   "menus",
   async () => {
-    const list = await axiosSsr.get<SyMenuTreeType[]>("/api/fo/menu").then((r) => r.data);
+    const list = await foMenuSvc.getMenus();
     menusCache.value = list;
     return list;
   },

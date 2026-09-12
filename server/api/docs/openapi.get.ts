@@ -81,7 +81,7 @@ export default defineEventHandler((event) => {
           responses: { "200": { description: "categoryTree, categoryIdToName" } },
         },
       },
-      "/api/fo/sy/brand": {
+      "/api/fo/ec/sy/brand": {
         get: {
           summary: "브랜드 목록 (상품 목록에서 즉석 집계)",
           tags: ["common"],

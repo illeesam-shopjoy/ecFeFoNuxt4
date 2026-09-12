@@ -28,9 +28,9 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import ShopArea from "~/components/shop/ShopArea.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { useProductsStore } from "~/store/useProductsStore";
 import { type PdProductType } from "~/types/pdProductType";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useSeoMeta({
@@ -43,10 +43,7 @@ usePageTitle("쇼핑");
 // SSR: 상품 목록 사전 로드 → 스토어에 주입 (검색엔진 크롤러용)
 const { pending } = await useAsyncData<PdProductType[]>(
   "shop-products",
-  async () => {
-    const res = await axiosSsr.get<PdProductType[]>("/api/fo/ec/pd/prod/page");
-    return res.data;
-  },
+  () => pdProductSvc.getPage(),
   {
     transform: (data) => {
       const store = useProductsStore();

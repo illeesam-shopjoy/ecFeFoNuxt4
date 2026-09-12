@@ -26,7 +26,8 @@
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { usePrice } from "~/composables/usePrice";
-import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import { paymentSvc } from "~/svc/payments/paymentSvc";
+import { foOrderSvc } from "~/svc/fo/ec/order/foOrderSvc";
 
 const route = useRoute();
 const { formatPrice } = usePrice();
@@ -50,24 +51,13 @@ onMounted(async () => {
   amount.value = Number(amountQuery) || 0;
 
   try {
-    await $fetch("/api/payments/confirm", {
-      method: "POST",
-      body: {
-        paymentKey,
-        orderId: orderIdQuery,
-        amount: amount.value,
-      },
-    });
+    await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value });
     status.value = "success";
 
     // ecBeBo에 주문 기록 생성 — 결제(Toss)는 이미 끝났으므로 이 호출이 실패해도(예: 세션 만료)
-    // 결제완료 화면은 그대로 보여준다. 자세한 제약은 server/api/fo/order/create.post.ts 주석 참조.
+    // 결제완료 화면은 그대로 보여준다. 자세한 제약은 server/api/fo/ec/order/create.post.ts 주석 참조.
     try {
-      await $fetch("/api/fo/order/create", {
-        method: "POST",
-        body: { payAmt: amount.value, totalAmt: amount.value },
-        headers: useAuthHeaders(),
-      });
+      await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: amount.value });
     } catch (e) {
       console.warn("[checkout/success] 주문 기록 생성 실패(결제는 정상 완료됨):", e);
     }

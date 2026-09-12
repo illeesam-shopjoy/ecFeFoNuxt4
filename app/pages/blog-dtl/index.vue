@@ -15,16 +15,16 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BlogDetailsArea from "~/components/blog-dtl/BlogDetailsArea.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { type CoBlogType } from "~/types/coBlogType";
+import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 
 // ecBeBo blogId는 문자열이라 고정 ID로 바로 조회할 수 없어 목록에서 첫 건을 가져와
 // 그 blogId로 상세를 다시 조회한다(2026-09 BFF 전환, prod-dtl/index.vue와 동일 패턴).
 const { data: item, pending } = useAsyncData<CoBlogType | null>("blog-details-preview", async () => {
-  const list = await axiosSsr.get<CoBlogType[]>("/api/fo/ec/cm/bltn/page").then((r) => r.data);
+  const list = await coBlogSvc.getPage();
   const first = list[0];
   if (!first) return null;
-  return axiosSsr.get<CoBlogType>(`/api/fo/ec/cm/bltn/${first.blogId}`).then((r) => r.data);
+  return coBlogSvc.getById(first.blogId);
 });
 
 import { usePageTitle } from "~/composables/usePageTitle";

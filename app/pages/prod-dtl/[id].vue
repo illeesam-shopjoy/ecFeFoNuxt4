@@ -21,9 +21,9 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import ShopDetailsArea from "~/components/shop-details/ShopDetailsArea.vue";
 import SkeletonProductDetail from "~/components/ui/SkeletonProductDetail.vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { useProductsStore } from "~/store/useProductsStore";
 import { type PdProductType } from "~/types/pdProductType";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -33,7 +33,7 @@ const isValidProdId = Boolean(id) && !id.includes(".");
 
 const { data: item, pending } = await useAsyncData<PdProductType | null>(
   `product-${id}`,
-  () => (isValidProdId ? axiosSsr.get<PdProductType>(`/api/fo/ec/pd/prod/${id}`).then((r) => r.data) : Promise.resolve(null)),
+  () => (isValidProdId ? pdProductSvc.getById(id) : Promise.resolve(null)),
   { default: () => null }
 );
 

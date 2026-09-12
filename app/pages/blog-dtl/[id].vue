@@ -20,8 +20,8 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BlogDetailsArea from "~/components/blog-dtl/BlogDetailsArea.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { type CoBlogType } from "~/types/coBlogType";
+import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -29,7 +29,7 @@ const id = route.params.id as string;
 // SSR: 서버에서 /api/fo/ec/cm/bltn/:id 조회 → SEO 메타 적용
 const { data: item, pending } = await useAsyncData<CoBlogType>(
   `blog-${id}`,
-  () => axiosSsr.get<CoBlogType>(`/api/fo/ec/cm/bltn/${id}`).then((r) => r.data)
+  () => coBlogSvc.getById(id)
 );
 
 import { usePageTitle } from "~/composables/usePageTitle";

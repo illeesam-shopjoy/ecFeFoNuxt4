@@ -66,6 +66,7 @@
 import { reactive } from "vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { PAGE_TYPE_PRODUCT } from "~/types/page";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 definePageMeta({ layout: "admin" });
 usePageTitle("상품관리");
 
@@ -92,7 +93,7 @@ const { openDetailTab } = useOpenDetailTab();
 const hasMoreCard = computed(() => cardList.length < page.totalCount);
 
 async function fetchFull() {
-  const res = await $fetch<ProductRow[]>("/api/fo/ec/pd/prod/page");
+  const res = await pdProductSvc.getPage();
   let items = res ?? [];
   if (search.title) items = items.filter((p) => p.prodNm?.toLowerCase().includes(search.title.toLowerCase()));
   productFullList.value = items;

@@ -47,13 +47,13 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 카테고리');
 import { reactive, computed } from "vue";
 import { useProductsStore } from "~/store/useProductsStore";
-import { pdCategoryApi, type CategoryTreeResponse } from "~/api/pdCategoryApi";
+import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
 
 const state = useProductsStore();
 
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
-  () => pdCategoryApi.getCategoryTree(),
+  () => pdCategorySvc.getCategoryTree(),
   { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
 );
 

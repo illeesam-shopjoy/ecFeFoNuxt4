@@ -84,6 +84,7 @@
 import * as yup from "yup";
 import { reactive } from "vue";
 import { usePageTitle } from "~/composables/usePageTitle";
+import { syCodeSvc } from "~/svc/co/sy/syCodeSvc";
 definePageMeta({ layout: "admin" });
 usePageTitle("코드관리");
 
@@ -136,7 +137,7 @@ function onDetailPageSizeChange(v: number) {
 
 async function fetchCodes() {
   try {
-    const res = await $fetch<CodeRow[]>("/api/co/sy/code");
+    const res = await syCodeSvc.getCodes();
     const data = res ?? [];
     allCodes.splice(0, allCodes.length, ...data);
     const firstGrp = groupList.value[0];

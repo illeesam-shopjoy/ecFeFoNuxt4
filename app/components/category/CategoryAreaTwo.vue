@@ -26,11 +26,11 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('카테고리 2');
 import { computed } from "vue";
 import AppImage from "~/components/ui/AppImage.vue";
-import { pdCategoryApi, type CategoryTreeResponse } from "~/api/pdCategoryApi";
+import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
 
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
-  () => pdCategoryApi.getCategoryTree(),
+  () => pdCategorySvc.getCategoryTree(),
   { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
 );
 

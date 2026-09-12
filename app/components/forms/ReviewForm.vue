@@ -8,7 +8,7 @@
         </div>
       </div>
       <!-- 2026-09 BFF 전환: 파일 첨부는 아직 미지원 — ecBeBo 리뷰 첨부(pd_review_attach)는
-           공지 첨부와 마찬가지로 ecBeCdn 업로드 후 별도 등록이 필요한데(server/api/fo/sy/notice/[id]/attachments.post.ts
+           공지 첨부와 마찬가지로 ecBeCdn 업로드 후 별도 등록이 필요한데(server/api/fo/ec/sy/notice/[id]/attachments.post.ts
            참조), 리뷰용 첨부 등록 API 계약은 아직 확인 전이라 이번 전환분에서는 제외했다. -->
       <div class="col-xl-12">
         <button class="os-btn os-btn-black" type="submit" :disabled="loading">
@@ -26,7 +26,7 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle("리뷰 폼");
 import { useNuxtApp } from "#app/nuxt";
-import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
 
 const props = defineProps<{
   prodId: string;
@@ -57,22 +57,14 @@ async function handleSubmit() {
   loading.value = true;
   try {
     if (isReply.value && props.parentReviewId) {
-      const res = await $fetch<{ success?: boolean; message?: string }>("/api/fo/ec/pd/review-comment", {
-        method: "POST",
-        body: { reviewId: props.parentReviewId, content: contentTrim },
-        headers: useAuthHeaders(),
-      });
+      const res = await pdReviewSvc.createReviewComment({ reviewId: props.parentReviewId, content: contentTrim });
       if (res?.success) {
         useNuxtApp().$toast?.success?.(res.message ?? "답글이 등록되었습니다.");
         content.value = "";
         emit("submitted");
       }
     } else {
-      const res = await $fetch<{ success?: boolean; message?: string }>("/api/fo/ec/pd/review", {
-        method: "POST",
-        body: { prodId: props.prodId, content: contentTrim, rating: props.rating },
-        headers: useAuthHeaders(),
-      });
+      const res = await pdReviewSvc.createReview({ prodId: props.prodId, content: contentTrim, rating: props.rating });
       if (res?.success) {
         useNuxtApp().$toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");
         content.value = "";

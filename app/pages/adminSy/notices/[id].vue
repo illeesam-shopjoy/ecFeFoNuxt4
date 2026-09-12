@@ -144,7 +144,7 @@ import * as yup from "yup";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useAdminListNav } from "~/composables/useAdminListNav";
 import { useCodeStore } from "~/store/useCodeStore";
-import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import { syNoticeSvc, type SyNoticeRow, type SyAttachRow } from "~/svc/fo/ec/sy/syNoticeSvc";
 definePageMeta({ layout: "admin" });
 
 // <select> 옵션은 하드코딩 대신 공통코드(ecBeBo sy_code)에서 가져온다(2026-09, ecFeBo 참고 요청사항).
@@ -169,31 +169,7 @@ const mode = computed(() => {
 });
 const entityId = computed(() => (rawId.value === "new" ? "" : rawId.value.replace(/-edit$/, "")));
 
-type Notice = {
-  noticeId: string;
-  noticeTitle: string;
-  noticeType: string;
-  noticeContent?: string;
-  status: string;
-  createBy?: string;
-  createTime?: string;
-  updateBy?: string;
-  updateTime?: string;
-  remark?: string;
-};
-
-type AttachRow = {
-  attachId: string;
-  fileNm: string;
-  physicalNm: string;
-  ext: string;
-  fileSize?: number;
-  mimeType?: string;
-  url: string;
-  sortOrder: number;
-};
-
-const notice = ref<Notice | null>(null);
+const notice = ref<SyNoticeRow | null>(null);
 const loading = ref(false);
 const saving = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -204,7 +180,7 @@ const form = reactive({
   status: "ACTIVE",
   remark: "",
 });
-const attachments = reactive<{ list: AttachRow[] }>({ list: [] });
+const attachments = reactive<{ list: SyAttachRow[] }>({ list: [] });
 const pendingFiles = ref<File[]>([]);
 
 function noticeTypeLabel(t: string) {
@@ -230,7 +206,7 @@ useHead(() => ({ title: pageTitle.value }));
 
 async function loadAttachments(noticeId: string) {
   try {
-    const { list } = await $fetch<{ list: AttachRow[] }>(`/api/fo/sy/notice/${noticeId}/attachments`, { headers: useAuthHeaders() });
+    const { list } = await syNoticeSvc.getAttachments(noticeId);
     attachments.list = list ?? [];
   } catch {
     attachments.list = [];
@@ -246,7 +222,7 @@ async function load() {
   if (!entityId.value) return;
   loading.value = true;
   try {
-    const data = await $fetch<Notice>(`/api/fo/sy/notice/${entityId.value}`, { headers: useAuthHeaders() });
+    const data = await syNoticeSvc.getById(entityId.value);
     notice.value = data;
     if (notice.value && mode.value === "edit") {
       form.noticeTitle = notice.value.noticeTitle;
@@ -285,7 +261,7 @@ async function removeAttach(attachId: string) {
     variant: "danger",
   });
   if (!ok) return;
-  await $fetch(`/api/fo/sy/attach/${attachId}`, { method: "DELETE", headers: useAuthHeaders() });
+  await syNoticeSvc.removeAttachment(attachId);
   attachments.list = attachments.list.filter((a) => a.attachId !== attachId);
 }
 
@@ -293,11 +269,7 @@ async function uploadPendingFiles(noticeId: string) {
   if (!pendingFiles.value.length) return;
   const formData = new FormData();
   for (const f of pendingFiles.value) formData.append("files", f);
-  await $fetch(`/api/fo/sy/notice/${noticeId}/attachments`, {
-    method: "POST",
-    body: formData,
-    headers: useAuthHeaders(),
-  });
+  await syNoticeSvc.uploadAttachments(noticeId, formData);
   pendingFiles.value = [];
   await loadAttachments(noticeId);
 }
@@ -313,31 +285,22 @@ async function save() {
   saving.value = true;
   try {
     if (mode.value === "new") {
-      const { noticeId } = await $fetch<{ noticeId: string }>("/api/fo/sy/notice", {
-        method: "POST",
-        body: {
-          noticeTitle: form.noticeTitle.trim(),
-          noticeType: form.noticeType,
-          noticeContent: form.noticeContent.trim() || undefined,
-          status: form.status,
-          remark: form.remark.trim() || undefined,
-        },
-        headers: useAuthHeaders(),
+      const { noticeId } = await syNoticeSvc.create({
+        noticeTitle: form.noticeTitle.trim(),
+        noticeType: form.noticeType,
+        noticeContent: form.noticeContent.trim() || undefined,
+        status: form.status,
+        remark: form.remark.trim() || undefined,
       });
       await uploadPendingFiles(noticeId);
       await navigateTo(`/adminSy/notices/${noticeId}`);
     } else {
-      const updateUrl: string = `/api/fo/sy/notice/${entityId.value}`;
-      await $fetch(updateUrl, {
-        method: "PUT",
-        body: {
-          noticeTitle: form.noticeTitle.trim(),
-          noticeType: form.noticeType,
-          noticeContent: form.noticeContent.trim() || undefined,
-          status: form.status,
-          remark: form.remark.trim() || undefined,
-        },
-        headers: useAuthHeaders(),
+      await syNoticeSvc.update(entityId.value, {
+        noticeTitle: form.noticeTitle.trim(),
+        noticeType: form.noticeType,
+        noticeContent: form.noticeContent.trim() || undefined,
+        status: form.status,
+        remark: form.remark.trim() || undefined,
       });
       await uploadPendingFiles(entityId.value!);
       await navigateTo(`/adminSy/notices/${entityId.value}`);
