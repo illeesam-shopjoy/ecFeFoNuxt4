@@ -5,7 +5,19 @@
       <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="w-img">
         <!-- AppImage: 스켈레톤 + noImage 내장 -->
         <app-image :src="item.img" alt="product-img" wrap-class="w-img" img-class="" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
-        <app-image class="product__thumb-2" :src="item.thumbImg" alt="product-img" wrap-class="product__thumb-2-wrap" img-class="" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
+        <!-- 2026-09-13 버그수정: AppImage 자체 스타일(.app-image-wrap{position:relative})이
+             .product__thumb-2가 기대하는 position:absolute(호버 시 첫 이미지 위에 겹쳐 보이는
+             효과)를 specificity로 이겨버려서, 두 번째 이미지가 카드 아래로 그냥 이어져 보였다 —
+             인라인 wrap-style로 absolute를 직접 지정해 항상 이기게 한다. -->
+        <app-image
+          class="product__thumb-2"
+          :src="item.thumbImg"
+          alt="product-img"
+          wrap-class="product__thumb-2-wrap"
+          :wrap-style="{ position: 'absolute', top: '0', left: '0', width: '100%' }"
+          img-class=""
+          :skeleton-style="{ width: '100%', aspectRatio: '3/4' }"
+        />
       </nuxt-link>
       <div class="product__action transition-3">
         <a @click.prevent="wishlistState.addStWishlistProduct(item)" href="#" title="위시리스트에 담기">
