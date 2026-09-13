@@ -1,5 +1,8 @@
 <template>
-  <div class="env-mode-badge">{{ modeLabel }} · api {{ apiHost }} · cdn {{ cdnHost }}</div>
+  <div class="env-mode-badge">
+    <div>{{ modeLabel }} · api {{ apiHost }}</div>
+    <div>cdn {{ cdnHost }}</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -47,6 +50,8 @@ const cdnHost = computed(() => hostOf(pub.prodCdnBase as string));
   line-height: 1.4;
   color: #9ca3af;
   text-align: center;
+}
+.env-mode-badge div {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
