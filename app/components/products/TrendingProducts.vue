@@ -17,8 +17,11 @@
         </div>
       </div>
       <div :class="`product__slider ${style_2 ? 'product__slider-4' : ''}`">
-        <div class="row">
-          <div v-for="item in trending_prd.slice(0, perView)" :key="item.prodId" :class="`${style_3 ? 'col-xl-2 col-lg-3 col-md-4' : 'col-lg-3 col-md-4'} product__item`">
+        <!-- 2026-09-14(요청사항: "인기상품은 한줄에 6개가 아니고 5개가 나와야해") — style_3(home-5)은
+             col-xl-2(=6열)이 아니라 row-cols-xl-5(=5열, _grid.scss 기존 row-cols-lg-5/sm-5와 동일 패턴)를
+             .row에 적용. 다른 style_3 사용처가 없어(home-5 전용) 영향 범위 안전. -->
+        <div :class="`row ${style_3 ? 'row-cols-xl-5' : ''}`">
+          <div v-for="item in trending_prd.slice(0, perView)" :key="item.prodId" class="col-lg-3 col-md-4 product__item">
             <product-item :item="item" />
           </div>
         </div>

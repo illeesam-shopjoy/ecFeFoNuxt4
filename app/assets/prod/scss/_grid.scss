@@ -123,6 +123,10 @@ $cols: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12;
     }
   }
   .offset-xl-0 { margin-left: 0; }
+  .row-cols-xl-5 > * {
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
 }
 
 /* xxl (1400px+) */
