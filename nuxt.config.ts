@@ -26,6 +26,11 @@ export default defineNuxtConfig({
     head: {
       title: "shopjoy",
       link: [
+        // 2026-09-13(성능 개선): 폰트 CDN에 미리 연결(DNS+TLS)해둬 실제 stylesheet 요청이
+        // 시작될 때 그 연결 설정 시간을 기다리지 않게 한다 — 렌더 블로킹 스타일시트라 초기
+        // 렌더링 지연에 그대로 영향을 준다. preconnect는 요청을 앞당기지 않고 "연결"만
+        // 미리 해두는 것이라 부작용 없이 안전하다.
+        { rel: "preconnect", href: "https://cdn.jsdelivr.net", crossorigin: "" },
         {
           rel: "stylesheet",
           href: "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css",
