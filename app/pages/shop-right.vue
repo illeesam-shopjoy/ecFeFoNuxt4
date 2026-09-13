@@ -248,10 +248,12 @@ function paginatedData(_rows: unknown[], start: number, count: number) {
 }
 
 // ── 사이드바: 상품 카테고리 (옛 ProductCategory) ─────────────────────────────
+// 2026-09-13(성능 개선): lazy:true — 메인 상품 목록만 SSR을 블로킹하고 사이드바 카테고리는
+// 화면이 뜬 뒤 비동기로 채워지게 한다.
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
-  { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
+  { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true }
 );
 
 const categoryIdToName = computed(() => catData.value?.categoryIdToName ?? {});

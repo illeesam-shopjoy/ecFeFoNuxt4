@@ -27,7 +27,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('히어로 슬라이더 2');
-import { reactive } from "vue";
+import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataTypeTwo } from "~/types/coHeroSliderDataTypeTwo";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
@@ -56,9 +56,12 @@ const DEFAULT_SLIDES: CoHeroSliderDataTypeTwo[] = [
   },
 ];
 
-const { data: fetchedSlides } = await useAsyncData<CoHeroSliderDataTypeTwo[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 slider_data에 반영되게 한다(reactive 스냅샷은 갱신 안 됨).
+const { data: fetchedSlides } = useAsyncData<CoHeroSliderDataTypeTwo[] | null>(
   "dp-hero-slider-two",
-  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataTypeTwo[]>("HERO_SLIDER_TWO")
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataTypeTwo[]>("HERO_SLIDER_TWO"),
+  { lazy: true }
 );
-const slider_data = reactive<CoHeroSliderDataTypeTwo[]>(fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
+const slider_data = computed<CoHeroSliderDataTypeTwo[]>(() => fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
 </script>

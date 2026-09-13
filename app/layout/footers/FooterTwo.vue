@@ -106,9 +106,12 @@ const DEFAULT_WIDGET_DATA: FooterLinkGroup[] = [
     ],
   },
 ];
-const { data: fetchedWidgetData } = await useAsyncData<FooterLinkGroup[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 widget_data에 반영되게 한다.
+const { data: fetchedWidgetData } = useAsyncData<FooterLinkGroup[] | null>(
   "dp-footer-links-two",
-  () => dpAreaSvc.getFirstWidgetConfig<FooterLinkGroup[]>("FOOTER_LINKS_TWO")
+  () => dpAreaSvc.getFirstWidgetConfig<FooterLinkGroup[]>("FOOTER_LINKS_TWO"),
+  { lazy: true }
 );
-const widget_data = fetchedWidgetData.value?.length ? fetchedWidgetData.value : DEFAULT_WIDGET_DATA;
+const widget_data = computed<FooterLinkGroup[]>(() => fetchedWidgetData.value?.length ? fetchedWidgetData.value : DEFAULT_WIDGET_DATA);
 </script>

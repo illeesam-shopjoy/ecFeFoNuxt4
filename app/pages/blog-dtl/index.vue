@@ -260,9 +260,11 @@ useHead({ title: "블로그 상세" });
 usePageTitle("블로그 상세");
 
 // ── 추천 글 (옛 BlogDetailsArea) ─────────────────────────────
+// 2026-09-13(성능 개선): lazy:true — 보조 콘텐츠라 화면이 뜬 뒤 비동기로 채워지게 한다.
 const { data: allBlogs, pending: relatedPending } = useAsyncData<CoBlogType[]>(
   "blog-related",
-  () => coBlogSvc.getPage()
+  () => coBlogSvc.getPage(),
+  { lazy: true }
 );
 
 const relatedBlogs = computed(() =>

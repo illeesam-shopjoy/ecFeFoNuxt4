@@ -27,7 +27,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('히어로 슬라이더');
-import { reactive } from "vue";
+import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataType } from "~/types/coHeroSliderDataType";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
@@ -58,9 +58,14 @@ const DEFAULT_SLIDES: CoHeroSliderDataType[] = [
   },
 ];
 
-const { data: fetchedSlides } = await useAsyncData<CoHeroSliderDataType[] | null>(
+// 2026-09-13(성능 개선): lazy:true — 화면 마운트를 블로킹하지 않는다. 기존엔 reactive()로
+// fetchedSlides.value를 한 번만 복사해서, lazy로 바꾸면 늦게 도착한 실제 데이터가 화면에
+// 절대 반영되지 않는 문제가 있었다 — computed로 바꿔 fetchedSlides.value가 나중에 채워져도
+// slider_data가 자동으로 갱신되게 한다.
+const { data: fetchedSlides } = useAsyncData<CoHeroSliderDataType[] | null>(
   "dp-hero-slider-main",
-  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataType[]>("HERO_SLIDER_MAIN")
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataType[]>("HERO_SLIDER_MAIN"),
+  { lazy: true }
 );
-const slider_data = reactive<CoHeroSliderDataType[]>(fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
+const slider_data = computed<CoHeroSliderDataType[]>(() => fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
 </script>

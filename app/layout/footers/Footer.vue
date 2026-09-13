@@ -129,11 +129,14 @@ const DEFAULT_FOOTER_DATA: FooterData = {
     },
   ],
 };
-const { data: fetchedFooterData } = await useAsyncData<FooterData | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 footerData에 반영되게 한다.
+const { data: fetchedFooterData } = useAsyncData<FooterData | null>(
   "dp-footer-links-main",
-  () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_MAIN")
+  () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_MAIN"),
+  { lazy: true }
 );
-const footerData: FooterData = fetchedFooterData.value ?? DEFAULT_FOOTER_DATA;
+const footerData = computed<FooterData>(() => fetchedFooterData.value ?? DEFAULT_FOOTER_DATA);
 
 const currentUrl = computed(() =>
   import.meta.client ? window.location.href : ""

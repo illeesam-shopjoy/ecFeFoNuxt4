@@ -94,13 +94,16 @@ const DEFAULT_TESTIMONIALS: TestimonialHome3Item[] = [
   { id: 3, img: "/cdn/img/testimonial/person-3.jpg", name: "Naim Ahmed", title: "웹 개발자", desc: "직관적인 구성과 빠른 반응 속도가 좋았습니다. 재방문률이 높은 이유를 체험으로 이해했습니다." },
   { id: 4, img: "/cdn/img/testimonial/person-4.jpg", name: "Salim Rana", title: "워드프레스 전문가", desc: "전문성과 세심한 배려가 돋보이는 서비스였습니다. 추천할 만한 퀄리티라고 자신 있게 말씀드립니다." },
 ];
-const { data: fetchedTestimonials } = await useAsyncData<TestimonialHome3Item[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 nav_data/testimonial_data에 반영되게 한다.
+const { data: fetchedTestimonials } = useAsyncData<TestimonialHome3Item[] | null>(
   "dp-testimonial-home3",
-  () => dpAreaSvc.getFirstWidgetConfig<TestimonialHome3Item[]>("TESTIMONIAL_HOME3")
+  () => dpAreaSvc.getFirstWidgetConfig<TestimonialHome3Item[]>("TESTIMONIAL_HOME3"),
+  { lazy: true }
 );
-const testimonialSource = fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS;
-const nav_data = testimonialSource.map((t) => ({ id: t.id, img: t.img }));
-const testimonial_data = testimonialSource.map((t) => ({ id: t.id, name: t.name, title: t.title, desc: t.desc }));
+const testimonialSource = computed(() => fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS);
+const nav_data = computed(() => testimonialSource.value.map((t) => ({ id: t.id, img: t.img })));
+const testimonial_data = computed(() => testimonialSource.value.map((t) => ({ id: t.id, name: t.name, title: t.title, desc: t.desc })));
 
 function slideTo(val: number) {
   currentSlide.value = val;

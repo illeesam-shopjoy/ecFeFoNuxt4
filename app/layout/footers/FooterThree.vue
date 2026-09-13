@@ -155,9 +155,12 @@ const DEFAULT_FOOTER_DATA: FooterData = {
   ],
   newsletter: { title: "뉴스레터", desc: "발행 시마다 무료 소식을 받아보세요. 1,000명 이상이 구독 중입니다." },
 };
-const { data: fetchedFooterData } = await useAsyncData<FooterData | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 footerData에 반영되게 한다.
+const { data: fetchedFooterData } = useAsyncData<FooterData | null>(
   "dp-footer-links-three",
-  () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_THREE")
+  () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_THREE"),
+  { lazy: true }
 );
-const footerData: FooterData = fetchedFooterData.value ?? DEFAULT_FOOTER_DATA;
+const footerData = computed<FooterData>(() => fetchedFooterData.value ?? DEFAULT_FOOTER_DATA);
 </script>

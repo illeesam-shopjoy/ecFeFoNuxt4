@@ -194,12 +194,15 @@ const DEFAULT_CONFIG: BlogSidebarCategoryConfig = {
     { categoryId: "catSide04", parentTitle: "뮤직", value: "music", children: ["category01", "category02", "category03"] },
   ],
 };
-const { data: fetchedConfig } = await useAsyncData<BlogSidebarCategoryConfig | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 catNameMap/categoryTreeData에 반영되게 한다.
+const { data: fetchedConfig } = useAsyncData<BlogSidebarCategoryConfig | null>(
   "dp-blog-sidebar-category",
-  () => dpAreaSvc.getFirstWidgetConfig<BlogSidebarCategoryConfig>("BLOG_SIDEBAR_CATEGORY")
+  () => dpAreaSvc.getFirstWidgetConfig<BlogSidebarCategoryConfig>("BLOG_SIDEBAR_CATEGORY"),
+  { lazy: true }
 );
-const catNameMap: Record<string, string> = fetchedConfig.value?.catNameMap ?? DEFAULT_CONFIG.catNameMap;
-const categoryTreeData: CoCategoryTreeType[] = fetchedConfig.value?.categoryTreeData?.length ? fetchedConfig.value.categoryTreeData : DEFAULT_CONFIG.categoryTreeData;
+const catNameMap = computed<Record<string, string>>(() => fetchedConfig.value?.catNameMap ?? DEFAULT_CONFIG.catNameMap);
+const categoryTreeData = computed<CoCategoryTreeType[]>(() => fetchedConfig.value?.categoryTreeData?.length ? fetchedConfig.value.categoryTreeData : DEFAULT_CONFIG.categoryTreeData);
 
 const expandedIndex = ref<number>(0);
 

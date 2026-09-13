@@ -46,6 +46,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('브랜드 슬라이더');
+import { computed } from "vue";
 import { Carousel, Slide } from "vue3-carousel";
 import AppImage from "~/components/ui/AppImage.vue";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
@@ -63,9 +64,12 @@ const DEFAULT_BRANDS: string[] = [
   "/cdn/img/client/client-5.jpg",
   "/cdn/img/client/client-2.jpg",
 ];
-const { data: fetchedBrands } = await useAsyncData<string[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 brands에 반영되게 한다.
+const { data: fetchedBrands } = useAsyncData<string[] | null>(
   "dp-brand-logo-main",
-  () => dpAreaSvc.getFirstWidgetConfig<string[]>("BRAND_LOGO_MAIN")
+  () => dpAreaSvc.getFirstWidgetConfig<string[]>("BRAND_LOGO_MAIN"),
+  { lazy: true }
 );
-const brands = fetchedBrands.value?.length ? fetchedBrands.value : DEFAULT_BRANDS;
+const brands = computed<string[]>(() => fetchedBrands.value?.length ? fetchedBrands.value : DEFAULT_BRANDS);
 </script>

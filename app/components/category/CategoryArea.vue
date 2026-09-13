@@ -47,10 +47,12 @@ defineProps({
   style_4: { type: Boolean, default: false },
 });
 
+// 2026-09-13(성능 개선): lazy:true — 화면 마운트를 블로킹하지 않고 카테고리 로드 완료 시
+// categoryItems(computed)가 자동 갱신된다. default 폴백이 있어 로딩 중엔 빈 배열로 안전하게 렌더.
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
-  { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
+  { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true }
 );
 
 const categoryItems = computed(() => (catData.value?.categoryTree ?? []).slice(0, 3));

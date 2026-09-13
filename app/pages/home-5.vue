@@ -33,7 +33,7 @@
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import LayoutFive from "~/layout/LayoutFive.vue";
-import { reactive } from "vue";
+import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataType } from "~/types/coHeroSliderDataType";
 import TrendingProducts from "~/components/products/TrendingProducts.vue";
@@ -70,9 +70,12 @@ const DEFAULT_SLIDES: CoHeroSliderDataType[] = [
   },
 ];
 
-const { data: fetchedSlides } = await useAsyncData<CoHeroSliderDataType[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 slider_data에 반영되게 한다.
+const { data: fetchedSlides } = useAsyncData<CoHeroSliderDataType[] | null>(
   "dp-hero-slider-home5",
-  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataType[]>("HERO_SLIDER_HOME5")
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataType[]>("HERO_SLIDER_HOME5"),
+  { lazy: true }
 );
-const slider_data = reactive<CoHeroSliderDataType[]>(fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
+const slider_data = computed<CoHeroSliderDataType[]>(() => fetchedSlides.value?.length ? fetchedSlides.value : DEFAULT_SLIDES);
 </script>

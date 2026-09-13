@@ -123,11 +123,14 @@ const DEFAULT_CONTACT_INFO: CoContactInfoItemType[] = [
     subtitle: "(010) 3805 0206",
   },
 ];
-const { data: fetchedContactInfo } = await useAsyncData<CoContactInfoItemType[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 contactInfo에 반영되게 한다.
+const { data: fetchedContactInfo } = useAsyncData<CoContactInfoItemType[] | null>(
   "dp-contact-info-main",
-  () => dpAreaSvc.getFirstWidgetConfig<CoContactInfoItemType[]>("CONTACT_INFO_MAIN")
+  () => dpAreaSvc.getFirstWidgetConfig<CoContactInfoItemType[]>("CONTACT_INFO_MAIN"),
+  { lazy: true }
 );
-const contactInfo: CoContactInfoItemType[] = fetchedContactInfo.value?.length ? fetchedContactInfo.value : DEFAULT_CONTACT_INFO;
+const contactInfo = computed<CoContactInfoItemType[]>(() => fetchedContactInfo.value?.length ? fetchedContactInfo.value : DEFAULT_CONTACT_INFO);
 
 const schema = yup.object({
   name: yup.string().required("이름을 입력해 주세요").label("이름"),

@@ -338,7 +338,7 @@
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import LayoutSeven from "~/layout/LayoutSeven.vue";
-import { ref, reactive, computed } from "vue";
+import { ref, computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataTypeThree } from "~/types/coHeroSliderDataTypeThree";
 import AppImage from "~/components/ui/AppImage.vue";
@@ -382,11 +382,14 @@ const DEFAULT_HERO_SLIDES: CoHeroSliderDataTypeThree[] = [
     subtitle: "다양한 라이프스타일을 경험해 보세요.",
   },
 ];
-const { data: fetchedHeroSlides } = await useAsyncData<CoHeroSliderDataTypeThree[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 heroSliderData에 반영되게 한다.
+const { data: fetchedHeroSlides } = useAsyncData<CoHeroSliderDataTypeThree[] | null>(
   "dp-hero-slider-home7",
-  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataTypeThree[]>("HERO_SLIDER_HOME7")
+  () => dpAreaSvc.getFirstWidgetConfig<CoHeroSliderDataTypeThree[]>("HERO_SLIDER_HOME7"),
+  { lazy: true }
 );
-const heroSliderData = reactive<CoHeroSliderDataTypeThree[]>(fetchedHeroSlides.value?.length ? fetchedHeroSlides.value : DEFAULT_HERO_SLIDES);
+const heroSliderData = computed<CoHeroSliderDataTypeThree[]>(() => fetchedHeroSlides.value?.length ? fetchedHeroSlides.value : DEFAULT_HERO_SLIDES);
 function handleHeroNext() {
   heroSliderRef.value?.next();
 }
@@ -394,11 +397,11 @@ function handleHeroPrev() {
   heroSliderRef.value?.prev();
 }
 
-// 카테고리 2
+// 카테고리 2 (2026-09-13 성능 개선: lazy:true)
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
-  { default: () => ({ categoryTree: [], categoryIdToName: {} }) }
+  { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true }
 );
 const categoryItems = computed(() => (catData.value?.categoryTree ?? []).slice(3, 6));
 
@@ -451,11 +454,13 @@ const DEFAULT_TESTIMONIALS: TestimonialDataType[] = [
     desc: "많은 분들이 찾고 계신 바로 그 상품, 지금 이 순간에만 만나실 수 있습니다. 놓치면 다시는 같은 조건으로 만나기 어려울지도 모릅니다",
   },
 ];
-const { data: fetchedTestimonials } = await useAsyncData<TestimonialDataType[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 늦게 도착한 데이터가 testimonialData에 반영되게 한다.
+const { data: fetchedTestimonials } = useAsyncData<TestimonialDataType[] | null>(
   "dp-testimonial-home7",
-  () => dpAreaSvc.getFirstWidgetConfig<TestimonialDataType[]>("TESTIMONIAL_HOME7")
+  () => dpAreaSvc.getFirstWidgetConfig<TestimonialDataType[]>("TESTIMONIAL_HOME7"),
+  { lazy: true }
 );
-const testimonialData = reactive<TestimonialDataType[]>(fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS);
+const testimonialData = computed<TestimonialDataType[]>(() => fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS);
 
 // 블로그 영역 2
 const { blogs } = useBlogs();
@@ -482,11 +487,13 @@ const DEFAULT_BRAND_IMAGES: string[] = [
   "/cdn/img/client/client-5.jpg",
   "/cdn/img/client/client-2.jpg",
 ];
-const { data: fetchedBrandImages } = await useAsyncData<string[] | null>(
+// 2026-09-13(성능 개선): lazy:true + computed — 늦게 도착한 데이터가 brandImages에 반영되게 한다.
+const { data: fetchedBrandImages } = useAsyncData<string[] | null>(
   "dp-brand-logo-home7",
-  () => dpAreaSvc.getFirstWidgetConfig<string[]>("BRAND_LOGO_HOME7")
+  () => dpAreaSvc.getFirstWidgetConfig<string[]>("BRAND_LOGO_HOME7"),
+  { lazy: true }
 );
-const brandImages = fetchedBrandImages.value?.length ? fetchedBrandImages.value : DEFAULT_BRAND_IMAGES;
+const brandImages = computed<string[]>(() => fetchedBrandImages.value?.length ? fetchedBrandImages.value : DEFAULT_BRAND_IMAGES);
 function handleBrandNext() {
   brandSliderRef.value?.next();
 }
