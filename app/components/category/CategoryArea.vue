@@ -16,7 +16,10 @@
                   />
                 </nuxt-link>
               </div>
-              <div class="banner__content banner__content--center absolute transition-3">
+              <!-- 2026-09-13(요청사항: "코멘트가 좌측정렬되어야 해") — banner__content--center는
+                   중앙 정렬 모디파이어라 데모(좌측 정렬)와 달랐다. 기본 banner__content가 이미
+                   좌측 정렬로 설계돼 있어 그대로 사용. -->
+              <div class="banner__content absolute transition-3">
                 <h5>
                   <nuxt-link href="/shop">
                     <span v-html="item.parentTitle"></span>

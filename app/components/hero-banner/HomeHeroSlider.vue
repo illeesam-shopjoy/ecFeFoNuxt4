@@ -3,10 +3,12 @@
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <Carousel :items-to-show="1" :wrap-around="true" class="slider-active">
       <Slide v-for="item in slider_data" :key="item.heroSliderId" :class="`single-slider slider__height ${style_2 ? 'single-slider-2 slider__height-5' : ''} flex items-center`" :style="{ backgroundImage: `url(${item.bgImg})` }">
+        <!-- 2026-09-13(요청사항: "코멘트가 좌측정렬되어야 해") — 데모는 히어로 텍스트가 좌측 정렬인데
+             justify-center/mx-auto/text-center가 겹쳐 중앙 정렬로 보였다. -->
         <div class="max-w-7xl mx-auto px-4">
-          <div class="row flex justify-center">
-            <div class="col-xl-6 col-lg-6 col-md-8 col-sm-10 w-full mx-auto">
-              <div class="slider__content text-center">
+          <div class="row">
+            <div class="col-xl-6 col-lg-6 col-md-8 col-sm-10 w-full">
+              <div class="slider__content text-left">
                 <h2 v-html="item.title"></h2>
                 <p v-html="item.subtile"></p>
                 <nuxt-link href="/shop" class="os-btn os-btn-2 hero-slider-btn"> 바로 보기 </nuxt-link>

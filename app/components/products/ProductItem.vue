@@ -25,9 +25,14 @@
     </div>
     <div class="product__content relative">
       <div class="product__content-inner">
-        <nuxt-link :to="`/prod-dtl/${item.prodId}`">
-          <span v-html="item.prodNm"></span>
-        </nuxt-link>
+        <!-- 2026-09-13(요청사항: "상품항목정보가 작아보여 크게 보여줘") — 상품명을 h4로 감싸
+             테마 CSS(.product__content h4)가 의도한 폰트를 그대로 받게 하고, 아래 스타일에서
+             데모 수준으로 크기를 키움. -->
+        <h4>
+          <nuxt-link :to="`/prod-dtl/${item.prodId}`">
+            <span v-html="item.prodNm"></span>
+          </nuxt-link>
+        </h4>
         <div class="product__price transition-3">
           <span>{{ formatPrice(item.salePrice) }}</span>
           <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
@@ -68,3 +73,14 @@ function openQuickView() {
   productModalRef.value?.show();
 }
 </script>
+
+<style scoped>
+/* 2026-09-13(요청사항: "상품항목정보가 작아보여 크게 보여줘") — 테마 기본값(h4 14px, 가격 14px)이
+   데모 대비 작아 보여 상품명/가격을 조금 더 키움. */
+.product__content h4 {
+  font-size: 16px;
+}
+.product__price span {
+  font-size: 16px;
+}
+</style>
