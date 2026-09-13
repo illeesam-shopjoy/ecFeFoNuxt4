@@ -45,9 +45,9 @@
                   <li>
                     <div style="display:inline-flex;align-items:center;gap:8px;">
                       <user-dropdown />
-                      <a href="#"><i class="far fa-bars"></i></a>
+                      <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
                     </div>
-                    <extra-info />
+                    <extra-info v-show="showExtraInfo" />
                   </li>
                 </ul>
               </div>
@@ -71,9 +71,9 @@
                   <li>
                     <div style="display:inline-flex;align-items:center;gap:8px;">
                       <user-dropdown />
-                      <a href="#"><i class="far fa-bars"></i></a>
+                      <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
                     </div>
-                    <extra-info />
+                    <extra-info v-show="showExtraInfo" />
                   </li>
                 </ul>
               </div>
@@ -112,6 +112,9 @@ const state = useCartStore();
 const isSticky = ref(false);
 const search_popup = ref<{ openSearchPopup(): void } | null>(null);
 const offcanvas = ref<{ OpenOffcanvas(): void } | null>(null);
+// 로그인 옆 햄버거(far fa-bars) 클릭 시 ExtraInfo(내 계정/언어/통화 등) 토글 — 기본값 닫힘
+// (2026-09-13 요청사항: "클릭하여 안나오게 할수도 있게 옵션 넣어줘, 기본값은 안나오게").
+const showExtraInfo = ref(false);
 
 function handleSticky() {
   isSticky.value = window.scrollY > 80;

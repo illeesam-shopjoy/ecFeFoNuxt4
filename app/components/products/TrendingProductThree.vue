@@ -71,5 +71,9 @@ import AppImage from "~/components/ui/AppImage.vue";
 const store = useProductsStore();
 const big_item_1 = computed(() => store.products.filter((p) => p.bigImg)[0]);
 const big_item_2 = computed(() => store.products.filter((p) => p.bigImg)[1]);
-const trending_products = computed(() => store.products.filter((p) => p.trending).slice(0, 4));
+// 2026-09-13 버그수정: trending=true 상품이 없으면 항상 비어 보이던 문제 — 없으면 전체로 대체.
+const trending_products = computed(() => {
+  const trending = store.products.filter((p) => p.trending);
+  return (trending.length ? trending : store.products).slice(0, 4);
+});
 </script>

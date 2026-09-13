@@ -67,5 +67,8 @@ useHead({
 usePageTitle("블로그 2단 메이슨리");
 
 const { blogs, pending } = useBlogs();
-const masonryBlogs = computed(() => (blogs.value ?? []).filter((b) => b.blogContent === "블로그-메이슨리"));
+// 2026-09-13 버그수정: blogContent는 실제 블로그 본문 HTML(예: "<article>...</article>")이라
+// 예전 목업 데이터 시절의 "블로그-메이슨리" 같은 태그 문자열과 절대 일치하지 않아 목록이 항상
+// 비어 있었다 — 필터 제거, 전체 블로그 사용.
+const masonryBlogs = computed(() => blogs.value ?? []);
 </script>

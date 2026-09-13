@@ -123,10 +123,15 @@ const slider_1 = ref<{ next(): void; prev(): void } | null>(null);
 const slider_2 = ref<{ next(): void; prev(): void } | null>(null);
 const slider_3 = ref<{ next(): void; prev(): void } | null>(null);
 const store = useProductsStore();
-const trending_products = computed(() => [
-  { id: 1, items: store.products.filter((p) => p.trending).slice(0, 3) },
-  { id: 2, items: store.products.filter((p) => p.trending).slice(3, 6) },
-]);
+// 2026-09-13 버그수정: trending=true 상품이 없으면 항상 비어 보이던 문제 — 없으면 전체로 대체.
+const trending_products = computed(() => {
+  const trending = store.products.filter((p) => p.trending);
+  const base = trending.length ? trending : store.products;
+  return [
+    { id: 1, items: base.slice(0, 3) },
+    { id: 2, items: base.slice(3, 6) },
+  ];
+});
 const sale_products = computed(() => [
   { id: 1, items: store.products.filter((p) => p.saleDiscntRate).slice(0, 3) },
   { id: 2, items: store.products.filter((p) => p.saleDiscntRate).slice(3, 6) },

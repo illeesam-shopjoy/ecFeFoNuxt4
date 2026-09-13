@@ -140,11 +140,15 @@ function onPageBadgeMouseDown(id: string, e: MouseEvent) {
 }
 
 // ── body 클래스 (잠금 시 오른쪽 여백) ──────────────────
+// 2026-09-13 버그수정: isPanelsLocked는 기본값 true(module 싱글턴)라서 패널 자체가
+// isVisible=false로 렌더되지 않을 때도 이 watch가 immediate 실행되어 body에
+// padding-right:320px를 걸어놓는 문제가 있었다("로그인 페이지 우측 공백"의 원인) —
+// isVisible도 함께 봐서 패널이 실제로 보일 때만 여백을 예약하도록 수정.
 watch(
-  isPanelsLocked,
-  (locked) => {
+  () => isVisible.value && isPanelsLocked.value,
+  (lockedAndVisible) => {
     if (typeof document === 'undefined') return
-    if (locked) document.body.classList.add('fp-panels-locked')
+    if (lockedAndVisible) document.body.classList.add('fp-panels-locked')
     else document.body.classList.remove('fp-panels-locked')
   },
   { immediate: true }

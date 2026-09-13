@@ -22,8 +22,10 @@ export const useProductsStore = defineStore("products", {
       if (this.loaded) return;
       try {
         const data = await pdProductSvc.getPage();
-        this.products = data;
-        this.filterProducts = data;
+        // 2026-09-13 방어코드: API 응답이 배열이 아닌 형태(예: 래핑된 객체)로 오면
+        // 이후 store.products.forEach/.map 등에서 즉시 크래시하므로 방어.
+        this.products = Array.isArray(data) ? data : [];
+        this.filterProducts = this.products;
         this.loaded = true;
       } catch (err) {
         console.error("[useProducts] 상품 로드 실패:", err);
@@ -32,8 +34,9 @@ export const useProductsStore = defineStore("products", {
 
     /** SSR에서 미리 불러온 데이터를 스토어에 주입 */
     setStHydrate(data: PdProductType[]) {
-      this.products = data;
-      this.filterProducts = data;
+      // 2026-09-13 방어코드: 위 loadStProducts와 동일한 이유.
+      this.products = Array.isArray(data) ? data : [];
+      this.filterProducts = this.products;
       this.loaded = true;
     },
 
@@ -65,6 +68,13 @@ export const useProductsStore = defineStore("products", {
     handleStColor(color: string) {
       this.filterProducts = this.products.filter((p) => p.optionColors?.some((opt) => (opt.optionCode ?? String(opt.optionId)) === color));
       this.activeCls = color;
+    },
+
+    /** 2026-09-13 추가: 헤더 검색창(SearchModal)에서 Enter/검색 클릭 시 상품명으로 필터링 */
+    handleStSearch(keyword: string) {
+      const kw = keyword.trim().toLowerCase();
+      this.filterProducts = kw ? this.products.filter((p) => p.prodNm?.toLowerCase().includes(kw)) : this.products;
+      this.activeCls = "";
     },
 
     handleStBrand(brand: string) {

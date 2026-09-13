@@ -110,7 +110,12 @@ usePageTitle("홈 2");
 
 const productsStore = useProductsStore();
 const trendingBigItem = computed(() => productsStore.products.find((p) => p.bigImg));
-const trendingProducts = computed(() => productsStore.products.filter((p) => p.trending).slice(0, 6));
+// 2026-09-13 버그수정: "인기상품 표시되어야 해" — 현재 시딩된 상품 중 trending=true인
+// 항목이 없어 "인기 상품" 섹션이 항상 비어 있었다. trending 상품이 없으면 최근 상품으로 대체.
+const trendingProducts = computed(() => {
+  const trending = productsStore.products.filter((p) => p.trending);
+  return (trending.length ? trending : productsStore.products).slice(0, 6);
+});
 const saleProducts = computed(() => productsStore.products.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));
 </script>
 

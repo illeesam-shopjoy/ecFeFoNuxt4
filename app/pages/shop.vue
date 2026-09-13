@@ -278,6 +278,11 @@ function paginatedData(_rows: unknown[], start: number, count: number) {
   countOfPage.value = count;
 }
 
+// 2026-09-13 추가: 헤더 검색(SearchModal)에서 /shop?q=검색어 로 넘어왔을 때 적용.
+const route = useRoute();
+const initialQuery = typeof route.query.q === "string" ? route.query.q : "";
+if (initialQuery) store.handleStSearch(initialQuery);
+
 // ── 사이드바: 상품 카테고리 (옛 ProductCategory) ─────────────────────────────
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",

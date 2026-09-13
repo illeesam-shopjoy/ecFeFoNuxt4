@@ -46,7 +46,11 @@ const props = defineProps({
   style_3: { type: Boolean, default: false },
 });
 const store = useProductsStore();
-const trending_prd = computed(() => store.products.filter((p) => p.trending));
+// 2026-09-13 버그수정: trending=true 상품이 없으면 항상 비어 보이던 문제 — 없으면 전체로 대체.
+const trending_prd = computed(() => {
+  const trending = store.products.filter((p) => p.trending);
+  return trending.length ? trending : store.products;
+});
 const perView = ref(props.style_3 ? 12 : 8);
 function handleLoadMore() {
   perView.value += 2;
