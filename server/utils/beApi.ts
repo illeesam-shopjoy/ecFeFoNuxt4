@@ -40,23 +40,27 @@ export function authHeaderFrom(event: H3Event): Record<string, string> {
   return auth ? { authorization: auth } : {};
 }
 
+async function beFetchOnce<T>(url: string, method: string, opts: BeCallOptions): Promise<T> {
+  const res = await $fetch<BeEnvelope<T>>(url, {
+    method,
+    query: opts.query,
+    body: opts.body,
+    headers: opts.headers,
+    timeout: opts.timeout ?? 8000,
+    // ecBeBo는 오류도 200이 아닌 실제 HTTP status(400/401/404/500...)로 내려준다.
+    // $fetch가 던지는 FetchError를 아래 catch에서 envelope 형태로 다시 해석한다.
+  } as Parameters<typeof $fetch>[1]);
+  if (!res || res.ok === false) {
+    throw createError({ statusCode: res?.status ?? 502, statusMessage: res?.message ?? "백엔드 오류가 발생했습니다." });
+  }
+  return res.data as T;
+}
+
 async function beFetch<T>(path: string, opts: BeCallOptions = {}): Promise<T> {
   const url = `${beBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
   const method = opts.method ?? "GET";
   try {
-    const res = await $fetch<BeEnvelope<T>>(url, {
-      method,
-      query: opts.query,
-      body: opts.body,
-      headers: opts.headers,
-      timeout: opts.timeout ?? 8000,
-      // ecBeBo는 오류도 200이 아닌 실제 HTTP status(400/401/404/500...)로 내려준다.
-      // $fetch가 던지는 FetchError를 아래 catch에서 envelope 형태로 다시 해석한다.
-    } as Parameters<typeof $fetch>[1]);
-    if (!res || res.ok === false) {
-      throw createError({ statusCode: res?.status ?? 502, statusMessage: res?.message ?? "백엔드 오류가 발생했습니다." });
-    }
-    return res.data as T;
+    return await beFetchOnce<T>(url, method, opts);
   } catch (err: unknown) {
     // $fetch가 4xx/5xx에서 던지는 FetchError는 err.data 에 envelope이 들어있다.
     const fetchErr = err as { data?: BeEnvelope<unknown>; statusCode?: number; message?: string };
@@ -66,7 +70,21 @@ async function beFetch<T>(path: string, opts: BeCallOptions = {}): Promise<T> {
       throw createError({ statusCode: envelope.status ?? 502, statusMessage: envelope.message ?? "백엔드 오류가 발생했습니다." });
     }
     if (fetchErr?.statusCode) throw err as never;
-    logger.error("[beApi]", method, url, "호출 실패:", fetchErr?.message ?? err);
+
+    // 2026-09-13: Netlify Functions(AWS Lambda) → 자택 Synology NAS 백엔드 사이의 네트워크가
+    // 간헐적으로 연결 실패/타임아웃을 일으키는 사례 확인(동일 URL을 직접 curl하면 정상 응답).
+    // GET은 멱등하므로 진짜 네트워크 레벨 오류(응답 envelope도, statusCode도 없는 경우)에
+    // 한해 1회 재시도 — POST/PUT/DELETE는 중복 처리(중복 주문 등) 위험이 있어 재시도하지 않는다.
+    if (method === "GET") {
+      logger.warn("[beApi]", method, url, "연결 실패 — 1회 재시도:", fetchErr?.message ?? err);
+      try {
+        return await beFetchOnce<T>(url, method, opts);
+      } catch (retryErr) {
+        logger.error("[beApi]", method, url, "재시도도 실패:", (retryErr as { message?: string })?.message ?? retryErr);
+      }
+    } else {
+      logger.error("[beApi]", method, url, "호출 실패:", fetchErr?.message ?? err);
+    }
     throw createError({ statusCode: 502, statusMessage: "백엔드(ecBeBo) 서버에 연결할 수 없습니다." });
   }
 }
