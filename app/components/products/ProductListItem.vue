@@ -26,6 +26,12 @@
               <span>{{ formatPrice(item.salePrice) }}</span>
               <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
             </div>
+            <!-- 2026-09-13(요청사항: "평가도 보여야 하고") — item.rating은 목록 조회에서는
+                 리뷰 요약을 따로 안 불러와 항상 0이지만(상세 페이지에서만 채워짐), 별점 UI
+                 구조 자체는 데모와 맞춰 노출해둔다. -->
+            <div class="rating mb-10">
+              <a v-for="n in 5" :key="n" href="#" @click.prevent><i :class="n <= Math.round(item.rating) ? 'fas fa-star' : 'fal fa-star'"></i></a>
+            </div>
             <p>{{ item.smDesc }}</p>
           </div>
           <div class="add-cart-list flex flex-wrap items-center">

@@ -148,10 +148,12 @@
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="brand">
+                    <!-- 2026-09-13 버그수정: 코드(BRD0000000000005 등)만 보이던 문제 —
+                         brandNm(실제 브랜드명)을 직접 사용. -->
                     <ul>
-                      <li v-for="(brand, i) in brands" :key="i">
-                        <a :class="`${store.activeCls === brand ? 'active' : ''}`" @click.prevent="store.handleStBrand(brand)" href="#">
-                          {{ getBrandLabel(brand) }}
+                      <li v-for="b in brands" :key="b.code">
+                        <a :class="`${store.activeCls === b.code ? 'active' : ''}`" @click.prevent="store.handleStBrand(b.code)" href="#">
+                          {{ b.name }}
                         </a>
                       </li>
                     </ul>
@@ -232,7 +234,7 @@ usePageTitle("쇼핑 우사이드");
 // ── 쇼핑 영역 (옛 ShopArea) ─────────────────────────────
 const store = useProductsStore();
 const { formatPrice } = usePrice();
-const { getSizeLabel, getBrandLabel } = useFilterLabels();
+const { getSizeLabel } = useFilterLabels();
 
 const viewMode = ref<"grid" | "list">("grid");
 const pageStart = ref(0);
@@ -291,7 +293,15 @@ const allColor = computed(() => {
 });
 
 // ── 사이드바: 브랜드 (옛 ProductBrands) ─────────────────────────────
-const brands = computed(() => [...new Set(store.products.map((p) => p.brand?.brandCode ?? String(p.brand?.brandId)))]);
+const brands = computed(() => {
+  const map = new Map<string, string>();
+  store.products.forEach((p) => {
+    const code = p.brand?.brandCode ?? (p.brand?.brandId ? String(p.brand.brandId) : undefined);
+    if (!code || map.has(code)) return;
+    map.set(code, p.brand?.brandNm || code);
+  });
+  return Array.from(map, ([code, name]) => ({ code, name }));
+});
 
 // ── 사이드바: 추천 상품 (옛 ProductsFeatured) ─────────────────────────────
 const featuredProducts = computed(() => store.products.filter((p) => p.trending).slice(0, 2));

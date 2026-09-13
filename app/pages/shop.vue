@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="쇼핑" subtitle="쇼핑" />
+    <breadcrumb-area title="쇼핑" subtitle="쇼핑" :compact="true" />
 
     <!-- 스켈레톤 그리드 (SSR 로딩 중) -->
     <section v-if="pending" class="shop__area pt-100 pb-100">
@@ -25,8 +25,9 @@
             <div class="shop__sidebar">
               <!-- 상품 카테고리 -->
               <div class="sidebar__widget mb-55">
-                <div class="sidebar__widget-title mb-25">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>상품 카테고리</h3>
+                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="categories">
@@ -66,8 +67,9 @@
               <!-- 가격 필터 -->
               <client-only>
                 <div class="sidebar__widget mb-55">
-                  <div class="sidebar__widget-title mb-30">
+                  <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                     <h3>가격별 필터</h3>
+                    <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
                   </div>
                   <div class="sidebar__widget-content">
                     <div class="price__slider">
@@ -86,8 +88,9 @@
 
               <!-- 상품 사이즈 -->
               <div class="sidebar__widget mb-55">
-                <div class="sidebar__widget-title mb-30">
+                <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                   <h3>사이즈</h3>
+                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="size">
@@ -102,8 +105,9 @@
 
               <!-- 상품 색상 -->
               <div class="sidebar__widget mb-60">
-                <div class="sidebar__widget-title mb-20">
+                <div class="sidebar__widget-title mb-20 flex items-center justify-between">
                   <h3>색상 선택</h3>
+                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="color__pick">
@@ -120,15 +124,19 @@
 
               <!-- 상품 브랜드 -->
               <div class="sidebar__widget mb-50">
-                <div class="sidebar__widget-title mb-25">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>브랜드</h3>
+                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="brand">
                     <ul>
-                      <li v-for="(brand, i) in brands" :key="i">
-                        <a :class="`${store.activeCls === brand ? 'active' : ''}`" @click.prevent="store.handleStBrand(brand)" href="#">
-                          {{ getBrandLabel(brand) }}
+                      <!-- 2026-09-13 버그수정: "브랜드 상품아이디만 보이는데 브랜드명이 보여야해" —
+                           getBrandLabel(code)는 brand01 같은 옛 목업 코드용 폴백이라, 실 데이터
+                           코드(BRD0000000000005 등)는 그대로 노출됐다. 실제 brandNm을 직접 사용. -->
+                      <li v-for="b in brands" :key="b.code">
+                        <a :class="`${store.activeCls === b.code ? 'active' : ''}`" @click.prevent="store.handleStBrand(b.code)" href="#">
+                          {{ b.name }}
                         </a>
                       </li>
                     </ul>
@@ -136,9 +144,9 @@
                 </div>
               </div>
 
-              <!-- 초기화 버튼 -->
+              <!-- 전체 초기화 버튼 -->
               <div class="reset-button mt-20 mb-30">
-                <button class="os-btn os-btn-black" @click="store.handleStResetFilter">필터 초기화</button>
+                <button class="os-btn os-btn-black" @click="store.handleStResetFilter">전체 초기화</button>
               </div>
 
               <!-- 추천 상품 -->
@@ -199,13 +207,17 @@
                   </ul>
                 </div>
               </div>
+              <!-- 2026-09-13(요청사항: "카드형/목록형 클릭하면 애니메이션 효과") — v-show 대신
+                   Transition+v-if로 바꿔 전환 시 살짝 페이드되게 한다. -->
               <div id="pills-tabContent">
-                <div v-show="viewMode === 'grid'" id="pills-grid" role="tabpanel">
-                  <product-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
-                </div>
-                <div v-show="viewMode === 'list'" id="pills-list" role="tabpanel">
-                  <product-list-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
-                </div>
+                <Transition name="view-fade" mode="out-in">
+                  <div v-if="viewMode === 'grid'" key="grid" id="pills-grid" role="tabpanel">
+                    <product-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                  </div>
+                  <div v-else key="list" id="pills-list" role="tabpanel">
+                    <product-list-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                  </div>
+                </Transition>
               </div>
 
               <div class="shop__pagination-area mt-40">
@@ -263,7 +275,7 @@ const { pending } = await useAsyncData<PdProductType[]>(
 // ── 쇼핑 영역 (옛 ShopArea) ─────────────────────────────
 const store = useProductsStore();
 const { formatPrice } = usePrice();
-const { getSizeLabel, getBrandLabel } = useFilterLabels();
+const { getSizeLabel } = useFilterLabels();
 
 const viewMode = ref<"grid" | "list">("grid");
 const pageStart = ref(0);
@@ -327,8 +339,42 @@ const allColor = computed(() => {
 });
 
 // ── 사이드바: 브랜드 (옛 ProductBrands) ─────────────────────────────
-const brands = computed(() => [...new Set(store.products.map((p) => p.brand?.brandCode ?? String(p.brand?.brandId)))]);
+// 2026-09-13 버그수정: 코드만 있고 이름이 없던 문제 — brandNm까지 같이 들고 있는다.
+const brands = computed(() => {
+  const map = new Map<string, string>();
+  store.products.forEach((p) => {
+    const code = p.brand?.brandCode ?? (p.brand?.brandId ? String(p.brand.brandId) : undefined);
+    if (!code || map.has(code)) return;
+    map.set(code, p.brand?.brandNm || code);
+  });
+  return Array.from(map, ([code, name]) => ({ code, name }));
+});
 
 // ── 사이드바: 추천 상품 (옛 ProductsFeatured) ─────────────────────────────
 const featuredProducts = computed(() => store.products.filter((p) => p.trending).slice(0, 2));
 </script>
+
+<style scoped>
+.view-fade-enter-active,
+.view-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.view-fade-enter-from,
+.view-fade-leave-to {
+  opacity: 0;
+}
+
+/* 2026-09-13(요청사항: "항목별 초기화 버튼 있어야 해") */
+.filter-reset-link {
+  font-size: 0.78rem;
+  color: #999;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.filter-reset-link:hover {
+  color: var(--theme-color, #bc8246);
+  text-decoration: underline;
+}
+</style>
