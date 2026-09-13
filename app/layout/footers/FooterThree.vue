@@ -88,7 +88,7 @@
             <div class="footer__copyright footer__copyright-3">
               <p>
                 저작권권 © {{ new Date().getFullYear() }} <nuxt-link href="/" class="link">shopjoy</nuxt-link> 모든 권리 보유.
-                <nuxt-link href="/" class="link">jungdam</nuxt-link>
+                <nuxt-link href="/" class="link">shopjoy</nuxt-link>
               </p>
             </div>
           </div>

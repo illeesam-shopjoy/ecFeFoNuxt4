@@ -52,7 +52,7 @@
         <div class="flex flex-wrap items-center justify-center">
           <div class="w-full lg:w-7/12">
             <div class="footer__copyright">
-              <p>저작권권 {{ new Date().getFullYear() }} © <nuxt-link href="/">shopjoy</nuxt-link> 모든 권리 보유. <nuxt-link href="/">jungdam</nuxt-link> 제작</p>
+              <p>저작권권 {{ new Date().getFullYear() }} © <nuxt-link href="/">shopjoy</nuxt-link> 모든 권리 보유. <nuxt-link href="/">shopjoy</nuxt-link> 제작</p>
             </div>
           </div>
           <div class="w-full lg:w-5/12">

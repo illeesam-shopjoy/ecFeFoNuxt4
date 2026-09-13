@@ -26,7 +26,7 @@ shopjoy(Outstock) 프로젝트에서 **Apple 로그인**을 사용하기 위한 
 ### 2.3 Services ID (웹용 Client ID)
 
 1. **Identifiers** → **+** → **Services IDs** 선택.
-2. **Description**, **Identifier** 입력 (예: `com.yourcompany.jungdam.service`). 이 **Identifier**가 우리가 쓰는 **Client ID**입니다.
+2. **Description**, **Identifier** 입력 (예: `com.yourcompany.shopjoy.service`). 이 **Identifier**가 우리가 쓰는 **Client ID**입니다.
 3. **Configure** 클릭:
    - **Domains and Subdomains**: `localhost`(개발), 운영 도메인 (예: `your-domain.com`).
    - **Return URLs**:  
@@ -43,7 +43,7 @@ shopjoy(Outstock) 프로젝트에서 **Apple 로그인**을 사용하기 위한 
 ### 2.5 Team ID, Client ID 정리
 
 - **Team ID**: Apple Developer 계정 상단 또는 Membership 메뉴에서 확인.
-- **Client ID**: 위에서 만든 **Services ID** (예: `com.yourcompany.jungdam.service`).
+- **Client ID**: 위에서 만든 **Services ID** (예: `com.yourcompany.shopjoy.service`).
 - **Key ID**: 방금 만든 키의 Key ID.
 - **Private Key**: `.p8` 파일 내용 전체 (-----BEGIN PRIVATE KEY----- ~ -----END PRIVATE KEY-----).
 
@@ -69,7 +69,7 @@ shopjoy(Outstock) 프로젝트에서 **Apple 로그인**을 사용하기 위한 
 ### 예시
 
 ```env
-APPLE_CLIENT_ID=com.yourcompany.jungdam.service
+APPLE_CLIENT_ID=com.yourcompany.shopjoy.service
 APPLE_TEAM_ID=XXXXXXXXXX
 APPLE_KEY_ID=YYYYYYYYYY
 APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----

@@ -28,7 +28,7 @@
           <div class="row flex justify-center items-center">
             <div class="col-xl-6 col-lg-7">
               <div class="footer__copyright footer__copyright-2">
-                <p>저작권 {{ new Date().getFullYear() }} © <nuxt-link href="/">shopjoy</nuxt-link> 모든 권리 보유. <nuxt-link href="/">jungdam</nuxt-link> 제작</p>
+                <p>저작권 {{ new Date().getFullYear() }} © <nuxt-link href="/">shopjoy</nuxt-link> 모든 권리 보유. <nuxt-link href="/">shopjoy</nuxt-link> 제작</p>
               </div>
             </div>
             <div class="col-xl-6 col-lg-5">

@@ -24,7 +24,7 @@ export default defineNuxtConfig({
   ],
   app: {
     head: {
-      title: "jungdam",
+      title: "shopjoy",
       link: [
         {
           rel: "stylesheet",
