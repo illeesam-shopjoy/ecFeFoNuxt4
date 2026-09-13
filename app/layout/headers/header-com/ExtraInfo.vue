@@ -23,6 +23,7 @@
           <li><nuxt-link href="/wishlist">위시리스트</nuxt-link></li>
           <li><nuxt-link href="/cart">장바구니</nuxt-link></li>
           <li><nuxt-link href="/checkout">결제</nuxt-link></li>
+          <li><nuxt-link href="/compare">상품비교</nuxt-link></li>
           <li><nuxt-link href="/register">회원가입</nuxt-link></li>
         </ul>
       </div>

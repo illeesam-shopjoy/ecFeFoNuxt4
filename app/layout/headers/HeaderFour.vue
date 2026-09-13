@@ -32,7 +32,7 @@
                       </a>
                     </li>
                     <li>
-                      <div style="display:inline-flex;align-items:center;gap:8px;">
+                      <div style="display:inline-flex;align-items:center;gap:18px;">
                         <user-dropdown />
                         <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
                       </div>

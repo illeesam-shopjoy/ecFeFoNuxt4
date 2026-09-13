@@ -7,7 +7,9 @@
           <div :class="`banner__item-2 banner-${index === 0 ? 'right' : 'left'} relative mb-30 p${index === 0 ? 'r' : 'l'}-15`">
             <div class="banner__thumb fix">
               <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="w-img">
-                <app-image :src="item.bannerImg" alt="banner" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '16/9' }" />
+                <!-- 2026-09-13(요청사항: "우측에 비해 좀 크게 ... height 조정해줘") — 16/9는
+                     데모보다 세로로 커 보여 2/1로 낮춤. -->
+                <app-image :src="item.bannerImg" alt="banner" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '2/1' }" />
               </nuxt-link>
             </div>
             <div :class="`banner__content-2 ${style_3 ? 'banner__content-4' : ''} ${index !== 0 && style_3 ? 'banner__content-4-right' : ''} absolute transition-3`">

@@ -1,7 +1,9 @@
 <template>
   <section class="product__area pt-60 pb-100">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
-    <div :class="`${style_2 ? 'custom-container' : style_3 ? 'container-fluid' : 'container'} mx-auto max-w-7xl px-4`">
+    <!-- 2026-09-13(요청사항: "인기상품 4열 상품 width를 우측란처럼 약간 크게해줘") —
+         max-w-7xl(1280px)이 데모 대비 좁아 카드 4열이 작아 보였다. -->
+    <div :class="`${style_2 ? 'custom-container' : style_3 ? 'container-fluid' : 'container'} mx-auto max-w-[1600px] px-4`">
       <div class="row">
         <div class="col-xl-12">
           <div :class="`section__title-wrapper text-center mb-55 ${style_2 ? 'p-relative' : ''}`">
@@ -56,3 +58,12 @@ function handleLoadMore() {
   perView.value += 2;
 }
 </script>
+
+<style scoped>
+/* 2026-09-13(요청사항: "인기상품 항목별 width 약 18px씩 늘려줘") — 컬럼 폭은 %기반이라
+   카드 하나하나를 그대로 넓히려면 좌우 거터(각 15px)를 9px씩 줄여 그만큼 콘텐츠 폭을 늘린다. */
+.product__item {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+</style>

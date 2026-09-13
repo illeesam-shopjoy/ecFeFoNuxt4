@@ -8,11 +8,13 @@
             <div class="banner__item mb-30 relative">
               <div class="banner__thumb fix">
                 <nuxt-link href="/shop" class="w-img">
+                  <!-- 2026-09-13(요청사항: "height 우측에 보이것만큼 줄여줘" → 이후 "좀더 늘려줘")
+                       4/3→2/1로 낮췄더니 이번엔 너무 납작해져서 3/2로 절충. -->
                   <app-image
                     :src="item.img"
                     alt="banner"
                     wrap-class="w-img"
-                    :skeleton-style="{ width: '100%', aspectRatio: '4/3' }"
+                    :skeleton-style="{ width: '100%', aspectRatio: '3/2' }"
                   />
                 </nuxt-link>
               </div>
