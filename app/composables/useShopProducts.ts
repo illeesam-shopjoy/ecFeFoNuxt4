@@ -14,7 +14,7 @@
  * 옵션 테이블 조인 필터가 아직 없어 "지금까지 불러온 페이지 안에서만" 보조로 걸러준다
  * (전체 카탈로그 기준 아님 — 색상은 서버 필터 추가 전까지 이 한계를 안고 감).
  */
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onBeforeUnmount } from "vue";
 import { pdProductSvc, type PdProductPagedResult } from "~/svc/fo/ec/pd/pdProductSvc";
 import { type PdProductType } from "~/types/pdProductType";
 
@@ -48,15 +48,33 @@ export function useShopProducts(initialKeyword = "") {
   }
 
   // 페이지 1(=필터 변경 시 리셋)은 useAsyncData로 — SSR도 이 결과를 그대로 받아 SEO 유지.
+  // 2026-09-13 버그수정: "사이즈 XS만 여러번 클릭하니 화면 깜빡임" — useAsyncData의 watch
+  // 옵션은 값이 바뀔 때마다 즉시 재조회해서, 토글을 빠르게 연타하면 "선택→해제→선택..."마다
+  // 매번 다른 결과가 화면에 그대로 반영돼 깜빡이는 것처럼 보였다(데이터 자체는 매번 맞는
+  // 응답이라 빈 화면 버그와는 다른 원인). watch는 빼고, 아래에서 300ms 디바운스로 직접
+  // refresh()를 호출해 — 연타 중엔 재조회 자체를 미루고, 클릭을 멈춘 뒤의 "최종 상태" 한 번만
+  // 서버에 물어보게 한다.
   const {
     data: firstPage,
     pending,
     refresh,
-  } = useAsyncData<PdProductPagedResult>(
-    "shop-products-paged",
-    () => pdProductSvc.getPaged(buildParams(1)),
-    { watch: [categoryIds, brandIds, sizeCds, sort, keyword, priceRange] }
+  } = useAsyncData<PdProductPagedResult>("shop-products-paged", () => pdProductSvc.getPaged(buildParams(1)));
+
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  watch(
+    [categoryIds, brandIds, sizeCds, sort, keyword, priceRange],
+    () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        refresh();
+      }, 300);
+    },
+    { deep: true }
   );
+  onBeforeUnmount(() => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+  });
 
   // 무한스크롤로 이어붙일 누적 목록 — firstPage가 바뀌면(필터 변경) 새로 시작.
   const items = ref<PdProductType[]>([]);
