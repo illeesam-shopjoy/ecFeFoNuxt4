@@ -1,5 +1,4 @@
-import { beApi, type BePage } from "~~/server/utils/beApi";
-import type { BeProdItem } from "~~/server/utils/mapProduct";
+import { getAllProdPage } from "~~/server/utils/beProducts";
 import { logger } from "~~/server/utils/logger";
 
 interface CategoryTreeItem {
@@ -23,7 +22,8 @@ export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)?.pathname ?? "";
   logger.info("[api] ▶", method, url);
 
-  const page = await beApi.get<BePage<BeProdItem>>("/fo/ec/pd/prod/page", { pageSize: 1000, useYn: "Y" });
+  // 2026-09-13: prod/page.get.ts와 캐시 공유(beProducts.ts) — 같은 무거운 쿼리 중복 호출 방지.
+  const page = await getAllProdPage();
   const nameById = new Map<string, string>();
   const parentOf = new Map<string, string | undefined>();
   for (const p of page.pageList) {

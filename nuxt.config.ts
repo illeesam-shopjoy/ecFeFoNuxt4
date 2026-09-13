@@ -94,7 +94,13 @@ export default defineNuxtConfig({
       // 상대경로만 오는 경우(예: sy_attach.url)에 한해 `${prodCdnBase}${relativePath}`로 조립한다.
       prodCdnBase: process.env.NUXT_PUBLIC_PROD_CDN_BASE ?? "https://22400.illeesam.synology.me/api/cdn",
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
-      mode: process.env.NUXT_PUBLIC_MODE ?? "default",
+      // 2026-09-13 추가: 헤더 로고 아래 "현재 접속 중인 환경(prod/dev/local) + api/cdn 대상"
+      // 표시용(EnvModeBadge.vue). 실제 서버 호출은 여전히 server/utils/beApi.ts(위 apiBaseUrl,
+      // server-only)를 통해서만 이뤄지고, 이건 화면 표시 전용 미러 — 비밀값 아니라 노출 무해.
+      apiBaseUrlDisplay: process.env.NUXT_API_BASE_URL ?? "https://22300.illeesam.synology.me",
+      // Netlify는 별도 NUXT_PUBLIC_MODE 없이 배포되므로(순수 `nuxt build`, .env.production
+      // 미로드) 기본값을 "prod"로 둬야 실제 운영 배포 상태와 표시가 일치한다.
+      mode: process.env.NUXT_PUBLIC_MODE ?? "prod",
       envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
       appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */

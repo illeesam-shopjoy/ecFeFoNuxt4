@@ -1,4 +1,5 @@
 import { beApi } from "~~/server/utils/beApi";
+import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
 
 export interface BeDpPanelItem {
@@ -21,7 +22,9 @@ export default defineEventHandler(async (event) => {
   logger.info("[api] ▶", method, url);
 
   const areaCd = getRouterParam(event, "areaCd") ?? "";
-  const list = await beApi.get<BeDpPanelItem[]>(`/fo/ec/dp/area/${encodeURIComponent(areaCd)}`);
+  // 2026-09-13: 홈 화면 SSR 시 여러 위젯 영역이 동시에 조회되면서 자택 NAS 백엔드
+  // 동시접속 부하로 일부가 타임아웃(502)나는 문제 완화 — areaCd별 60초 캐시.
+  const list = await cachedCall(`be:dp:area:${areaCd}`, 60_000, () => beApi.get<BeDpPanelItem[]>(`/fo/ec/dp/area/${encodeURIComponent(areaCd)}`));
 
   logger.info("[api] ◀", method, url, "list size=" + (list?.length ?? 0));
   return list ?? [];

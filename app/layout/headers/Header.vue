@@ -26,6 +26,7 @@
                   <img src="/cdn/img/logo/logo.png" alt="logo" />
                 </nuxt-link>
               </div>
+              <env-mode-badge />
             </div>
             <div v-if="!header_big" class="header__action-col" style="order: 3;">
               <div class="header__action">
@@ -101,6 +102,7 @@ import CartMini from "./header-com/CartMini.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
 import UserDropdown from "./header-com/UserDropdown.vue";
 import ExtraInfo from "./header-com/ExtraInfo.vue";
+import EnvModeBadge from "./header-com/EnvModeBadge.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 
 defineProps({

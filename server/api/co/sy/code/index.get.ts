@@ -1,4 +1,5 @@
 import { beApi } from "~~/server/utils/beApi";
+import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
 
 interface BeCodeItem {
@@ -18,7 +19,8 @@ export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)?.pathname ?? "";
   logger.info("[api] ▶", method, url);
 
-  const rows = await beApi.get<BeCodeItem[]>("/co/sy/code");
+  // 2026-09-13: 1200개+ 전체 코드 조회는 무겁고 자주 바뀌지 않아 5분 캐시로 NAS 부하 완화.
+  const rows = await cachedCall("be:sy:code:all", 300_000, () => beApi.get<BeCodeItem[]>("/co/sy/code"));
   const out = rows.map((r) => ({ codeId: r.codeId, codeGrp: r.codeGrp, codeValue: r.codeValue, codeLabel: r.codeLabel }));
 
   logger.info("[api] ◀", method, url, "list size=" + out.length);

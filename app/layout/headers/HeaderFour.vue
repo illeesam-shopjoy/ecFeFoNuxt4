@@ -10,6 +10,7 @@
                   <img src="/cdn/img/logo/log-3.webp" alt="logo" />
                 </nuxt-link>
               </div>
+              <env-mode-badge />
             </div>
             <div class="col-xl-7 col-lg-6 col-md-1 col-sm-1">
               <div class="main-menu main-menu-3 hidden lg:block relative">
@@ -72,6 +73,7 @@ import Menus from "./Menus.vue";
 import CartMini from "./header-com/CartMini.vue";
 import UserDropdown from "./header-com/UserDropdown.vue";
 import ExtraInfo from "./header-com/ExtraInfo.vue";
+import EnvModeBadge from "./header-com/EnvModeBadge.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 

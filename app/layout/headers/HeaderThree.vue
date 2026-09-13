@@ -16,6 +16,7 @@
                     <img src="/cdn/img/logo/logo.png" alt="logo" />
                   </nuxt-link>
                 </div>
+                <env-mode-badge />
               </div>
               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-7">
                 <div class="header__right relative flex justify-between sm:justify-end items-center">
@@ -81,6 +82,7 @@ import CartMini from "./header-com/CartMini.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
 import UserDropdown from "./header-com/UserDropdown.vue";
 import ExtraInfo from "./header-com/ExtraInfo.vue";
+import EnvModeBadge from "./header-com/EnvModeBadge.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 
 const state = useCartStore();
