@@ -112,7 +112,7 @@ export default defineEventHandler((event) => {
       "/cdn/img": {
         get: {
           summary: "정적 이미지 (CDN)",
-          description: "app/assets/img 폴더의 이미지를 제공. 예: GET /cdn/img/logo.png",
+          description: "app/assets/prod/img 폴더의 이미지를 제공. 예: GET /cdn/img/logo.png",
           tags: ["cdn"],
           responses: { "200": { description: "이미지 바이너리" }, "404": { description: "파일 없음" } },
         },
@@ -120,7 +120,7 @@ export default defineEventHandler((event) => {
       "/cdn/img/{path}": {
         get: {
           summary: "정적 이미지 파일",
-          description: "app/assets/img 하위 경로의 이미지. path 예: logo.png, banner/main.jpg, logo/logo-2.png",
+          description: "app/assets/prod/img 하위 경로의 이미지. path 예: logo.png, banner/main.jpg, logo/logo-2.png",
           tags: ["cdn"],
           parameters: [{ name: "path", in: "path", required: true, schema: { type: "string" }, description: "이미지 상대 경로" }],
           responses: { "200": { description: "이미지 바이너리" }, "404": { description: "파일 없음" } },

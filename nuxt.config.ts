@@ -12,7 +12,7 @@ export default defineNuxtConfig({
       open: "chrome",
     },
   },
-  css: ["vue3-carousel/dist/carousel.css", "~/assets/scss/main.scss"],
+  css: ["vue3-carousel/dist/carousel.css", "~/assets/prod/scss/main.scss"],
   modules: [
     "@nuxtjs/tailwindcss",
     [
@@ -48,11 +48,11 @@ export default defineNuxtConfig({
     "/prod-dtl/**": { ssr: true }, // 상품 상세 (/:id): SSR + SEO
     "/blog-dtl/**": { ssr: true }, // 블로그 상세 (/:id): SSR + SEO
   },
-  // CDN: app/assets/img 폴더를 /cdn/img 경로로 정적 서빙 (절대경로로 해석 보장)
+  // CDN: app/assets/prod/img 폴더를 /cdn/img 경로로 정적 서빙 (절대경로로 해석 보장)
   nitro: {
     publicAssets: [
       {
-        dir: fileURLToPath(new URL("app/assets/img", import.meta.url)),
+        dir: fileURLToPath(new URL("app/assets/prod/img", import.meta.url)),
         baseURL: "/cdn/img",
         maxAge: 31536000,
       },
