@@ -45,11 +45,20 @@ const cdnHost = computed(() => hostOf(pub.prodCdnBase as string));
 </script>
 
 <style scoped>
+/* 2026-09-13(요청사항: "마우스 좌우로 움직이면 하단에 스크롤 생기는데... 다른 메뉴도 다
+   마찬가지야") — 이 배지는 로고 아래(헤더) 모든 페이지에 공통으로 떠서, "cdn
+   22400.illeesam.synology.me" 같은 긴 호스트명이 white-space:nowrap로 줄바꿈 없이 늘어나면
+   여기 자체에는 폭 제한이 없어 헤더 전체가 뷰포트보다 넓어져 모든 페이지에서 가로 스크롤이
+   생겼다(부모가 flex 아이템이라 min-content 기준으로 이 배지의 실제 컨텐츠 너비만큼 늘어남).
+   자기 자신에 뷰포트 기준 max-width를 줘 부모 flex 계산과 무관하게 항상 좁은 화면 폭 안에서만
+   차지하게 하고, 그 안에서 ellipsis(…)로 잘라 보여준다. */
 .env-mode-badge {
   font-size: 10px;
   line-height: 1.4;
   color: #9ca3af;
   text-align: center;
+  max-width: 45vw;
+  margin: 0 auto;
 }
 .env-mode-badge div {
   white-space: nowrap;
