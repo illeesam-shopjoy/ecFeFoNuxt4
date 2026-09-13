@@ -95,4 +95,15 @@ function openQuickView() {
 .product__price span {
   font-size: 16px;
 }
+
+/* 2026-09-14(요청사항: "상품항목에 좋아요 표시 하나 나오는데 마우스 오버하면 장바구니,
+   상품비교가 보여 default 다 보였으면 좋겠어") — 테마 기본 CSS(_shop.scss .product__action)는
+   위시리스트/비교/퀵뷰 3개 아이콘을 묶어 opacity:0·visibility:hidden·scaleX(0)로 숨겨뒀다가
+   .product__wrapper:hover에서만 보여준다. 항상 보이도록 hover 종료 상태값을 그대로 기본값에
+   덮어씀(호버 시 추가 애니메이션도 없어지지만 동작엔 지장 없음). */
+.product__action {
+  visibility: visible;
+  opacity: 1;
+  transform: scaleX(1);
+}
 </style>
