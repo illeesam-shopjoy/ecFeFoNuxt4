@@ -148,6 +148,11 @@
     }
   }
   &__height {
+    // 2026-09-13 버그수정: "메인배너가 화면 늘릴때 높이도 커지는데 너무 커" —
+    // $laptop(~1600px) 이상 초광폭 화면에서는 매칭되는 미디어쿼리가 없어 기본값(925px 등
+    // 큰 고정값)이 그대로 적용되어 화면을 넓힐수록 배너가 계속 커 보였다.
+    // max-height로 상한을 걸어 초광폭 화면에서도 과도하게 커지지 않게 한다.
+    max-height: 70vh;
     height: 925px;
     @media #{$laptop} {
       height: 750px;
@@ -165,6 +170,7 @@
       height: 550px;
     }
     &-2 {
+      max-height: 70vh;
       height: 830px;
       @media #{$laptop} {
         height: 750px;
@@ -183,9 +189,11 @@
       }
     }
     &-4 {
+      max-height: 70vh;
       height: 535px;
     }
     &-5 {
+      max-height: 70vh;
       height: 950px;
       @media #{$laptop} {
         height: 900px;
@@ -204,6 +212,7 @@
       }
     }
     &-6 {
+      max-height: 70vh;
       height: 950px;
       @media #{$laptop} {
         height: 900px;

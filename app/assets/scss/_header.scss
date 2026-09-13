@@ -27,7 +27,9 @@
     gap: 0;
     @media (min-width: 768px) {
       display: grid !important;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(120px, 1fr);
+      // 2026-09-13 요청사항: "상단 Outstock 제일 좌측에 있어야 해" — 로고를 가운데(2번째)
+      // 칸이 아니라 맨 왼쪽(1번째) 칸으로, 메뉴를 가운데 칸으로 이동.
+      grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr) minmax(120px, 1fr);
       align-items: center;
     }
   }
@@ -36,17 +38,17 @@
     max-width: fit-content;
     @media (min-width: 768px) {
       flex: none;
-      grid-column: 2;
+      grid-column: 1;
       max-width: 100%;
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
     }
   }
   &__menu-col {
     min-width: 0;
     justify-content: center;
     @media (min-width: 768px) {
-      grid-column: 1;
+      grid-column: 2;
       overflow: visible; /* 2레벨 메뉴(드롭다운)가 보이도록 */
       min-width: 0;
     }
