@@ -5,7 +5,7 @@ import { logger } from "~~/server/utils/logger";
 /** 블로그 상세. ecBeBo GET /api/fo/ec/cm/bltn/{id} 프록시 (BFF, 2026-09 전환). */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const id = getRouterParam(event, "id");

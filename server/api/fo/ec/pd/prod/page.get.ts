@@ -12,7 +12,7 @@ import { logger } from "~~/server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const page = await getAllProdPage();

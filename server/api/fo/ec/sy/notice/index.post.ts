@@ -4,7 +4,7 @@ import { logger } from "~~/server/utils/logger";
 /** 공지 등록(관리자). ecBeBo POST /api/fo/sy/notice 프록시. */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const body = await readBody<{ noticeTitle: string; noticeType: string; noticeContent?: string; status: string }>(event);

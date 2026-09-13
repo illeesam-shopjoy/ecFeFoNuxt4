@@ -13,7 +13,7 @@ import { logger } from "~~/server/utils/logger";
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const body = await readBody<{ prodId?: string; reviewTitle?: string; content?: string; rating?: number }>(event).catch(() => ({}) as Record<string, never>);

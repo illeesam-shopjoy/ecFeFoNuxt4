@@ -19,7 +19,7 @@ interface CategoryTreeItem {
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   // 2026-09-13: prod/page.get.ts와 캐시 공유(beProducts.ts) — 같은 무거운 쿼리 중복 호출 방지.

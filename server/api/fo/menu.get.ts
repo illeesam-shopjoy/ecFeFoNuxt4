@@ -26,7 +26,7 @@ const STATIC_MENUS: SyMenuTreeType[] = [
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
   logger.info("[api] ◀", method, url, "list size=" + STATIC_MENUS.length);
   return STATIC_MENUS;

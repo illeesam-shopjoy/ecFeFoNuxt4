@@ -16,7 +16,7 @@ interface BeNoticeItem {
 /** 공지 상세(관리자). ecBeBo GET /api/fo/sy/notice/{id} 프록시. */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const id = getRouterParam(event, "id");

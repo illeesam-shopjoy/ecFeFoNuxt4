@@ -5,7 +5,7 @@ import { logger } from "~~/server/utils/logger";
  *  본인 답글이 아니면 400(CmBizException 기본 상태코드)이 온다(FoPdReviewCommentService.delete() 소유자 검증). */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const reviewCommentId = getRouterParam(event, "reviewCommentId");

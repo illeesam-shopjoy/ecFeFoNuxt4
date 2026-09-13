@@ -16,7 +16,7 @@ interface BeAttachItem {
 /** 공지 첨부파일 목록. ecBeBo GET /api/fo/sy/attach/page?refTableNm=sy_notice&refId={id} 프록시. */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const id = getRouterParam(event, "id");

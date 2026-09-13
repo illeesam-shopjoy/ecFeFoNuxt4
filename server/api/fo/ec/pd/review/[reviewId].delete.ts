@@ -6,7 +6,7 @@ import { logger } from "~~/server/utils/logger";
  *  소유자 검증 — 이 프로젝트는 권한 위반도 403이 아니라 CmBizException 기본값인 400으로 통일됨). */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const reviewId = getRouterParam(event, "reviewId");

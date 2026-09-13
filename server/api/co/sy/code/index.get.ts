@@ -16,7 +16,7 @@ interface BeCodeItem {
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   // 2026-09-13: 1200개+ 전체 코드 조회는 무겁고 자주 바뀌지 않아 캐시로 NAS 부하 완화.

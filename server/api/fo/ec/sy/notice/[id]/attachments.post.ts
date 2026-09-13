@@ -30,7 +30,7 @@ interface CfUploadResponse {
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const noticeId = getRouterParam(event, "id");

@@ -6,7 +6,7 @@ import { logger } from "~~/server/utils/logger";
  *  작성자 정보는 서버가 로그인 사용자로 채운다. */
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const url = getRequestURL(event)?.pathname ?? "";
+  const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
   const body = await readBody<{ reviewId?: string; content?: string }>(event).catch(() => ({}) as Record<string, never>);
