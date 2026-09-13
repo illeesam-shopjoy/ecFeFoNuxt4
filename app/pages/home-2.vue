@@ -119,4 +119,12 @@ const trendingProducts = computed(() => {
 const saleProducts = computed(() => productsStore.products.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));
 </script>
 
-<style scoped></style>
+<style scoped>
+/* 2026-09-13(요청사항: "할인 상품의 너무 다닥다닥 붙었어") — 기본 그리드 거터(15px씩,
+   총 30px)만으로는 카드 사이가 좁아 보여서 이 섹션만 좀 더 여유 있게 키운다. */
+.sale__area .sale__item {
+  padding-right: 20px;
+  padding-left: 20px;
+  margin-bottom: 30px;
+}
+</style>

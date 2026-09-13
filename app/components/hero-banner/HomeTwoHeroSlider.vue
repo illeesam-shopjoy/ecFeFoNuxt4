@@ -1,5 +1,8 @@
 <template>
-  <section class="slider__area slider__area-2 tp_hero relative pl-15 pr-15">
+  <!-- 2026-09-13(요청사항: "전체적으로 width가 더 좁아보이네") — 이 hero만 pl-15/pr-15(좌우 60px)를
+       추가로 먹어서, 페이지 전체를 감싸는 box-25(25px)와 겹쳐 다른 섹션보다 유난히 좁아 보였다.
+       box-25만으로 나머지 섹션과 통일. -->
+  <section class="slider__area slider__area-2 tp_hero relative">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <Carousel :items-to-show="1" :wrap-around="true" class="slider-active">
       <Slide v-for="item in slider_data" :key="item.heroSliderId" class="single-slider single-slider-2 slider__height-2 flex items-center" :style="{ backgroundImage: `url(${item.bgImg})` }">

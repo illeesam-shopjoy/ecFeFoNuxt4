@@ -28,7 +28,12 @@
   }
 }
 
-[class*="col-"] {
+// 2026-09-13(버그수정: "할인 상품목록 너무 다닥다닥 붙어 있네") — bare ".col"(row-cols-* 와 짝을
+// 이루는 클래스, 예: SaleOffProduct.vue)은 "col-"이라는 부분 문자열을 포함하지 않아
+// [class*="col-"] 선택자에 안 걸려 거터(패딩) 자체가 전혀 없었다 — 카드가 완전히 붙어 보이던
+// 원인. .col을 명시적으로 같이 걸어 col-N과 동일한 기본 거터를 받게 한다.
+[class*="col-"],
+.col {
   position: relative;
   width: 100%;
   padding-right: 15px;

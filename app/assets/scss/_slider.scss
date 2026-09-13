@@ -170,10 +170,12 @@
       height: 550px;
     }
     &-2 {
+      // 2026-09-13(요청사항: "배너의 height가 좀더 커") — 830px는 데스크탑에서도 지나치게
+      // 길어 보여 700px로 낮춤(그 아래 반응형 단계는 원래 값 유지).
       max-height: 70vh;
-      height: 830px;
+      height: 700px;
       @media #{$laptop} {
-        height: 750px;
+        height: 700px;
       }
       @media #{$lg} {
         height: 700px;
