@@ -20,10 +20,15 @@ const axiosSsr = axios.create({
 
 // 2026-09-13(요청사항: "full url로 표시해줘") — config.url만 찍으면 상대경로만 보여서
 // baseURL(SSR일 때 자기 자신 localhost:PORT)을 직접 붙여 실제 호출 URL을 남긴다.
+// 2026-09-13 추가수정: axiosSsr은 "SSR 전용"이라는 이름과 달리 useAsyncData 콜백이
+// 클라이언트 쪽(하이드레이션/클라이언트 내비게이션 시 재실행)에서도 그대로 돌아간다 —
+// 그때는 baseURL이 비어있어(import.meta.server===false) 여전히 상대경로만 찍혔던 것.
+// axiosCsr.ts와 동일하게 브라우저에서는 location.origin으로 보완한다.
 function fullUrl(config: { baseURL?: string; url?: string }): string {
+  const base = config.baseURL || (typeof window !== "undefined" ? window.location.origin : "");
   const path = config.url ?? "";
   if (/^https?:\/\//.test(path)) return path;
-  return `${config.baseURL ?? ""}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 axiosSsr.interceptors.request.use(

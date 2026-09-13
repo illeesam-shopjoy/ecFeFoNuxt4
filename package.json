@@ -40,12 +40,12 @@
   "// deployGuide": "🚨 2026-09-13 진단 정정: 'Cannot find package vue' 500 장애를 처음엔 '이 PC(Windows) 전용 문제'로 오진했었다 — 그런데 같은 날 GitHub Actions(Linux 러너)에서 같은 커밋을 재배포했을 때도 동일 오류로 깨졌다가 곧바로 재시도하면 성공하는 걸 확인, OS 문제가 아니라 pnpm 기본 node_modules 구조(심볼릭 링크 기반 .pnpm store)와 Nitro netlify 프리셋 패키징 사이의 간헐적 충돌이었다(Nitro가 vue를 .nitro/<pkg>@<ver>로 옮기고 남기는 심볼릭 링크가 Netlify 함수 번들링 과정에서 이따금 실제 파일 없이 빠짐). 근본 수정: .npmrc에 node-linker=hoisted 추가(2026-09-13) — pnpm이 심볼릭 링크 대신 실제 파일을 node_modules에 복사하도록 강제, 로컬 재설치+빌드로 .netlify/functions-internal 번들의 node_modules/vue가 실제 디렉터리로 나오는 것까지 확인·배포·검증함. 이 수정 이후엔 이 PC에서 netlify-cli로 직접 배포해도 이론상 안전하지만, 두 차례 실제 장애를 겪은 사안이라 당분간은 정식 배포를 git push(main) → GitHub Actions(.github/workflows/netlify-deploy.yml)로만 하는 걸 유지 권장 — 필요하면 `gh workflow run netlify-deploy.yml --ref main`으로 커밋 없이도 재트리거 가능. netlify:build:local/:dev/:prod는 각각 .env.local/.env.development/.env.production으로 dist/를 빌드만 하는 스크립트(그 자체는 무해, 로컬에서 결과물 확인용) — 실제 배포는 그 뒤의 'netlify deploy --no-build' 단계다. 최초 1회는 `netlify login`으로 이 PC에 Netlify 인증이 돼 있어야 한다.",
   "// deploySitesGuide": "github deploy ecfefonuxt4/ecfemain/ecfebo/illeesam/all (2026-09-12 추가) — Netlify 팀(illeesam)에 떠 있는 4개 사이트를 각자의 로컬 저장소에서 git push로 배포하고, 실제 빌드 성공/실패까지 확인한 뒤 logs/deploy/*.log 에 과정을 남기고 NOTIFY_EMAIL_TO(기본 illeesam@gmail.com)로 결과 메일을 보낸다. 실체는 scripts/deploy-sites.mjs 하나 — 대상별 저장소 경로/판정 방식은 그 파일 상단 TARGETS 참조. 최초 1회 .env.deploy.example 을 .env.deploy 로 복사해 NETLIFY_AUTH_TOKEN/NOTIFY_EMAIL_FROM/NOTIFY_EMAIL_APP_PASSWORD 를 채워야 빌드결과 확인·메일발송이 동작한다(없으면 push까지만 하고 조용히 스킵). 'github deploy all' 은 4개를 순서대로 전부 수행.",
   "devDependencies": {
-    "@types/node": "^20.19.0",
+    "@types/node": "^20.19.43",
     "consola": "^3.4.2",
     "cross-env": "^10.1.0",
-    "netlify-cli": "^27.5.1",
+    "netlify-cli": "^27.5.2",
     "nodemailer": "^10.0.9",
-    "nuxt": "^4.2.2",
+    "nuxt": "^4.3.1",
     "source-map": "^0.7.6",
     "vue-tsc": "^3.3.11"
   },
@@ -54,10 +54,10 @@
     "@pinia/nuxt": "^0.11.3",
     "@vueform/slider": "^2.1.7",
     "@yeger/vue-masonry-wall": "^3.4.4",
-    "axios": "^1.13.6",
+    "axios": "^1.20.0",
     "chart.js": "^4.5.1",
     "pinia": "^3.0.4",
-    "sass": "^1.58.3",
+    "sass": "^1.104.1",
     "vee-validate": "^4.7.4",
     "vue3-carousel": "^0.2.11",
     "vue3-toastify": "^0.1.1",
@@ -65,5 +65,15 @@
   },
   "overrides": {
     "@koa/router": "^15.0.0"
-  }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "netlify-cli",
+      "sharp",
+      "unix-dgram"
+    ]
+  },
+  "// pnpmOnlyBuiltDependenciesGuide": "2026-09-13: pnpm 10부터 devDependencies의 postinstall/install 스크립트를 기본 차단(보안)한다 — esbuild는 그 스크립트로 자기 버전에 맞는 네이티브 바이너리를 받는데, 차단되면 호스트(JS)와 바이너리 버전이 어긋나 빌드가 'Host version X does not match binary version Y'로 깨진다(node-linker=hoisted 전환 후 재설치하며 실제로 겪음). 이 목록의 패키지들만 명시적으로 스크립트 실행을 허용."
 }
