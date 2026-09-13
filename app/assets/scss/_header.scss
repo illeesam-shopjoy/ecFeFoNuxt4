@@ -183,6 +183,15 @@
           visibility: hidden;
           opacity: 0;
           @include transition(0.3s);
+          /* 2026-09-14 요청사항: "소계 근처서 마우스 스크롤 하면 메인화면이 스크롤되네 팝업화면에서
+             스크롤되면 부모화면이 동작되면 안되" — 위의 .slider-height용 overscroll-behavior는
+             목록(.mini-cart-list) 안에서 끝까지 스크롤됐을 때 체이닝만 막아서, 소계/버튼처럼
+             목록 밖(그 자체는 스크롤 안 하는) 영역 위에서 휠을 돌리면 여전히 뒤 페이지가
+             스크롤됐다. 팝업 전체를 하나의 스크롤 컨테이너로 만들어(내용이 짧아 실제로는
+             스크롤이 안 생기더라도) overscroll-behavior:contain이 팝업 어디서든 적용되게 한다. */
+          max-height: 80vh;
+          overflow-y: auto;
+          overscroll-behavior: contain;
           @media #{$xs} {
             width: 280px;
             right: -60%;
