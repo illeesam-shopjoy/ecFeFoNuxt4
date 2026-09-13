@@ -1,10 +1,9 @@
 <template>
   <!-- 2026-09-13(요청사항: "상단에 배너가 있으면 안되고 최소한의 Top만 보여야해") — compact일 때는
-       큰 배경이미지/제목 없이 얇은 브레드크럼 줄만 보여준다(쇼핑 목록 페이지 등 데모처럼). -->
-  <!-- 2026-09-13(요청사항: "top란 height 좀더 크게 해줘") — 데모 대비 상단 여백이 좁아 보여 확대 -->
-  <!-- 2026-09-13(요청사항: "top란 height 좀더 크게 해줘") — 데모 대비 상단 여백이 좁아 보여 확대.
-       py-*는 Tailwind 유틸(1단위=4px) — py-15(60px)에서 py-24(96px)로. -->
-  <section v-if="compact" class="page__title-compact py-24">
+       큰 배경이미지/제목 없이 얇은 브레드크럼 줄만 보여준다(쇼핑 목록 페이지 등 데모처럼).
+       py-24까지 키웠다가 "무의미한 공간"으로 다시 지적받아 py-15로 되돌림 — 진짜
+       문제는 여백 크기가 아니라 아무 콘텐츠 없는 빈 줄 자체였다. -->
+  <section v-if="compact" class="page__title-compact py-15">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <nav aria-label="브레드크럼">

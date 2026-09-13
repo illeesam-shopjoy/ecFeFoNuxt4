@@ -31,7 +31,7 @@
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>상품 카테고리</h3>
-                  <button type="button" class="filter-reset-link" @click="shopProducts.resetCategory">초기화</button>
+                  <button type="button" class="filter-reset-link" @click="resetCategoryFilter">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="categories">
@@ -144,7 +144,7 @@
 
               <!-- 전체 초기화 버튼 -->
               <div class="reset-button mt-20 mb-30">
-                <button class="os-btn os-btn-black" @click="shopProducts.resetAll">전체 초기화</button>
+                <button class="os-btn os-btn-black" @click="resetAllFilters">전체 초기화</button>
               </div>
 
               <!-- 추천 상품 -->
@@ -201,12 +201,14 @@
                       <option value="salePrice desc">가격 높은순</option>
                     </select>
                   </div>
+                  <!-- 2026-09-13(요청사항: "아이콘 좀 기네 정사각형으로") — 버튼이 아이콘
+                       폭에 따라 늘어나 보여서 width/height를 고정해 정사각형으로 만듦. -->
                   <ul class="flex items-center gap-2" role="tablist">
                     <li>
-                      <button type="button" :class="['p-2 rounded', viewMode === 'grid' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'grid'" aria-label="그리드 보기"><i class="fas fa-th"></i></button>
+                      <button type="button" :class="['view-toggle-btn rounded flex items-center justify-center', viewMode === 'grid' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'grid'" aria-label="그리드 보기"><i class="fas fa-th"></i></button>
                     </li>
                     <li>
-                      <button type="button" :class="['p-2 rounded', viewMode === 'list' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'list'" aria-label="목록 보기"><i class="fas fa-list-ul"></i></button>
+                      <button type="button" :class="['view-toggle-btn rounded flex items-center justify-center', viewMode === 'list' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'list'" aria-label="목록 보기"><i class="fas fa-list-ul"></i></button>
                     </li>
                   </ul>
                 </div>
@@ -307,6 +309,19 @@ function toggleAccordion(i: number) {
   expandedCategory[i] = !expandedCategory[i];
 }
 
+// 2026-09-13 버그수정: "초기화 버튼 클릭했는데 텍스트가 선택처럼 보이네" — .shop-accordion-btn은
+// 원래 "아코디언 펼침" 표시용으로 펼쳐진 상태면 테마색(주황)이 된다(선택 표시가 아님). 근데
+// 초기화를 눌러도 펼쳐진 아코디언은 그대로 남아있어서, 실제로는 아무 카테고리도 선택 안 됐는데
+// 펼쳐져 있던 부모들만 주황색으로 남아 "선택된 것처럼" 보였다 — 초기화 시 아코디언도 다 접는다.
+function resetCategoryFilter() {
+  shopProducts.resetCategory();
+  Object.keys(expandedCategory).forEach((k) => delete expandedCategory[Number(k)]);
+}
+function resetAllFilters() {
+  shopProducts.resetAll();
+  Object.keys(expandedCategory).forEach((k) => delete expandedCategory[Number(k)]);
+}
+
 // ── 사이드바: 브랜드 — 2026-09-13: store.products 스캔 대신 전용 API(캐시됨) ─────────
 const { data: brandList } = useAsyncData(
   "shop-brand-list",
@@ -366,5 +381,12 @@ onBeforeUnmount(() => observer?.disconnect());
 .filter-reset-link:hover {
   color: var(--theme-color, #bc8246);
   text-decoration: underline;
+}
+
+/* 2026-09-13(요청사항: "목록그리드, 카드 보기 아이콘 좀 기네 정사각형으로") */
+.view-toggle-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
 }
 </style>
