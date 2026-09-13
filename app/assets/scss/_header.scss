@@ -41,6 +41,9 @@
       grid-column: 1;
       max-width: 100%;
       display: flex;
+      // 2026-09-13 버그수정: row(기본값)이면 아래 env-mode-badge가 로고 옆에 나란히
+      // 붙어버림("Outstock 아래줄에 표시해줘") — 세로로 쌓이게 column으로.
+      flex-direction: column;
       justify-content: flex-start;
     }
   }
