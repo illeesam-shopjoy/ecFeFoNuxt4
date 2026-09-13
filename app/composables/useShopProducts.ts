@@ -65,13 +65,19 @@ export function useShopProducts(initialKeyword = "") {
   const totalCount = ref(0);
   const loadingMore = ref(false);
 
+  // 2026-09-13 버그수정: "브랜드 클릭하니 화면이 백지현상" → "깜빡임 효과 안나오게 해줘" —
+  // useAsyncData가 필터 변경으로 재조회를 시작하면 새 응답이 오기 전 잠깐 firstPage.value가
+  // null/undefined가 되는 순간이 있는데, 그때 items를 []로 비워버려서 화면이 순간 비어
+  // 보였다. v가 없을 때는(아직 응답 안 옴) 기존 items를 그대로 두고 아무것도 안 한다 —
+  // 진짜 새 데이터가 도착했을 때만 교체.
   watch(
     firstPage,
     (v) => {
-      items.value = v?.items ?? [];
+      if (!v) return;
+      items.value = v.items;
       pageNo.value = 1;
-      hasMore.value = v?.hasMore ?? false;
-      totalCount.value = v?.pageTotalCount ?? 0;
+      hasMore.value = v.hasMore;
+      totalCount.value = v.pageTotalCount;
     },
     { immediate: true }
   );

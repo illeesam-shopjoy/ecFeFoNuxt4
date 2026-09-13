@@ -3,8 +3,12 @@
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="쇼핑" subtitle="쇼핑" :compact="true" />
 
-    <!-- 스켈레톤 그리드 (SSR 로딩 중) -->
-    <section v-if="shopProducts.pending.value" class="shop__area pt-100 pb-100">
+    <!-- 스켈레톤 그리드 — 2026-09-13 버그수정: "브랜드 클릭하니 화면이 백지현상" — 필터
+         클릭으로 재조회될 때도 pending이 true가 되는데, 그때마다 사이드바까지 통째로
+         스켈레톤으로 바뀌어 화면이 껌뻑이는 것처럼 보였다. "처음 로딩(아직 아무 상품도
+         없음)"일 때만 이 스켈레톤을 보여주고, 필터 재조회 중엔 아래 실제 화면을 그대로
+         유지한 채 목록 부분만 살짝 옅게 표시한다(loadingOverlay). -->
+    <section v-if="isInitialLoading" class="shop__area pt-100 pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-9 col-lg-9 col-md-8 offset-xl-3 offset-lg-3 offset-md-4">
@@ -272,6 +276,11 @@ const shopProducts = useShopProducts(initialQuery);
 const { formatPrice } = usePrice();
 
 const viewMode = ref<"grid" | "list">("grid");
+
+// 2026-09-13(요청사항: "브랜드 클릭하니 화면이 백지현상" → "깜빡임 효과 안나오게 해줘") —
+// 필터 재조회 중(pending)에도 이미 보여주고 있던 목록은 그대로 유지하고(useAsyncData가
+// 알아서 유지해줌), 스켈레톤 전체화면 전환은 "정말 처음이라 아직 아무 상품도 없을 때"만.
+const isInitialLoading = computed(() => shopProducts.pending.value && shopProducts.items.value.length === 0);
 
 // 2026-09-13: ecBeBo sizeInfoCd 실 enum 값(자유 텍스트가 아니라 고정 코드) — 상품 옵션(SKU)
 // 스캔이 아니라 상품 자체 필드라 서버에서 바로 IN 필터링된다.
