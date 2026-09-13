@@ -14,7 +14,7 @@
           <template v-for="(menu, i) in mobile_menus" :key="i">
             <li
               v-if="menu.dropdownMenu"
-              :class="`menu-item-has-children has-droupdown 
+              :class="`menu-item-has-children has-droupdown
               ${activeMenu === menu.title ? 'active' : ''}`"
             >
               <a @click.prevent="handleOpenMenu(menu.title)">

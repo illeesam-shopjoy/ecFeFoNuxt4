@@ -1,7 +1,9 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="로그인" subtitle="로그인" />
+    <!-- 2026-09-14(요청사항: "로그인 화면에서 큰베너 말고 작은배너로 보여도 될거 같아") —
+         404/오류 페이지와 같은 compact(얇은 브레드크럼) 배너로 변경. -->
+    <breadcrumb-area title="로그인" subtitle="로그인" :compact="true" />
     <section class="login-area pt-100 pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row flex justify-center">

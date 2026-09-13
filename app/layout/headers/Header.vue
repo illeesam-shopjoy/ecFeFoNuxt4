@@ -32,11 +32,19 @@
               <div class="header__action">
                 <ul>
                   <li>
-                    <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle"> <i class="fas fa-search"></i> 검색 </a>
+                    <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle">
+                      <i class="fas fa-search"></i> <span class="hidden sm:inline">검색</span>
+                    </a>
                   </li>
                   <li>
+                    <!-- 2026-09-13(요청사항: "상담에 숨겨진 글시가 원인일수도 장바구니(3) 에서
+                         (3) 으로만 표시해줘도 될거 같아") — 실측 결과 이 액션 영역(검색/장바구니/
+                         유저메뉴/햄버거)이 모바일 폭(412px)에서 실제로 폭이 넘쳐 헤더 전체가
+                         (position:absolute인 transparent 헤더에서) 뷰포트 밖으로 튀어나가
+                         가로 스크롤을 유발하고 있었다 — 정확히 사용자가 짚은 지점이 맞았다.
+                         "장바구니" 글자를 작은 화면에서만 숨겨 아이콘+숫자만 보이게 함. -->
                     <a href="#" class="cart"
-                      ><i class="fas fa-shopping-bag"></i> 장바구니
+                      ><i class="fas fa-shopping-bag"></i> <span class="hidden sm:inline">장바구니</span>
                       <span>({{ state.getStTotalPriceQuantity.quantity }})</span>
                     </a>
                     <!-- 장바구니 미니 시작 -->
@@ -58,11 +66,19 @@
               <div class="header__action header__action-2 ml-auto">
                 <ul>
                   <li>
-                    <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle"> <i class="fas fa-search"></i> 검색 </a>
+                    <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle">
+                      <i class="fas fa-search"></i> <span class="hidden sm:inline">검색</span>
+                    </a>
                   </li>
                   <li>
+                    <!-- 2026-09-13(요청사항: "상담에 숨겨진 글시가 원인일수도 장바구니(3) 에서
+                         (3) 으로만 표시해줘도 될거 같아") — 실측 결과 이 액션 영역(검색/장바구니/
+                         유저메뉴/햄버거)이 모바일 폭(412px)에서 실제로 폭이 넘쳐 헤더 전체가
+                         (position:absolute인 transparent 헤더에서) 뷰포트 밖으로 튀어나가
+                         가로 스크롤을 유발하고 있었다 — 정확히 사용자가 짚은 지점이 맞았다.
+                         "장바구니" 글자를 작은 화면에서만 숨겨 아이콘+숫자만 보이게 함. -->
                     <a href="#" class="cart"
-                      ><i class="fas fa-shopping-bag"></i> 장바구니
+                      ><i class="fas fa-shopping-bag"></i> <span class="hidden sm:inline">장바구니</span>
                       <span>({{ state.getStTotalPriceQuantity.quantity }})</span>
                     </a>
                     <!-- 장바구니 미니 시작 -->

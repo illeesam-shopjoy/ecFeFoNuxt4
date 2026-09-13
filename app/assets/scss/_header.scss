@@ -637,6 +637,17 @@
   visibility: visible;
 }
 
+/* 2026-09-13(요청사항: "마우스 클릭하여 움직이면 우측에 공백란이 나오네", 여러 페이지·여러
+   시도에서 재발) — playwright로 412px 뷰포트에서 실측해 원인을 정확히 특정함: 이 패널을
+   right:-370px 오프셋으로, 그다음 transform: translateX(100%)로(래퍼+overflow:hidden으로
+   감싸봐도 마찬가지) "화면 밖으로 밀어서" 숨기는 한 계속 재발했다 — position:fixed 요소가
+   자기 박스를 뷰포트 밖 좌표로 그리면(오프셋이든 transform이든) 크롬이 document.scrollWidth
+   계산에 그 좌표를 포함시켜 버리는 알려진 동작이라, 클리핑 조상을 아무리 감싸도 없어지지
+   않았다(html/body의 overflow-x:hidden도 이 경우엔 안 먹힘). 근본 해결은 "화면 밖 좌표에
+   그리지 않는 것" — 패널을 항상 뷰포트 안(top:0/right:0에 고정)에 두고, 숨김은 위치 이동이
+   아니라 width를 0→350px로 늘리는 방식으로 바꿨다. 이러면 패널의 오른쪽 끝이 항상 뷰포트
+   경계(right:0)에 붙어 있어 어떤 상태에서도 뷰포트 밖 좌표가 아예 생기지 않는다(playwright로
+   재측정해 scrollWidth == clientWidth 확인 후 반영). */
 .extra__info {
   &-close {
     & a {
@@ -647,17 +658,25 @@
       }
     }
   }
+  /* 2026-09-13 버그수정: "우측에 패널이 보이네 기본적으로 패널 보이면 안되는데" — width:0으로
+     닫는데 padding:30px는 항상 켜져 있어서, border-box라도 padding(60px)이 content보다 커서
+     실제 렌더링 폭이 0이 아니라 최소 ~60px로 뜨고, 그 안에서 메뉴 글자가 한 글자씩 줄바꿈되는
+     좁은 패널이 계속 보였다 — 닫힘 상태에선 padding도 0으로, 추가로 visibility:hidden까지
+     걸어 어떤 경우에도 안 보이게 이중으로 막는다. */
   &-inner {
     position: fixed;
-    right: -370px;
+    right: 0;
     top: 0;
-    padding: 30px;
-    width: 350px;
+    padding: 0;
+    width: 0;
+    max-width: 90vw;
     height: 100%;
+    overflow: hidden;
+    visibility: hidden;
     background: $white;
-    -webkit-transition: all 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86);
-    -moz-transition: all 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86);
-    transition: all 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86);
+    -webkit-transition: width 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), padding 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), visibility 0s linear 0.3s;
+    -moz-transition: width 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), padding 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), visibility 0s linear 0.3s;
+    transition: width 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), padding 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), visibility 0s linear 0.3s;
     @include box-shadow(-5px 0 20px -5px rgba(0, 0, 0, 0.5));
     z-index: 9999;
   }
@@ -699,7 +718,10 @@
   }
   &.info-opened {
     & .extra__info-inner {
-      right: -20px;
+      width: 350px;
+      padding: 30px;
+      visibility: visible;
+      transition: width 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), padding 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), visibility 0s linear 0s;
     }
   }
 }
