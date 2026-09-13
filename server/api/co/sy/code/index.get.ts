@@ -19,8 +19,9 @@ export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)?.pathname ?? "";
   logger.info("[api] ▶", method, url);
 
-  // 2026-09-13: 1200개+ 전체 코드 조회는 무겁고 자주 바뀌지 않아 5분 캐시로 NAS 부하 완화.
-  const rows = await cachedCall("be:sy:code:all", 300_000, () => beApi.get<BeCodeItem[]>("/co/sy/code"));
+  // 2026-09-13: 1200개+ 전체 코드 조회는 무겁고 자주 바뀌지 않아 캐시로 NAS 부하 완화.
+  // (재조정: 5분→30분 — 코드 테이블은 배포 단위로만 바뀌는 성격이라 더 길게 잡아도 안전하다.)
+  const rows = await cachedCall("be:sy:code:all", 1_800_000, () => beApi.get<BeCodeItem[]>("/co/sy/code"));
   const out = rows.map((r) => ({ codeId: r.codeId, codeGrp: r.codeGrp, codeValue: r.codeValue, codeLabel: r.codeLabel }));
 
   logger.info("[api] ◀", method, url, "list size=" + out.length);

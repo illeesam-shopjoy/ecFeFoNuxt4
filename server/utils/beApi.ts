@@ -46,7 +46,10 @@ async function beFetchOnce<T>(url: string, method: string, opts: BeCallOptions):
     query: opts.query,
     body: opts.body,
     headers: opts.headers,
-    timeout: opts.timeout ?? 8000,
+    // 2026-09-13 재조정: 8초는 재시도까지 겹치면(8+8=16초) 페이지 전체가 15초 넘게
+    // 멎어 보이는 원인이었다 — 자택 NAS가 느릴 땐 8초를 기다려도 대체로 성공하지
+    // 않았으므로(직접 curl은 항상 0.2~2초) 5초로 낮춰 실패를 더 빨리 확정한다.
+    timeout: opts.timeout ?? 5000,
     // ecBeBo는 오류도 200이 아닌 실제 HTTP status(400/401/404/500...)로 내려준다.
     // $fetch가 던지는 FetchError를 아래 catch에서 envelope 형태로 다시 해석한다.
   } as Parameters<typeof $fetch>[1]);
@@ -75,7 +78,13 @@ async function beFetch<T>(path: string, opts: BeCallOptions = {}): Promise<T> {
     // 간헐적으로 연결 실패/타임아웃을 일으키는 사례 확인(동일 URL을 직접 curl하면 정상 응답).
     // GET은 멱등하므로 진짜 네트워크 레벨 오류(응답 envelope도, statusCode도 없는 경우)에
     // 한해 1회 재시도 — POST/PUT/DELETE는 중복 처리(중복 주문 등) 위험이 있어 재시도하지 않는다.
-    if (method === "GET") {
+    //
+    // 2026-09-13 재조정: 실패 사유가 "타임아웃"이면 재시도를 건너뛴다 — NAS가 동시접속으로
+    // 이미 밀린 상태라 바로 다시 붙어도 또 5초를 태울 뿐 성공률이 크게 오르지 않았고,
+    // 오히려 사용자 체감 대기시간만 두 배(최대 10초)로 늘렸다. 타임아웃이 아닌 순간적인
+    // 연결 오류(ECONNRESET 등)만 재시도 가치가 있다고 보고 그 경우에만 1회 재시도한다.
+    const isTimeout = (fetchErr?.message ?? "").toLowerCase().includes("timeout") || (err as { name?: string })?.name === "TimeoutError";
+    if (method === "GET" && !isTimeout) {
       logger.warn("[beApi]", method, url, "연결 실패 — 1회 재시도:", fetchErr?.message ?? err);
       try {
         return await beFetchOnce<T>(url, method, opts);
@@ -83,7 +92,7 @@ async function beFetch<T>(path: string, opts: BeCallOptions = {}): Promise<T> {
         logger.error("[beApi]", method, url, "재시도도 실패:", (retryErr as { message?: string })?.message ?? retryErr);
       }
     } else {
-      logger.error("[beApi]", method, url, "호출 실패:", fetchErr?.message ?? err);
+      logger.error("[beApi]", method, url, isTimeout ? "타임아웃(재시도 생략):" : "호출 실패:", fetchErr?.message ?? err);
     }
     throw createError({ statusCode: 502, statusMessage: "백엔드(ecBeBo) 서버에 연결할 수 없습니다." });
   }

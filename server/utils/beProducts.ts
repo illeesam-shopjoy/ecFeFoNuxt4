@@ -10,7 +10,7 @@ import { beApi, type BePage } from "~~/server/utils/beApi";
 import { type BeProdItem } from "~~/server/utils/mapProduct";
 import { cachedCall } from "~~/server/utils/cache";
 
-const TTL_MS = 60_000; // 1분 — 상품 정보가 자주 바뀌는 편이 아니라 넉넉히 잡음
+const TTL_MS = 300_000; // 5분(2026-09-13 재조정: 1분→5분) — 상품 정보가 자주 바뀌는 편이 아니라 넉넉히 잡음
 
 export function getAllProdPage(): Promise<BePage<BeProdItem>> {
   return cachedCall("be:prod:page:all", TTL_MS, () => beApi.get<BePage<BeProdItem>>("/fo/ec/pd/prod/page", { pageSize: 1000, useYn: "Y" }));

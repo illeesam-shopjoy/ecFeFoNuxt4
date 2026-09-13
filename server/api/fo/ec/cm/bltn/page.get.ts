@@ -9,8 +9,8 @@ export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)?.pathname ?? "";
   logger.info("[api] ▶", method, url);
 
-  // 2026-09-13: 자택 NAS 백엔드 동시 부하 완화 — 60초 캐시.
-  const page = await cachedCall("be:cm:bltn:page:all", 60_000, () => beApi.get<BePage<BeBlogItem>>("/fo/ec/cm/bltn/page", { pageSize: 200, useYn: "Y" }));
+  // 2026-09-13: 자택 NAS 백엔드 동시 부하 완화 — 캐시(재조정: 60초→5분, 15초 로딩 실측 대응).
+  const page = await cachedCall("be:cm:bltn:page:all", 300_000, () => beApi.get<BePage<BeBlogItem>>("/fo/ec/cm/bltn/page", { pageSize: 200, useYn: "Y" }));
   const out = page.pageList.map(mapBlog);
 
   logger.info("[api] ◀", method, url, "list size=" + out.length);

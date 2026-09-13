@@ -18,11 +18,19 @@ const axiosSsr = axios.create({
 
 // ─── 요청 인터셉터 ───────────────────────────────────────────────────────────
 
+// 2026-09-13(요청사항: "full url로 표시해줘") — config.url만 찍으면 상대경로만 보여서
+// baseURL(SSR일 때 자기 자신 localhost:PORT)을 직접 붙여 실제 호출 URL을 남긴다.
+function fullUrl(config: { baseURL?: string; url?: string }): string {
+  const path = config.url ?? "";
+  if (/^https?:\/\//.test(path)) return path;
+  return `${config.baseURL ?? ""}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 axiosSsr.interceptors.request.use(
   (config) => {
     const paramStr = config.params ? JSON.stringify(config.params) : "";
     console.log(
-      `[axiosSsr] ▶ 요청: ${config.method?.toUpperCase()} ${config.url}`,
+      `[axiosSsr] ▶ 요청: ${config.method?.toUpperCase()} ${fullUrl(config)}`,
       paramStr || ""
     );
     return config;
@@ -39,7 +47,7 @@ axiosSsr.interceptors.request.use(
 axiosSsr.interceptors.response.use(
   (response) => {
     console.log(
-      `[axiosSsr] ◀ 응답 성공: ${response.status} ${response.config.url}`,
+      `[axiosSsr] ◀ 응답 성공: ${response.status} ${fullUrl(response.config)}`,
       Array.isArray(response.data)
         ? `[${response.data.length}건]`
         : typeof response.data === "object" && response.data !== null
@@ -51,7 +59,7 @@ axiosSsr.interceptors.response.use(
   (error) => {
     const status  = error?.response?.status  ?? "NETWORK";
     const method  = error?.config?.method?.toUpperCase() ?? "-";
-    const url     = error?.config?.url ?? "-";
+    const url     = error?.config ? fullUrl(error.config) : "-";
     const message = error?.message ?? String(error);
     const resData = error?.response?.data;
 
