@@ -9,7 +9,7 @@
             <div class="footer__widget mb-30">
               <div class="footer__widget-title mb-25">
                 <nuxt-link href="/">
-                  <img src="/cdn/img/logo/logo-2.png" alt="logo" />
+                  <img src="/cdn/prod/img/logo/logo-2.png" alt="logo" />
                 </nuxt-link>
               </div>
               <div class="footer__widget-content">

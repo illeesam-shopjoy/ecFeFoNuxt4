@@ -14,7 +14,7 @@
             <div class="col-xl-3 col-lg-2 col-md-4 col-sm-4">
               <div class="logo">
                 <nuxt-link href="/">
-                  <img src="/cdn/img/logo/logo.png" alt="logo" />
+                  <img src="/cdn/prod/img/logo/logo.png" alt="logo" />
                 </nuxt-link>
               </div>
               <env-mode-badge />

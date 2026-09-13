@@ -190,7 +190,7 @@ usePageTitle("마이페이지");
 
 const cartState = useCartStore();
 const authStore = useAuthStore();
-const profileImg = "/cdn/img/testimonial/person-1.jpg";
+const profileImg = "/cdn/prod/img/testimonial/person-1.jpg";
 
 const { formatPrice } = usePrice();
 const activeTab = ref("account");

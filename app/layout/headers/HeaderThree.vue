@@ -13,7 +13,7 @@
               <div class="col-xl-4 col-lg-4 col-md-3 col-sm-5">
                 <div class="logo logo__6 text-md-center">
                   <nuxt-link href="/">
-                    <img src="/cdn/img/logo/logo.png" alt="logo" />
+                    <img src="/cdn/prod/img/logo/logo.png" alt="logo" />
                   </nuxt-link>
                 </div>
                 <env-mode-badge />

@@ -41,7 +41,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('브레드크럼');
-const bg = "/cdn/img/page-title/page-title-1.jpg";
+const bg = "/cdn/prod/img/page-title/page-title-1.jpg";
 
 withDefaults(
   defineProps<{

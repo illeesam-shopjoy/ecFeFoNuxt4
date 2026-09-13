@@ -166,9 +166,9 @@ const slots: SlotDef[] = [
     label: "메인 히어로 슬라이더 (home-6, index)",
     widgetTypeCd: "SLIDER",
     defaultJson: [
-      { heroSliderId: "heroSliderId01", bgImg: "/cdn/img/slider/slider-1.jpg", title: "핸드메이드 <br /> 핸드카브 커피", subtile: "의도한 커피 원두만큼 풍부하고 독특한 이 작은 스쿱이, 매일 아침을 특별한 순간으로 만들어 드립니다." },
-      { heroSliderId: "heroSliderId02", bgImg: "/cdn/img/slider/slider-2.jpg", title: "다르게 생각하고 <br /> 다르게 실행하세요", subtile: "다르게 생각하고, 독창적으로 실천하세요. 변화하는 트렌드를 따라갑니다." },
-      { heroSliderId: "heroSliderId03", bgImg: "/cdn/img/slider/slider-3.jpg", title: "하이빔<br /> by  태희", subtile: "하이빔은 각도 조절이 가능한 책상·선반용 조명으로, 다양한 조명 연출이 가능합니다." },
+      { heroSliderId: "heroSliderId01", bgImg: "/cdn/prod/img/slider/slider-1.jpg", title: "핸드메이드 <br /> 핸드카브 커피", subtile: "의도한 커피 원두만큼 풍부하고 독특한 이 작은 스쿱이, 매일 아침을 특별한 순간으로 만들어 드립니다." },
+      { heroSliderId: "heroSliderId02", bgImg: "/cdn/prod/img/slider/slider-2.jpg", title: "다르게 생각하고 <br /> 다르게 실행하세요", subtile: "다르게 생각하고, 독창적으로 실천하세요. 변화하는 트렌드를 따라갑니다." },
+      { heroSliderId: "heroSliderId03", bgImg: "/cdn/prod/img/slider/slider-3.jpg", title: "하이빔<br /> by  태희", subtile: "하이빔은 각도 조절이 가능한 책상·선반용 조명으로, 다양한 조명 연출이 가능합니다." },
     ],
   },
   {
@@ -176,9 +176,9 @@ const slots: SlotDef[] = [
     label: "히어로 슬라이더 2 (home-2, home-3)",
     widgetTypeCd: "SLIDER",
     defaultJson: [
-      { heroSliderId: "heroSliderId01", bgImg: "/cdn/img/slider/03/slider-01.jpg", isDark: true, title: "조명 <br /> 크리에이티브 가구", subtile: "크리에이티브 가구를 바로 보세요." },
-      { heroSliderId: "heroSliderId02", bgImg: "/cdn/img/slider/03/slider-02.jpg", title: "조명 <br /> 크리에이티브 가구", subtile: "크리에이티브 가구를 바로 보세요." },
-      { heroSliderId: "heroSliderId03", bgImg: "/cdn/img/slider/03/slider-03.jpg", title: "드롭 체어 <br /> 블랙 레더 에디션", subtile: "크리에이티브 가구를 바로 보세요." },
+      { heroSliderId: "heroSliderId01", bgImg: "/cdn/prod/img/slider/03/slider-01.jpg", isDark: true, title: "조명 <br /> 크리에이티브 가구", subtile: "크리에이티브 가구를 바로 보세요." },
+      { heroSliderId: "heroSliderId02", bgImg: "/cdn/prod/img/slider/03/slider-02.jpg", title: "조명 <br /> 크리에이티브 가구", subtile: "크리에이티브 가구를 바로 보세요." },
+      { heroSliderId: "heroSliderId03", bgImg: "/cdn/prod/img/slider/03/slider-03.jpg", title: "드롭 체어 <br /> 블랙 레더 에디션", subtile: "크리에이티브 가구를 바로 보세요." },
     ],
   },
   {
@@ -186,9 +186,9 @@ const slots: SlotDef[] = [
     label: "홈4 히어로 슬라이더",
     widgetTypeCd: "SLIDER",
     defaultJson: [
-      { heroSliderId: "heroSliderId01", bgImg: "/cdn/img/slider/04/slider-01.jpg", title: "핸드메이드 <br /> 핸드카브 커피", subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다." },
-      { heroSliderId: "heroSliderId02", bgImg: "/cdn/img/slider/slider-2.jpg", title: "다르게 생각하고 <br /> 다르게 실행하세요", subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다." },
-      { heroSliderId: "heroSliderId03", bgImg: "/cdn/img/slider/slider-3.jpg", title: "하이빔<br /> by  태희", subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다." },
+      { heroSliderId: "heroSliderId01", bgImg: "/cdn/prod/img/slider/04/slider-01.jpg", title: "핸드메이드 <br /> 핸드카브 커피", subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다." },
+      { heroSliderId: "heroSliderId02", bgImg: "/cdn/prod/img/slider/slider-2.jpg", title: "다르게 생각하고 <br /> 다르게 실행하세요", subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다." },
+      { heroSliderId: "heroSliderId03", bgImg: "/cdn/prod/img/slider/slider-3.jpg", title: "하이빔<br /> by  태희", subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다." },
     ],
   },
   {
@@ -196,9 +196,9 @@ const slots: SlotDef[] = [
     label: "홈5 히어로 슬라이더",
     widgetTypeCd: "SLIDER",
     defaultJson: [
-      { heroSliderId: "heroSliderId01", bgImg: "/cdn/img/slider/slider-1.jpg", title: "핸드메이드 <br> 핸드카브 커피", subtile: "의도한 커피 원두만큼 풍부하고 독특한 이 작은 스쿱이, 매일 아침을 특별한 순간으로 만들어 드립니다." },
-      { heroSliderId: "heroSliderId02", bgImg: "/cdn/img/slider/slider-2.jpg", title: "다르게 생각하고 <br> 다르게 실행하세요", subtile: "다르게 생각하고, 독창적으로 실천하세요. 변화하는 트렌드를 따라갑니다." },
-      { heroSliderId: "heroSliderId03", bgImg: "/cdn/img/slider/slider-3.jpg", title: "하이빔<br> by 송성일", subtile: "하이빔은 각도 조절이 가능한 책상·선반용 조명으로, 다양한 조명 연출이 가능합니다." },
+      { heroSliderId: "heroSliderId01", bgImg: "/cdn/prod/img/slider/slider-1.jpg", title: "핸드메이드 <br> 핸드카브 커피", subtile: "의도한 커피 원두만큼 풍부하고 독특한 이 작은 스쿱이, 매일 아침을 특별한 순간으로 만들어 드립니다." },
+      { heroSliderId: "heroSliderId02", bgImg: "/cdn/prod/img/slider/slider-2.jpg", title: "다르게 생각하고 <br> 다르게 실행하세요", subtile: "다르게 생각하고, 독창적으로 실천하세요. 변화하는 트렌드를 따라갑니다." },
+      { heroSliderId: "heroSliderId03", bgImg: "/cdn/prod/img/slider/slider-3.jpg", title: "하이빔<br> by 송성일", subtile: "하이빔은 각도 조절이 가능한 책상·선반용 조명으로, 다양한 조명 연출이 가능합니다." },
     ],
   },
   {
@@ -206,9 +206,9 @@ const slots: SlotDef[] = [
     label: "홈7 히어로 슬라이더",
     widgetTypeCd: "SLIDER",
     defaultJson: [
-      { heroSliderId: "heroSliderId01", bgImg: "/cdn/img/slider/05/slide111.webp", sm_title: "최대 50% 할인", meta: true, title: "당신에게 필요한 <br/>라이프스타일.", subtitle: "다양한 라이프스타일을 경험해 보세요." },
-      { heroSliderId: "heroSliderId02", bgImg: "/cdn/img/slider/05/slide112.webp", sm_title: "빠른 배송", title: "크리에이티브 테마 <br/>어썸.", subtitle: "다양한 라이프스타일을 경험해 보세요." },
-      { heroSliderId: "heroSliderId03", bgImg: "/cdn/img/slider/05/slide113.webp", sm_title: "빠른 배송", title: "세상은<br/>만들어 갑니다.", subtitle: "다양한 라이프스타일을 경험해 보세요." },
+      { heroSliderId: "heroSliderId01", bgImg: "/cdn/prod/img/slider/05/slide111.webp", sm_title: "최대 50% 할인", meta: true, title: "당신에게 필요한 <br/>라이프스타일.", subtitle: "다양한 라이프스타일을 경험해 보세요." },
+      { heroSliderId: "heroSliderId02", bgImg: "/cdn/prod/img/slider/05/slide112.webp", sm_title: "빠른 배송", title: "크리에이티브 테마 <br/>어썸.", subtitle: "다양한 라이프스타일을 경험해 보세요." },
+      { heroSliderId: "heroSliderId03", bgImg: "/cdn/prod/img/slider/05/slide113.webp", sm_title: "빠른 배송", title: "세상은<br/>만들어 갑니다.", subtitle: "다양한 라이프스타일을 경험해 보세요." },
     ],
   },
   {
@@ -216,10 +216,10 @@ const slots: SlotDef[] = [
     label: "홈3 고객 후기",
     widgetTypeCd: "TESTIMONIAL",
     defaultJson: [
-      { id: 1, img: "/cdn/img/testimonial/person-1.jpg", name: "Mason Robinson", title: "UX 디자이너", desc: "명확한 가독성과 사용자 경험을 고려한 디자인이 인상적이었습니다." },
-      { id: 2, img: "/cdn/img/testimonial/person-2.jpg", name: "David Cruso", title: "웹 개발자", desc: "구조가 분명하고 유지보수가 쉽습니다." },
-      { id: 3, img: "/cdn/img/testimonial/person-3.jpg", name: "Naim Ahmed", title: "웹 개발자", desc: "직관적인 구성과 빠른 반응 속도가 좋았습니다." },
-      { id: 4, img: "/cdn/img/testimonial/person-4.jpg", name: "Salim Rana", title: "워드프레스 전문가", desc: "전문성과 세심한 배려가 돋보이는 서비스였습니다." },
+      { id: 1, img: "/cdn/prod/img/testimonial/person-1.jpg", name: "Mason Robinson", title: "UX 디자이너", desc: "명확한 가독성과 사용자 경험을 고려한 디자인이 인상적이었습니다." },
+      { id: 2, img: "/cdn/prod/img/testimonial/person-2.jpg", name: "David Cruso", title: "웹 개발자", desc: "구조가 분명하고 유지보수가 쉽습니다." },
+      { id: 3, img: "/cdn/prod/img/testimonial/person-3.jpg", name: "Naim Ahmed", title: "웹 개발자", desc: "직관적인 구성과 빠른 반응 속도가 좋았습니다." },
+      { id: 4, img: "/cdn/prod/img/testimonial/person-4.jpg", name: "Salim Rana", title: "워드프레스 전문가", desc: "전문성과 세심한 배려가 돋보이는 서비스였습니다." },
     ],
   },
   {
@@ -227,9 +227,9 @@ const slots: SlotDef[] = [
     label: "홈7 고객 후기",
     widgetTypeCd: "TESTIMONIAL",
     defaultJson: [
-      { id: 1, img: "/cdn/img/testimonial/testi1.webp", desc: "당신의 하루를 조금 더 특별하게 만들어 줄 단 하나의 선택, 바로 이 상품입니다." },
-      { id: 2, img: "/cdn/img/testimonial/testi2.webp", desc: "지금 이 상품은 단순한 제품이 아니라, 당신의 시간을 아끼고 삶의 질을 높여주는 해결책입니다." },
-      { id: 3, img: "/cdn/img/testimonial/testi3.webp", desc: "많은 분들이 찾고 계신 바로 그 상품, 지금 이 순간에만 만나실 수 있습니다." },
+      { id: 1, img: "/cdn/prod/img/testimonial/testi1.webp", desc: "당신의 하루를 조금 더 특별하게 만들어 줄 단 하나의 선택, 바로 이 상품입니다." },
+      { id: 2, img: "/cdn/prod/img/testimonial/testi2.webp", desc: "지금 이 상품은 단순한 제품이 아니라, 당신의 시간을 아끼고 삶의 질을 높여주는 해결책입니다." },
+      { id: 3, img: "/cdn/prod/img/testimonial/testi3.webp", desc: "많은 분들이 찾고 계신 바로 그 상품, 지금 이 순간에만 만나실 수 있습니다." },
     ],
   },
   {
@@ -237,11 +237,11 @@ const slots: SlotDef[] = [
     label: "브랜드 로고 슬라이더 (home-2, home-3, index)",
     widgetTypeCd: "BRAND_LOGO",
     defaultJson: [
-      "/cdn/img/client/client-1.jpg",
-      "/cdn/img/client/client-2.jpg",
-      "/cdn/img/client/client-3.jpg",
-      "/cdn/img/client/client-4.jpg",
-      "/cdn/img/client/client-5.jpg",
+      "/cdn/prod/img/client/client-1.jpg",
+      "/cdn/prod/img/client/client-2.jpg",
+      "/cdn/prod/img/client/client-3.jpg",
+      "/cdn/prod/img/client/client-4.jpg",
+      "/cdn/prod/img/client/client-5.jpg",
     ],
   },
   {
@@ -259,12 +259,12 @@ const slots: SlotDef[] = [
     label: "홈7 브랜드 로고 슬라이더 2",
     widgetTypeCd: "BRAND_LOGO",
     defaultJson: [
-      "/cdn/img/client/client-1.jpg",
-      "/cdn/img/client/client-2.jpg",
-      "/cdn/img/client/client-3.jpg",
-      "/cdn/img/client/client-4.jpg",
-      "/cdn/img/client/client-5.jpg",
-      "/cdn/img/client/client-2.jpg",
+      "/cdn/prod/img/client/client-1.jpg",
+      "/cdn/prod/img/client/client-2.jpg",
+      "/cdn/prod/img/client/client-3.jpg",
+      "/cdn/prod/img/client/client-4.jpg",
+      "/cdn/prod/img/client/client-5.jpg",
+      "/cdn/prod/img/client/client-2.jpg",
     ],
   },
   {

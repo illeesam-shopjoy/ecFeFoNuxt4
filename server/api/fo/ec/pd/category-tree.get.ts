@@ -22,7 +22,7 @@ interface CategoryTreeItem {
  */
 // 2026-09-13(요청사항: "3개 못찾은 이미지 ... 이경로로 맞춰줘") — 카테고리 배너 이미지는
 // 실 스키마에 카테고리별 이미지 컬럼이 없어(위 클래스 주석 참조) 예전 Prisma 시절
-// co_category_tree.sql 시드에 있던 "/cdn/img/shop/banner/banner-sm-N.jpg"(프론트 로컬
+// co_category_tree.sql 시드에 있던 "/cdn/prod/img/shop/banner/banner-sm-N.jpg"(프론트 로컬
 // 데모 정적경로) 값이 그대로 쓰였는데, 실제 그 파일은 로컬 데모 assets가 아니라 CDN
 // 서버(ecBeCdn, prod/img/shop/banner/)에 올라가 있어 항상 404였다. 실존 파일(banner-sm-1~5)
 // 순서대로 앞의 카테고리들에 배정 — CategoryArea.vue(.slice(0,3))·home-7.vue(.slice(3,6))가

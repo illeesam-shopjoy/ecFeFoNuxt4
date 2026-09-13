@@ -56,19 +56,19 @@ usePageTitle("홈 4");
 const DEFAULT_SLIDES: CoHeroSliderDataType[] = [
   {
     heroSliderId: "heroSliderId01",
-    bgImg: "/cdn/img/slider/04/slider-01.jpg",
+    bgImg: "/cdn/prod/img/slider/04/slider-01.jpg",
     title: "핸드메이드 <br /> 핸드카브 커피",
     subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다.",
   },
   {
     heroSliderId: "heroSliderId02",
-    bgImg: "/cdn/img/slider/slider-2.jpg",
+    bgImg: "/cdn/prod/img/slider/slider-2.jpg",
     title: "다르게 생각하고 <br /> 다르게 실행하세요",
     subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다.",
   },
   {
     heroSliderId: "heroSliderId03",
-    bgImg: "/cdn/img/slider/slider-3.jpg",
+    bgImg: "/cdn/prod/img/slider/slider-3.jpg",
     title: "하이빔<br /> by  태희",
     subtile: "원두 본연의 풍부하고 독특한 맛을 담아낸 이 작은 스쿱은 매일 아침 당신의 아침 루틴을 특별한 순간으로 만들어 줄 것입니다.",
   },

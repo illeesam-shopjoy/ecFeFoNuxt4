@@ -109,15 +109,15 @@ export default defineEventHandler((event) => {
           responses: { "200": { description: "옵션 목록" } },
         },
       },
-      "/cdn/img": {
+      "/cdn/prod/img": {
         get: {
           summary: "정적 이미지 (CDN)",
-          description: "app/assets/prod/img 폴더의 이미지를 제공. 예: GET /cdn/img/logo.png",
+          description: "app/assets/prod/img 폴더의 이미지를 제공. 예: GET /cdn/prod/img/logo.png",
           tags: ["cdn"],
           responses: { "200": { description: "이미지 바이너리" }, "404": { description: "파일 없음" } },
         },
       },
-      "/cdn/img/{path}": {
+      "/cdn/prod/img/{path}": {
         get: {
           summary: "정적 이미지 파일",
           description: "app/assets/prod/img 하위 경로의 이미지. path 예: logo.png, banner/main.jpg, logo/logo-2.png",

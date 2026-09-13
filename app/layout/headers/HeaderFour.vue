@@ -7,7 +7,7 @@
             <div class="col-xl-2 col-lg-2 col-md-4 col-sm-3">
               <div class="logo">
                 <nuxt-link href="/">
-                  <img src="/cdn/img/logo/log-3.webp" alt="logo" />
+                  <img src="/cdn/prod/img/logo/log-3.webp" alt="logo" />
                 </nuxt-link>
               </div>
               <env-mode-badge />
