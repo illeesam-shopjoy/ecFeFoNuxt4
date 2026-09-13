@@ -5,7 +5,10 @@ interface CategoryTreeItem {
   categoryId: string;
   parentTitle: string;
   value: string;
-  children: string[];
+  /** 2026-09-13 버그수정: 예전엔 이름 문자열만 담겨 있어서(진짜 categoryId가 아님)
+      필터 클릭 시 store.handleStCategory(name)이 categoryId와 절대 안 맞아 아무것도
+      안 걸러졌다 — {id,name} 쌍으로 바꿔 진짜 categoryId를 쓸 수 있게 함. */
+  children: { id: string; name: string }[];
   img?: string;
   smDesc?: string;
 }
@@ -43,11 +46,11 @@ export default defineEventHandler(async (event) => {
     parentOf.set(p.categoryId, p.parentCategoryId ?? undefined);
   }
 
-  const childrenByParent = new Map<string, string[]>();
+  const childrenByParent = new Map<string, { id: string; name: string }[]>();
   for (const [id, parentId] of parentOf) {
     if (!parentId) continue;
     if (!childrenByParent.has(parentId)) childrenByParent.set(parentId, []);
-    childrenByParent.get(parentId)!.push(nameById.get(id) ?? id);
+    childrenByParent.get(parentId)!.push({ id, name: nameById.get(id) ?? id });
   }
 
   const topLevelIds = [...nameById.keys()].filter((id) => !parentOf.get(id));
@@ -59,7 +62,8 @@ export default defineEventHandler(async (event) => {
     img: BANNER_IMG_FILES[idx] ? `${prodCdnBase}/prod/img/shop/banner/${BANNER_IMG_FILES[idx]}` : undefined,
   }));
 
-  const out = { categoryTree, categoryIdToName: {} as Record<string, string> };
+  const categoryIdToName = Object.fromEntries(nameById);
+  const out = { categoryTree, categoryIdToName };
   const s = JSON.stringify(out);
   logger.info("[api] ◀", method, url, s.length > 200 ? s.slice(0, 200) + "..." : s);
   return out;

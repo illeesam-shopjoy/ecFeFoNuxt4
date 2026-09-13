@@ -71,9 +71,11 @@
                           <div class="card-body">
                             <div class="categories__list">
                               <ul>
-                                <li v-for="(childId, j) in item.children" :key="j">
-                                  <a @click.prevent="store.handleStCategory(childId)" href="#" :class="[store.activeCls === childId ? 'active' : '']">
-                                    {{ categoryIdToName[childId] ?? childId }}
+                                <!-- 2026-09-13 버그수정: children이 이름 문자열이 아니라 {id,name}
+                                     쌍으로 바뀜(진짜 categoryId로 필터링되게) -->
+                                <li v-for="child in item.children" :key="child.id">
+                                  <a @click.prevent="store.handleStCategory(child.id)" href="#" :class="[store.activeCls === child.id ? 'active' : '']">
+                                    {{ child.name }}
                                   </a>
                                 </li>
                               </ul>

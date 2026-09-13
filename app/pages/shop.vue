@@ -4,7 +4,7 @@
     <breadcrumb-area title="쇼핑" subtitle="쇼핑" :compact="true" />
 
     <!-- 스켈레톤 그리드 (SSR 로딩 중) -->
-    <section v-if="pending" class="shop__area pt-100 pb-100">
+    <section v-if="shopProducts.pending.value" class="shop__area pt-100 pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-9 col-lg-9 col-md-8 offset-xl-3 offset-lg-3 offset-md-4">
@@ -23,11 +23,11 @@
           <div class="col-xl-3 col-lg-3 col-md-4">
             <!-- 쇼핑 사이드바 (옛 ShopSidebar) -->
             <div class="shop__sidebar">
-              <!-- 상품 카테고리 -->
+              <!-- 상품 카테고리 (2026-09-13: 멀티선택 토글) -->
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>상품 카테고리</h3>
-                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
+                  <button type="button" class="filter-reset-link" @click="shopProducts.resetCategory">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="categories">
@@ -37,8 +37,8 @@
                           <h5 class="mb-0">
                             <button
                               type="button"
-                              @click="toggleCategory(i); store.handleStParentCategory(item.value)"
-                              :class="['shop-accordion-btn', expandedCategory[i] ? '' : 'collapsed', store.activeCls === item.value ? 'active' : '']"
+                              @click="toggleAccordion(i); shopProducts.toggleCategory(item.categoryId)"
+                              :class="['shop-accordion-btn', expandedCategory[i] ? '' : 'collapsed', shopProducts.categoryIds.value.includes(item.categoryId) ? 'active' : '']"
                               :aria-expanded="!!expandedCategory[i]"
                             >
                               {{ item.parentTitle }}
@@ -49,9 +49,9 @@
                           <div class="card-body">
                             <div class="categories__list">
                               <ul>
-                                <li v-for="(childId, j) in item.children" :key="j">
-                                  <a @click.prevent="store.handleStCategory(childId)" href="#" :class="[store.activeCls === childId ? 'active' : '']">
-                                    {{ categoryIdToName[childId] ?? childId }}
+                                <li v-for="child in item.children" :key="child.id">
+                                  <a @click.prevent="shopProducts.toggleCategory(child.id)" href="#" :class="[shopProducts.categoryIds.value.includes(child.id) ? 'active' : '']">
+                                    {{ child.name }}
                                   </a>
                                 </li>
                               </ul>
@@ -64,39 +64,36 @@
                 </div>
               </div>
 
-              <!-- 가격 필터 -->
+              <!-- 가격 필터 (2026-09-13: 서버 priceMin/priceMax로 실제 전체 카탈로그 기준 필터링) -->
               <client-only>
                 <div class="sidebar__widget mb-55">
                   <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                     <h3>가격별 필터</h3>
-                    <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
+                    <button type="button" class="filter-reset-link" @click="shopProducts.resetPrice">초기화</button>
                   </div>
                   <div class="sidebar__widget-content">
                     <div class="price__slider">
                       <div id="slider-range"></div>
                       <div>
-                        <form @submit.prevent="store.getStFilterPrice">
-                          <Slider v-model="store.priceRange" :tooltips="false" @change="store.onChangeRange" :max="500000" />
-                          <button type="submit">필터</button>
-                          <label for="amount">가격: {{ formatPrice(store.priceRange[0]) }} - {{ formatPrice(store.priceRange[1]) }}</label>
-                        </form>
+                        <Slider v-model="shopProducts.priceRange.value" :tooltips="false" :max="500000" />
+                        <label for="amount">가격: {{ formatPrice(shopProducts.priceRange.value[0]) }} - {{ formatPrice(shopProducts.priceRange.value[1]) }}</label>
                       </div>
                     </div>
                   </div>
                 </div>
               </client-only>
 
-              <!-- 상품 사이즈 -->
+              <!-- 상품 사이즈 (2026-09-13: 멀티선택 토글, ecBeBo sizeInfoCd 실 값 기준) -->
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                   <h3>사이즈</h3>
-                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
+                  <button type="button" class="filter-reset-link" @click="shopProducts.resetSize">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="size">
                     <ul>
-                      <li v-for="(size, i) in allSizes" :key="i" :class="`${store.activeCls === size ? 'active' : ''}`">
-                        <a @click.prevent="store.handleStSize(size)" href="#">{{ getSizeLabel(size) }}</a>
+                      <li v-for="size in SIZE_OPTIONS" :key="size" :class="`${shopProducts.sizeCds.value.includes(size) ? 'active' : ''}`">
+                        <a @click.prevent="shopProducts.toggleSize(size)" href="#">{{ size }}</a>
                       </li>
                     </ul>
                   </div>
@@ -107,14 +104,14 @@
               <div class="sidebar__widget mb-60">
                 <div class="sidebar__widget-title mb-20 flex items-center justify-between">
                   <h3>색상 선택</h3>
-                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
+                  <button type="button" class="filter-reset-link" @click="shopProducts.resetColor">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="color__pick">
                     <form>
                       <ul>
                         <li v-for="(color, i) in allColor?.slice(0, 8)" :key="color">
-                          <button @click.prevent="store.handleStColor(color)" type="button" :class="`color color-${Number(i) + 1} ${store.activeCls === color ? `active-${Number(i) + 1}` : ''}`"></button>
+                          <button @click.prevent="shopProducts.setColor(color)" type="button" :class="`color color-${Number(i) + 1} ${shopProducts.colorFilter.value === color ? `active-${Number(i) + 1}` : ''}`"></button>
                         </li>
                       </ul>
                     </form>
@@ -122,21 +119,18 @@
                 </div>
               </div>
 
-              <!-- 상품 브랜드 -->
+              <!-- 상품 브랜드 (2026-09-13: 멀티선택 토글 + 전용 브랜드 API) -->
               <div class="sidebar__widget mb-50">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>브랜드</h3>
-                  <button type="button" class="filter-reset-link" @click="store.handleStResetFilter">초기화</button>
+                  <button type="button" class="filter-reset-link" @click="shopProducts.resetBrand">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="brand">
                     <ul>
-                      <!-- 2026-09-13 버그수정: "브랜드 상품아이디만 보이는데 브랜드명이 보여야해" —
-                           getBrandLabel(code)는 brand01 같은 옛 목업 코드용 폴백이라, 실 데이터
-                           코드(BRD0000000000005 등)는 그대로 노출됐다. 실제 brandNm을 직접 사용. -->
-                      <li v-for="b in brands" :key="b.code">
-                        <a :class="`${store.activeCls === b.code ? 'active' : ''}`" @click.prevent="store.handleStBrand(b.code)" href="#">
-                          {{ b.name }}
+                      <li v-for="b in brandList" :key="b.brandId">
+                        <a :class="`${shopProducts.brandIds.value.includes(b.brandId ?? '') ? 'active' : ''}`" @click.prevent="shopProducts.toggleBrand(b.brandId ?? '')" href="#">
+                          {{ b.brandNm }}
                         </a>
                       </li>
                     </ul>
@@ -146,7 +140,7 @@
 
               <!-- 전체 초기화 버튼 -->
               <div class="reset-button mt-20 mb-30">
-                <button class="os-btn os-btn-black" @click="store.handleStResetFilter">전체 초기화</button>
+                <button class="os-btn os-btn-black" @click="shopProducts.resetAll">전체 초기화</button>
               </div>
 
               <!-- 추천 상품 -->
@@ -190,13 +184,19 @@
               <div class="shop__header flex flex-wrap justify-between items-center mb-40">
                 <div class="shop__header-left">
                   <div class="show-text">
-                    <span>전체 {{ store.products.length }}개 중 {{ displayStart }}–{{ displayEnd }}개 표시</span>
+                    <span>전체 {{ shopProducts.totalCount.value }}개 중 {{ shopProducts.rawCount.value }}개 표시</span>
                   </div>
                 </div>
                 <div class="shop__header-right flex items-center justify-between sm:justify-end">
-                  <!-- 정렬/필터 -->
-                  <sort-filtering />
-                  <!-- 정렬/필터 -->
+                  <!-- 2026-09-13: 정렬은 ecBeBo가 지원하는 컬럼(prodNm/regDate/salePrice)만 -->
+                  <div class="sort-wrapper mr-30 pr-25 relative">
+                    <select :value="shopProducts.sort.value" @change="shopProducts.setSort(($event.target as HTMLSelectElement).value)">
+                      <option value="">기본 정렬(최신순)</option>
+                      <option value="prodNm asc">이름순</option>
+                      <option value="salePrice asc">가격 낮은순</option>
+                      <option value="salePrice desc">가격 높은순</option>
+                    </select>
+                  </div>
                   <ul class="flex items-center gap-2" role="tablist">
                     <li>
                       <button type="button" :class="['p-2 rounded', viewMode === 'grid' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'grid'" aria-label="그리드 보기"><i class="fas fa-th"></i></button>
@@ -212,16 +212,20 @@
               <div id="pills-tabContent">
                 <Transition name="view-fade" mode="out-in">
                   <div v-if="viewMode === 'grid'" key="grid" id="pills-grid" role="tabpanel">
-                    <product-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                    <product-item v-for="item in shopProducts.items.value" :key="item.prodId" :item="item" />
                   </div>
                   <div v-else key="list" id="pills-list" role="tabpanel">
-                    <product-list-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                    <product-list-item v-for="item in shopProducts.items.value" :key="item.prodId" :item="item" />
                   </div>
                 </Transition>
+                <p v-if="!shopProducts.pending.value && !shopProducts.items.value.length" class="text-center py-40 text-gray-400">조건에 맞는 상품이 없습니다.</p>
               </div>
 
-              <div class="shop__pagination-area mt-40">
-                <pagination :items="store.filterProducts" :count-of-page="9" @paginatedData="paginatedData" />
+              <!-- 2026-09-13(요청사항: "하단은 페이징을두지말고 더보기 자동 스크롤로 해줘") —
+                   숫자 페이지네이션 대신 이 센티넬이 화면에 보이면 자동으로 다음 페이지를 불러온다. -->
+              <div ref="loadMoreSentinel" class="shop__load-more-area mt-40 text-center">
+                <span v-if="shopProducts.loadingMore.value" class="text-gray-400">불러오는 중…</span>
+                <span v-else-if="!shopProducts.hasMore.value && shopProducts.items.value.length" class="text-gray-300 text-sm">마지막 상품입니다.</span>
               </div>
             </div>
           </div>
@@ -236,20 +240,17 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import SortFiltering from "~/components/shop/filter-widget/SortFiltering.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import { useProductsStore } from "~/store/useProductsStore";
-import { type PdProductType } from "~/types/pdProductType";
-import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
-import { ref, reactive, computed } from "vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import ProductListItem from "~/components/products/ProductListItem.vue";
-import Pagination from "~/components/ui/Pagination.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import Slider from "@vueform/slider";
 import "@vueform/slider/themes/default.css";
 import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
-import { useFilterLabels } from "~/composables/useFilterLabels";
+import { syBrandSvc } from "~/svc/fo/ec/sy/syBrandSvc";
+import { useShopProducts } from "~/composables/useShopProducts";
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useSeoMeta({
@@ -259,52 +260,29 @@ useSeoMeta({
 });
 usePageTitle("쇼핑");
 
-// SSR: 상품 목록 사전 로드 → 스토어에 주입 (검색엔진 크롤러용)
-const { pending } = await useAsyncData<PdProductType[]>(
-  "shop-products",
-  () => pdProductSvc.getPage(),
-  {
-    transform: (data) => {
-      const store = useProductsStore();
-      if (!store.loaded) store.setStHydrate(data);
-      return data;
-    },
-  }
-);
-
-// ── 쇼핑 영역 (옛 ShopArea) ─────────────────────────────
-const store = useProductsStore();
-const { formatPrice } = usePrice();
-const { getSizeLabel } = useFilterLabels();
-
-const viewMode = ref<"grid" | "list">("grid");
-const pageStart = ref(0);
-const countOfPage = ref(9);
-
-const currentPageItems = computed(() => store.filterProducts.slice(pageStart.value, pageStart.value + countOfPage.value));
-const displayStart = computed(() => (currentPageItems.value.length ? pageStart.value + 1 : 0));
-const displayEnd = computed(() => pageStart.value + currentPageItems.value.length);
-
-function paginatedData(_rows: unknown[], start: number, count: number) {
-  pageStart.value = start;
-  countOfPage.value = count;
-}
-
 // 2026-09-13 추가: 헤더 검색(SearchModal)에서 /shop?q=검색어 로 넘어왔을 때 적용.
 const route = useRoute();
 const initialQuery = typeof route.query.q === "string" ? route.query.q : "";
-if (initialQuery) store.handleStSearch(initialQuery);
+
+// ── 쇼핑 영역 — 2026-09-13(요청사항: "10000개가 될수도 있기에 페이징 api 조회 해야해") ──
+// 기존 useProductsStore(전체 상품 클라이언트 필터링)를 안 쓰고, /shop 전용 서버
+// 페이징/멀티선택 필터 컴포저블을 쓴다. useProductsStore는 "추천 상품" 등 다른 화면과
+// 공유되는 부분에서만 계속 쓴다(app.vue의 전역 로드가 채워줌).
+const shopProducts = useShopProducts(initialQuery);
+const { formatPrice } = usePrice();
+
+const viewMode = ref<"grid" | "list">("grid");
+
+// 2026-09-13: ecBeBo sizeInfoCd 실 enum 값(자유 텍스트가 아니라 고정 코드) — 상품 옵션(SKU)
+// 스캔이 아니라 상품 자체 필드라 서버에서 바로 IN 필터링된다.
+const SIZE_OPTIONS = ["FREE", "XS", "S", "M", "L", "XL"];
 
 // ── 사이드바: 상품 카테고리 (옛 ProductCategory) ─────────────────────────────
-// 2026-09-13(성능 개선): lazy:true — 메인 상품 목록(shop-products)만 SSR을 블로킹하고
-// 사이드바 카테고리는 화면이 뜬 뒤 비동기로 채워지게 한다.
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
   { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true }
 );
-
-const categoryIdToName = computed(() => catData.value?.categoryIdToName ?? {});
 
 const parentCategories = computed(() => {
   const seen = new Set<string>();
@@ -316,20 +294,20 @@ const parentCategories = computed(() => {
 });
 
 const expandedCategory = reactive<Record<number, boolean>>({});
-function toggleCategory(i: number) {
+function toggleAccordion(i: number) {
   expandedCategory[i] = !expandedCategory[i];
 }
 
-// ── 사이드바: 상품 사이즈 (옛 ProductSizes) ─────────────────────────────
-const allSizes = computed(() => {
-  const optionIds = new Set<string>();
-  store.products.forEach((product) => {
-    product.optionSizes?.forEach((opt) => optionIds.add(opt.optionCode ?? String(opt.optionId)));
-  });
-  return Array.from(optionIds);
-});
+// ── 사이드바: 브랜드 — 2026-09-13: store.products 스캔 대신 전용 API(캐시됨) ─────────
+const { data: brandList } = useAsyncData(
+  "shop-brand-list",
+  () => syBrandSvc.getBrands(),
+  { default: () => [], lazy: true }
+);
 
-// ── 사이드바: 상품 색상 (옛 ProductColor) ─────────────────────────────
+// ── 사이드바: 상품 색상 (옛 ProductColor) — useProductsStore가 채워주는 전역 상품목록에서
+//    옵션값만 훑는다(색상은 ecBeBo 서버 필터가 아직 없어 이 화면 자체 필터링용 참고 목록).
+const store = useProductsStore();
 const allColor = computed(() => {
   const optionIds = new Set<string>();
   store.products.forEach((product) => {
@@ -338,20 +316,23 @@ const allColor = computed(() => {
   return Array.from(optionIds);
 });
 
-// ── 사이드바: 브랜드 (옛 ProductBrands) ─────────────────────────────
-// 2026-09-13 버그수정: 코드만 있고 이름이 없던 문제 — brandNm까지 같이 들고 있는다.
-const brands = computed(() => {
-  const map = new Map<string, string>();
-  store.products.forEach((p) => {
-    const code = p.brand?.brandCode ?? (p.brand?.brandId ? String(p.brand.brandId) : undefined);
-    if (!code || map.has(code)) return;
-    map.set(code, p.brand?.brandNm || code);
-  });
-  return Array.from(map, ([code, name]) => ({ code, name }));
-});
-
 // ── 사이드바: 추천 상품 (옛 ProductsFeatured) ─────────────────────────────
 const featuredProducts = computed(() => store.products.filter((p) => p.trending).slice(0, 2));
+
+// ── 더보기 자동 스크롤(IntersectionObserver) ─────────────────────────────
+const loadMoreSentinel = ref<HTMLElement | null>(null);
+let observer: IntersectionObserver | null = null;
+onMounted(() => {
+  if (typeof IntersectionObserver === "undefined" || !loadMoreSentinel.value) return;
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting) shopProducts.loadMore();
+    },
+    { rootMargin: "200px" }
+  );
+  observer.observe(loadMoreSentinel.value);
+});
+onBeforeUnmount(() => observer?.disconnect());
 </script>
 
 <style scoped>

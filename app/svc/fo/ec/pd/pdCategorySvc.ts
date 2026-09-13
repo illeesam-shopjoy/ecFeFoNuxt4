@@ -16,7 +16,8 @@ export interface CategoryTreeItem {
   img: string;
   parentTitle: string;
   value: string;
-  children: string[];
+  /** 2026-09-13 버그수정: 이름 문자열이 아니라 진짜 categoryId를 쓸 수 있게 {id,name} 쌍으로 변경 */
+  children: { id: string; name: string }[];
   smDesc?: string;
 }
 
