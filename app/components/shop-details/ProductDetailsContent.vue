@@ -72,7 +72,10 @@
         <div class="product__modal-required mb-5">
           <span>필수 입력 항목 *</span>
         </div>
-        <div class="pro-quan-area flex flex-nowrap items-center gap-3">
+        <!-- 2026-09-13(요청사항: "모바일로 보기에서 [장바구니추가] 버튼이 커서 우측에 숨겨진거 같아") —
+             기존 flex-nowrap이 좁은 화면에서도 한 줄을 강제해 버튼이 화면 밖으로 밀려나갔다.
+             좁은 화면(max-sm)에서는 줄바꿈을 허용하고 버튼은 다음 줄에서 꽉 채워 보이게 한다. -->
+        <div class="pro-quan-area flex flex-wrap items-center gap-3">
           <div class="product-quantity-title shrink-0">
             <label>수량</label>
           </div>
@@ -83,8 +86,13 @@
               <div @click="state.orderQuantity++" class="inc qtybutton">+</div>
             </div>
           </div>
-          <div class="pro-cart-btn shrink-0">
-            <a @click.prevent="state.addStCartProduct(item)" href="#" class="os-btn os-btn-black os-btn-3">+ 장바구니 추가</a>
+          <div class="pro-cart-btn shrink-0 max-sm:w-full">
+            <a
+              @click.prevent="state.addStCartProduct(item)"
+              href="#"
+              class="os-btn os-btn-black os-btn-3 max-sm:flex max-sm:justify-center max-sm:w-full"
+              >+ 장바구니 추가</a
+            >
           </div>
         </div>
       </form>

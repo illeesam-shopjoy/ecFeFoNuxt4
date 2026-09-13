@@ -1,7 +1,9 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="페이지 없음" subtitle="페이지 없음" />
+    <!-- 2026-09-13(요청사항: "404 페이지 배너 안보여줘도 되 우측처럼 top 간단히 보여주면 되") —
+         큰 배경이미지 배너 대신 얇은 브레드크럼 줄만 표시(compact). -->
+    <breadcrumb-area title="페이지 없음" subtitle="페이지 없음" :compact="true" />
     <!-- 에러 영역 시작 -->
     <section class="error__area pt-60 pb-100">
       <div class="max-w-7xl mx-auto px-4">

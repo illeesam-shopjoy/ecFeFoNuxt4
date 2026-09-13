@@ -11,6 +11,15 @@
   padding: 0;
   box-sizing: border-box;
 }
+/* 2026-09-13(요청사항: "마우스 클릭하여 움직이면 우측에 공백란이 나오네") — 특정 페이지의
+   요소 하나가 뷰포트보다 살짝 넓어지면(음수 마진 grid, flex-wrap 버튼 줄 등) 드래그/스와이프로
+   오른쪽에 빈 공간이 딸려 나오는 가로 스크롤이 생긴다. html/body(뷰포트 자체의 스크롤 컨테이너)에
+   가로 스크롤을 원천 차단해 어떤 하위요소가 살짝 넘쳐도 화면 전체가 옆으로 밀리지 않게 한다
+   (position: sticky는 뷰포트 기준이라 영향 없음). */
+html,
+body {
+  overflow-x: hidden;
+}
 body {
   font-family: $font-kr;
   font-size: 14px;
