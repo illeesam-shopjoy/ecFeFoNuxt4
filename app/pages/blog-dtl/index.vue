@@ -47,7 +47,7 @@
               <!-- 본문 내 보조 이미지: AppImage (스켈레톤 + noImage) -->
               <div class="postbox__details-img w-img mb-60">
                 <app-image
-                  :src="`${CDN_URL}/cdn/prod/img/blog/blog-dtl-sm.jpg`"
+                  :src="`${CDN_URL}/cdn/prod/img/blog/blog-details-sm.jpg`"
                   alt="블로그 상세 이미지"
                   wrap-class="w-full"
                   :skeleton-style="{ width: '100%', aspectRatio: '16/7' }"
