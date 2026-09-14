@@ -13,13 +13,13 @@
               <!-- 폼 시작 -->
               <Form :validation-schema="schema" @submit="onSubmit">
                 <div class="mb-20">
-                  <label for="email-id">이메일 주소 <span>**</span></label>
+                  <label for="email-id">이메일 주소 <span class="required">*</span></label>
                   <Field name="email" id="email-id" type="text" placeholder="이메일 주소..." />
                   <ErrorMessage name="email" class="text-danger" />
                 </div>
 
                 <div class="mb-20">
-                  <label for="pass">비밀번호 <span>**</span></label>
+                  <label for="pass">비밀번호 <span class="required">*</span></label>
                   <Field name="password" id="pass" type="password" placeholder="비밀번호 입력..." />
                   <ErrorMessage name="password" class="text-danger" />
                 </div>
@@ -43,11 +43,13 @@
                 <!-- 소셜 로그인 -->
                 <div class="social-login mt-20">
                   <div class="flex flex-wrap gap-2 justify-center">
+                    <!-- 2026-09-14(요청사항: "구글 로그인 구글 바탕색상으로 변경해줘") — 네이버/카카오/Apple처럼
+                         브랜드 컬러를 배경으로 채움(기존엔 흰 배경이라 유독 밋밋했음). -->
                     <a
                       href="/api/auth/google"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-[#4285F4] hover:bg-[#3367d6] text-white text-sm font-medium transition"
                     >
-                      <span class="w-5 h-5 rounded-full bg-[#4285F4] flex items-center justify-center text-white text-xs font-bold">G</span>
+                      <span class="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[#4285F4] text-xs font-bold">G</span>
                       구글 로그인
                     </a>
                     <a

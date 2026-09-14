@@ -178,12 +178,17 @@
                       </ul>
                     </div>
                   </div>
-                  <!-- 리뷰/답글 등록 폼 -->
-                  <form id="contacts-form" class="conatct-post-form" @submit.prevent="handleReviewSubmit">
+                  <!-- 2026-09-14(요청사항: "리뷰작성 에도 yup 적용해줘") — login/register/contact와
+                       동일하게 vee-validate Form/Field/yup 스키마로 전환. 별점은 커스텀 UI라 yup
+                       Field로 못 묶어 기존 방식(handleReviewSubmit 안의 수동 체크) 그대로 유지. -->
+                  <Form id="contacts-form" class="conatct-post-form" :validation-schema="reviewSchema" @submit="handleReviewSubmit">
                     <div class="row">
                       <div class="col-xl-12">
                         <div class="contact-icon relative contacts-message">
-                          <textarea v-model="reviewFormContent" name="comments" id="comments" cols="30" rows="10" placeholder="내용"></textarea>
+                          <Field name="comments" v-slot="{ field }">
+                            <textarea v-bind="field" id="comments" cols="30" rows="10" placeholder="내용"></textarea>
+                          </Field>
+                          <ErrorMessage name="comments" class="text-danger" />
                         </div>
                       </div>
                       <!-- 2026-09-14(요청사항: "리뷰등록 가운데 정렬해줘") -->
@@ -193,7 +198,7 @@
                         </button>
                       </div>
                     </div>
-                  </form>
+                  </Form>
                 </div>
                 <media-viewer-modal
                   :open="mediaViewerOpen"
@@ -250,6 +255,8 @@ import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
 import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
+import { Field, Form, ErrorMessage } from "vee-validate";
+import * as yup from "yup";
 import { useProductsStore } from "~/store/useProductsStore";
 
 // 이 페이지는 /prod-dtl (id 없이 접근) 전용 — 상품 목록 첫 항목을 상세로 보여줌
@@ -426,15 +433,14 @@ async function deleteReview(reviewId: string, isReply: boolean) {
 }
 
 // ── 리뷰/답글 등록 폼 (옛 ReviewForm) ─────────────────────────────
-const reviewFormContent = ref("");
+// 2026-09-14(요청사항: "리뷰작성 에도 yup 적용해줘") — login/register/contact와 동일한 스키마 방식.
+const reviewSchema = yup.object({
+  comments: yup.string().required("내용을 입력해 주세요").min(2, "내용은 2자 이상이어야 합니다").label("내용"),
+});
 const reviewFormLoading = ref(false);
 
-async function handleReviewSubmit() {
-  const contentTrim = reviewFormContent.value.trim();
-  if (!contentTrim) {
-    $toast?.error?.("내용을 입력해 주세요.");
-    return;
-  }
+async function handleReviewSubmit(values: { comments: string }, { resetForm }: { resetForm: () => void }) {
+  const contentTrim = values.comments.trim();
   if (!replyingToReviewId.value && (reviewRating.value < 0.5 || !item.value?.prodId)) {
     $toast?.error?.("별점을 선택해 주세요.");
     return;
@@ -445,7 +451,7 @@ async function handleReviewSubmit() {
       const res = await pdReviewSvc.createReviewComment({ reviewId: replyingToReviewId.value, content: contentTrim });
       if (res?.success) {
         $toast?.success?.(res.message ?? "답글이 등록되었습니다.");
-        reviewFormContent.value = "";
+        resetForm();
         replyingToReviewId.value = null;
         router.go(0);
       }
@@ -453,7 +459,7 @@ async function handleReviewSubmit() {
       const res = await pdReviewSvc.createReview({ prodId: item.value.prodId, content: contentTrim, rating: reviewRating.value });
       if (res?.success) {
         $toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");
-        reviewFormContent.value = "";
+        resetForm();
         router.go(0);
       }
     }

@@ -56,16 +56,18 @@
             </div>
           </div>
           <div class="w-full lg:w-5/12">
+            <!-- 2026-09-14(요청사항: "하단 링크 아이콘 흑백아이콘으로 보이는데 컬러 아이콘으로 표시해줘") —
+                 카카오(이미 #FAE100 인라인)처럼 각 아이콘에 브랜드/서비스 색을 인라인으로 지정. -->
             <div class="footer__social ml-auto">
               <ul>
-                <li><a href="https://facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
-                <li><a href="#" title="Twitter에 공유" @click.prevent="shareTwitter"><i class="fab fa-twitter"></i></a></li>
-                <li><a href="https://www.behance.net/" target="_blank" title="Behance"><i class="fab fa-behance"></i></a></li>
-                <li><a href="https://dribbble.com/" target="_blank" title="Dribbble"><i class="fab fa-dribbble"></i></a></li>
+                <li><a href="https://facebook.com" target="_blank" title="Facebook" style="color: #1877F2;"><i class="fab fa-facebook-f"></i></a></li>
+                <li><a href="#" title="Twitter에 공유" @click.prevent="shareTwitter" style="color: #1DA1F2;"><i class="fab fa-twitter"></i></a></li>
+                <li><a href="https://www.behance.net/" target="_blank" title="Behance" style="color: #1769FF;"><i class="fab fa-behance"></i></a></li>
+                <li><a href="https://dribbble.com/" target="_blank" title="Dribbble" style="color: #EA4C89;"><i class="fab fa-dribbble"></i></a></li>
                 <li><a href="#" title="카카오톡으로 공유" @click.prevent="shareKakao" style="color: #FAE100;"><i class="fas fa-comment-dots"></i></a></li>
-                <li><a href="#" title="이메일로 공유" @click.prevent="shareMail"><i class="fas fa-envelope"></i></a></li>
-                <li><a href="#" title="문자(MMS)로 공유" @click.prevent="shareMMS"><i class="fas fa-mobile-alt"></i></a></li>
-                <li><a href="#" title="링크 복사 / 공유하기" @click.prevent="shareLink"><i class="fas fa-share-alt"></i></a></li>
+                <li><a href="#" title="이메일로 공유" @click.prevent="shareMail" style="color: #EA4335;"><i class="fas fa-envelope"></i></a></li>
+                <li><a href="#" title="문자(MMS)로 공유" @click.prevent="shareMMS" style="color: #10B981;"><i class="fas fa-mobile-alt"></i></a></li>
+                <li><a href="#" title="링크 복사 / 공유하기" @click.prevent="shareLink" style="color: #bc8246;"><i class="fas fa-share-alt"></i></a></li>
               </ul>
             </div>
           </div>

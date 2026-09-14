@@ -10,19 +10,19 @@
               <h3 class="text-center mb-60">회원가입</h3>
               <Form :validation-schema="schema" @submit="onSubmit">
                 <div class="mb-20">
-                  <label for="name">사용자명 <span>**</span></label>
+                  <label for="name">사용자명 <span class="required">*</span></label>
                   <Field name="name" id="name" type="text" placeholder="사용자명 입력" />
                   <ErrorMessage name="name" class="text-danger" />
                 </div>
 
                 <div class="mb-20">
-                  <label for="email-id">이메일 주소 <span>**</span></label>
+                  <label for="email-id">이메일 주소 <span class="required">*</span></label>
                   <Field name="email" id="email-id" type="text" placeholder="이메일 주소..." />
                   <ErrorMessage name="email" class="text-danger" />
                 </div>
 
                 <div class="mb-20">
-                  <label for="pass">비밀번호 <span>**</span></label>
+                  <label for="pass">비밀번호 <span class="required">*</span></label>
                   <Field name="password" id="pass" type="password" placeholder="비밀번호 입력..." />
                   <ErrorMessage name="password" class="text-danger" />
                 </div>
