@@ -83,60 +83,71 @@
                       <div class="col-md-6">
                         <div class="checkout-form-list">
                           <label>이름 <span class="required">*</span></label>
-                          <input type="text" placeholder="이름" />
+                          <input type="text" placeholder="이름" v-model="billingForm.name" />
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="checkout-form-list">
                           <label>성 <span class="required">*</span></label>
-                          <input type="text" placeholder="성" />
+                          <input type="text" placeholder="성" v-model="billingForm.lastName" />
                         </div>
                       </div>
                       <div class="col-md-12">
                         <div class="checkout-form-list">
                           <label>회사명</label>
-                          <input type="text" placeholder="회사명 (선택)" />
+                          <input type="text" placeholder="회사명 (선택)" v-model="billingForm.company" />
                         </div>
                       </div>
                       <div class="col-md-12">
                         <div class="checkout-form-list">
-                          <label>주소 <span class="required">*</span></label>
-                          <input type="text" placeholder="도로명 주소" />
+                          <label class="flex items-center justify-between">
+                            <span>주소 <span class="required">*</span></span>
+                            <!-- 2026-09-15(요청사항: "주문하기의 카카오주소검색이야 모달처럼
+                                 띄워지는데 http://localhost:3100/checkout 에도 추가해줘") -->
+                            <button
+                              type="button"
+                              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white text-xs font-semibold whitespace-nowrap"
+                              @click="addrSearchModalRef?.show()"
+                            >
+                              📮 주소 검색
+                            </button>
+                          </label>
+                          <input type="text" placeholder="도로명 주소" v-model="billingForm.address" readonly />
                         </div>
                       </div>
                       <div class="col-md-12">
                         <div class="checkout-form-list">
-                          <input type="text" placeholder="상세 주소 (동, 호수 등, 선택)" />
+                          <input type="text" placeholder="상세 주소 (동, 호수 등, 선택)" v-model="billingForm.addressDetail" />
                         </div>
                       </div>
                       <div class="col-md-12">
                         <div class="checkout-form-list">
                           <label>시/군/구 <span class="required">*</span></label>
-                          <input type="text" placeholder="시/군/구" />
+                          <input type="text" placeholder="시/군/구" v-model="billingForm.sigungu" />
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="checkout-form-list">
                           <label>시/도 <span class="required">*</span></label>
-                          <input type="text" placeholder="시/도" />
+                          <input type="text" placeholder="시/도" v-model="billingForm.sido" />
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="checkout-form-list">
                           <label>우편번호 <span class="required">*</span></label>
-                          <input type="text" placeholder="우편번호" />
+                          <input type="text" placeholder="우편번호" v-model="billingForm.zipCode" readonly />
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="checkout-form-list">
                           <label>이메일 <span class="required">*</span></label>
-                          <input type="email" placeholder="이메일" />
+                          <input type="email" placeholder="이메일" v-model="billingForm.email" />
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="checkout-form-list">
                           <label>연락처 <span class="required">*</span></label>
-                          <input type="text" placeholder="연락처" />
+                          <input type="text" placeholder="연락처" v-model="billingForm.phone" />
                         </div>
                       </div>
                       <div class="col-md-12">
@@ -341,6 +352,7 @@
       </div>
     </client-only>
     <coupon-modal ref="couponModalRef" :applied-coupons="appliedCoupons" @apply="handleApplyCoupons" />
+    <addr-search-modal ref="addrSearchModalRef" @select="handleAddrSelected" />
   </layout>
 </template>
 
@@ -351,8 +363,11 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import CountrySelect from "~/components/checkout/CountrySelect.vue";
 import CouponModal from "~/components/modals/CouponModal.vue";
-import { ref, reactive, computed, watch } from "vue";
+import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
+import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useCartStore } from "~/store/useCartStore";
+import { useAuthStore } from "~/store/useAuthStore";
+import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
 import type { SyCheckoutLoginFormType } from "~/types/syCheckoutLoginFormType";
 import type { AppliedCoupons, CouponCategory } from "~/types/syCouponType";
 
@@ -364,6 +379,48 @@ useHead({
 usePageTitle("주문/결제");
 
 const { formatPrice } = usePrice();
+
+// 결제 정보(청구 정보) — 주소 검색/기본 배송지 프리필 대상.
+// 2026-09-15(요청사항: "주문하기의 카카오주소검색이야 모달처럼 띄워지는데
+// http://localhost:3100/checkout 에도 추가해줘", "로그인사용자의 기본주소 있으면 넣어주면되")
+const billingForm = reactive({
+  name: "",
+  lastName: "",
+  company: "",
+  address: "",
+  addressDetail: "",
+  sigungu: "",
+  sido: "",
+  zipCode: "",
+  email: "",
+  phone: "",
+});
+const addrSearchModalRef = ref<InstanceType<typeof AddrSearchModal> | null>(null);
+function handleAddrSelected(result: AddrSearchResult) {
+  billingForm.zipCode = result.zonecode;
+  billingForm.address = result.address;
+  billingForm.sido = result.sido;
+  billingForm.sigungu = result.sigungu;
+}
+
+// 로그인 회원의 기본 배송지가 있으면 결제 정보에 미리 채워준다.
+onMounted(async () => {
+  const authStore = useAuthStore();
+  if (!authStore.isStLoggedIn) return;
+  try {
+    const addrs = await myAddrSvc.getMyAddrs();
+    const defaultAddr = addrs.find((a) => a.defaultYn === "Y") ?? addrs[0];
+    if (!defaultAddr) return;
+    billingForm.name = defaultAddr.recvNm ?? billingForm.name;
+    billingForm.phone = defaultAddr.recvPhone ?? billingForm.phone;
+    billingForm.zipCode = defaultAddr.zipCode ?? billingForm.zipCode;
+    billingForm.address = defaultAddr.addr ?? billingForm.address;
+    billingForm.addressDetail = defaultAddr.addrDetail ?? billingForm.addressDetail;
+    if (!billingForm.email) billingForm.email = authStore.user?.userEmail ?? "";
+  } catch (err) {
+    console.warn("[checkout] 기본 배송지 조회 실패:", err);
+  }
+});
 
 // 로그인 아코디언 (옛 CouponArea)
 const checkoutLogin = ref(false);

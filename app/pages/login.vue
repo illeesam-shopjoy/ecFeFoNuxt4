@@ -81,7 +81,9 @@
                 </div>
 
                 <div class="or-divide"><span>또는</span></div>
-                <nuxt-link href="/register" class="os-btn os-btn-black w-full"> 회원가입 </nuxt-link>
+                <!-- 2026-09-15(요청사항: "회원가입 버튼 클릭하면 약관동의 페이지 중간에 넣어줘") —
+                     /register로 바로 이동하지 않고 이용약관 동의 모달을 먼저 띄운다. -->
+                <button type="button" class="os-btn os-btn-black w-full" @click="termsModalRef?.show()">회원가입</button>
                 <!-- 2026-09-14(요청사항: "회원가입 아래 회원목록 모달 호출해줘 그 중에서
                      한명 선택하여 로그인되게 해줘 비밀번호 1111 로 보내면 로그인될거야") -->
                 <button
@@ -99,6 +101,7 @@
       </div>
     </section>
     <demo-member-login-modal ref="demoLoginModalRef" />
+    <terms-agreement-modal ref="termsModalRef" />
   </layout>
 </template>
 
@@ -108,6 +111,7 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import DemoMemberLoginModal from "~/components/modals/DemoMemberLoginModal.vue";
+import TermsAgreementModal from "~/components/modals/TermsAgreementModal.vue";
 import { ref } from "vue";
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
@@ -127,6 +131,7 @@ const route = useRoute();
 const errorMsg = ref("");
 const loading = ref(false);
 const demoLoginModalRef = ref<InstanceType<typeof DemoMemberLoginModal> | null>(null);
+const termsModalRef = ref<InstanceType<typeof TermsAgreementModal> | null>(null);
 
 // OAuth 콜백 실패 시 쿼리로 전달된 에러 표시
 onMounted(() => {
