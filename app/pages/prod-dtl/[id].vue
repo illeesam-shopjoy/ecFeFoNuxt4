@@ -9,14 +9,22 @@
     <!-- 상품 상세 -->
     <template v-else-if="item">
       <section class="shop__area pb-65">
-        <div class="shop__top shop__top--white pt-100 pb-90">
+        <div class="shop__top bg-white pt-100 pb-90">
           <div class="max-w-7xl mx-auto px-4">
             <div class="row">
               <div class="col-xl-6 col-lg-6">
-                <div class="product-details__gallery">
-                  <div class="product-details__thumbs">
-                    <div class="product-details__thumb-list" id="product-details" role="tablist">
-                      <button v-for="(img, i) in item.relatedImages" :key="i" :class="['product-details__thumb-btn', img === active_img ? 'active' : '']" @click="handleActiveImg(img)" type="button">
+                <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — 아래 product-details__*
+                     커스텀 클래스들을 전부 Tailwind 유틸리티로 대체. -->
+                <div class="grid grid-cols-[auto_1fr] gap-4 items-start">
+                  <div class="col-start-1">
+                    <div class="flex flex-col gap-2 m-0 p-0 list-none" id="product-details" role="tablist">
+                      <button
+                        v-for="(img, i) in item.relatedImages"
+                        :key="i"
+                        :class="['m-0 p-0 border-2 rounded block bg-transparent cursor-pointer', img === active_img ? 'border-theme' : 'border-transparent']"
+                        @click="handleActiveImg(img)"
+                        type="button"
+                      >
                         <div class="product__nav-img w-img">
                           <app-image
                             :src="img"
@@ -28,8 +36,8 @@
                       </button>
                     </div>
                   </div>
-                  <div class="product-details__main-wrap" id="product-detailsContent">
-                    <div class="product__modal-img product__thumb w-img product-details__main-img">
+                  <div class="col-start-2 min-w-0" id="product-detailsContent">
+                    <div class="product__modal-img product__thumb w-img border border-[#e0e0e0] rounded overflow-hidden">
                       <app-image
                         :src="active_img"
                         alt="product_img"
@@ -50,16 +58,20 @@
           </div>
         </div>
 
-        <div class="shop__bottom shop__bottom--white">
-          <div class="detail-tab-sticky" ref="tabNavRef" :style="{ top: headerH + 'px' }">
+        <div class="shop__bottom bg-white">
+          <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — detail-tab-* 커스텀
+               클래스를 Tailwind로 대체(JS ref="tabNavRef" 등 참조는 유지). -->
+          <div class="sticky z-40 bg-white border-b-2 border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.06)] min-h-[52px]" ref="tabNavRef" :style="{ top: headerH + 'px' }">
             <div class="max-w-7xl mx-auto px-4">
-              <div class="detail-tab-bar">
+              <div class="flex justify-center gap-0">
                 <button
                   v-for="tab in tabs"
                   :key="tab.id"
                   type="button"
-                  class="detail-tab-btn"
-                  :class="{ 'detail-tab-btn--active': activeTab === tab.id }"
+                  :class="[
+                    'px-7 py-4 text-base font-medium bg-transparent border-0 border-b-[3px] -mb-0.5 cursor-pointer transition-colors tracking-wide whitespace-nowrap',
+                    activeTab === tab.id ? 'text-theme border-theme font-bold' : 'text-gray-500 border-transparent hover:text-gray-700',
+                  ]"
                   @click="scrollToSection(tab.id)"
                 >{{ tab.label }}</button>
               </div>
@@ -68,15 +80,15 @@
 
           <div class="max-w-7xl mx-auto px-4">
             <!-- 상품설명 섹션 -->
-            <div ref="secDes" id="sec-des" class="detail-section">
-              <h2 class="detail-section__title">상품설명</h2>
+            <div ref="secDes" id="sec-des" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px] last:border-b-0">
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">상품설명</h2>
               <!-- ecBeBo contentHtml은 단일 HTML 블록(2026-09 BFF 전환 — 예전 3분할(text/list/text2) 구조 없음) -->
               <div class="product__details-des" v-html="item.contentHtml"></div>
             </div>
 
             <!-- 추가정보 섹션 -->
-            <div ref="secAdd" id="sec-add" class="detail-section">
-              <h2 class="detail-section__title">추가 정보</h2>
+            <div ref="secAdd" id="sec-add" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px] last:border-b-0">
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">추가 정보</h2>
               <div class="product__details-add">
                 <ul>
                   <li><span>무게</span></li>
@@ -90,32 +102,32 @@
             </div>
 
             <!-- 리뷰 섹션 -->
-            <div ref="secReview" id="sec-review" class="detail-section detail-section--review">
+            <div ref="secReview" id="sec-review" class="pt-14 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px] last:border-b-0">
               <div class="product__details-review">
                 <div class="postbox__comments">
                   <!-- 제목: 리뷰(N)만 한 줄에 배치 -->
-                  <div class="postbox__comment-title postbox__comment-title--block mb-20">
-                    <h3 class="postbox__comment-title-h3">리뷰 ({{ totalReviewCount }})</h3>
+                  <div class="block mb-20">
+                    <h3 class="m-0 text-[1.35rem] font-bold text-gray-900 pb-3 border-b-2 border-[#e5e7eb]">리뷰 ({{ totalReviewCount }})</h3>
                   </div>
                   <!-- 첨부·모아보기는 그 아래 줄 -->
-                  <div v-if="totalAttachmentCount > 0" class="postbox__comment-attach-row mb-20">
-                    <span class="postbox__comment-attach-label">첨부 이미지·동영상 {{ totalAttachmentCount }}개</span>
-                    <button type="button" class="os-btn os-btn-black postbox__comment-viewall-btn" @click="openAllMedia">모아보기</button>
+                  <div v-if="totalAttachmentCount > 0" class="flex flex-nowrap items-center gap-2 mb-20">
+                    <span class="whitespace-nowrap text-sm text-gray-600">첨부 이미지·동영상 {{ totalAttachmentCount }}개</span>
+                    <button type="button" class="os-btn os-btn-black whitespace-nowrap !text-sm !px-3 !py-1 !h-auto" @click="openAllMedia">모아보기</button>
                   </div>
                   <div class="latest-comments mb-30">
                     <ul>
                       <template v-for="review in item.reviews" :key="review.reviewId">
                         <li>
-                          <div class="comments-box">
+                          <div class="flex items-start gap-4">
                             <div class="comments-avatar">
                               <app-image :src="review.img" :alt="review.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                             </div>
-                            <div class="comments-text">
+                            <div class="flex-1 min-w-0">
                               <div class="avatar-name">
                                 <h5>{{ review.writerNm }}</h5>
-                                <span class="comment-actions">
-                                  <button type="button" class="reply" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
-                                  <button type="button" class="delete-btn" @click.prevent="deleteReview(review.reviewId, false)">삭제</button>
+                                <span class="inline-flex gap-2 ml-1">
+                                  <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
+                                  <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(review.reviewId, false)">삭제</button>
                                 </span>
                               </div>
                               <div class="user-rating">
@@ -127,19 +139,19 @@
                               </div>
                               <p>{{ review.reviewContent || '내용 없음' }}</p>
                             </div>
-                            <div v-if="(review.attachments?.length ?? 0) > 0" class="comments-attachments">
-                              <div class="review-thumb-list">
+                            <div v-if="(review.attachments?.length ?? 0) > 0" class="shrink-0 flex flex-col items-end">
+                              <div class="flex flex-wrap gap-1.5 justify-end">
                                 <template v-for="(url, i) in (review.attachments ?? []).slice(0, 5)" :key="url">
-                                  <button type="button" class="review-thumb" @click="openMedia(review.attachments ?? [], i)">
+                                  <button type="button" class="w-12 h-12 rounded overflow-hidden border border-gray-200 p-0 cursor-pointer bg-gray-100 shrink-0 hover:opacity-90" @click="openMedia(review.attachments ?? [], i)">
                                     <img v-if="!isVideoUrl(url)" :src="url" :alt="`첨부 ${i + 1}`" class="w-full h-full object-cover" />
-                                    <span v-else class="review-thumb-video"><i class="fa fa-play text-white"></i></span>
+                                    <span v-else class="w-full h-full flex items-center justify-center bg-gray-500"><i class="fa fa-play text-white"></i></span>
                                   </button>
                                 </template>
                               </div>
                               <button
                                 v-if="(review.attachments?.length ?? 0) > 5"
                                 type="button"
-                                class="review-thumb-more text-sm text-gray-500 hover:underline mt-1"
+                                class="bg-transparent border-0 cursor-pointer text-sm text-gray-500 hover:underline mt-1"
                                 @click="openMedia(review.attachments ?? [], 5)"
                               >
                                 외 {{ (review.attachments?.length ?? 0) - 5 }}개
@@ -148,14 +160,14 @@
                           </div>
                         </li>
                         <li v-for="reply in (review.replies ?? [])" :key="reply.reviewId" class="children">
-                          <div class="comments-box">
+                          <div class="flex items-start gap-4">
                             <div class="comments-avatar">
                               <app-image :src="reply.img" :alt="reply.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                             </div>
-                            <div class="comments-text">
+                            <div class="flex-1 min-w-0">
                               <div class="avatar-name">
                                 <h5>{{ reply.writerNm }}</h5>
-                                <button type="button" class="delete-btn" @click.prevent="deleteReview(reply.reviewId, true)">삭제</button>
+                                <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(reply.reviewId, true)">삭제</button>
                               </div>
                               <p>{{ reply.reviewContent || '' }}</p>
                             </div>
@@ -171,7 +183,7 @@
                     <div v-if="!replyingToReviewId" class="post-rating">
                       <ul>
                         <li v-for="n in 5" :key="n">
-                          <button type="button" class="star-btn" :aria-label="`${n}점`" @click.prevent="setReviewRating(n)">
+                          <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] hover:opacity-85" :aria-label="`${n}점`" @click.prevent="setReviewRating(n)">
                             <i :class="n <= reviewRating ? 'fas fa-star' : 'fal fa-star'"></i>
                           </button>
                         </li>
@@ -524,190 +536,3 @@ async function handleReviewSubmit(values: { comments: string }, { resetForm }: {
 }
 </script>
 
-<style scoped>
-.shop__top--white,
-.shop__bottom--white {
-  background-color: #fff;
-}
-
-/* 썸네일 왼쪽, 큰 이미지 오른쪽 */
-.product-details__gallery {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1rem;
-  align-items: start;
-}
-.product-details__thumbs { grid-column: 1; }
-.product-details__thumb-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0; padding: 0; list-style: none;
-}
-.product-details__thumb-btn {
-  margin: 0; padding: 0;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  background: none;
-  cursor: pointer;
-  display: block;
-}
-.product-details__thumb-btn.active { border-color: #bc8246; }
-.product-details__thumb-btn img {
-  display: block; width: 95px; height: 120px;
-  object-fit: cover; border-radius: 2px;
-}
-.product-details__main-wrap { grid-column: 2; min-width: 0; }
-.product-details__main-img {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-/* ── 탭 네비게이션 (스크롤 시 상단 고정은 사용 안 함) ── */
-.detail-tab-sticky {
-  position: sticky;
-  top: 0; /* JS가 :style로 top 덮어씀 (headerH) */
-  z-index: 40;
-  background: #fff;
-  border-bottom: 2px solid #e5e7eb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  min-height: 52px;
-}
-/* 2026-09-14(요청사항: "상품설명, 추가정보, 리뷰 가운데 정렬로 해줘") */
-.detail-tab-bar {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-}
-.detail-tab-btn {
-  padding: 16px 28px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6b7280;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
-.detail-tab-btn:hover { color: #374151; }
-.detail-tab-btn--active {
-  color: #bc8246;
-  border-bottom-color: #bc8246;
-  font-weight: 700;
-}
-
-/* ── 섹션 (탭 클릭 시 스무스 스크롤 대상) ── */
-.detail-section {
-  padding: 48px 0 40px;
-  border-bottom: 1px solid #f0f0f0;
-  scroll-margin-top: 120px; /* 고정 헤더+탭바 아래로 보이도록 */
-}
-.detail-section:last-child { border-bottom: none; }
-
-.detail-section__title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 24px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-/* 리뷰 섹션: 타이틀 없으므로 상단 여백만 추가 */
-.detail-section--review {
-  padding-top: 56px;
-}
-
-/* ── 리뷰 위젯 ── */
-.star-btn,
-.reply,
-.delete-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-size: inherit;
-}
-.reply { color: inherit; }
-.delete-btn { color: var(--color-danger, #dc2626); }
-.comment-actions { display: inline-flex; gap: 0.5rem; margin-left: 0.25rem; }
-.star-btn:hover,
-.reply:hover,
-.delete-btn:hover {
-  opacity: 0.85;
-}
-
-.comments-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-.comments-text { flex: 1; min-width: 0; }
-.comments-attachments {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-.review-thumb-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  justify-content: flex-end;
-}
-.review-thumb {
-  width: 48px;
-  height: 48px;
-  border-radius: 0.25rem;
-  overflow: hidden;
-  border: 1px solid var(--tw-gray-200, #e5e7eb);
-  padding: 0;
-  cursor: pointer;
-  background: #f3f4f6;
-  flex-shrink: 0;
-}
-.review-thumb:hover { opacity: 0.9; }
-.review-thumb-video {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #6b7280;
-}
-.review-thumb-more { background: none; border: none; cursor: pointer; }
-
-/* 제목란: 리뷰(N)만 한 줄, 그 아래 첨부·모아보기 */
-.postbox__comment-title--block {
-  display: block;
-}
-.postbox__comment-title-h3 {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #111827;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e5e7eb;
-}
-.postbox__comment-attach-row {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.5rem;
-}
-.postbox__comment-attach-label {
-  white-space: nowrap;
-  font-size: 0.875rem;
-  color: #4b5563;
-}
-.postbox__comment-viewall-btn {
-  white-space: nowrap;
-  font-size: 0.875rem;
-  padding: 0.25rem 0.75rem;
-}
-</style>
