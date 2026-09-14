@@ -1,14 +1,17 @@
 <template>
+  <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — env-badge/file-path-badge-row
+       커스텀 클래스를 Tailwind로 대체. var(--heading-color, #201f1f)는 실제 정의된 곳이 없어
+       항상 폴백값만 쓰이므로 그대로 하드코딩. -->
   <ul class="extra-info">
     <li>
-      <div class="env-badge">
+      <div class="flex items-center gap-1.5 pt-1.5 px-1 pb-1 text-[0.72rem] text-[#999] border-b border-dashed border-[#e5e5e5] mb-0.5">
         <span>{{ config.public.envNm }}</span>
-        <span class="env-mode">{{ config.public.mode }}</span>
+        <span class="inline-block px-1.5 py-px rounded-[20px] bg-[#f0f0f0] text-[#555] font-semibold text-[0.7rem]">{{ config.public.mode }}</span>
       </div>
-      <div v-if="isLocal" class="file-path-badge-row">
-        <span class="current-page-path">{{ currentPagePath }}</span>
-        <label class="path-toggle">
-          <input v-model="showFilePathBadge" type="checkbox" />
+      <div v-if="isLocal" class="pt-1.5 px-1 pb-2 border-b border-dashed border-[#e5e5e5] mb-0.5">
+        <span class="block text-[0.7rem] text-[#666] mb-1.5 break-all">{{ currentPagePath }}</span>
+        <label class="flex items-center gap-1.5 text-[0.72rem] text-[#666] cursor-pointer">
+          <input v-model="showFilePathBadge" type="checkbox" class="cursor-pointer" />
           <span>경로 표시</span>
         </label>
       </div>
@@ -16,7 +19,7 @@
     <li>
       <div class="my-account">
         <div class="extra-title">
-          <h5 class="extra-title__heading">내 계정</h5>
+          <h5 class="font-bold text-[0.95rem] tracking-[-0.02em] text-[#201f1f]">내 계정</h5>
         </div>
         <ul>
           <li><nuxt-link href="/account">내 계정</nuxt-link></li>
@@ -31,7 +34,7 @@
     <li>
       <div class="lang">
         <div class="extra-title">
-          <h5 class="extra-title__heading">언어</h5>
+          <h5 class="font-bold text-[0.95rem] tracking-[-0.02em] text-[#201f1f]">언어</h5>
         </div>
         <ul>
           <li><a href="#">영어</a></li>
@@ -44,7 +47,7 @@
     <li>
       <div class="currency">
         <div class="extra-title">
-          <h5 class="extra-title__heading">통화</h5>
+          <h5 class="font-bold text-[0.95rem] tracking-[-0.02em] text-[#201f1f]">통화</h5>
         </div>
         <ul>
           <li><a href="#">USD - 미국 달러</a></li>
@@ -70,53 +73,3 @@ const currentPagePath = computed(() => {
 const { showFilePathBadge } = useShowFilePathBadge();
 </script>
 
-<style scoped>
-.env-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 4px 4px;
-  font-size: 0.72rem;
-  color: #999;
-  border-bottom: 1px dashed #e5e5e5;
-  margin-bottom: 2px;
-}
-.env-mode {
-  display: inline-block;
-  padding: 1px 7px;
-  border-radius: 20px;
-  background: #f0f0f0;
-  color: #555;
-  font-weight: 600;
-  font-size: 0.7rem;
-}
-.file-path-badge-row {
-  padding: 6px 4px 8px;
-  border-bottom: 1px dashed #e5e5e5;
-  margin-bottom: 2px;
-}
-.file-path-badge-row .current-page-path {
-  display: block;
-  font-size: 0.7rem;
-  color: #666;
-  margin-bottom: 6px;
-  word-break: break-all;
-}
-.file-path-badge-row .path-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.72rem;
-  color: #666;
-  cursor: pointer;
-}
-.file-path-badge-row .path-toggle input {
-  cursor: pointer;
-}
-.extra-title__heading {
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: -0.02em;
-  color: var(--heading-color, #201f1f);
-}
-</style>

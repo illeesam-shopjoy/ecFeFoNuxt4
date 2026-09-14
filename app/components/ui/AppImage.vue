@@ -1,16 +1,22 @@
 <template>
-  <div :class="['app-image-wrap', wrapClass]" :style="[wrapStyle, containerAspectStyle]">
+  <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — app-image-* 커스텀 클래스를
+       Tailwind로 대체(.app-image-wrap > img 자식결합자는 <img>에 기본 클래스를 직접 부여하는
+       방식으로 대체). shimmer 애니메이션은 tailwind.config.ts의 animate-shimmer 재사용. -->
+  <div :class="['relative block overflow-hidden', wrapClass]" :style="[wrapStyle, containerAspectStyle]">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 스켈레톤 (로딩 중) -->
-    <div v-if="loading" class="app-image-skeleton skeleton-shimmer" :style="skeletonStyle" />
+    <div v-if="loading" class="absolute inset-0 rounded animate-shimmer bg-gradient-to-r from-[#f0f0f0] via-[#e0e0e0] to-[#f0f0f0] bg-[length:200%_100%]" :style="skeletonStyle" />
 
     <!-- 실제 이미지 -->
+    <!-- 2026-09-13: <img>가 width:100%(.w-img)만 상속하고 height/object-fit이 없어서 래퍼 박스를
+         못 채우던 문제 — 기본으로 박스를 꽉 채우게 한다. 호출측이 imgStyle로 직접 objectFit 등을
+         지정하면 인라인 스타일이라 이 기본 클래스보다 항상 우선한다(안전). -->
     <img
       ref="imgRef"
       v-show="!loading"
       :src="currentSrc"
       :alt="alt"
-      :class="imgClass"
+      :class="['w-full h-full object-cover block', imgClass]"
       :style="imgStyle"
       v-bind="$attrs"
       @load="onLoad"
@@ -93,39 +99,3 @@ function onError() {
   currentSrc.value = NO_IMAGE_SVG;
 }
 </script>
-
-<style scoped>
-.app-image-wrap {
-  position: relative;
-  display: block;
-  overflow: hidden;
-}
-
-/* 2026-09-13: <img>가 width:100%(.w-img)만 상속하고 height/object-fit이 없어서
-   래퍼 박스를 못 채우던 문제 — 기본으로 박스를 꽉 채우게 한다. 호출측이 imgStyle로
-   직접 objectFit 등을 지정하면 인라인 스타일이라 이 규칙보다 항상 우선한다(안전). */
-.app-image-wrap > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.app-image-skeleton {
-  position: absolute;
-  inset: 0;
-  border-radius: 4px;
-}
-
-/* 공통 shimmer 애니메이션 */
-.skeleton-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite ease-in-out;
-}
-
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-</style>
