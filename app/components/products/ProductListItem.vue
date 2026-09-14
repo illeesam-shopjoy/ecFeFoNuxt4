@@ -1,12 +1,14 @@
 <template>
-  <div class="product__wrapper mb-40">
+  <div class="product__wrapper mb-40 group">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="row">
       <div class="col-xl-4 col-lg-4">
+        <!-- 2026-09-14(요청사항: "마우스 오버하면 리로드 효과로 보여주는데 비니, 원피스, 팔찌
+             처럼 이미지 좀더 키지는 효과로 변경해줄수 있어?") — ProductItem.vue와 동일하게
+             두 번째 이미지 전환 효과 대신 줌인 효과로 통일. -->
         <div class="product__thumb">
           <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="w-img">
-            <app-image :src="item.img" alt="product-img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
-            <app-image img-class="product__thumb-2" :src="item.thumbImg" alt="product-img" wrap-class="w-img" />
+            <app-image :src="item.img" alt="product-img" wrap-class="w-img" img-class="transition-transform duration-300 group-hover:scale-[1.2]" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
           </nuxt-link>
           <div v-if="item.saleDiscntRate || item.isNew" class="product__sale">
             <span v-if="item.isNew || item.saleDiscntRate" class="new">신상품</span>

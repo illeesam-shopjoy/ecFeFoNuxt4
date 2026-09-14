@@ -1,21 +1,21 @@
 <template>
-  <div class="product__wrapper mb-60">
+  <div class="product__wrapper mb-60 group">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
+    <!-- 2026-09-14(요청사항: "마우스 오버하면 리로드 효과로 보여주는데 비니, 원피스, 팔찌
+         처럼 이미지 좀더 키지는 효과로 변경해줄수 있어?") — 기존엔 호버 시 두 번째 이미지
+         (thumbImg)가 겹쳐 나타나는 "이미지 전환" 효과였는데, 카테고리 배너(CategoryArea.vue,
+         _banner.scss .banner__item:hover img{transform:scale(1.1)})처럼 같은 이미지가 살짝
+         확대되는 줌인 효과로 통일. 두 번째 이미지 오버레이는 제거하고 메인 이미지에
+         group-hover:scale-[1.2](20%) 적용(.product__thumb가 overflow:hidden이라 확대된 부분은
+         잘려서 카드 밖으로 넘치지 않음). -->
     <div class="product__thumb">
       <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="w-img">
         <!-- AppImage: 스켈레톤 + noImage 내장 -->
-        <app-image :src="item.img" alt="product-img" wrap-class="w-img" img-class="" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
-        <!-- 2026-09-13 버그수정: AppImage 자체 스타일(.app-image-wrap{position:relative})이
-             .product__thumb-2가 기대하는 position:absolute(호버 시 첫 이미지 위에 겹쳐 보이는
-             효과)를 specificity로 이겨버려서, 두 번째 이미지가 카드 아래로 그냥 이어져 보였다 —
-             인라인 wrap-style로 absolute를 직접 지정해 항상 이기게 한다. -->
         <app-image
-          class="product__thumb-2"
-          :src="item.thumbImg"
+          :src="item.img"
           alt="product-img"
-          wrap-class="product__thumb-2-wrap"
-          :wrap-style="{ position: 'absolute', top: '0', left: '0', width: '100%' }"
-          img-class=""
+          wrap-class="w-img"
+          img-class="transition-transform duration-300 group-hover:scale-[1.2]"
           :skeleton-style="{ width: '100%', aspectRatio: '3/4' }"
         />
       </nuxt-link>

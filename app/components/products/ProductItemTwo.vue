@@ -1,10 +1,12 @@
 <template>
-  <div class="product__wrapper">
+  <div class="product__wrapper group">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
+    <!-- 2026-09-14(요청사항: "마우스 오버하면 리로드 효과로 보여주는데 ... 이미지 좀더 키지는
+         효과로 변경해줄수 있어?" → "다른상품목록 이미지들도 이 효과 넣어줘") — ProductItem.vue와
+         동일하게 두 번째 이미지 전환 효과 대신 20% 줌인 효과로 통일. -->
     <div class="product__thumb">
       <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="w-img">
-        <app-image :src="item.img" alt="product-img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
-        <app-image img-class="product__thumb-2" :src="item.thumbImg" alt="product-img" wrap-class="w-img" />
+        <app-image :src="item.img" alt="product-img" wrap-class="w-img" img-class="transition-transform duration-300 group-hover:scale-[1.2]" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
       </nuxt-link>
       <div class="product__action-3 transition-3">
         <a @click.prevent="store.addStCartProduct(item)" href="#" class="action-btn"> <i class="fal fa-plus"></i>장바구니 담기 </a>

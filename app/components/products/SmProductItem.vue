@@ -1,9 +1,18 @@
 <template>
-  <div class="features__product-wrapper flex mb-20">
+  <div class="features__product-wrapper flex mb-20 group">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
-    <div class="features__product-thumb mr-15">
+    <!-- 2026-09-14(요청사항: "다른상품목록 이미지들도 이 효과 넣어줘") — ProductItem.vue와
+         동일한 20% 줌인 호버 효과. overflow-hidden을 직접 부여해(부모 .features__product-thumb는
+         테마 CSS에 overflow:hidden이 없음) 확대된 이미지가 카드 밖으로 넘치지 않게 한다. -->
+    <div class="features__product-thumb mr-15 overflow-hidden">
       <nuxt-link :to="`/prod-dtl/${prd.prodId}`">
-        <app-image :src="prd.img" alt="pro-sm-1" :img-style="{ width: '86px', height: '110px', objectFit: 'cover' }" :skeleton-style="{ width: '86px', height: '110px' }" />
+        <app-image
+          :src="prd.img"
+          alt="pro-sm-1"
+          :img-style="{ width: '86px', height: '110px', objectFit: 'cover' }"
+          img-class="transition-transform duration-300 group-hover:scale-[1.2]"
+          :skeleton-style="{ width: '86px', height: '110px' }"
+        />
       </nuxt-link>
     </div>
     <div class="features__product-content">
