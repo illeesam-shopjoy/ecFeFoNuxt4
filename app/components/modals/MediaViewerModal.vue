@@ -25,7 +25,7 @@
           <button
             v-if="normalizedItems.length > 1"
             type="button"
-            class="media-viewer-nav media-viewer-nav--left"
+            class="absolute top-1/2 -translate-y-1/2 left-3 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white border-0 cursor-pointer z-20 transition-colors hover:bg-white/20"
             aria-label="이전"
             @click="prev"
           >
@@ -51,7 +51,7 @@
           <button
             v-if="normalizedItems.length > 1"
             type="button"
-            class="media-viewer-nav media-viewer-nav--right"
+            class="absolute top-1/2 -translate-y-1/2 right-3 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white border-0 cursor-pointer z-20 transition-colors hover:bg-white/20"
             aria-label="다음"
             @click="next"
           >
@@ -199,6 +199,9 @@ function nextPage() {
 </script>
 
 <style scoped>
+/* 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — media-viewer-nav*는 Tailwind로
+   대체(버튼에 직접 클래스 적용). 아래 fade 트랜지션만 <Transition name="media-viewer-fade">와
+   이름이 묶여 있어 남겨둠. */
 .media-viewer-fade-enter-active,
 .media-viewer-fade-leave-active {
   transition: opacity 0.2s ease;
@@ -206,32 +209,5 @@ function nextPage() {
 .media-viewer-fade-enter-from,
 .media-viewer-fade-leave-to {
   opacity: 0;
-}
-
-.media-viewer-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  z-index: 20;
-  transition: background 0.2s, color 0.2s;
-}
-.media-viewer-nav:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-.media-viewer-nav--left {
-  left: 12px;
-}
-.media-viewer-nav--right {
-  right: 12px;
 }
 </style>

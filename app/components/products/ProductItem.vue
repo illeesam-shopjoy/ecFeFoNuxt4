@@ -19,7 +19,11 @@
           :skeleton-style="{ width: '100%', aspectRatio: '3/4' }"
         />
       </nuxt-link>
-      <div class="product__action transition-3">
+      <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — 테마 CSS(_shop.scss
+           .product__action)가 opacity:0·visibility:hidden·scaleX(0)로 기본 숨김 처리하는 걸
+           덮어쓰는 부분이라(요청사항: "default 다 보였으면 좋겠어"), 순서 상관없이 이기도록
+           !important 변형 사용. -->
+      <div class="product__action transition-3 !visible !opacity-100 !scale-x-100">
         <a @click.prevent="wishlistState.addStWishlistProduct(item)" href="#" title="위시리스트에 담기">
           <i class="fal fa-heart"></i>
         </a>
@@ -37,17 +41,16 @@
     </div>
     <div class="product__content relative">
       <div class="product__content-inner">
-        <!-- 2026-09-13(요청사항: "상품항목정보가 작아보여 크게 보여줘") — 상품명을 h4로 감싸
-             테마 CSS(.product__content h4)가 의도한 폰트를 그대로 받게 하고, 아래 스타일에서
-             데모 수준으로 크기를 키움. -->
-        <h4>
+        <!-- 2026-09-13(요청사항: "상품항목정보가 작아보여 크게 보여줘") — 테마 기본값(h4/가격 14px)이
+             데모 대비 작아 보여 text-base(16px)로 키움. -->
+        <h4 class="!text-base">
           <nuxt-link :to="`/prod-dtl/${item.prodId}`">
             <span v-html="item.prodNm"></span>
           </nuxt-link>
         </h4>
         <div class="product__price transition-3">
-          <span>{{ formatPrice(item.salePrice) }}</span>
-          <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
+          <span class="!text-base">{{ formatPrice(item.salePrice) }}</span>
+          <span v-if="item.stdPrice" class="old-price !text-base">{{ formatPrice(item.stdPrice) }}</span>
         </div>
       </div>
       <div class="add-cart absolute transition-3">
@@ -86,24 +89,3 @@ function openQuickView() {
 }
 </script>
 
-<style scoped>
-/* 2026-09-13(요청사항: "상품항목정보가 작아보여 크게 보여줘") — 테마 기본값(h4 14px, 가격 14px)이
-   데모 대비 작아 보여 상품명/가격을 조금 더 키움. */
-.product__content h4 {
-  font-size: 16px;
-}
-.product__price span {
-  font-size: 16px;
-}
-
-/* 2026-09-14(요청사항: "상품항목에 좋아요 표시 하나 나오는데 마우스 오버하면 장바구니,
-   상품비교가 보여 default 다 보였으면 좋겠어") — 테마 기본 CSS(_shop.scss .product__action)는
-   위시리스트/비교/퀵뷰 3개 아이콘을 묶어 opacity:0·visibility:hidden·scaleX(0)로 숨겨뒀다가
-   .product__wrapper:hover에서만 보여준다. 항상 보이도록 hover 종료 상태값을 그대로 기본값에
-   덮어씀(호버 시 추가 애니메이션도 없어지지만 동작엔 지장 없음). */
-.product__action {
-  visibility: visible;
-  opacity: 1;
-  transform: scaleX(1);
-}
-</style>

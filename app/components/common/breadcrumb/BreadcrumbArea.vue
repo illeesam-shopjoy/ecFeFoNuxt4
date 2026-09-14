@@ -3,13 +3,16 @@
        큰 배경이미지/제목 없이 얇은 브레드크럼 줄만 보여준다(쇼핑 목록 페이지 등 데모처럼).
        py-24까지 키웠다가 "무의미한 공간"으로 다시 지적받아 py-15로 되돌림 — 진짜
        문제는 여백 크기가 아니라 아무 콘텐츠 없는 빈 줄 자체였다. -->
-  <section v-if="compact" class="page__title-compact py-15">
+  <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — page__title-compact/breadcrumb-item
+       커스텀 클래스를 Tailwind로 대체. "/" 구분자는 li가 정확히 2개뿐이라 두 번째 li에
+       before:content-['/']를 직접 부여(형제선택자 대체). -->
+  <section v-if="compact" class="page__title-compact py-15 border-b border-[#eee]">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <nav aria-label="브레드크럼">
-        <ol class="breadcrumb">
+        <ol class="flex gap-2 list-none m-0 p-0 text-[0.85rem] text-[#888]">
           <li class="breadcrumb-item"><nuxt-link href="/">홈</nuxt-link></li>
-          <li class="breadcrumb-item active" aria-current="page">{{ subtitle }}</li>
+          <li class="breadcrumb-item text-[#201f1f] before:content-['/'] before:mr-2 before:text-[#ccc]" aria-current="page">{{ subtitle }}</li>
         </ol>
       </nav>
     </div>
@@ -54,25 +57,3 @@ withDefaults(
 );
 </script>
 
-<style scoped>
-.page__title-compact {
-  border-bottom: 1px solid #eee;
-}
-.page__title-compact .breadcrumb {
-  display: flex;
-  gap: 8px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 0.85rem;
-  color: #888;
-}
-.page__title-compact .breadcrumb-item + .breadcrumb-item::before {
-  content: "/";
-  margin-right: 8px;
-  color: #ccc;
-}
-.page__title-compact .breadcrumb-item.active {
-  color: #201f1f;
-}
-</style>

@@ -1,6 +1,7 @@
 <template>
-  <div class="xdev-open-comp">
-    <div v-if="error" class="xdev-open-comp-error">{{ error }}</div>
+  <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") -->
+  <div class="min-h-screen p-4 bg-gray-50">
+    <div v-if="error" class="text-danger text-[0.9rem] p-4">{{ error }}</div>
     <component v-else-if="resolvedComponent" :key="componentPath" :is="resolvedComponent" />
   </div>
 </template>
@@ -44,16 +45,3 @@ async function loadComponent() {
 
 watch(componentPath, loadComponent, { immediate: true });
 </script>
-
-<style scoped>
-.xdev-open-comp {
-  min-height: 100vh;
-  padding: 1rem;
-  background: #f9fafb;
-}
-.xdev-open-comp-error {
-  color: #dc2626;
-  font-size: 0.9rem;
-  padding: 1rem;
-}
-</style>
