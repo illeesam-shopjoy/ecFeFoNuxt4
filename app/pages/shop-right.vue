@@ -4,8 +4,11 @@
     <breadcrumb-area title="쇼핑" subtitle="쇼핑" />
 
     <!-- 쇼핑 영역 (옛 ShopArea, 사이드바 우측) -->
+    <!-- 2026-09-14(요청사항: "화면을 늘리면 상품카드란 20% 까지 늘려줘") — /shop과 동일하게
+         max-w-7xl(1280px)에서 max-w-screen-2xl(1536px, 정확히 20% 증가)로. 사이드바/상품
+         그리드 비율은 그대로 유지한 채 화면이 넓을 때 전부 20% 커짐. -->
     <section class="shop__area pt-100 pb-100">
-      <div class="max-w-7xl mx-auto px-4">
+      <div class="max-w-screen-2xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-9 col-lg-9 col-md-8">
             <div class="shop__content-area">
