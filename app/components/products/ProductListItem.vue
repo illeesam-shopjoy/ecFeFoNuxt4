@@ -47,8 +47,9 @@
           <div class="add-cart-list flex flex-wrap items-center">
             <a @click.prevent="store.addStCartProduct(item)" href="#" class="add-cart-btn mr-10">+ 장바구니 추가</a>
             <div class="product__action-2 transition-3 mr-20">
+              <!-- 2026-09-14(요청사항: "좋아요 클릭했는데 하드 좀더 분홍색으로 변경해줘") -->
               <a @click.prevent="wishlistState.addStWishlistProduct(item)" href="#" title="위시리스트에 담기">
-                <i class="fal fa-heart"></i>
+                <i :class="[isWishlisted ? 'fas fa-heart !text-pink-500' : 'fal fa-heart']"></i>
               </a>
               <a @click.prevent="compareState.addStCompareProduct(item)" href="#" title="비교하기">
                 <i class="fal fa-sliders-h"></i>
@@ -71,7 +72,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 목록 아이템');
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
 import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
@@ -79,13 +80,15 @@ import { useCartStore } from "~/store/useCartStore";
 import { useCompareStore } from "~/store/useCompareStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
 
-defineProps<{
+const props = defineProps<{
   item: PdProductType;
 }>();
 const store = useCartStore();
 const compareState = useCompareStore();
 const wishlistState = useWishlistStore();
 const { formatPrice } = usePrice();
+// 2026-09-14(요청사항: "좋아요 클릭했는데 하드 좀더 분홍색으로 변경해줘")
+const isWishlisted = computed(() => wishlistState.wishlists.some((p) => p.prodId === props.item.prodId));
 const productModalRef = ref<(InstanceType<typeof ProductModal> & { show(): void }) | null>(null);
 function openQuickView() {
   store.initialStOrderQuantity();

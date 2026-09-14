@@ -24,8 +24,11 @@
            덮어쓰는 부분이라(요청사항: "default 다 보였으면 좋겠어"), 순서 상관없이 이기도록
            !important 변형 사용. -->
       <div class="product__action transition-3 !visible !opacity-100 !scale-x-100">
+        <!-- 2026-09-14(요청사항: "좋아요 클릭했는데 하드 좀더 분홍색으로 변경해줘") — 클릭해도
+             하트 아이콘이 그대로라 담겼는지 눈으로 구분이 안 됐다. 위시리스트에 담긴 상태면
+             채워진 하트(fas)로 바꾸고 분홍색을 입혀 클릭 결과가 바로 보이게 한다. -->
         <a @click.prevent="wishlistState.addStWishlistProduct(item)" href="#" title="위시리스트에 담기">
-          <i class="fal fa-heart"></i>
+          <i :class="[isWishlisted ? 'fas fa-heart !text-pink-500' : 'fal fa-heart']"></i>
         </a>
         <a @click.prevent="compareState.addStCompareProduct(item)" href="#" title="비교하기">
           <i class="fal fa-sliders-h"></i>
@@ -78,7 +81,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle("상품 아이템");
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
 import { useCartStore } from "~/store/useCartStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
@@ -86,13 +89,15 @@ import { useCompareStore } from "~/store/useCompareStore";
 import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 
-defineProps<{
+const props = defineProps<{
   item: PdProductType;
 }>();
 const store = useCartStore();
 const wishlistState = useWishlistStore();
 const compareState = useCompareStore();
 const { formatPrice } = usePrice();
+// 2026-09-14(요청사항: "좋아요 클릭했는데 하드 좀더 분홍색으로 변경해줘")
+const isWishlisted = computed(() => wishlistState.wishlists.some((p) => p.prodId === props.item.prodId));
 const productModalRef = ref<(InstanceType<typeof ProductModal> & { show(): void }) | null>(null);
 function openQuickView() {
   store.initialStOrderQuantity();
