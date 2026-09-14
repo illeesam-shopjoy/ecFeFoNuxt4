@@ -30,9 +30,11 @@
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
                 <div class="mt-10"></div>
-                <!-- 2026-09-14(요청사항: "회원가입 버튼 흰색이라 잘 안보이는데 개선해줄수 있어?") —
-                     아래 로그인 링크와 같은 os-btn-black(검정 배경)으로 통일. -->
-                <button type="submit" class="os-btn os-btn-black w-full" :disabled="loading">{{ loading ? "가입 중..." : "회원가입" }}</button>
+                <!-- 2026-09-14(요청사항: "회원가입 버튼 흰색이라 잘 안보이는데 개선해줄수 있어?" →
+                     "검정색 로그인 버튼으로 변경했네 좀 안이쁘다") — 아래 로그인 링크가 이미
+                     os-btn-black이라 검정 버튼이 두 개 겹쳐 밋밋했다. 제출 버튼은 테마색
+                     (os-btn-theme)으로 구분. -->
+                <button type="submit" class="os-btn os-btn-theme w-full" :disabled="loading">{{ loading ? "가입 중..." : "회원가입" }}</button>
                 <div class="or-divide"><span>또는</span></div>
                 <nuxt-link href="/login" class="os-btn os-btn-black w-full">로그인</nuxt-link>
               </Form>

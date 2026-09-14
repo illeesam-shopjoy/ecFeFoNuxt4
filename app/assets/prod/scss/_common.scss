@@ -468,6 +468,21 @@ p {
       }
     }
   }
+  // 2026-09-14(요청사항: "검정색 로그인 버튼으로 변경했네 좀 안이쁘다") — os-btn-black을 로그인/
+  // 회원가입 제출 버튼에 썼더니 바로 아래 os-btn-black 링크(회원가입/로그인)와 겹쳐 검정 버튼이
+  // 두 개 연달아 나와 밋밋했다. 주요 액션(제출 버튼)은 사이트 테마색(#bc8246)으로 채워
+  // 구분되게 하고, 호버하면 검정으로 채워지는 -black과 반대되는 효과를 준다.
+  &-theme {
+    color: $white;
+    background-color: $theme-color;
+    border-color: $theme-color;
+    &::after {
+      background-color: $black-2;
+    }
+    &:hover {
+      border-color: $black-2;
+    }
+  }
 }
 .os-btn-4 {
   position: relative;

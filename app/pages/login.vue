@@ -36,10 +36,11 @@
 
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
-                <!-- 2026-09-14(요청사항: "로그인 버튼 흰색이라 잘 안보이는데 개선해줄수 있어?") —
-                     os-btn(테두리만 있는 투명 버튼)만 쓰고 있어 흰 배경에서 거의 안 보였다.
-                     아래 회원가입 링크와 같은 os-btn-black(검정 배경)으로 통일. -->
-                <button class="os-btn os-btn-black w-full" :disabled="loading">
+                <!-- 2026-09-14(요청사항: "로그인 버튼 흰색이라 잘 안보이는데 개선해줄수 있어?" →
+                     "검정색 로그인 버튼으로 변경했네 좀 안이쁘다") — 아래 회원가입 링크가 이미
+                     os-btn-black이라 검정 버튼이 두 개 겹쳐 밋밋했다. 제출 버튼은 테마색
+                     (os-btn-theme)으로 구분. -->
+                <button class="os-btn os-btn-theme w-full" :disabled="loading">
                   {{ loading ? "로그인 중..." : "로그인" }}
                 </button>
 
