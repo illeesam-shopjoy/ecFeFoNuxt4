@@ -174,22 +174,23 @@
     &-2 {
       // 2026-09-13(요청사항: "배너의 height가 좀더 커") — 830px는 데스크탑에서도 지나치게
       // 길어 보여 700px로 낮춤(그 아래 반응형 단계는 원래 값 유지).
-      max-height: 70vh;
-      height: 700px;
+      // 2026-09-14(요청사항: "최상단 배너 20% height 줄여도 될거 같아") — 전 구간 -20%.
+      max-height: 56vh;
+      height: 560px;
       @media #{$laptop} {
-        height: 700px;
+        height: 560px;
       }
       @media #{$lg} {
-        height: 700px;
+        height: 560px;
       }
       @media #{$md} {
-        height: 650px;
+        height: 520px;
       }
       @media #{$sm} {
-        height: 600px;
+        height: 480px;
       }
       @media #{$xs} {
-        height: 550px;
+        height: 440px;
       }
     }
     &-4 {
@@ -197,41 +198,43 @@
       height: 535px;
     }
     &-5 {
-      max-height: 70vh;
-      height: 950px;
+      // 2026-09-14(요청사항: "배너 heigth 25% 줄여도 될거 같아", home-5) — 전 구간 -25%.
+      max-height: 52.5vh;
+      height: 713px;
       @media #{$laptop} {
-        height: 900px;
+        height: 675px;
       }
       @media #{$lg} {
-        height: 850px;
+        height: 638px;
       }
       @media #{$md} {
-        height: 700px;
+        height: 525px;
       }
       @media #{$sm} {
-        height: 750px;
+        height: 563px;
       }
       @media #{$xs} {
-        height: 700px;
+        height: 525px;
       }
     }
     &-6 {
-      max-height: 70vh;
-      height: 950px;
+      // 2026-09-14(요청사항: "최상단 배너 height 30% 줄여도 될거 같아", home-6) — 전 구간 -30%.
+      max-height: 49vh;
+      height: 665px;
       @media #{$laptop} {
-        height: 900px;
+        height: 630px;
       }
       @media #{$lg} {
-        height: 850px;
+        height: 595px;
       }
       @media #{$md} {
-        height: 650px;
+        height: 455px;
       }
       @media #{$sm} {
-        height: 600px;
+        height: 420px;
       }
       @media #{$xs} {
-        height: 600px;
+        height: 420px;
       }
     }
   }

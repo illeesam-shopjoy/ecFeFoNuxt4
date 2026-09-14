@@ -2,8 +2,9 @@
   <section class="product__area pt-60 pb-100">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 2026-09-13(요청사항: "인기상품 4열 상품 width를 우측란처럼 약간 크게해줘") —
-         max-w-7xl(1280px)이 데모 대비 좁아 카드 4열이 작아 보였다. -->
-    <div :class="`${style_2 ? 'custom-container' : style_3 ? 'container-fluid' : 'container'} mx-auto max-w-[1600px] px-4`">
+         max-w-7xl(1280px)이 데모 대비 좁아 카드 4열이 작아 보였다.
+         2026-09-14(요청사항: "인기상품 화면늘리면 15% 더 늘어나도 될거 같은데") — 1600px → 1840px(+15%). -->
+    <div :class="`${style_2 ? 'custom-container' : style_3 ? 'container-fluid' : 'container'} mx-auto max-w-[1840px] px-4`">
       <div class="row">
         <div class="col-xl-12">
           <div :class="`section__title-wrapper text-center mb-55 ${style_2 ? 'p-relative' : ''}`">
@@ -72,14 +73,17 @@ function handleLoadMore() {
 }
 
 /* 2026-09-14(요청사항: "인기상품 상품카드 width 15px 늘려줘") — style_3(home-5, row-cols-xl-5)
-   전용. 카드 좌우 패딩을 0으로 없애 12px, .row 거터(기본 -15px)를 -22.5px로 7.5px씩 더
-   넓혀 나머지 3px을 확보 — 총 +15px. row-cols-xl-5는 home-5에서만 쓰여 다른 페이지 영향 없음. */
+   전용. .row 거터(기본 -15px)를 -22.5px로 7.5px씩 더 넓혀 카드 폭을 키운다.
+   row-cols-xl-5는 home-5에서만 쓰여 다른 페이지 영향 없음. */
 .row-cols-xl-5 {
   margin-left: -22.5px;
   margin-right: -22.5px;
 }
+/* 2026-09-14(요청사항: "인기상품 상품간 다닥 붙어있어") — 위에서 패딩을 0으로 없앴더니
+   카드끼리 완전히 붙어버렸다. 다른 페이지와 동일한 6px 거터로 되돌림(카드 폭은 .row
+   거터 확장분(7.5px×2=15px)만큼은 여전히 더 넓다). */
 .row-cols-xl-5 .product__item {
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 </style>

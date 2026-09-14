@@ -186,7 +186,8 @@
                           <textarea v-model="reviewFormContent" name="comments" id="comments" cols="30" rows="10" placeholder="내용"></textarea>
                         </div>
                       </div>
-                      <div class="col-xl-12">
+                      <!-- 2026-09-14(요청사항: "리뷰등록 가운데 정렬해줘") -->
+                      <div class="col-xl-12 text-center">
                         <button class="os-btn os-btn-black" type="submit" :disabled="reviewFormLoading">
                           {{ reviewFormLoading ? "등록 중..." : (replyingToReviewId ? "답글 등록" : "리뷰 등록") }}
                         </button>
@@ -567,8 +568,10 @@ async function handleReviewSubmit() {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   min-height: 52px;
 }
+/* 2026-09-14(요청사항: "상품설명, 추가정보, 리뷰 가운데 정렬로 해줘") */
 .detail-tab-bar {
   display: flex;
+  justify-content: center;
   gap: 0;
 }
 .detail-tab-btn {

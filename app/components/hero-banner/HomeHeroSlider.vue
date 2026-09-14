@@ -2,7 +2,11 @@
   <section :class="`slider__area ${style_2 ? 'slider__area-2' : ''} relative tp_hero`">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <Carousel :items-to-show="1" :wrap-around="true" class="slider-active">
-      <Slide v-for="item in slider_data" :key="item.heroSliderId" :class="`single-slider slider__height ${style_2 ? 'single-slider-2 slider__height-5' : ''} flex items-center`" :style="{ backgroundImage: `url(${item.bgImg})` }">
+      <!-- 2026-09-14: style_2(home-6 전용)는 slider__height-6을 써야 하는데 -5(home-5 전용, home-5.vue의
+           별도 인라인 Carousel이 씀)를 잘못 재사용하고 있어서 두 페이지 배너 높이가 서로 발이 묶여
+           있었다(요청사항: "배너 heigth 25%/30% 줄여도 될거 같아"가 서로 다른 페이지·다른 비율로
+           들어와서 발견) — -6으로 분리. -->
+      <Slide v-for="item in slider_data" :key="item.heroSliderId" :class="`single-slider slider__height ${style_2 ? 'single-slider-2 slider__height-6' : ''} flex items-center`" :style="{ backgroundImage: `url(${item.bgImg})` }">
         <!-- 2026-09-13(요청사항: "코멘트가 좌측정렬되어야 해") — 데모는 히어로 텍스트가 좌측 정렬인데
              justify-center/mx-auto/text-center가 겹쳐 중앙 정렬로 보였다. -->
         <div class="max-w-7xl mx-auto px-4">

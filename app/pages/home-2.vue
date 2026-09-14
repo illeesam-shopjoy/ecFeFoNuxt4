@@ -40,7 +40,8 @@
               <div class="col-xl-6 offset-xl-6 col-lg-6 offset-lg-6">
                 <div class="product__slider-2">
                   <div class="row">
-                    <div v-for="item in trendingProducts" :key="item.prodId" class="col-lg-4 col-md-6 product__item">
+                    <!-- 2026-09-14(요청사항: "인기상품 우측에 3열을 2열로 해줘") -->
+                    <div v-for="item in trendingProducts" :key="item.prodId" class="col-lg-6 col-md-6 product__item">
                       <product-item :item="item" />
                     </div>
                   </div>
@@ -70,8 +71,10 @@
           <div class="row">
             <div class="col-xl-12">
               <div class="sale__area-slider-2">
-                <div class="row">
-                  <div v-for="(item, i) in saleProducts" :key="i" class="col-xl-2 col-lg-3 col-md-4 col-6 sale__item">
+                <!-- 2026-09-14(요청사항: "할인상품 6열 아니고 5열로 하면되") — col-xl-2(=6열) 대신
+                     row-cols-xl-5(=5열, _grid.scss 기존 row-cols-lg-5/sm-5와 동일 패턴)를 .row에 적용. -->
+                <div class="row row-cols-xl-5">
+                  <div v-for="(item, i) in saleProducts" :key="i" class="col-lg-3 col-md-4 col-6 sale__item">
                     <product-item :item="item" />
                   </div>
                 </div>
