@@ -35,7 +35,11 @@ useComponentTitle('이미지');
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 
 // noImage 폴백 SVG (인라인 data URI)
-const NO_IMAGE_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23aaa'%3E이미지 없음%3C/text%3E%3Cpath d='M160 170 l80 0 l0-80 l-80 0 Z' fill='none' stroke='%23ccc' stroke-width='2'/%3E%3Ccircle cx='190' cy='140' r='10' fill='%23ccc'/%3E%3Cpath d='M165 175 l25-25 l20 20 l15-10 l35 35' fill='none' stroke='%23ccc' stroke-width='2'/%3E%3C/svg%3E`;
+// 2026-09-15(요청사항: "이미지 없음 너무 길쭉한 이미지야 이쁜 동그란 이미지, 정사각형
+// 이미지면 좋겠어") — 기존 400x300(4:3) 비율이라 프로필 아바타처럼 동그랗게/정사각형으로
+// 잘라 쓰는 자리에서 원본 비율이 뒤틀려 보였다. 1:1 정사각형 viewBox로 바꿔 어떤 크롭
+// (원형/정사각형)에도 어색하지 않게 함.
+const NO_IMAGE_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Crect x='90' y='105' width='120' height='90' rx='8' fill='none' stroke='%23ccc' stroke-width='3'/%3E%3Ccircle cx='118' cy='132' r='9' fill='%23ccc'/%3E%3Cpath d='M95 190 l35-35 l25 25 l20-15 l45 40' fill='none' stroke='%23ccc' stroke-width='3'/%3E%3Ctext x='50%25' y='228' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='13' fill='%23aaa'%3E이미지 없음%3C/text%3E%3C/svg%3E`;
 
 interface Props {
   src?: string | null;

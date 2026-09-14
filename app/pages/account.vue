@@ -12,6 +12,7 @@
                   <app-image
                     :src="profileImg"
                     alt=""
+                    :wrap-style="{ width: '80px', height: '80px', borderRadius: '50%', flexShrink: '0' }"
                     :img-style="{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', display: 'block' }"
                     :skeleton-style="{ width: '80px', height: '80px', borderRadius: '50%' }"
                   />
