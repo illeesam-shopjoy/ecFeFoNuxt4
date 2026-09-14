@@ -37,7 +37,7 @@ export interface BeProdSkuItem {
   prodId: string;
   prodOpt1Id?: string | null;
   prodOpt2Id?: string | null;
-  prodSkuCode?: string | null;
+  skuCode?: string | null; // 2026-09-14: ecBeBo PdProdSkuDto.prodSkuCode → skuCode 리네이밍에 맞춤
   addPrice?: number | null;
   useYn?: string | null;
 }
