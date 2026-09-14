@@ -24,10 +24,11 @@
 </template>
 
 <script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
 import { type SyMenuTreeType } from "~/types/syMenuTreeType";
 import { foMenuSvc } from "~/svc/fo/foMenuSvc";
 
-const BG = "/cdn/prod/img/bg/mega-menu-bg.jpg";
+const BG = `${CDN_URL}/cdn/prod/img/bg/mega-menu-bg.jpg`;
 
 // 이미 있으면 재호출 안 함 (화면 오픈마다 /api/fo/menu 호출 방지)
 const menusCache = useState<SyMenuTreeType[] | null>("menus-cache", () => null);

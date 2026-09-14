@@ -335,6 +335,7 @@
 </template>
 
 <script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import LayoutSeven from "~/layout/LayoutSeven.vue";
@@ -361,7 +362,7 @@ const heroSliderRef = ref<{ next(): void; prev(): void } | null>(null);
 const DEFAULT_HERO_SLIDES: CoHeroSliderDataTypeThree[] = [
   {
     heroSliderId: "heroSliderId01",
-    bgImg: "/cdn/prod/img/slider/05/slide111.webp",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/05/slide111.webp`,
     sm_title: "최대 50% 할인",
     meta: true,
     title: "당신에게 필요한 <br/>라이프스타일.",
@@ -369,14 +370,14 @@ const DEFAULT_HERO_SLIDES: CoHeroSliderDataTypeThree[] = [
   },
   {
     heroSliderId: "heroSliderId02",
-    bgImg: "/cdn/prod/img/slider/05/slide112.webp",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/05/slide112.webp`,
     sm_title: "빠른 배송",
     title: "크리에이티브 테마 <br/>어썸.",
     subtitle: "다양한 라이프스타일을 경험해 보세요.",
   },
   {
     heroSliderId: "heroSliderId03",
-    bgImg: "/cdn/prod/img/slider/05/slide113.webp",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/05/slide113.webp`,
     sm_title: "빠른 배송",
     title: "세상은<br/>만들어 갑니다.",
     subtitle: "다양한 라이프스타일을 경험해 보세요.",
@@ -414,7 +415,7 @@ const smBestPrd = computed(() => bestSaleProducts.value.filter((p) => !p.bigImg)
 const featuredProducts = computed(() => productsStore.products.filter((p) => p.isBest).filter((p) => !p.bigImg));
 
 // 동영상
-const videoBg = "/cdn/prod/img/bg/bg-video.webp";
+const videoBg = `${CDN_URL}/cdn/prod/img/bg/bg-video.webp`;
 const video_modal = ref<InstanceType<typeof VideoModal> | null>(null);
 function handleVideoPopup() {
   video_modal.value?.playVideo();
@@ -440,17 +441,17 @@ interface TestimonialDataType {
 const DEFAULT_TESTIMONIALS: TestimonialDataType[] = [
   {
     id: 1,
-    img: "/cdn/prod/img/testimonial/testi1.webp",
+    img: `${CDN_URL}/cdn/prod/img/testimonial/testi1.webp`,
     desc: "당신의 하루를 조금 더 특별하게 만들어 줄 단 하나의 선택, 바로 이 상품입니다. 작은 차이가 큰 만족으로 이어지는 순간을 경험해보세요.",
   },
   {
     id: 2,
-    img: "/cdn/prod/img/testimonial/testi2.webp",
+    img: `${CDN_URL}/cdn/prod/img/testimonial/testi2.webp`,
     desc: "지금 이 상품은 단순한 제품이 아니라, 당신의 시간을 아끼고 삶의 질을 높여주는 해결책입니다. 꼭 필요한 순간에 가장 든든한 동반자가 되어줄 거예요",
   },
   {
     id: 3,
-    img: "/cdn/prod/img/testimonial/testi3.webp",
+    img: `${CDN_URL}/cdn/prod/img/testimonial/testi3.webp`,
     desc: "많은 분들이 찾고 계신 바로 그 상품, 지금 이 순간에만 만나실 수 있습니다. 놓치면 다시는 같은 조건으로 만나기 어려울지도 모릅니다",
   },
 ];
@@ -480,12 +481,12 @@ function handleBlogPrev() {
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
 const brandSliderRef = ref<{ next(): void; prev(): void } | null>(null);
 const DEFAULT_BRAND_IMAGES: string[] = [
-  "/cdn/prod/img/client/client-1.jpg",
-  "/cdn/prod/img/client/client-2.jpg",
-  "/cdn/prod/img/client/client-3.jpg",
-  "/cdn/prod/img/client/client-4.jpg",
-  "/cdn/prod/img/client/client-5.jpg",
-  "/cdn/prod/img/client/client-2.jpg",
+  `${CDN_URL}/cdn/prod/img/client/client-1.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-2.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-3.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-4.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-5.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-2.jpg`,
 ];
 // 2026-09-13(성능 개선): lazy:true + computed — 늦게 도착한 데이터가 brandImages에 반영되게 한다.
 const { data: fetchedBrandImages } = useAsyncData<string[] | null>(

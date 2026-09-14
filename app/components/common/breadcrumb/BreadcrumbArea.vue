@@ -37,11 +37,12 @@
 </template>
 
 <script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('브레드크럼');
-const bg = "/cdn/prod/img/page-title/page-title-1.jpg";
+const bg = `${CDN_URL}/cdn/prod/img/page-title/page-title-1.jpg`;
 
 withDefaults(
   defineProps<{

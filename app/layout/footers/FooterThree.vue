@@ -30,7 +30,7 @@
             <div class="footer__widget mb-30">
               <div class="footer__widget-title mb-25">
                 <nuxt-link href="/">
-                  <img src="/cdn/prod/img/logo/log-3.webp" alt="logo" />
+                  <img :src="`${CDN_URL}/cdn/prod/img/logo/log-3.webp`" alt="logo" />
                 </nuxt-link>
               </div>
               <div class="footer__widget-content">
@@ -94,7 +94,7 @@
           </div>
           <div class="col-xl-6 col-lg-5 col-md-4">
             <div class="footer__payment">
-              <a href="#"><img src="/cdn/prod/img/payment/paypal_logo.webp" alt="" /></a>
+              <a href="#"><img :src="`${CDN_URL}/cdn/prod/img/payment/paypal_logo.webp`" alt="" /></a>
             </div>
           </div>
         </div>
@@ -105,6 +105,7 @@
 
 <script setup lang="ts">
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
+import { CDN_URL } from "~/conts/baseConst";
 
 interface FooterLinkSection {
   title: string;

@@ -171,6 +171,7 @@
 </template>
 
 <script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
@@ -190,7 +191,7 @@ usePageTitle("마이페이지");
 
 const cartState = useCartStore();
 const authStore = useAuthStore();
-const profileImg = "/cdn/prod/img/testimonial/person-1.jpg";
+const profileImg = `${CDN_URL}/cdn/prod/img/testimonial/person-1.jpg`;
 
 const { formatPrice } = usePrice();
 const activeTab = ref("account");

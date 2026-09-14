@@ -47,7 +47,7 @@
               <!-- 본문 내 보조 이미지: AppImage (스켈레톤 + noImage) -->
               <div class="postbox__details-img w-img mb-60">
                 <app-image
-                  src="/cdn/prod/img/blog/blog-dtl-sm.jpg"
+                  :src="`${CDN_URL}/cdn/prod/img/blog/blog-dtl-sm.jpg`"
                   alt="블로그 상세 이미지"
                   wrap-class="w-full"
                   :skeleton-style="{ width: '100%', aspectRatio: '16/7' }"
@@ -120,7 +120,7 @@
                       <div class="comments-avatar">
                         <!-- 댓글 아바타: AppImage (noImage 포함) -->
                         <app-image
-                          src="/cdn/prod/img/blog/comments/avater-1.png"
+                          :src="`${CDN_URL}/cdn/prod/img/blog/comments/avater-1.png`"
                           alt="김민수"
                           :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }"
                           :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }"
@@ -140,7 +140,7 @@
                     <div class="comments-box">
                       <div class="comments-avatar">
                         <app-image
-                          src="/cdn/prod/img/blog/comments/avater-2.png"
+                          :src="`${CDN_URL}/cdn/prod/img/blog/comments/avater-2.png`"
                           alt="이영희"
                           :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }"
                           :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }"
@@ -160,7 +160,7 @@
                     <div class="comments-box">
                       <div class="comments-avatar">
                         <app-image
-                          src="/cdn/prod/img/blog/comments/avater-3.png"
+                          :src="`${CDN_URL}/cdn/prod/img/blog/comments/avater-3.png`"
                           alt="박지훈"
                           :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }"
                           :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }"
@@ -248,6 +248,7 @@ import BlogItem from "~/components/blogs/BlogItem.vue";
 import BlogSidebar from "~/components/common/sidebar/BlogSidebar.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
+import { CDN_URL } from "~/conts/baseConst";
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 

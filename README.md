@@ -47,7 +47,7 @@ Nuxt는 실행 명령에 따라 아래 파일을 자동 병합합니다. (하단
 
 | 변수명                 | 설명                       | 예시                    |
 | ---------------------- | -------------------------- | ----------------------- |
-| `NUXT_PUBLIC_CDN_BASE` | 이미지 CDN 기본 경로       | `/cdn/prod/img`              |
+| `NUXT_PUBLIC_CDN_BASE` | 이미지 CDN 기본 경로       | `https://22400.illeesam.synology.me/api/cdn/prod/img` |
 | `NUXT_API_BASE_URL`    | 서버 내부 API URL (SSR용)  | `http://localhost:3000` |
 | `NUXT_PUBLIC_API_BASE` | 클라이언트 API URL (CSR용) | `http://localhost:3000` |
 | `PORT` / `NITRO_PORT`  | 서버 포트                  | `3000`                  |

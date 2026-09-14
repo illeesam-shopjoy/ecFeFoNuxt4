@@ -94,7 +94,7 @@ export default defineNuxtConfig({
     // 이 Nuxt 서버는 beApi.ts로 프록시만 한다(server/api/auth/*.ts 참조). useRedis/redisUrl/
     // authJwtSecret/authAccessTokenTtlSec/authRefreshTokenTtlSec 런타임설정은 그래서 폐기.
     public: {
-      cdnBase: process.env.NUXT_PUBLIC_CDN_BASE ?? "/cdn/prod/img",
+      cdnBase: process.env.NUXT_PUBLIC_CDN_BASE ?? "https://22400.illeesam.synology.me/api/cdn/prod/img",
       // 2026-09 BFF 전환: 실제 상품/리뷰 이미지가 올라가는 ecBeCdn(CDN 서버) base.
       // ecBeBo가 내려주는 prodImgs[].cdnImgUrl 등은 이미 완전한 절대 URL이라 보통 그대로 쓰면 되고,
       // 상대경로만 오는 경우(예: sy_attach.url)에 한해 `${prodCdnBase}${relativePath}`로 조립한다.
@@ -126,7 +126,7 @@ export default defineNuxtConfig({
         .sort()
         .forEach((k) => console.log(`  ${k}=${process.env[k] ?? ""}`));
       console.log("[Env] useRuntimeConfig().public.NAME (적용값):", {
-        cdnBase: process.env.NUXT_PUBLIC_CDN_BASE ?? "/cdn/prod/img",
+        cdnBase: process.env.NUXT_PUBLIC_CDN_BASE ?? "https://22400.illeesam.synology.me/api/cdn/prod/img",
         apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
         mode: process.env.NUXT_PUBLIC_MODE ?? "default",
         envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",

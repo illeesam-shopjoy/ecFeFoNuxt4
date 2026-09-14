@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
@@ -42,19 +43,19 @@ defineProps({
 const DEFAULT_SLIDES: CoHeroSliderDataType[] = [
   {
     heroSliderId: "heroSliderId01",
-    bgImg: "/cdn/prod/img/slider/slider-1.jpg",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/slider-1.jpg`,
     title: "핸드메이드 <br /> 핸드카브 커피",
     subtile: "의도한 커피 원두만큼 풍부하고 독특한 이 작은 스쿱이, 매일 아침을 특별한 순간으로 만들어 드립니다.",
   },
   {
     heroSliderId: "heroSliderId02",
-    bgImg: "/cdn/prod/img/slider/slider-2.jpg",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/slider-2.jpg`,
     title: "다르게 생각하고 <br /> 다르게 실행하세요",
     subtile: "다르게 생각하고, 독창적으로 실천하세요. 변화하는 트렌드를 따라갑니다.",
   },
   {
     heroSliderId: "heroSliderId03",
-    bgImg: "/cdn/prod/img/slider/slider-3.jpg",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/slider-3.jpg`,
     title: "하이빔<br /> by  태희",
     subtile: "하이빔은 각도 조절이 가능한 책상·선반용 조명으로, 다양한 조명 연출이 가능합니다.",
   },

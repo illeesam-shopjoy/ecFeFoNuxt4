@@ -23,7 +23,7 @@
             <div :class="`${header_big ? 'w-full md:w-1/3 lg:w-3/12' : 'header__logo-col'}`" style="order: 1;">
               <div :class="`logo flex ${header_big ? 'justify-start' : 'justify-center'}`">
                 <nuxt-link href="/">
-                  <img src="/cdn/prod/img/logo/logo.png" alt="logo" />
+                  <img :src="`${CDN_URL}/cdn/prod/img/logo/logo.png`" alt="logo" />
                 </nuxt-link>
               </div>
               <env-mode-badge />
@@ -112,6 +112,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
+import { CDN_URL } from "~/conts/baseConst";
 import { useCartStore } from "~/store/useCartStore";
 import Menus from "./Menus.vue";
 import CartMini from "./header-com/CartMini.vue";

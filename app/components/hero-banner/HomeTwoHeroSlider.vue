@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
@@ -40,20 +41,20 @@ import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 const DEFAULT_SLIDES: CoHeroSliderDataTypeTwo[] = [
   {
     heroSliderId: "heroSliderId01",
-    bgImg: "/cdn/prod/img/slider/03/slider-01.jpg",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/03/slider-01.jpg`,
     isDark: true,
     title: "조명 <br /> 크리에이티브 가구",
     subtile: "크리에이티브 가구를 바로 보세요.",
   },
   {
     heroSliderId: "heroSliderId02",
-    bgImg: "/cdn/prod/img/slider/03/slider-02.jpg",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/03/slider-02.jpg`,
     title: "조명 <br /> 크리에이티브 가구",
     subtile: "크리에이티브 가구를 바로 보세요.",
   },
   {
     heroSliderId: "heroSliderId03",
-    bgImg: "/cdn/prod/img/slider/03/slider-03.jpg",
+    bgImg: `${CDN_URL}/cdn/prod/img/slider/03/slider-03.jpg`,
     title: "드롭 체어 <br /> 블랙 레더 에디션",
     subtile: "크리에이티브 가구를 바로 보세요.",
   },

@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import LayoutThree from "~/layout/LayoutThree.vue";
@@ -75,7 +76,7 @@ useHead({
 });
 usePageTitle("홈 3");
 
-const testimonialBg = "/cdn/prod/img/testimonial/testimonial-bg.jpg";
+const testimonialBg = `${CDN_URL}/cdn/prod/img/testimonial/testimonial-bg.jpg`;
 const currentSlide = ref(0);
 
 // 후기 — 전시 위젯(area_cd=TESTIMONIAL_HOME3)에서 로드, 미등록/조회실패 시 기본값 폴백
@@ -89,10 +90,10 @@ interface TestimonialHome3Item {
   img: string;
 }
 const DEFAULT_TESTIMONIALS: TestimonialHome3Item[] = [
-  { id: 1, img: "/cdn/prod/img/testimonial/person-1.jpg", name: "Mason Robinson", title: "UX 디자이너", desc: "명확한 가독성과 사용자 경험을 고려한 디자인이 인상적이었습니다. 많은 조사가 독자들이 더 나은 경험을 선호한다는 것을 보여줍니다." },
-  { id: 2, img: "/cdn/prod/img/testimonial/person-2.jpg", name: "David Cruso", title: "웹 개발자", desc: "구조가 분명하고 유지보수가 쉽습니다. 실제 사용자 조사 결과도 긍정적이었고, 서비스 품질에 만족합니다." },
-  { id: 3, img: "/cdn/prod/img/testimonial/person-3.jpg", name: "Naim Ahmed", title: "웹 개발자", desc: "직관적인 구성과 빠른 반응 속도가 좋았습니다. 재방문률이 높은 이유를 체험으로 이해했습니다." },
-  { id: 4, img: "/cdn/prod/img/testimonial/person-4.jpg", name: "Salim Rana", title: "워드프레스 전문가", desc: "전문성과 세심한 배려가 돋보이는 서비스였습니다. 추천할 만한 퀄리티라고 자신 있게 말씀드립니다." },
+  { id: 1, img: `${CDN_URL}/cdn/prod/img/testimonial/person-1.jpg`, name: "Mason Robinson", title: "UX 디자이너", desc: "명확한 가독성과 사용자 경험을 고려한 디자인이 인상적이었습니다. 많은 조사가 독자들이 더 나은 경험을 선호한다는 것을 보여줍니다." },
+  { id: 2, img: `${CDN_URL}/cdn/prod/img/testimonial/person-2.jpg`, name: "David Cruso", title: "웹 개발자", desc: "구조가 분명하고 유지보수가 쉽습니다. 실제 사용자 조사 결과도 긍정적이었고, 서비스 품질에 만족합니다." },
+  { id: 3, img: `${CDN_URL}/cdn/prod/img/testimonial/person-3.jpg`, name: "Naim Ahmed", title: "웹 개발자", desc: "직관적인 구성과 빠른 반응 속도가 좋았습니다. 재방문률이 높은 이유를 체험으로 이해했습니다." },
+  { id: 4, img: `${CDN_URL}/cdn/prod/img/testimonial/person-4.jpg`, name: "Salim Rana", title: "워드프레스 전문가", desc: "전문성과 세심한 배려가 돋보이는 서비스였습니다. 추천할 만한 퀄리티라고 자신 있게 말씀드립니다." },
 ];
 // 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
 // 늦게 도착한 데이터가 nav_data/testimonial_data에 반영되게 한다.

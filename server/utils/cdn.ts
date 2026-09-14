@@ -1,15 +1,17 @@
-/**
- * CDN 베이스 URL (서버 전용)
- * 환경변수 NUXT_PUBLIC_CDN_BASE 로 오버라이드 가능
- */
-export const CDN: string = process.env.NUXT_PUBLIC_CDN_BASE ?? "/cdn/prod/img";
 export const MODE: string = process.env.NUXT_PUBLIC_MODE ?? "default";
 
 /**
- * 실 상품/리뷰 이미지 CDN(ecBeCdn) base. CDN 위 CDN(위 CDN은 템플릿 로컬 데모 이미지용)과는 별개.
+ * 실 상품/리뷰 이미지 CDN(ecBeCdn) base.
  * ecBeBo가 이미 절대 URL(cdnImgUrl 등)로 내려주면 그대로 쓰고, 상대경로만 있을 때 이 base로 조립한다.
  */
 export const PROD_CDN: string = process.env.NUXT_PUBLIC_PROD_CDN_BASE ?? "https://22400.illeesam.synology.me/api/cdn";
+
+/**
+ * 2026-09-14(요청사항: "${CDN_URL}/cdn/prod/img/... 이런패턴으로 해줘") — 템플릿 데모 이미지용
+ * API origin("https://22400.illeesam.synology.me/api", PROD_CDN에서 "/cdn" 접미사만 뗀 값).
+ * 사용처는 `${CDN_URL}/cdn/prod/img/...` 형태로 조립(app/utils/cdn.ts의 동명 상수와 동일 값).
+ */
+export const CDN_URL: string = PROD_CDN.replace(/\/cdn\/?$/, "");
 
 /**
  * path가 이미 절대 URL(http/https)이면 그대로, "/cdn/..."로 시작하면(2026-09 확인된 시드데이터

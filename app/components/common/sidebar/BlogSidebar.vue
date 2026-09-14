@@ -91,7 +91,7 @@
             <li class="d-flex mb-20">
               <div class="rc__comments-avater mr-15">
                 <app-image
-                  src="/cdn/prod/img/blog/comments/avater-3.png"
+                  :src="`${CDN_URL}/cdn/prod/img/blog/comments/avater-3.png`"
                   alt="김민수"
                   :img-style="{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }"
                   :skeleton-style="{ width: '40px', height: '40px', borderRadius: '50%' }"
@@ -106,7 +106,7 @@
             <li class="d-flex mb-20">
               <div class="rc__comments-avater mr-15">
                 <app-image
-                  src="/cdn/prod/img/blog/comments/avater-3.png"
+                  :src="`${CDN_URL}/cdn/prod/img/blog/comments/avater-3.png`"
                   alt="이영희"
                   :img-style="{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }"
                   :skeleton-style="{ width: '40px', height: '40px', borderRadius: '50%' }"
@@ -163,6 +163,7 @@ useComponentTitle('블로그 사이드바');
 import { ref, computed } from "vue";
 import { useBlogs } from "~/composables/useBlogs";
 import AppImage from "~/components/ui/AppImage.vue";
+import { CDN_URL } from "~/conts/baseConst";
 import { type CoCategoryTreeType } from "~/types/coCategoryTreeType";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
