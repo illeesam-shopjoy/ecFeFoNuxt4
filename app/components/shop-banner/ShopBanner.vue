@@ -56,7 +56,7 @@ const bannerItems = computed(() => {
   const source = (withBanner.length ? withBanner : store.products).slice(0, 2);
   return source.map((item, index) => ({
     ...item,
-    bannerImg: item.bannerImg || `${prodCdnBase}/prod/img/shop/banner/${FALLBACK_BANNER_IMGS[index]}`,
+    bannerImg: item.bannerImg || `${prodCdnBase}/cdn/prod/img/shop/banner/${FALLBACK_BANNER_IMGS[index]}`,
   }));
 });
 </script>

@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
     parentTitle: nameById.get(id) ?? id,
     value: id,
     children: childrenByParent.get(id) ?? [],
-    img: BANNER_IMG_FILES[idx] ? `${prodCdnBase}/prod/img/shop/banner/${BANNER_IMG_FILES[idx]}` : undefined,
+    img: BANNER_IMG_FILES[idx] ? `${prodCdnBase}/cdn/prod/img/shop/banner/${BANNER_IMG_FILES[idx]}` : undefined,
   }));
 
   const categoryIdToName = Object.fromEntries(nameById);

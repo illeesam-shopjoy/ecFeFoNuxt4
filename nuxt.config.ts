@@ -1,5 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { fileURLToPath } from "node:url";
+// 2026-09-14(요청사항: "nuxt.config.ts 파일의 process.env 정보 baseConst.ts에 정의하고
+// 사용하는건 어때?") — api/cdn/mode 관련 값(전부 public, 노출 무해)의 근원을 baseConst.ts
+// 하나로 통일. 결제/소셜로그인 시크릿 등 서버 전용 민감정보는 그대로 여기서 직접 읽는다
+// (app/ 밑 파일은 클라이언트 번들에도 들어갈 수 있어 시크릿을 두기엔 부적절).
+import { CDN_URL, API_URL, RUN_MODE } from "./app/conts/baseConst";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-12-12",
@@ -76,7 +81,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // 2026-09 BFF 전환: ecBeBo(Spring Boot) 공개 API 서버 주소. server/utils/beApi.ts 가 이 값 + "/api"를 base로 호출한다.
     // 기본값은 ecBeBo 운영 인스턴스(DSM 리버스 프록시, 22300 포트) — 로컬 개발 시 다른 백엔드를 붙이려면 NUXT_API_BASE_URL로 오버라이드.
-    apiBaseUrl: process.env.NUXT_API_BASE_URL ?? "https://22300.illeesam.synology.me",
+    apiBaseUrl: API_URL,
     /** 토스페이먼츠 시크릿 키 (서버 전용, 결제 승인 API용) */
     tossPaymentsSecretKey: process.env.TOSSPAYMENTS_SECRET_KEY ?? "",
     /** 소셜 로그인 (서버 전용) */
@@ -95,18 +100,20 @@ export default defineNuxtConfig({
     // authJwtSecret/authAccessTokenTtlSec/authRefreshTokenTtlSec 런타임설정은 그래서 폐기.
     public: {
       cdnBase: process.env.NUXT_PUBLIC_CDN_BASE ?? "https://22400.illeesam.synology.me/api/cdn/prod/img",
-      // 2026-09 BFF 전환: 실제 상품/리뷰 이미지가 올라가는 ecBeCdn(CDN 서버) base.
+      // 2026-09 BFF 전환: 실제 상품/리뷰 이미지가 올라가는 ecBeCdn(CDN 서버) API origin.
       // ecBeBo가 내려주는 prodImgs[].cdnImgUrl 등은 이미 완전한 절대 URL이라 보통 그대로 쓰면 되고,
-      // 상대경로만 오는 경우(예: sy_attach.url)에 한해 `${prodCdnBase}${relativePath}`로 조립한다.
-      prodCdnBase: process.env.NUXT_PUBLIC_PROD_CDN_BASE ?? "https://22400.illeesam.synology.me/api/cdn",
+      // 상대경로만 오는 경우(예: sy_attach.url)에 한해 `${prodCdnBase}/cdn${relativePath}`로 조립한다.
+      // 2026-09-14: 값 자체는 "/cdn" 없는 API origin까지만(".../api") — "/cdn"은 각 사용처가
+      // 필요할 때 직접 붙인다(app/conts/baseConst.ts의 CDN_URL과 동일 값, 그대로 재사용).
+      prodCdnBase: CDN_URL,
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
       // 2026-09-13 추가: 헤더 로고 아래 "현재 접속 중인 환경(prod/dev/local) + api/cdn 대상"
       // 표시용(EnvModeBadge.vue). 실제 서버 호출은 여전히 server/utils/beApi.ts(위 apiBaseUrl,
       // server-only)를 통해서만 이뤄지고, 이건 화면 표시 전용 미러 — 비밀값 아니라 노출 무해.
-      apiBaseUrlDisplay: process.env.NUXT_API_BASE_URL ?? "https://22300.illeesam.synology.me",
+      apiBaseUrlDisplay: API_URL,
       // Netlify는 별도 NUXT_PUBLIC_MODE 없이 배포되므로(순수 `nuxt build`, .env.production
       // 미로드) 기본값을 "prod"로 둬야 실제 운영 배포 상태와 표시가 일치한다.
-      mode: process.env.NUXT_PUBLIC_MODE ?? "prod",
+      mode: RUN_MODE,
       envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
       appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */
@@ -126,9 +133,9 @@ export default defineNuxtConfig({
         .sort()
         .forEach((k) => console.log(`  ${k}=${process.env[k] ?? ""}`));
       console.log("[Env] useRuntimeConfig().public.NAME (적용값):", {
-        cdnBase: process.env.NUXT_PUBLIC_CDN_BASE ?? "https://22400.illeesam.synology.me/api/cdn/prod/img",
-        apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
-        mode: process.env.NUXT_PUBLIC_MODE ?? "default",
+        prodCdnBase: CDN_URL,
+        apiBaseUrlDisplay: API_URL,
+        mode: RUN_MODE,
         envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
         appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       });
