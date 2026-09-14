@@ -936,15 +936,3 @@ p {
   -o-transform: scale(1.05);
   transform: scale(1.05);
 }
-
-/* 2026-09-14(요청사항: "이메일을 입력해 주세요 / 비밀번호를 입력해 주세요 적색으로 표시해줘 —
-   다른것도 마찬가지야") — vee-validate <ErrorMessage class="text-danger"> 가 login/register/
-   contact/리뷰작성 등 폼 8곳에서 쓰이는데 정작 .text-danger 정의 자체가 어디에도 없어(Bootstrap
-   클래스명이지만 이 프로젝트는 Bootstrap 미사용) 그냥 주변 색을 상속해 회색으로 보였다.
-   한 곳에서 정의해 전부 한번에 고침(파일마다 따로 손댈 필요 없음). */
-.text-danger {
-  color: #dc2626 !important;
-  font-size: 0.85rem;
-  display: block;
-  margin-top: 4px;
-}
