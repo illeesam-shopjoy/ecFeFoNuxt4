@@ -32,7 +32,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('이미지');
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 
 // noImage 폴백 SVG (인라인 data URI)
 const NO_IMAGE_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23aaa'%3E이미지 없음%3C/text%3E%3Cpath d='M160 170 l80 0 l0-80 l-80 0 Z' fill='none' stroke='%23ccc' stroke-width='2'/%3E%3Ccircle cx='190' cy='140' r='10' fill='%23ccc'/%3E%3Cpath d='M165 175 l25-25 l20 20 l15-10 l35 35' fill='none' stroke='%23ccc' stroke-width='2'/%3E%3C/svg%3E`;
@@ -80,17 +80,39 @@ const imgRef = ref<HTMLImageElement | null>(null);
 const loading = ref(true);
 const currentSrc = ref(props.src || NO_IMAGE_SVG);
 
+// 2026-09-15(요청사항: "블로그 글등 계속 진행중으로 표시되는경우가 있는데 어느정도
+// 시간지나면 default 정보로 표시해줘") — CDN 이미지가 응답이 없거나(네트워크 문제 등)
+// load/error 이벤트가 끝내 안 오면 스켈레톤(로딩중 표시)이 무한정 떠 있었다. 일정 시간
+// (8초) 안에 결판이 안 나면 실패로 간주하고 기본(이미지 없음) 표시로 넘어간다.
+const LOAD_TIMEOUT_MS = 8000;
+let loadTimeoutId: ReturnType<typeof setTimeout> | null = null;
+function clearLoadTimeout() {
+  if (loadTimeoutId) {
+    clearTimeout(loadTimeoutId);
+    loadTimeoutId = null;
+  }
+}
+function armLoadTimeout() {
+  clearLoadTimeout();
+  if (currentSrc.value === NO_IMAGE_SVG) return;
+  loadTimeoutId = setTimeout(() => {
+    if (loading.value) onError();
+  }, LOAD_TIMEOUT_MS);
+}
+
 watch(
   () => props.src,
   (newSrc) => {
     loading.value = true;
     currentSrc.value = newSrc || NO_IMAGE_SVG;
+    armLoadTimeout();
   }
 );
 
 // SSR 하이드레이션 후 이미 로드된 이미지 처리
 // (서버에서 렌더링된 img가 Vue 이벤트 리스너 등록 전에 로드 완료된 경우)
 onMounted(() => {
+  armLoadTimeout();
   const img = imgRef.value;
   if (!img || !img.complete) return;
   if (img.naturalWidth === 0) {
@@ -100,12 +122,16 @@ onMounted(() => {
   }
 });
 
+onUnmounted(clearLoadTimeout);
+
 function onLoad() {
   loading.value = false;
+  clearLoadTimeout();
 }
 
 function onError() {
   loading.value = false;
   currentSrc.value = NO_IMAGE_SVG;
+  clearLoadTimeout();
 }
 </script>
