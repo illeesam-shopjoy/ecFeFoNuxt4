@@ -412,6 +412,12 @@ p {
   background: transparent;
   z-index: 1;
   font-size: 12px;
+  // 2026-09-14(요청사항: "모든 버튼이 스타일이 딱딱한데 약간의 그라데이션을 주든해서 이쁘면
+  // 좋겠어") — 각진 사각형이 딱딱해 보이는 부분을 라운드로 완화. overflow:hidden은 :hover 때
+  // ::after(채움 효과)가 둥근 모서리 밖으로 각지게 삐져나오지 않게 하기 위함.
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   & span {
     color: $theme-color;
   }
@@ -428,6 +434,7 @@ p {
   &:hover {
     color: $white;
     border-color: $theme-color;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
     &::after {
       height: 100%;
     }
@@ -448,7 +455,7 @@ p {
   }
   &-black {
     color: $white;
-    background-color: $black-2;
+    background: linear-gradient(135deg, #4a4a4a 0%, #1c1c1c 100%);
     border-color: $black-2;
     &::after {
       background-color: $theme-color;
@@ -474,7 +481,7 @@ p {
   // 검정 버튼이 두 개 연달아 나와 밋밋했던 게 시작점. 밝은 배경이라 글자는 어두운색 유지.
   &-green {
     color: $black-2;
-    background-color: #8bc34a;
+    background: linear-gradient(135deg, #a3d160 0%, #7cb342 100%);
     border-color: #8bc34a;
     &::after {
       background-color: #689f38;

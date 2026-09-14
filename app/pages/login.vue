@@ -46,32 +46,33 @@
                 <!-- 소셜 로그인 -->
                 <div class="social-login mt-20">
                   <div class="flex flex-wrap gap-2 justify-center">
-                    <!-- 2026-09-14(요청사항: "구글 로그인 구글 바탕색상으로 변경해줘") — 네이버/카카오/Apple처럼
-                         브랜드 컬러를 배경으로 채움(기존엔 흰 배경이라 유독 밋밋했음). -->
+                    <!-- 2026-09-14(요청사항: "구글 로그인 구글 바탕색상으로 변경해줘" →
+                         "모든 버튼이 스타일이 딱딱한데 약간의 그라데이션을 주든해서 이쁘면 좋겠어") —
+                         평면 bg-[색상]을 대각선 그라데이션 + 그림자로 교체. -->
                     <a
                       href="/api/auth/google"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-[#4285F4] hover:bg-[#3367d6] text-white text-sm font-medium transition"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#5a9cf8] to-[#4285F4] hover:from-[#4285F4] hover:to-[#3367d6] text-white text-sm font-medium shadow-sm hover:shadow-md transition"
                     >
                       <span class="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[#4285F4] text-xs font-bold">G</span>
                       구글 로그인
                     </a>
                     <a
                       href="/api/auth/naver"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-[#03C75A] hover:bg-[#02b350] text-white text-sm font-medium transition"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#2ed769] to-[#03C75A] hover:from-[#03C75A] hover:to-[#02b350] text-white text-sm font-medium shadow-sm hover:shadow-md transition"
                     >
                       <span class="w-5 h-5 rounded flex items-center justify-center text-[#03C75A] bg-white text-[10px] font-bold">N</span>
                       네이버 로그인
                     </a>
                     <a
                       href="/api/auth/kakao"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-[#FEE500] hover:bg-[#f5d900] text-[#191919] text-sm font-medium transition"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#FFEB6E] to-[#FEE500] hover:from-[#FEE500] hover:to-[#f5d900] text-[#191919] text-sm font-medium shadow-sm hover:shadow-md transition"
                     >
                       <span class="w-5 h-5 rounded flex items-center justify-center text-[12px] font-bold">K</span>
                       카카오 로그인
                     </a>
                     <a
                       href="/api/auth/apple"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-800 bg-black hover:bg-gray-800 text-white text-sm font-medium transition"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-800 bg-gradient-to-br from-[#3a3a3a] to-black hover:from-black hover:to-black text-white text-sm font-medium shadow-sm hover:shadow-md transition"
                     >
                       <span class="w-5 h-5 rounded flex items-center justify-center text-white text-sm">&#63743;</span>
                       Apple 로그인
