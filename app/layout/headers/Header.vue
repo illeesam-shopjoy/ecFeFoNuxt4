@@ -1,6 +1,13 @@
 <template>
-  <client-only>
-    <header>
+  <!-- 2026-09-15(요청사항: "최상단메뉴가 페이지에 따라 안보이는 경우가 있는거 같아
+       점검하여 개선해줘") — 헤더 전체가 <client-only>로 감싸져 있어서, SSR이 켜진 라우트
+       (nuxt.config.ts routeRules의 /shop, /prod-dtl/**, /blog-dtl/**)에서는 서버가 내려준
+       최초 HTML에 상단 메뉴가 아예 없고 클라이언트 하이드레이션이 끝나야 나타났다 —
+       느린 네트워크/JS 실패 시 그 페이지들만 메뉴가 안 보이는 것처럼 보였던 원인.
+       실제로 클라이언트 전용 상태(localStorage 기반 장바구니 수량/로그인 여부)는 장바구니
+       뱃지·UserDropdown뿐이라 그 부분만 좁게 client-only 처리하고, 메뉴/로고/검색 등
+       나머지는 항상 서버에서도 그려지게 바꿨다. -->
+  <header>
       <div
         id="header-sticky"
         :class="`header__area ${transparent ? 'header__transparent' : ''} ${header_big ? 'box-25' : !white_bg ? 'grey-bg' : ''} 
@@ -51,15 +58,15 @@
                          "장바구니" 글자를 작은 화면에서만 숨겨 아이콘+숫자만 보이게 함. -->
                     <a href="#" class="cart"
                       ><i class="fas fa-shopping-bag"></i> <span class="hidden sm:inline">장바구니</span>
-                      <span>({{ state.getStTotalPriceQuantity.quantity }})</span>
+                      <client-only><span>({{ state.getStTotalPriceQuantity.quantity }})</span></client-only>
                     </a>
                     <!-- 장바구니 미니 시작 -->
-                    <cart-mini />
+                    <client-only><cart-mini /></client-only>
                     <!-- 장바구니 미니 끝 -->
                   </li>
                   <li>
                     <div style="display:inline-flex;align-items:center;gap:18px;">
-                      <user-dropdown />
+                      <client-only><user-dropdown /></client-only>
                       <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
                     </div>
                     <extra-info v-show="showExtraInfo" />
@@ -88,15 +95,15 @@
                          "장바구니" 글자를 작은 화면에서만 숨겨 아이콘+숫자만 보이게 함. -->
                     <a href="#" class="cart"
                       ><i class="fas fa-shopping-bag"></i> <span class="hidden sm:inline">장바구니</span>
-                      <span>({{ state.getStTotalPriceQuantity.quantity }})</span>
+                      <client-only><span>({{ state.getStTotalPriceQuantity.quantity }})</span></client-only>
                     </a>
                     <!-- 장바구니 미니 시작 -->
-                    <cart-mini />
+                    <client-only><cart-mini /></client-only>
                     <!-- 장바구니 미니 끝 -->
                   </li>
                   <li>
                     <div style="display:inline-flex;align-items:center;gap:18px;">
-                      <user-dropdown />
+                      <client-only><user-dropdown /></client-only>
                       <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
                     </div>
                     <extra-info v-show="showExtraInfo" />
@@ -109,14 +116,13 @@
       </div>
     </header>
 
-    <!-- 검색 팝업 시작 -->
-    <search-modal ref="search_popup" />
-    <!-- 검색 팝업 끝 -->
+  <!-- 검색 팝업 시작 -->
+  <search-modal ref="search_popup" />
+  <!-- 검색 팝업 끝 -->
 
-    <!-- 오프캔버스 시작 -->
-    <off-canvas ref="offcanvas" />
-    <!-- 오프캔버스 끝 -->
-  </client-only>
+  <!-- 오프캔버스 시작 -->
+  <off-canvas ref="offcanvas" />
+  <!-- 오프캔버스 끝 -->
 </template>
 
 <script setup lang="ts">
