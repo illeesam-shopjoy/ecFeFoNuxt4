@@ -25,16 +25,18 @@
               </div>
             </div>
           </div>
-          <div v-if="big_item_2" class="product__banner mb-30">
+          <!-- 2026-09-14(요청사항: "여기 인기상품 큰 이미지에는 커지는 효과가 없네 여기도
+               적용해줘") — 작은 카드(product-item)와 동일한 20% 줌인 호버 효과. -->
+          <div v-if="big_item_2" class="product__banner mb-30 group">
             <nuxt-link :to="`/prod-dtl/${big_item_2.prodId}`" class="w-img">
-              <app-image :src="big_item_2.bigImg" alt="product_img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
+              <app-image :src="big_item_2.bigImg" alt="product_img" wrap-class="w-img" img-class="transition-transform duration-300 group-hover:scale-[1.2]" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
             </nuxt-link>
           </div>
         </div>
         <div class="col-xl-6 col-lg-6">
-          <div v-if="big_item_1" class="product__banner w-img pb-25 mb-30 relative">
+          <div v-if="big_item_1" class="product__banner w-img pb-25 mb-30 relative group">
             <nuxt-link :to="`/prod-dtl/${big_item_1.prodId}`" class="w-img">
-              <app-image :src="big_item_1.bigImg" alt="product_img" wrap-class="w-img" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
+              <app-image :src="big_item_1.bigImg" alt="product_img" wrap-class="w-img" img-class="transition-transform duration-300 group-hover:scale-[1.2]" :skeleton-style="{ width: '100%', aspectRatio: '4/3' }" />
             </nuxt-link>
             <div class="product__banner-content absolute">
               <h4>
