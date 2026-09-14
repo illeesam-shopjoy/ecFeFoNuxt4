@@ -39,6 +39,7 @@ export const DEV_ENV_FIELDS: DevEnvField[] = [
   // 2026-09-14 시점엔 아직 지도 위젯이 실제로 연동돼 있지 않음(코드에서 안 씀) — 값만 미리
   // 저장해둘 수 있게 자리만 마련. nuxt.config.ts public.kakaoMapKey/googleMapsKey로 노출.
   { key: "NUXT_PUBLIC_KAKAO_MAP_KEY", label: "카카오맵 JS 키", group: "지도 연결", secret: false },
+  { key: "NUXT_PUBLIC_NAVER_MAP_CLIENT_ID", label: "네이버맵 Client ID", group: "지도 연결", secret: false },
   { key: "NUXT_PUBLIC_GOOGLE_MAPS_KEY", label: "구글맵 API 키", group: "지도 연결", secret: false },
 
   { key: "NUXT_PUBLIC_GA_MEASUREMENT_ID", label: "측정 ID (G-XXXXXXXXXX)", group: "Google Analytics 4", secret: false },

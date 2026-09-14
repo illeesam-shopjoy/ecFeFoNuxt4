@@ -5,7 +5,8 @@ export default defineEventHandler((event) => {
   if (!clientId) {
     return sendRedirect(event, "/login?error=" + encodeURIComponent("Apple 로그인이 설정되지 않았습니다."), 302);
   }
-  const baseUrl = config.apiBaseUrl || getRequestURL(event).origin;
+  // 2026-09-14 버그수정 — google.get.ts와 동일 사유(config.apiBaseUrl은 ecBeBo 주소).
+  const baseUrl = getRequestURL(event).origin;
   const redirectUri = `${baseUrl}/api/auth/apple/callback`;
   const state = Buffer.from(Date.now().toString(36) + Math.random().toString(36)).toString("base64url");
   const url = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code id_token&response_mode=form_post&scope=name email&state=${state}`;

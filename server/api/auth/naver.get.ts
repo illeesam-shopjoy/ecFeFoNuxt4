@@ -5,7 +5,8 @@ export default defineEventHandler((event) => {
   if (!clientId) {
     return sendRedirect(event, "/login?error=" + encodeURIComponent("네이버 로그인이 설정되지 않았습니다."), 302);
   }
-  const baseUrl = config.apiBaseUrl || getRequestURL(event).origin;
+  // 2026-09-14 버그수정 — google.get.ts와 동일 사유(config.apiBaseUrl은 ecBeBo 주소).
+  const baseUrl = getRequestURL(event).origin;
   const redirectUri = `${baseUrl}/api/auth/naver/callback`;
   const state = Buffer.from(Date.now().toString(36) + Math.random().toString(36)).toString("base64url");
   const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;

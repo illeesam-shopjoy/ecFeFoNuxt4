@@ -19,7 +19,8 @@ export default defineEventHandler(async (event) => {
   if (!clientId || !clientSecret) {
     return sendRedirect(event, "/login?error=config", 302);
   }
-  const baseUrl = config.apiBaseUrl || getRequestURL(event).origin;
+  // 2026-09-14 버그수정 — google/callback.get.ts와 동일 사유.
+  const baseUrl = getRequestURL(event).origin;
   const redirectUri = `${baseUrl}/api/auth/naver/callback`;
 
   const tokenRes = await $fetch<{ access_token?: string }>("https://nid.naver.com/oauth2.0/token", {

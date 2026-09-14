@@ -19,7 +19,10 @@ export default defineEventHandler(async (event) => {
   if (!clientId || !clientSecret) {
     return sendRedirect(event, "/login?error=config", 302);
   }
-  const baseUrl = config.apiBaseUrl || getRequestURL(event).origin;
+  // 2026-09-14 버그수정 — google.get.ts와 동일 사유(config.apiBaseUrl은 ecBeBo 주소).
+  // 여기서 만든 redirectUri는 위 authorize 요청 때 보낸 값과 토큰 교환 시 반드시 일치해야
+  // 하므로(OAuth2 스펙), 두 곳 다 같은 방식(getRequestURL(event).origin)으로 통일.
+  const baseUrl = getRequestURL(event).origin;
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   const tokenRes = await $fetch<{ access_token?: string }>("https://oauth2.googleapis.com/token", {

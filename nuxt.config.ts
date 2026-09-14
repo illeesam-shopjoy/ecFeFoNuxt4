@@ -125,6 +125,7 @@ export default defineNuxtConfig({
       // 있게), 값 자체는 이미 runtimeConfig로 노출해둔다.
       kakaoMapKey: process.env.NUXT_PUBLIC_KAKAO_MAP_KEY ?? "",
       googleMapsKey: process.env.NUXT_PUBLIC_GOOGLE_MAPS_KEY ?? "",
+      naverMapClientId: process.env.NUXT_PUBLIC_NAVER_MAP_CLIENT_ID ?? "",
     },
   },
   hooks: {
