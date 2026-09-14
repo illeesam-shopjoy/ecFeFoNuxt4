@@ -76,29 +76,36 @@ export function useShopProducts(initialKeyword = "") {
     if (debounceTimer) clearTimeout(debounceTimer);
   });
 
-  // 무한스크롤로 이어붙일 누적 목록 — firstPage가 바뀌면(필터 변경) 새로 시작.
-  const items = ref<PdProductType[]>([]);
+  // 무한스크롤로 이어붙일 2페이지 이후 항목만 별도 보관 — 1페이지는 useAsyncData의 data ref
+  // (firstPage)를 computed로 그대로 합쳐 쓴다.
+  //
+  // 2026-09-14 버그수정(오늘 요청한 작업(필터 변경 애니메이션)을 검증하다가 발견 — 요청과는
+  // 별개지만 같은 파일이라 함께 고침): 원래는 "watch(firstPage, v => { items.value = v.items })"
+  // 처럼 별도 items ref에 옮겨 담는 방식이었는데, SSR에서는 onServerPrefetch가 firstPage.value를
+  // 채운 뒤 render()가 호출되기 전에 그 watch 콜백이 반드시 다시 실행된다는 보장이 없다(Vue
+  // 워처는 기본적으로 pre-flush라 SSR의 단일 렌더 패스 안에서 다시 실행되지 않을 수 있음).
+  // 실제로 확인해보니 /shop 최초 SSR HTML에 상품이 항상 0개로 나가고 있었다 — 검색엔진
+  // 크롤러 입장에서는 빈 목록만 보이는 셈이라, /shop을 SSR로 둔 이유(SEO) 자체가 무색해지는
+  // 상황이었다. 브라우저로 볼 땐 하이드레이션 직후 같은 watch가 클라이언트에서 정상
+  // 재실행돼 눈 깜짝할 사이에 채워져 아무도 못 알아챘을 뿐이다.
+  // computed는 "읽는 시점"의 firstPage.value를 그대로 읽어오므로(watch처럼 별도로 다시
+  // 실행되길 기다릴 필요가 없음) 이 타이밍 문제가 없다 — SSR render() 시점에 firstPage.value는
+  // 이미 채워져 있으므로 바로 정확한 값이 나간다.
+  const extraItems = ref<PdProductType[]>([]);
   const pageNo = ref(1);
-  const hasMore = ref(true);
-  const totalCount = ref(0);
   const loadingMore = ref(false);
+  const extraHasMore = ref<boolean | null>(null); // loadMore로 알아낸 마지막 페이지 기준 hasMore
 
-  // 2026-09-13 버그수정: "브랜드 클릭하니 화면이 백지현상" → "깜빡임 효과 안나오게 해줘" —
-  // useAsyncData가 필터 변경으로 재조회를 시작하면 새 응답이 오기 전 잠깐 firstPage.value가
-  // null/undefined가 되는 순간이 있는데, 그때 items를 []로 비워버려서 화면이 순간 비어
-  // 보였다. v가 없을 때는(아직 응답 안 옴) 기존 items를 그대로 두고 아무것도 안 한다 —
-  // 진짜 새 데이터가 도착했을 때만 교체.
-  watch(
-    firstPage,
-    (v) => {
-      if (!v) return;
-      items.value = v.items;
-      pageNo.value = 1;
-      hasMore.value = v.hasMore;
-      totalCount.value = v.pageTotalCount;
-    },
-    { immediate: true }
-  );
+  // 필터가 바뀌어 firstPage 자체가 새로 오면(=1페이지 재조회), 이어붙여뒀던 다음 페이지들은 버린다.
+  watch(firstPage, () => {
+    extraItems.value = [];
+    pageNo.value = 1;
+    extraHasMore.value = null;
+  });
+
+  const items = computed<PdProductType[]>(() => [...(firstPage.value?.items ?? []), ...extraItems.value]);
+  const totalCount = computed(() => firstPage.value?.pageTotalCount ?? 0);
+  const hasMore = computed(() => extraHasMore.value ?? firstPage.value?.hasMore ?? true);
 
   async function loadMore() {
     if (loadingMore.value || pending.value || !hasMore.value) return;
@@ -106,10 +113,9 @@ export function useShopProducts(initialKeyword = "") {
     try {
       const next = pageNo.value + 1;
       const res = await pdProductSvc.getPaged(buildParams(next));
-      items.value = [...items.value, ...res.items];
+      extraItems.value = [...extraItems.value, ...res.items];
       pageNo.value = next;
-      hasMore.value = res.hasMore;
-      totalCount.value = res.pageTotalCount;
+      extraHasMore.value = res.hasMore;
     } catch (err) {
       console.error("[useShopProducts] 더보기 로드 실패:", err);
     } finally {

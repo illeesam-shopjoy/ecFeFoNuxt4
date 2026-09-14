@@ -48,6 +48,17 @@
             <span v-html="item.prodNm"></span>
           </nuxt-link>
         </h4>
+        <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
+        <div v-if="item.brand?.brandNm || item.category?.categoryNm" class="text-[12px] text-[#a3a3a3] mb-2">
+          <span v-if="item.brand?.brandNm">{{ item.brand.brandNm }}</span>
+          <span v-if="item.brand?.brandNm && item.category?.categoryNm"> · </span>
+          <span v-if="item.category?.categoryNm">{{ item.category.categoryNm }}</span>
+        </div>
+        <div v-if="item.optionSizes?.length || item.optionColors?.length" class="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-[#c2c2c2] mb-2">
+          <span v-if="item.optionSizes?.length">{{ item.optionSizes.map((o) => o.optionNm).join('/') }}</span>
+          <span v-if="item.optionSizes?.length && item.optionColors?.length">|</span>
+          <span v-if="item.optionColors?.length">{{ item.optionColors.map((o) => o.optionNm).join('/') }}</span>
+        </div>
         <div class="product__price transition-3">
           <span class="!text-base">{{ formatPrice(item.salePrice) }}</span>
           <span v-if="item.stdPrice" class="old-price !text-base">{{ formatPrice(item.stdPrice) }}</span>

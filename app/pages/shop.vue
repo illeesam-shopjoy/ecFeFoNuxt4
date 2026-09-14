@@ -8,8 +8,11 @@
          스켈레톤으로 바뀌어 화면이 껌뻑이는 것처럼 보였다. "처음 로딩(아직 아무 상품도
          없음)"일 때만 이 스켈레톤을 보여주고, 필터 재조회 중엔 아래 실제 화면을 그대로
          유지한 채 목록 부분만 살짝 옅게 표시한다(loadingOverlay). -->
+    <!-- 2026-09-14(요청사항: "상품항목 반응형으로 20% 늘어나면 좋겠어") — 전체 영역
+         너비를 max-w-7xl(1280px)에서 max-w-screen-2xl(1536px, 정확히 20% 증가)로 늘려
+         사이드바/상품그리드가 반응형 비율을 그대로 유지한 채 전부 20% 커지게 함. -->
     <section v-if="isInitialLoading" class="shop__area pt-100 pb-100">
-      <div class="max-w-7xl mx-auto px-4">
+      <div class="max-w-screen-2xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-9 col-lg-9 col-md-8 offset-xl-3 offset-lg-3 offset-md-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -22,7 +25,7 @@
 
     <!-- 실제 쇼핑 영역 (옛 ShopArea, 사이드바 좌측) -->
     <section v-else class="shop__area pt-100 pb-100">
-      <div class="max-w-7xl mx-auto px-4">
+      <div class="max-w-screen-2xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-3 col-lg-3 col-md-4">
             <!-- 쇼핑 사이드바 (옛 ShopSidebar) -->
@@ -215,23 +218,40 @@
               </div>
               <!-- 2026-09-13(요청사항: "카드형/목록형 클릭하면 애니메이션 효과") — v-show 대신
                    Transition+v-if로 바꿔 전환 시 살짝 페이드되게 한다. -->
+              <!-- 2026-09-14(요청사항: "필터에 따라 우측 목록 다시 보여줄때 반짝하여 보여주는것보다
+                   약간의 애니메이션 효과 넣어주면 좋겠어") — 바깥 Transition은 그리드/목록형 전환용,
+                   안쪽 TransitionGroup은 필터가 바뀌어 items 배열이 통째로 다른 상품으로 교체될 때
+                   쓰인다. 필터가 바뀌면 대부분 상품ID(:key)가 이전 목록과 겹치지 않으므로 Vue가
+                   기존 카드는 자동으로 제거(leave)하고 새 카드는 추가(enter)로 처리해 —
+                   TransitionGroup이 그 각각에 product-fade 트랜지션(살짝 fade+이동)을 입혀준다. -->
               <div id="pills-tabContent">
                 <Transition name="view-fade" mode="out-in">
-                  <div v-if="viewMode === 'grid'" key="grid" id="pills-grid" role="tabpanel">
+                  <TransitionGroup v-if="viewMode === 'grid'" key="grid" tag="div" id="pills-grid" role="tabpanel" name="product-fade">
                     <product-item v-for="item in shopProducts.items.value" :key="item.prodId" :item="item" />
-                  </div>
-                  <div v-else key="list" id="pills-list" role="tabpanel">
+                  </TransitionGroup>
+                  <TransitionGroup v-else key="list" tag="div" id="pills-list" role="tabpanel" name="product-fade">
                     <product-list-item v-for="item in shopProducts.items.value" :key="item.prodId" :item="item" />
-                  </div>
+                  </TransitionGroup>
                 </Transition>
                 <p v-if="!shopProducts.pending.value && !shopProducts.items.value.length" class="text-center py-40 text-gray-400">조건에 맞는 상품이 없습니다.</p>
               </div>
 
               <!-- 2026-09-13(요청사항: "하단은 페이징을두지말고 더보기 자동 스크롤로 해줘") —
                    숫자 페이지네이션 대신 이 센티넬이 화면에 보이면 자동으로 다음 페이지를 불러온다. -->
+              <!-- 2026-09-14(요청사항: "하단에 더보기 버튼 추가해줘") — 자동 스크롤 로딩은
+                   그대로 두되, 스크롤이 아직 센티넬까지 닿지 않았거나 자동 로딩을 못 미더워하는
+                   사용자를 위해 눌러서도 다음 페이지를 부를 수 있는 버튼을 추가. -->
               <div ref="loadMoreSentinel" class="shop__load-more-area mt-40 text-center">
                 <span v-if="shopProducts.loadingMore.value" class="text-gray-400">불러오는 중…</span>
-                <span v-else-if="!shopProducts.hasMore.value && shopProducts.items.value.length" class="text-gray-300 text-sm">마지막 상품입니다.</span>
+                <button
+                  v-else-if="shopProducts.hasMore.value && shopProducts.items.value.length"
+                  type="button"
+                  class="os-btn os-btn-black"
+                  @click="shopProducts.loadMore"
+                >
+                  더보기
+                </button>
+                <span v-else-if="shopProducts.items.value.length" class="text-gray-300 text-sm">마지막 상품입니다.</span>
               </div>
             </div>
           </div>
@@ -361,8 +381,8 @@ onBeforeUnmount(() => observer?.disconnect());
 
 <style scoped>
 /* 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — filter-reset-link/
-   view-toggle-btn은 Tailwind로 대체. 아래 view-fade transition만 Transition
-   name="view-fade"와 이름이 묶여 있어 남겨둠. */
+   view-toggle-btn은 Tailwind로 대체. 아래 view-fade/product-fade transition만 Transition/
+   TransitionGroup의 name prop과 이름이 묶여 있어 남겨둠(Tailwind로 표현 불가). */
 .view-fade-enter-active,
 .view-fade-leave-active {
   transition: opacity 0.2s ease;
@@ -370,5 +390,18 @@ onBeforeUnmount(() => observer?.disconnect());
 .view-fade-enter-from,
 .view-fade-leave-to {
   opacity: 0;
+}
+
+/* 2026-09-14(요청사항: "필터에 따라 우측 목록 다시 보여줄때 반짝하여 보여주는것보다
+   약간의 애니메이션 효과 넣어주면 좋겠어") — 필터 변경으로 상품 카드가 통째로 교체될 때
+   개별 카드가 살짝 fade+이동하며 사라졌다/나타나게. */
+.product-fade-enter-active,
+.product-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.product-fade-enter-from,
+.product-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>
