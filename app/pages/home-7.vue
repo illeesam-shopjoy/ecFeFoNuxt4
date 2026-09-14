@@ -161,7 +161,7 @@
                   },
                 }"
               >
-                <Slide v-for="(item, i) in featuredProducts" :key="i" class="product__slider-item">
+                <Slide v-for="(item, i) in featuredProducts" :key="i" class="product__slider-item !block !px-[15px]">
                   <div class="product__item mb-40">
                     <product-item-two :item="item" />
                   </div>
@@ -199,7 +199,7 @@
         <div class="row flex justify-center">
           <div class="col-lg-12">
             <Carousel :items-to-show="1" :wrap-around="true" ref="testimonialSliderRef" class="testimonial__slider-active">
-              <Slide v-for="item in testimonialData" :key="item.id" class="testimonail__slider-item">
+              <Slide v-for="item in testimonialData" :key="item.id" class="testimonail__slider-item !block">
                 <div class="testimonial__image text-center mb-50">
                   <app-image
                     :src="item.img"
@@ -240,7 +240,7 @@
           <div class="col-xl-12">
             <div class="blog__slider-active relative">
               <Carousel :items-to-show="2" :wrap-around="false" ref="blogSliderRef">
-                <Slide v-for="item in homeBlogs" :key="item.blogId" class="blog__slider-item">
+                <Slide v-for="item in homeBlogs" :key="item.blogId" class="blog__slider-item !block !px-[15px]">
                   <div class="blog-thumb m-img">
                     <app-image
                       :src="item.img"
@@ -309,7 +309,7 @@
               },
             }"
           >
-            <Slide v-for="(brand, i) in brandImages" :key="i" class="brand__slider-item">
+            <Slide v-for="(brand, i) in brandImages" :key="i" class="brand__slider-item !block">
               <div class="brand__image">
                 <app-image
                   :src="brand"
@@ -503,14 +503,3 @@ function handleBrandPrev() {
 }
 </script>
 
-<style scoped>
-.carousel__slide {
-  display: block;
-}
-.product__slider-area .carousel__slide.product__slider-item {
-  padding: 0 15px;
-}
-.blog__slider-area .carousel__slide.blog__slider-item {
-  padding: 0 15px;
-}
-</style>

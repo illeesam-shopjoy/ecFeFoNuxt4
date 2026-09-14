@@ -33,7 +33,8 @@
             }"
             class="blog__slider"
           >
-            <Slide v-for="item in homeBlogs" :key="item.blogId">
+            <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") -->
+            <Slide v-for="item in homeBlogs" :key="item.blogId" class="!px-[15px]">
               <blog-item :item="item" />
             </Slide>
           </Carousel>
@@ -65,9 +66,3 @@ const { blogs, pending } = useBlogs();
 // 전체 블로그 중 최근 3건만 사용.
 const homeBlogs = computed(() => (blogs.value ?? []).slice(0, 3));
 </script>
-
-<style scoped>
-.blog__area .carousel__slide {
-  padding: 0 15px;
-}
-</style>

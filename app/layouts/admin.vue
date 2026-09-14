@@ -10,7 +10,7 @@
           v-for="item in menuItems"
           :key="item.path"
           :to="item.path"
-          class="admin-nav-item flex items-center gap-2 px-3 py-2 rounded-md text-sm transition"
+          class="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition text-white/85 hover:bg-white/[.08] hover:text-white"
           :class="{ 'bg-slate-700 text-amber-400': route.path.startsWith(item.path) }"
         >
           <span class="opacity-80">{{ item.icon }}</span>
@@ -33,12 +33,3 @@ const route = useRoute();
 const menuItems = [{ path: "/dp/panels", label: "전시패널관리", icon: "🖼️" }];
 </script>
 
-<style scoped>
-.admin-nav-item {
-  color: rgba(255, 255, 255, 0.85);
-}
-.admin-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-</style>

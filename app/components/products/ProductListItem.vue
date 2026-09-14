@@ -83,4 +83,3 @@ function openQuickView() {
 }
 </script>
 
-<style scoped></style>

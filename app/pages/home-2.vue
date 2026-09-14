@@ -74,7 +74,7 @@
                 <!-- 2026-09-14(요청사항: "할인상품 6열 아니고 5열로 하면되") — col-xl-2(=6열) 대신
                      row-cols-xl-5(=5열, _grid.scss 기존 row-cols-lg-5/sm-5와 동일 패턴)를 .row에 적용. -->
                 <div class="row row-cols-xl-5">
-                  <div v-for="(item, i) in saleProducts" :key="i" class="col-lg-3 col-md-4 col-6 sale__item">
+                  <div v-for="(item, i) in saleProducts" :key="i" class="col-lg-3 col-md-4 col-6 sale__item px-5 mb-[30px]">
                     <product-item :item="item" />
                   </div>
                 </div>
@@ -121,13 +121,3 @@ const trendingProducts = computed(() => {
 });
 const saleProducts = computed(() => productsStore.products.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));
 </script>
-
-<style scoped>
-/* 2026-09-13(요청사항: "할인 상품의 너무 다닥다닥 붙었어") — 기본 그리드 거터(15px씩,
-   총 30px)만으로는 카드 사이가 좁아 보여서 이 섹션만 좀 더 여유 있게 키운다. */
-.sale__area .sale__item {
-  padding-right: 20px;
-  padding-left: 20px;
-  margin-bottom: 30px;
-}
-</style>

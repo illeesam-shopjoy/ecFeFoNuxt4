@@ -8,7 +8,9 @@
             <button type="button" @click="close" class="p-2 hover:bg-gray-100 rounded"><i class="fal fa-times"></i></button>
           </div>
           <div class="product__modal-inner">
-            <div class="modal-grid">
+            <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — modal-grid를
+                 Tailwind로 대체(sm: 브레이크포인트가 640px로 기존 미디어쿼리와 정확히 일치). -->
+            <div class="grid grid-cols-1 sm:grid-cols-[5fr_7fr] gap-6">
               <div>
                 <div class="product__modal-box">
                   <div class="mb-5" id="nav-tabContent">
@@ -66,16 +68,3 @@ function close() {
 }
 defineExpose({ show, close });
 </script>
-
-<style scoped>
-.modal-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-@media (min-width: 640px) {
-  .modal-grid {
-    grid-template-columns: 5fr 7fr;
-  }
-}
-</style>

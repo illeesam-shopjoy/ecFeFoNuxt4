@@ -8,14 +8,15 @@
           </a>
         </li>
 
+        <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") -->
         <li
           class="page-item"
           v-for="(n, idx) in pageItems"
           :key="`${n}-${idx}`"
-          :class="{ 'page-item--ellipsis': n === '...' }"
+          :class="{ 'cursor-default': n === '...' }"
           @click.prevent="n !== '...' && setPage(n)"
         >
-          <span v-if="n === '...'" class="page-link page-link--ellipsis">…</span>
+          <span v-if="n === '...'" class="page-link cursor-default pointer-events-none">…</span>
           <a v-else :class="[`page-link`, { active: currPage === n }]" href="">
             {{ n }}
           </a>
@@ -91,13 +92,3 @@ watch(
   { deep: true }
 );
 </script>
-
-<style scoped>
-.page-item--ellipsis {
-  cursor: default;
-}
-.page-link--ellipsis {
-  cursor: default;
-  pointer-events: none;
-}
-</style>

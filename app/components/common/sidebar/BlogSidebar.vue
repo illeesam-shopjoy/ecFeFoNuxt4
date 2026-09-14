@@ -45,11 +45,11 @@
           <ul v-if="pending">
             <li v-for="n in 3" :key="n" class="d-flex mb-15">
               <div class="rc__post-thumb mr-20">
-                <div class="skeleton-shimmer" style="width: 70px; height: 70px; border-radius: 4px;"></div>
+                <div class="animate-shimmer bg-gradient-to-r from-[#f0f0f0] via-[#e0e0e0] to-[#f0f0f0] bg-[length:200%_100%]" style="width: 70px; height: 70px; border-radius: 4px;"></div>
               </div>
               <div class="rc__post-content flex-1">
-                <div class="skeleton-shimmer mb-5" style="height: 14px; width: 80%; border-radius: 3px;"></div>
-                <div class="skeleton-shimmer" style="height: 12px; width: 50%; border-radius: 3px;"></div>
+                <div class="animate-shimmer bg-gradient-to-r from-[#f0f0f0] via-[#e0e0e0] to-[#f0f0f0] bg-[length:200%_100%] mb-5" style="height: 14px; width: 80%; border-radius: 3px;"></div>
+                <div class="animate-shimmer bg-gradient-to-r from-[#f0f0f0] via-[#e0e0e0] to-[#f0f0f0] bg-[length:200%_100%]" style="height: 12px; width: 50%; border-radius: 3px;"></div>
               </div>
             </li>
           </ul>
@@ -212,14 +212,3 @@ function toggle(i: number) {
 }
 </script>
 
-<style scoped>
-.skeleton-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-</style>

@@ -21,8 +21,12 @@
         <!-- 2026-09-14(요청사항: "인기상품은 한줄에 6개가 아니고 5개가 나와야해") — style_3(home-5)은
              col-xl-2(=6열)이 아니라 row-cols-xl-5(=5열, _grid.scss 기존 row-cols-lg-5/sm-5와 동일 패턴)를
              .row에 적용. 다른 style_3 사용처가 없어(home-5 전용) 영향 범위 안전. -->
-        <div :class="`row ${style_3 ? 'row-cols-xl-5' : ''}`">
-          <div v-for="item in trending_prd.slice(0, perView)" :key="item.prodId" class="col-lg-3 col-md-4 product__item">
+        <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — row-cols-xl-5는
+             _grid.scss가 제공하는 공용 Bootstrap 호환 그리드 유틸이라 그대로 두고(row-cols-lg-5/
+             sm-5와 같은 성격), .row 거터 확장(-22.5px)만 Tailwind 임의값(-mx-[22.5px])으로
+             인라인 전환. product__item 패딩(6px)도 px-1.5로 직접 부여. -->
+        <div :class="`row ${style_3 ? 'row-cols-xl-5 -mx-[22.5px]' : ''}`">
+          <div v-for="item in trending_prd.slice(0, perView)" :key="item.prodId" class="col-lg-3 col-md-4 product__item px-1.5">
             <product-item :item="item" />
           </div>
         </div>
@@ -64,26 +68,3 @@ function handleLoadMore() {
 }
 </script>
 
-<style scoped>
-/* 2026-09-13(요청사항: "인기상품 항목별 width 약 18px씩 늘려줘") — 컬럼 폭은 %기반이라
-   카드 하나하나를 그대로 넓히려면 좌우 거터(각 15px)를 9px씩 줄여 그만큼 콘텐츠 폭을 늘린다. */
-.product__item {
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-/* 2026-09-14(요청사항: "인기상품 상품카드 width 15px 늘려줘") — style_3(home-5, row-cols-xl-5)
-   전용. .row 거터(기본 -15px)를 -22.5px로 7.5px씩 더 넓혀 카드 폭을 키운다.
-   row-cols-xl-5는 home-5에서만 쓰여 다른 페이지 영향 없음. */
-.row-cols-xl-5 {
-  margin-left: -22.5px;
-  margin-right: -22.5px;
-}
-/* 2026-09-14(요청사항: "인기상품 상품간 다닥 붙어있어") — 위에서 패딩을 0으로 없앴더니
-   카드끼리 완전히 붙어버렸다. 다른 페이지와 동일한 6px 거터로 되돌림(카드 폭은 .row
-   거터 확장분(7.5px×2=15px)만큼은 여전히 더 넓다). */
-.row-cols-xl-5 .product__item {
-  padding-left: 6px;
-  padding-right: 6px;
-}
-</style>

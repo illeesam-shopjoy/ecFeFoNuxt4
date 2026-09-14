@@ -31,7 +31,7 @@
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>상품 카테고리</h3>
-                  <button type="button" class="filter-reset-link" @click="resetCategoryFilter">초기화</button>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetCategoryFilter">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="categories">
@@ -73,7 +73,7 @@
                 <div class="sidebar__widget mb-55">
                   <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                     <h3>가격별 필터</h3>
-                    <button type="button" class="filter-reset-link" @click="shopProducts.resetPrice">초기화</button>
+                    <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetPrice">초기화</button>
                   </div>
                   <div class="sidebar__widget-content">
                     <div class="price__slider">
@@ -91,7 +91,7 @@
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                   <h3>사이즈</h3>
-                  <button type="button" class="filter-reset-link" @click="shopProducts.resetSize">초기화</button>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetSize">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="size">
@@ -108,7 +108,7 @@
               <div class="sidebar__widget mb-60">
                 <div class="sidebar__widget-title mb-20 flex items-center justify-between">
                   <h3>색상 선택</h3>
-                  <button type="button" class="filter-reset-link" @click="shopProducts.resetColor">초기화</button>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetColor">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="color__pick">
@@ -127,7 +127,7 @@
               <div class="sidebar__widget mb-50">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>브랜드</h3>
-                  <button type="button" class="filter-reset-link" @click="shopProducts.resetBrand">초기화</button>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetBrand">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="brand">
@@ -205,10 +205,10 @@
                        폭에 따라 늘어나 보여서 width/height를 고정해 정사각형으로 만듦. -->
                   <ul class="flex items-center gap-2" role="tablist">
                     <li>
-                      <button type="button" :class="['view-toggle-btn rounded flex items-center justify-center', viewMode === 'grid' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'grid'" aria-label="그리드 보기"><i class="fas fa-th"></i></button>
+                      <button type="button" :class="['w-9 h-9 p-0 rounded flex items-center justify-center', viewMode === 'grid' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'grid'" aria-label="그리드 보기"><i class="fas fa-th"></i></button>
                     </li>
                     <li>
-                      <button type="button" :class="['view-toggle-btn rounded flex items-center justify-center', viewMode === 'list' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'list'" aria-label="목록 보기"><i class="fas fa-list-ul"></i></button>
+                      <button type="button" :class="['w-9 h-9 p-0 rounded flex items-center justify-center', viewMode === 'list' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'list'" aria-label="목록 보기"><i class="fas fa-list-ul"></i></button>
                     </li>
                   </ul>
                 </div>
@@ -360,6 +360,9 @@ onBeforeUnmount(() => observer?.disconnect());
 </script>
 
 <style scoped>
+/* 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — filter-reset-link/
+   view-toggle-btn은 Tailwind로 대체. 아래 view-fade transition만 Transition
+   name="view-fade"와 이름이 묶여 있어 남겨둠. */
 .view-fade-enter-active,
 .view-fade-leave-active {
   transition: opacity 0.2s ease;
@@ -367,26 +370,5 @@ onBeforeUnmount(() => observer?.disconnect());
 .view-fade-enter-from,
 .view-fade-leave-to {
   opacity: 0;
-}
-
-/* 2026-09-13(요청사항: "항목별 초기화 버튼 있어야 해") */
-.filter-reset-link {
-  font-size: 0.78rem;
-  color: #999;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
-.filter-reset-link:hover {
-  color: var(--theme-color, #bc8246);
-  text-decoration: underline;
-}
-
-/* 2026-09-13(요청사항: "목록그리드, 카드 보기 아이콘 좀 기네 정사각형으로") */
-.view-toggle-btn {
-  width: 36px;
-  height: 36px;
-  padding: 0;
 }
 </style>

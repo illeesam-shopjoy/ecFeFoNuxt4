@@ -11,7 +11,7 @@
             </div>
             <div class="product__offer-slider relative">
               <Carousel :items-to-show="1" :wrap-around="true" :snapAlign="'center'" ref="slider_1">
-                <Slide v-for="(item, i) in trending_products" :key="i" class="product__offer-wrapper">
+                <Slide v-for="(item, i) in trending_products" :key="i" class="product__offer-wrapper !block">
                   <div class="sidebar__widget-content">
                     <sm-product-item v-for="(prd, i) in item.items" :key="i" :prd="prd" />
                   </div>
@@ -44,7 +44,7 @@
             </div>
             <div class="product__offer-slider relative">
               <Carousel :items-to-show="1" :wrap-around="true" :snapAlign="'center'" ref="slider_2">
-                <Slide v-for="(item, i) in sale_products" :key="i" class="product__offer-wrapper">
+                <Slide v-for="(item, i) in sale_products" :key="i" class="product__offer-wrapper !block">
                   <div class="sidebar__widget-content">
                     <sm-product-item v-for="(prd, i) in item.items" :key="i" :prd="prd" />
                   </div>
@@ -77,7 +77,7 @@
             </div>
             <div class="product__offer-slider relative">
               <Carousel :items-to-show="1" :wrap-around="true" :snapAlign="'center'" ref="slider_3">
-                <Slide v-for="(item, i) in top_products" :key="i" class="product__offer-wrapper">
+                <Slide v-for="(item, i) in top_products" :key="i" class="product__offer-wrapper !block">
                   <div class="sidebar__widget-content">
                     <sm-product-item v-for="(prd, i) in item.items" :key="i" :prd="prd" />
                   </div>
@@ -159,9 +159,3 @@ function handlePrevThree() {
   slider_3.value?.prev();
 }
 </script>
-
-<style scoped>
-.carousel__slide {
-  display: block;
-}
-</style>

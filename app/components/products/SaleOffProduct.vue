@@ -33,9 +33,3 @@ import { useProductsStore } from "~/store/useProductsStore";
 
 const store = useProductsStore();
 </script>
-
-<style scoped>
-.sale__area .carousel__slide.sale__item {
-  padding: 0 15px;
-}
-</style>

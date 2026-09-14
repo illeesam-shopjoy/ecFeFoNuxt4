@@ -17,7 +17,9 @@
               <h4>
                 <nuxt-link :to="`/prod-dtl/${item.prodId}`">{{ item.prodNm }}</nuxt-link>
               </h4>
-              <p class="sm_desc">
+              <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — banner__area-2/
+                   banner__content-4 조상 여부(=style_3)에 따라 max-width가 갈리던 걸 조건부 클래스로 대체. -->
+              <p :class="style_3 ? 'sm_desc max-w-[250px]' : 'sm_desc max-w-[450px]'">
                 {{ style_3 ? item.smDesc.slice(0, 50) : item.smDesc }}
               </p>
               <nuxt-link :to="`/prod-dtl/${item.prodId}`" class="os-btn os-btn-2">
@@ -61,11 +63,3 @@ const bannerItems = computed(() => {
 });
 </script>
 
-<style scoped>
-.banner__area-2 .sm_desc {
-  max-width: 450px;
-}
-.banner__content-4 .sm_desc {
-  max-width: 250px;
-}
-</style>
