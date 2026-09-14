@@ -61,7 +61,14 @@
         <div class="shop__bottom bg-white">
           <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — detail-tab-* 커스텀
                클래스를 Tailwind로 대체(JS ref="tabNavRef" 등 참조는 유지). -->
-          <div class="sticky z-40 bg-white border-b-2 border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.06)] min-h-[52px]" ref="tabNavRef" :style="{ top: headerH + 'px' }">
+          <!-- 2026-09-14 버그수정(요청사항: "Top 을 가리면 안되고 / 원래 위치에 있던 정보가
+               가려질때 고정되는거야") — Tailwind 유틸리티 클래스명 "sticky"가 _header.scss의
+               사이트 헤더용 전역 규칙(.sticky { position: fixed !important; top:0; z-index:999 })과
+               이름이 겹쳐서, position:sticky가 아니라 position:fixed로 강제 적용되며 항상
+               최상단에 고정돼버렸다(스크롤 위치와 무관하게, 헤더까지 가리며). 클래스명이 아니라
+               [position:sticky] 임의 속성 문법으로 바꿔 이름 충돌을 피함 — 진짜 position:sticky가
+               적용되어 원래 위치가 뷰포트 상단(헤더 높이만큼 아래)에 닿을 때만 고정된다. -->
+          <div class="[position:sticky] z-40 bg-white border-b-2 border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.06)] min-h-[52px]" ref="tabNavRef" :style="{ top: headerH + 'px' }">
             <div class="max-w-7xl mx-auto px-4">
               <div class="flex justify-center gap-0">
                 <button
