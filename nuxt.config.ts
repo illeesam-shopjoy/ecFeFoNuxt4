@@ -36,9 +36,21 @@ export default defineNuxtConfig({
         // 렌더링 지연에 그대로 영향을 준다. preconnect는 요청을 앞당기지 않고 "연결"만
         // 미리 해두는 것이라 부작용 없이 안전하다.
         { rel: "preconnect", href: "https://cdn.jsdelivr.net", crossorigin: "" },
+        // 2026-09-15(요청사항: "성능을 저해하는 환경적인 요소가 있으면 적극적으로 수정해줘") —
+        // 위 preconnect로도 여전히 렌더 블로킹은 남아있던 부분을 마저 해결. media="print" +
+        // onload로 "all"로 바꿔치기하는 표준 트릭 — 브라우저가 이 스타일시트를 렌더링을
+        // 막지 않는 낮은 우선순위로 받아오고, 로드가 끝나면 실제 폰트를 적용한다(자바스크립트
+        // 없는 환경 대비 noscript로 원래 방식 폴백).
         {
           rel: "stylesheet",
           href: "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css",
+          media: "print",
+          onload: "this.media='all'",
+        },
+      ],
+      noscript: [
+        {
+          innerHTML: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">`,
         },
       ],
     },

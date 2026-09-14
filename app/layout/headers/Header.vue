@@ -37,6 +37,12 @@
                     </a>
                   </li>
                   <li>
+                    <!-- 2026-09-15(요청사항: "링크복사, 카카오공유하기, PDF다운로드 기능
+                         추가하고 싶어 2번째 이미지 최상단처럼 저 최상단은 모바일보기에서는
+                         설정안에서보여") — 모바일에서는 숨기고(ExtraInfo 설정 안에서 대신 노출). -->
+                    <share-tools-buttons variant="icons" />
+                  </li>
+                  <li>
                     <!-- 2026-09-13(요청사항: "상담에 숨겨진 글시가 원인일수도 장바구니(3) 에서
                          (3) 으로만 표시해줘도 될거 같아") — 실측 결과 이 액션 영역(검색/장바구니/
                          유저메뉴/햄버거)이 모바일 폭(412px)에서 실제로 폭이 넘쳐 헤더 전체가
@@ -69,6 +75,9 @@
                     <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle">
                       <i class="fas fa-search"></i> <span class="hidden sm:inline">검색</span>
                     </a>
+                  </li>
+                  <li>
+                    <share-tools-buttons variant="icons" />
                   </li>
                   <li>
                     <!-- 2026-09-13(요청사항: "상담에 숨겨진 글시가 원인일수도 장바구니(3) 에서
@@ -121,6 +130,7 @@ import UserDropdown from "./header-com/UserDropdown.vue";
 import ExtraInfo from "./header-com/ExtraInfo.vue";
 import EnvModeBadge from "./header-com/EnvModeBadge.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
+import ShareToolsButtons from "~/components/common/ShareToolsButtons.vue";
 
 defineProps({
   header_big: { type: Boolean, default: false },

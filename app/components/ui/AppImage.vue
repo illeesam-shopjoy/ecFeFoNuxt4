@@ -18,6 +18,8 @@
       :alt="alt"
       :class="['w-full h-full object-cover block', imgClass]"
       :style="imgStyle"
+      :loading="imgLoading"
+      decoding="async"
       v-bind="$attrs"
       @load="onLoad"
       @error="onError"
@@ -45,11 +47,19 @@ interface Props {
   skeletonStyle?: Record<string, string> | string;
   /** 스켈레톤 표시 여부를 외부에서 강제로 지정 (미지정시 자체 로딩상태 사용) */
   showSkeleton?: boolean;
+  /** 2026-09-15(요청사항: "성능을 저해하는 환경적인 요소가 있으면 적극적으로 수정해줘") —
+   * 이 컴포넌트가 사이트 전체 이미지(상품카드 등 30여 곳)의 유일한 통로인데 지금까지
+   * <img loading> 속성이 없어 화면 밖 이미지까지 전부 즉시 로드되고 있었다 — 기본을 "lazy"로
+   * 바꾸고, 히어로 배너처럼 최초 화면에 바로 보여야 하는 이미지만 호출측에서 "eager"로 넘기면 됨.
+   * 내부 로딩상태(스켈레톤용) ref가 이미 `loading`이라는 이름을 쓰고 있어(아래 script) 이름
+   * 충돌을 피하려고 브라우저 속성명과 다르게 imgLoading으로 둔다. */
+  imgLoading?: "lazy" | "eager";
 }
 
 const props = withDefaults(defineProps<Props>(), {
   alt: "이미지",
   wrapClass: "",
+  imgLoading: "lazy",
 });
 
 // 2026-09-13(요청사항: "상품항목별 이미지란도 약간 크게 해줘") — skeletonStyle의 aspectRatio는

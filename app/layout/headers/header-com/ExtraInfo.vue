@@ -36,6 +36,17 @@
       </div>
     </li>
     <li>
+      <!-- 2026-09-15(요청사항: "링크복사, 카카오공유하기, PDF다운로드 기능 추가하고 싶어
+           ... 저 최상단은 모바일보기에서는 설정안에서보여") — 헤더의 아이콘형(variant=icons)은
+           모바일에서 숨기고, 여기 설정 드롭다운엔 항상 노출해 모바일에서도 쓸 수 있게 한다. -->
+      <div class="share-tools">
+        <div class="extra-title">
+          <h5 class="font-bold text-[0.95rem] tracking-[-0.02em] text-[#201f1f]">공유·다운로드</h5>
+        </div>
+        <share-tools-buttons variant="menu" />
+      </div>
+    </li>
+    <li>
       <div class="lang">
         <div class="extra-title">
           <h5 class="font-bold text-[0.95rem] tracking-[-0.02em] text-[#201f1f]">언어</h5>
@@ -65,6 +76,8 @@
 </template>
 
 <script setup lang="ts">
+import ShareToolsButtons from "~/components/common/ShareToolsButtons.vue";
+
 const config = useRuntimeConfig();
 const isLocal = config.public.mode === "local";
 
