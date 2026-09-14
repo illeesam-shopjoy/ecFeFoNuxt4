@@ -322,7 +322,12 @@ const tabNavRef = ref<HTMLElement | null>(null);
 const secDes = ref<HTMLElement | null>(null);
 const secAdd = ref<HTMLElement | null>(null);
 const secReview = ref<HTMLElement | null>(null);
-const headerH = ref(0);
+// 2026-09-14 버그수정(요청사항: "F5 refresh 하면 상품설명/추가정보/리뷰 바가 최상단에 보였다가
+// 사라지는데 이러면 안되") — SSR/하이드레이션 직후 onMounted가 실제 헤더 높이를 측정하기
+// 전까지는 이 값이 0이라 잠깐 top:0px로 렌더돼(=진짜 페이지 맨 위) 눈에 띄게 깜빡였다.
+// 헤더의 대략적인 실제 높이(로고+환경배지 2줄+패딩)로 기본값을 잡아 그 순간에도 자연스럽게
+// 보이도록 하고, onMounted에서 정확한 값으로 즉시 보정한다.
+const headerH = ref(90);
 
 function scrollToSection(id: TabId) {
   activeTab.value = id;
