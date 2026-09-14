@@ -82,6 +82,15 @@
 
                 <div class="or-divide"><span>또는</span></div>
                 <nuxt-link href="/register" class="os-btn os-btn-black w-full"> 회원가입 </nuxt-link>
+                <!-- 2026-09-14(요청사항: "회원가입 아래 회원목록 모달 호출해줘 그 중에서
+                     한명 선택하여 로그인되게 해줘 비밀번호 1111 로 보내면 로그인될거야") -->
+                <button
+                  type="button"
+                  class="w-full mt-10 py-3 rounded border-2 border-dashed border-gray-300 text-gray-600 text-sm hover:border-theme hover:text-theme transition"
+                  @click="demoLoginModalRef?.show()"
+                >
+                  테스트 계정으로 로그인
+                </button>
               </Form>
               <!-- 폼 끝 -->
             </div>
@@ -89,6 +98,7 @@
         </div>
       </div>
     </section>
+    <demo-member-login-modal ref="demoLoginModalRef" />
   </layout>
 </template>
 
@@ -97,6 +107,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
+import DemoMemberLoginModal from "~/components/modals/DemoMemberLoginModal.vue";
 import { ref } from "vue";
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
@@ -115,6 +126,7 @@ const router = useRouter();
 const route = useRoute();
 const errorMsg = ref("");
 const loading = ref(false);
+const demoLoginModalRef = ref<InstanceType<typeof DemoMemberLoginModal> | null>(null);
 
 // OAuth 콜백 실패 시 쿼리로 전달된 에러 표시
 onMounted(() => {
