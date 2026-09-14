@@ -137,11 +137,18 @@ export function mapProduct(p: BeProdItem): Record<string, unknown> {
   const parentCategory: CoCategoryType | undefined = p.parentCategoryId ? { categoryId: p.parentCategoryId, categoryNm: "", categoryDepth: 1 } : undefined;
   const brand: CoBrandType | undefined = p.brandId ? { brandId: p.brandId, brandCode: p.brandId, brandNm: p.brandNm ?? "" } : undefined;
 
+  // 2026-09-14 버그수정 — o.prodOpt1TypeCd/prodOpt2TypeCd는 pd_prod_opt 각 행에는 항상
+  // null로 내려온다(실제로 확인함, BO "옵션설정" 저장 시 이 값들은 상품 레벨 플랫 컬럼
+  // p.prodOpt1TypeCd/prodOpt2TypeCd에만 저장되고 옵션값 행 자체엔 안 채워짐) — 그래서
+  // 예전 코드는 항상 p.prodOpt1TypeCd(1단=색상)로만 폴백해, 2단(사이즈) 옵션값까지 전부
+  // "색상"으로 분류되어 optionSizes가 항상 비어 있었다. o.prodOptTypeLevel(1|2)로 어느
+  // 상품 레벨 컬럼을 볼지 먼저 골라야 함.
   const optionColors: PdOptionType[] = [];
   const optionSizes: PdOptionType[] = [];
   for (const o of p.prodOpts ?? []) {
-    const kind = classifyOptionType(o.prodOpt1TypeCd ?? o.prodOpt2TypeCd ?? p.prodOpt1TypeCd);
-    const mapped = mapOption(o, p.prodOpt1TypeCd);
+    const levelTypeCd = o.prodOptTypeLevel === 2 ? p.prodOpt2TypeCd : p.prodOpt1TypeCd;
+    const kind = classifyOptionType(o.prodOpt1TypeCd ?? o.prodOpt2TypeCd ?? levelTypeCd);
+    const mapped = mapOption(o, levelTypeCd);
     if (kind === "size") optionSizes.push(mapped);
     else optionColors.push(mapped); // 색상/기타는 optionColors 쪽에 몰아둠 (템플릿이 컬러 스와치를 기본 옵션 UI로 씀)
   }
