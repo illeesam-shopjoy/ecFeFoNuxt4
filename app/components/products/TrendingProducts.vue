@@ -57,8 +57,9 @@ const trending_prd = computed(() => {
   return trending.length ? trending : store.products;
 });
 const perView = ref(props.style_3 ? 12 : 8);
+// 2026-09-14(요청사항: "더보기 버튼 클릭하면 8개씩 더 나오게 해줘")
 function handleLoadMore() {
-  perView.value += 2;
+  perView.value += 8;
 }
 </script>
 
@@ -68,5 +69,17 @@ function handleLoadMore() {
 .product__item {
   padding-left: 6px;
   padding-right: 6px;
+}
+
+/* 2026-09-14(요청사항: "인기상품 상품카드 width 15px 늘려줘") — style_3(home-5, row-cols-xl-5)
+   전용. 카드 좌우 패딩을 0으로 없애 12px, .row 거터(기본 -15px)를 -22.5px로 7.5px씩 더
+   넓혀 나머지 3px을 확보 — 총 +15px. row-cols-xl-5는 home-5에서만 쓰여 다른 페이지 영향 없음. */
+.row-cols-xl-5 {
+  margin-left: -22.5px;
+  margin-right: -22.5px;
+}
+.row-cols-xl-5 .product__item {
+  padding-left: 0;
+  padding-right: 0;
 }
 </style>
