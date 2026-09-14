@@ -87,7 +87,11 @@
                 position: relative;
                 &::before{
                     position: absolute;
-                    background: #00000091;
+                    /* 2026-09-14 버그수정(요청사항: "상위 3개상품 마우스 오버할때 글씨와, 버튼
+                       보이는데 스타일이 너무 흐려서 안보여") — #00000091(약 57% 불투명)이 밝은
+                       상품사진 위에서는 충분히 어둡지 않아 흰 글씨/버튼이 흐리게 보였다 —
+                       72%로 더 진하게. */
+                    background: rgba(0, 0, 0, 0.72);
                     content: '';
                     left: 0;
                     right: 0;
@@ -254,9 +258,13 @@
                 font-size: 18px;
                 color: $white;
                 margin-bottom: 20px;
+                /* 2026-09-14 버그수정(요청사항: "글씨와, 버튼 보이는데 스타일이 너무
+                   흐려서 안보여") — 사진에 밝은 영역이 있으면 흰 글씨가 묻혀 보였다. */
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
             }
             & p{
                 color: $white;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
                 margin-bottom: 30px;
                 padding: 0px 10px;
             }

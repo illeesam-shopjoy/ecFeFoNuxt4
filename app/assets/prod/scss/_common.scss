@@ -530,6 +530,11 @@ p {
     }
   }
 }
+// 2026-09-14 버그수정(요청사항: "상위 3개상품 마우스 오버할때 글씨와, 버튼 보이는데
+// 스타일이 너무 흐려서 안보여") — 흰 글씨(color:$white) 밑에 올리브색(theme-2-color:
+// #8a8f6a) 배경이 깔리는데, 이 조합의 명암비가 약 3.4:1로 낮아(WCAG AA 4.5:1 미달)
+// 특히 12px의 작은 글씨에선 흐리게 보였다. text-shadow로 외곽을 살짝 어둡게 눌러
+// 배경색이 무엇이든 글씨가 도드라지게 한다.
 .os-btn-5 {
   position: relative;
   display: inline-block;
@@ -544,6 +549,7 @@ p {
   background: transparent;
   z-index: 1;
   font-size: 12px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
   & span {
     color: $theme-color;
   }
