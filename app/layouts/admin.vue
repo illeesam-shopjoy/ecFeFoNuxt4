@@ -30,6 +30,11 @@
 const route = useRoute();
 // 2026-09-13: adminSy/adminEc/adminCo/popupAdmin 스캐폴드 전부 제거(요청사항) —
 // 실사용 중인 전시패널관리만 남김. [[ecfefonuxt4-dp-widget-migration]] 참조.
-const menuItems = [{ path: "/dp/panels", label: "전시패널관리", icon: "🖼️" }];
+const menuItems = [
+  { path: "/dp/panels", label: "전시패널관리", icon: "🖼️" },
+  // 2026-09-14(요청사항: "env 값 보는페이지 하나 만들어주고 페이지에서 env 값 수정도
+  // 가능하게 해줘") — 로컬 개발 서버에서만 실제로 동작(server/api/dev/env.*.ts 가드 참조).
+  { path: "/dev/env-settings", label: "환경변수 설정", icon: "⚙️" },
+];
 </script>
 

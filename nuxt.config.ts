@@ -120,6 +120,11 @@ export default defineNuxtConfig({
       tossPaymentClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY ?? "",
       /** Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비어 있으면 스크립트 미로드 */
       gaMeasurementId: process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID ?? "",
+      // 2026-09-14(요청사항: "env 값 수정하며 ... 맵연결 등 확인하려는거야") — 지도 위젯은
+      // 아직 화면에 실제로 붙어있지 않지만(/dev/env-settings에서 값만 미리 저장해둘 수
+      // 있게), 값 자체는 이미 runtimeConfig로 노출해둔다.
+      kakaoMapKey: process.env.NUXT_PUBLIC_KAKAO_MAP_KEY ?? "",
+      googleMapsKey: process.env.NUXT_PUBLIC_GOOGLE_MAPS_KEY ?? "",
     },
   },
   hooks: {

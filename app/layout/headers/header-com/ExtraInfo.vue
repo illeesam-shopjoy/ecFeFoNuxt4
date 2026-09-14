@@ -28,6 +28,10 @@
           <li><nuxt-link href="/checkout">결제</nuxt-link></li>
           <li><nuxt-link href="/compare">상품비교</nuxt-link></li>
           <li><nuxt-link href="/register">회원가입</nuxt-link></li>
+          <!-- 2026-09-14(요청사항: "우측 상단에 설정을클릭하면 env 값 보는페이지 하나
+               만들어주고") — 토스/소셜로그인/지도 등 env 값을 확인·수정하는 로컬 전용
+               화면. isLocal일 때만 노출(화면 자체도 로컬 모드가 아니면 동작 안 함). -->
+          <li v-if="isLocal"><nuxt-link href="/dev/env-settings">설정</nuxt-link></li>
         </ul>
       </div>
     </li>
