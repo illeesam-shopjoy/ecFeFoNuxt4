@@ -48,22 +48,21 @@
               </div>
               <div class="col-md-6">
                 <div class="coupon-accordion">
-                  <!-- 아코디언 시작 -->
+                  <!-- 2026-09-14(요청사항: "주문할인쿠폰 상품할인쿠폰 배송비할인쿠폰 선택하여
+                       적용할 수 있게 모달연결해주고") — 기존 텍스트 코드 입력(어디에도 실제로
+                       반영 안 되던 목업)을 종류별로 골라 적용하는 CouponModal로 교체. -->
                   <h3>
                     쿠폰이 있으신가요?
-                    <span @click="handleCheckoutCoupon" id="showcoupon">쿠폰 코드 입력하기</span>
+                    <span @click="couponModalRef?.show()" id="showcoupon">쿠폰 선택하기</span>
                   </h3>
-                  <div v-if="checkoutCoupon" id="checkout_coupon" class="coupon-checkout-content">
-                    <div class="coupon-info">
-                      <form @submit.prevent="handleCouponSubmit">
-                        <p class="checkout-coupon">
-                          <input v-model="couponVal" type="text" placeholder="쿠폰 코드" />
-                          <button class="os-btn os-btn-black" type="submit">쿠폰 적용</button>
-                        </p>
-                      </form>
-                    </div>
+                  <div v-if="appliedCouponList.length" class="coupon-checkout-content">
+                    <ul class="mt-10">
+                      <li v-for="c in appliedCouponList" :key="c.couponId" class="text-[14px] text-[#606060] mb-5">
+                        {{ c.name }}
+                        <a href="#" class="ml-10 text-[12px] text-[#999] hover:text-danger" @click.prevent="removeCoupon(c.category)">제거</a>
+                      </li>
+                    </ul>
                   </div>
-                  <!-- 아코디언 끝 -->
                 </div>
               </div>
             </div>
@@ -284,11 +283,19 @@
                               </ul>
                             </td>
                           </tr>
+                          <!-- 2026-09-14(요청사항: "쿠폰 선택하여 적용할 수 있게") — 적용된
+                               쿠폰이 있으면 할인 금액을 별도 줄로 보여준다. -->
+                          <tr v-if="couponDiscountTotal > 0" class="order-total">
+                            <th>쿠폰 할인</th>
+                            <td>
+                              <span class="amount text-danger">-{{ formatPrice(couponDiscountTotal) }}</span>
+                            </td>
+                          </tr>
                           <tr class="order-total">
                             <th>주문 합계</th>
                             <td>
                               <strong>
-                                <span class="amount"> {{ formatPrice(typeof ship_cost === "number" && ship_cost > 0 ? state.getStTotalPriceQuantity.total + Number(ship_cost) : state.getStTotalPriceQuantity.total) }} </span>
+                                <span class="amount">{{ formatPrice(orderTotalRef) }}</span>
                               </strong>
                             </td>
                           </tr>
@@ -333,6 +340,7 @@
         </section>
       </div>
     </client-only>
+    <coupon-modal ref="couponModalRef" :applied-coupons="appliedCoupons" @apply="handleApplyCoupons" />
   </layout>
 </template>
 
@@ -342,9 +350,11 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import CountrySelect from "~/components/checkout/CountrySelect.vue";
-import { ref, reactive, watch } from "vue";
+import CouponModal from "~/components/modals/CouponModal.vue";
+import { ref, reactive, computed, watch } from "vue";
 import { useCartStore } from "~/store/useCartStore";
 import type { SyCheckoutLoginFormType } from "~/types/syCheckoutLoginFormType";
+import type { AppliedCoupons, CouponCategory } from "~/types/syCouponType";
 
 const state = useCartStore();
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -355,30 +365,35 @@ usePageTitle("주문/결제");
 
 const { formatPrice } = usePrice();
 
-// 쿠폰/로그인 아코디언 (옛 CouponArea)
+// 로그인 아코디언 (옛 CouponArea)
 const checkoutLogin = ref(false);
-const checkoutCoupon = ref(false);
 const formValue = reactive<SyCheckoutLoginFormType>({
   name_or_email: "",
   password: "",
   isChecked: false,
 });
-const couponVal = ref("");
 
 function handleCheckoutLogin() {
   checkoutLogin.value = !checkoutLogin.value;
-}
-function handleCheckoutCoupon() {
-  checkoutCoupon.value = !checkoutCoupon.value;
 }
 function handleSubmit() {
   formValue.name_or_email = "";
   formValue.password = "";
   formValue.isChecked = false;
 }
-function handleCouponSubmit() {
-  console.log(couponVal.value);
-  couponVal.value = "";
+
+// 쿠폰(요청사항: "주문할인쿠폰 상품할인쿠폰 배송비할인쿠폰 선택하여 적용할 수 있게
+// 모달연결해주고") — 종류별로 하나씩 적용, CouponModal에서 선택.
+const couponModalRef = ref<InstanceType<typeof CouponModal> | null>(null);
+const appliedCoupons = reactive<AppliedCoupons>({ order: null, product: null, shipping: null });
+const appliedCouponList = computed(() => Object.values(appliedCoupons).filter((c): c is NonNullable<typeof c> => c !== null));
+function handleApplyCoupons(coupons: AppliedCoupons) {
+  appliedCoupons.order = coupons.order;
+  appliedCoupons.product = coupons.product;
+  appliedCoupons.shipping = coupons.shipping;
+}
+function removeCoupon(category: CouponCategory) {
+  appliedCoupons[category] = null;
 }
 
 // 청구 정보(옛 BillingDetails)
@@ -396,13 +411,43 @@ function handleShipBox() {
 // 주문 내역/합계(옛 OrderArea) — provide/inject 대신 이 페이지 안에서 바로 공유
 const ship_cost = ref<number | "free">(0);
 const orderTotalRef = ref(0);
+// 쿠폰 할인 총액(표시용) — orderTotalRef 계산과 같은 로직으로 별도 유지.
+const couponDiscountTotal = ref(0);
 watch(
-  [() => state.getStTotalPriceQuantity.total, ship_cost],
+  [() => state.getStTotalPriceQuantity.total, ship_cost, () => appliedCoupons.order, () => appliedCoupons.product, () => appliedCoupons.shipping],
   () => {
-    const ship = ship_cost.value === "free" || (typeof ship_cost.value === "number" && ship_cost.value === 0)
-      ? 0
-      : 7000;
-    orderTotalRef.value = state.getStTotalPriceQuantity.total + ship;
+    const subtotal = state.getStTotalPriceQuantity.total;
+    const baseShip = ship_cost.value === "free" || (typeof ship_cost.value === "number" && ship_cost.value === 0) ? 0 : 7000;
+
+    // 상품할인 → 그 결과에 주문할인 순서로 적용(상품가 기준 쿠폰이 먼저 적용되는 게 자연스러움).
+    const productCoupon = appliedCoupons.product;
+    const productDiscount =
+      productCoupon?.discountType === "amount"
+        ? Math.min(productCoupon.discountValue, subtotal)
+        : productCoupon?.discountType === "percent"
+          ? Math.round((subtotal * productCoupon.discountValue) / 100)
+          : 0;
+    const afterProduct = subtotal - productDiscount;
+
+    const orderCoupon = appliedCoupons.order;
+    const orderDiscount =
+      orderCoupon?.discountType === "amount"
+        ? Math.min(orderCoupon.discountValue, afterProduct)
+        : orderCoupon?.discountType === "percent"
+          ? Math.round((afterProduct * orderCoupon.discountValue) / 100)
+          : 0;
+
+    const shippingCoupon = appliedCoupons.shipping;
+    const ship =
+      shippingCoupon?.discountType === "free-shipping"
+        ? 0
+        : shippingCoupon?.discountType === "amount"
+          ? Math.max(0, baseShip - shippingCoupon.discountValue)
+          : baseShip;
+    const shipDiscount = baseShip - ship;
+
+    couponDiscountTotal.value = productDiscount + orderDiscount + shipDiscount;
+    orderTotalRef.value = Math.max(0, subtotal - productDiscount - orderDiscount + ship);
   },
   { immediate: true }
 );
