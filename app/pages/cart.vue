@@ -83,7 +83,14 @@
                           합계 <span>{{ formatPrice(state.getStTotalPriceQuantity.total) }}</span>
                         </li>
                       </ul>
-                      <nuxt-link class="os-btn" href="/checkout">주문/결제하기</nuxt-link>
+                      <!-- 2026-09-14(요청사항: "주문/결제하기 버튼이 흰색이라 잘 안보여" →
+                           "버튼 좌측에 있는데 우측에 배치해줘") — 기존 os-btn은 배경이
+                           투명이라 흰 페이지 위에서 거의 안 보였다. os-btn-black으로 확실히
+                           눈에 띄게 하고, inline-block 버튼이라 text-right로 감싸서 합계
+                           박스 우측에 맞춘다(위 소계/합계 금액도 우측 정렬). -->
+                      <div class="text-right">
+                        <nuxt-link class="os-btn os-btn-black" href="/checkout">주문/결제하기</nuxt-link>
+                      </div>
                     </div>
                   </div>
                 </div>
