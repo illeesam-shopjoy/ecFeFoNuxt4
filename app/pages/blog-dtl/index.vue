@@ -243,7 +243,7 @@ import BlogItem from "~/components/blogs/BlogItem.vue";
 import BlogSidebar from "~/components/common/sidebar/BlogSidebar.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
-import { CDN_URL } from "~/conts/beConst";
+import { CDN_URL } from "~/conts/baseConst";
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 

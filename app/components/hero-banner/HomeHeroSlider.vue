@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { CDN_URL } from "~/conts/beConst";
+import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";

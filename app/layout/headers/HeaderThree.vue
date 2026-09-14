@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { CDN_URL } from "~/conts/beConst";
+import { CDN_URL } from "~/conts/baseConst";
 import { useCartStore } from "~/store/useCartStore";
 import Menus from "./Menus.vue";
 import CartMini from "./header-com/CartMini.vue";

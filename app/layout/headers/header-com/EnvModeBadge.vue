@@ -13,11 +13,10 @@
  * 실제 서버↔백엔드 통신은 여전히 server/utils/beApi.ts(runtimeConfig.apiBaseUrl,
  * server-only)로만 이뤄지고, 여기서 쓰는 값들은 화면표시용 미러 — 호스트명일 뿐
  * 비밀값이 아니라 노출해도 무해하다.
- * 2026-09-14: API_URL/CDN_URL(app/conts/beConst.ts), RUN_MODE(app/conts/feConst.ts)로 값 출처 통일.
+ * 2026-09-14: RUN_MODE/API_URL/CDN_URL(app/conts/baseConst.ts)로 값 출처 통일.
  */
 import { computed } from "vue";
-import { API_URL, CDN_URL } from "~/conts/beConst";
-import { RUN_MODE } from "~/conts/feConst";
+import { RUN_MODE, API_URL, CDN_URL } from "~/conts/baseConst";
 
 const modeLabel = computed(() => {
   switch (RUN_MODE) {
