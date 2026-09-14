@@ -4,7 +4,7 @@
     <div
       v-if="chatState.open"
       class="fixed z-[8800] flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl border border-[#ffe4ec]"
-      style="right: 24px; bottom: 90px; width: min(340px, calc(100vw - 48px)); height: 480px"
+      style="right: 24px; bottom: 104px; width: min(340px, calc(100vw - 48px)); height: 480px"
     >
       <!-- 패널 헤더 -->
       <div class="border-b border-[#ffc9d6]" style="background: linear-gradient(135deg, #fff0f4 0%, #ffe4ec 60%, #ffd5e1 100%)">
@@ -133,11 +133,14 @@
       </div>
     </div>
 
-    <!-- 채팅 플로팅 버튼 -->
+    <!-- 채팅 플로팅 버튼 — 2026-09-15(요청사항: "최상위버튼과, 채팅버튼이 겹치는네
+         최하단에 바가 들어올수 있으니 약간 공백을둬줘") — BackToTop(#scroll a)과 우측 하단에서
+         겹쳐 있어 뒤로 밀어 쌓고(_common.scss #scroll a bottom:106px), 화면 맨 아래엔 결제하기
+         같은 고정 바가 올라올 여유를 두려고 bottom을 28px→40px로 올림. -->
     <button
       type="button"
       class="fixed z-[8801] w-[54px] h-[54px] rounded-full text-white text-2xl flex items-center justify-center shadow-lg transition hover:scale-110"
-      style="right: 24px; bottom: 28px; background: linear-gradient(135deg, #ff8fab, #e8587a); box-shadow: 0 4px 20px rgba(232, 88, 122, 0.45)"
+      style="right: 24px; bottom: 40px; background: linear-gradient(135deg, #ff8fab, #e8587a); box-shadow: 0 4px 20px rgba(232, 88, 122, 0.45)"
       :title="chatState.open ? '채팅 닫기' : '채팅 상담 열기'"
       @click="toggleChat"
     >
