@@ -1,42 +1,45 @@
 <template>
-  <div class="select-tree">
+  <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — select-tree-* 커스텀 클래스를
+       전부 Tailwind 유틸리티로 대체. direction/unicode-bidi처럼 유틸리티가 없는 속성은
+       [property:value] 임의값 문법 사용. -->
+  <div class="w-full text-[0.78rem]">
     <!-- Flat list: path + title (search result style) -->
-    <div v-if="viewMode === 'flat'" class="select-tree-list">
+    <div v-if="viewMode === 'flat'" class="max-h-[240px] overflow-y-auto py-0.5">
       <div
         v-for="item in flatFilteredItems"
         :key="item.id"
-        class="select-tree-row select-tree-row--flat"
+        class="flex items-center gap-1.5 px-2 py-1 cursor-pointer min-h-[24px] leading-[1.3] hover:bg-gray-200 flex-nowrap border-b border-gray-100"
         @click="onSelect(item)"
       >
-        <span class="select-tree-path">{{ item.pathLabel || item.path }}</span>
-        <span class="select-tree-title">{{ item.title }}</span>
+        <span class="flex-[0_1_55%] min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-gray-500 text-[0.72rem] [direction:rtl] [unicode-bidi:plaintext]">{{ item.pathLabel || item.path }}</span>
+        <span class="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-gray-900 font-medium">{{ item.title }}</span>
       </div>
-      <div v-if="flatFilteredItems.length === 0" class="select-tree-empty">검색 결과 없음</div>
+      <div v-if="flatFilteredItems.length === 0" class="p-3 text-center text-gray-400 text-xs">검색 결과 없음</div>
     </div>
 
     <!-- Tree: Windows Explorer style (folder 영문, file = title) -->
-    <div v-else class="select-tree-list select-tree-list--tree">
+    <div v-else class="max-h-[240px] overflow-y-auto py-0.5 overflow-x-hidden">
       <template v-for="node in treeFiltered" :key="node.id">
         <div
           v-if="node.isFolder"
-          class="select-tree-row select-tree-row--folder"
+          class="flex items-center gap-1.5 px-2 py-1 cursor-pointer min-h-[24px] leading-[1.3] hover:bg-gray-200"
           :style="{ paddingLeft: `${12 + node.depth * 14}px` }"
           @click="toggleExpand(node.id)"
         >
-          <span class="select-tree-arrow">{{ expandedList.includes(node.id) ? "▼" : "▶" }}</span>
-          <span class="select-tree-folder">{{ node.folderName }}</span>
+          <span class="shrink-0 w-3.5 text-[0.6rem] text-gray-500 text-center">{{ expandedList.includes(node.id) ? "▼" : "▶" }}</span>
+          <span class="text-gray-700 font-semibold lowercase">{{ node.folderName }}</span>
         </div>
         <div
           v-else
-          class="select-tree-row select-tree-row--file"
+          class="flex items-center gap-1.5 px-2 py-1 cursor-pointer min-h-[24px] leading-[1.3] hover:bg-gray-200"
           :style="{ paddingLeft: `${12 + node.depth * 14}px` }"
           @click="onSelectTreeFile(node)"
         >
-          <span class="select-tree-arrow select-tree-arrow--hidden">▶</span>
-          <span class="select-tree-title">{{ node.title }}</span>
+          <span class="shrink-0 w-3.5 text-[0.6rem] text-gray-500 text-center invisible">▶</span>
+          <span class="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-medium text-[#1d4ed8]">{{ node.title }}</span>
         </div>
       </template>
-      <div v-if="treeFiltered.length === 0" class="select-tree-empty">항목 없음</div>
+      <div v-if="treeFiltered.length === 0" class="p-3 text-center text-gray-400 text-xs">항목 없음</div>
     </div>
   </div>
 </template>
@@ -176,89 +179,3 @@ function onSelectTreeFile(node: TreeRow) {
 }
 </script>
 
-<style scoped>
-.select-tree {
-  width: 100%;
-  font-size: 0.78rem;
-}
-
-.select-tree-list {
-  max-height: 240px;
-  overflow-y: auto;
-  padding: 2px 0;
-}
-
-.select-tree-list--tree {
-  overflow-x: hidden;
-}
-
-.select-tree-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-  min-height: 24px;
-  line-height: 1.3;
-}
-
-.select-tree-row:hover {
-  background: #e5e7eb;
-}
-
-.select-tree-row--flat {
-  flex-wrap: nowrap;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.select-tree-path {
-  flex: 0 1 55%;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: #6b7280;
-  direction: rtl;
-  unicode-bidi: plaintext;
-  font-size: 0.72rem;
-}
-
-.select-tree-title {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: #111827;
-  font-weight: 500;
-}
-
-.select-tree-row--folder .select-tree-folder {
-  color: #374151;
-  font-weight: 600;
-  text-transform: lowercase;
-}
-
-.select-tree-row--file .select-tree-title {
-  color: #1d4ed8;
-}
-
-.select-tree-arrow {
-  flex-shrink: 0;
-  width: 14px;
-  font-size: 0.6rem;
-  color: #6b7280;
-  text-align: center;
-}
-
-.select-tree-arrow--hidden {
-  visibility: hidden;
-}
-
-.select-tree-empty {
-  padding: 12px;
-  text-align: center;
-  color: #9ca3af;
-  font-size: 0.75rem;
-}
-</style>

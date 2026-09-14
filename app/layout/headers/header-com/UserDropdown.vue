@@ -1,31 +1,33 @@
 <template>
-  <div class="user-menu-wrap" ref="wrapRef">
+  <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — 커스텀 클래스를 전부
+       Tailwind 유틸리티로 대체. var(--theme-color, #0989ff)는 사이트 테마색(theme, #bc8246)으로 통일. -->
+  <div class="relative inline-flex items-center" ref="wrapRef">
     <!-- 로그인 상태: 이름 버튼 + 드롭다운 -->
     <template v-if="authStore.isStLoggedIn">
-      <button class="user-name-btn" @click.stop="open = !open">
+      <button class="bg-transparent border-0 cursor-pointer flex items-center gap-[5px] text-[0.88rem] text-inherit font-medium p-0 whitespace-nowrap" @click.stop="open = !open">
         <i class="fas fa-user"></i>
         <span>{{ authStore.user?.userNm }}</span>
-        <i :class="`fas fa-chevron-${open ? 'up' : 'down'} caret`"></i>
+        <i :class="`fas fa-chevron-${open ? 'up' : 'down'} text-[0.65rem]`"></i>
       </button>
 
-      <div v-show="open" class="user-panel">
-        <div class="user-panel-head">
-          <p class="user-panel-name">{{ authStore.user?.userNm }}</p>
-          <p class="user-panel-email">{{ authStore.user?.userEmail }}</p>
+      <div v-show="open" class="absolute top-[calc(100%+14px)] right-0 bg-white shadow-[0_10px_35px_rgba(0,0,0,0.12)] px-6 py-5 min-w-[200px] z-[9999] border-t-2 border-theme">
+        <div class="pb-3.5 mb-3.5 border-b border-[#f0f0f0]">
+          <p class="font-bold text-[0.95rem] text-[#1a1a1a] m-0">{{ authStore.user?.userNm }}</p>
+          <p class="text-[0.78rem] text-[#999] mt-[3px] mb-0">{{ authStore.user?.userEmail }}</p>
         </div>
-        <ul class="user-panel-list">
-          <li>
-            <nuxt-link href="/account" @click="open = false"> <i class="fa fa-user"></i> 마이페이지 </nuxt-link>
+        <ul class="list-none p-0 m-0">
+          <li class="my-2">
+            <nuxt-link href="/account" class="text-[0.85rem] text-[#444] no-underline flex items-center gap-2 transition-colors hover:text-theme" @click="open = false"> <i class="fa fa-user"></i> 마이페이지 </nuxt-link>
           </li>
-          <li>
-            <a href="#" @click.prevent="handleLogout"> <i class="fa fa-sign-out"></i> 로그아웃 </a>
+          <li class="my-2">
+            <a href="#" class="text-[0.85rem] text-[#444] no-underline flex items-center gap-2 transition-colors hover:text-theme" @click.prevent="handleLogout"> <i class="fa fa-sign-out"></i> 로그아웃 </a>
           </li>
         </ul>
       </div>
     </template>
 
     <!-- 비로그인 상태: 로그인 링크 -->
-    <nuxt-link v-else href="/login" class="login-link"> <i class="fas fa-user"></i> 로그인 </nuxt-link>
+    <nuxt-link v-else href="/login" class="flex items-center gap-[5px] text-[0.88rem] whitespace-nowrap text-inherit no-underline"> <i class="fas fa-user"></i> 로그인 </nuxt-link>
   </div>
 </template>
 
@@ -54,94 +56,3 @@ function handleOutside(e: MouseEvent) {
 onMounted(() => document.addEventListener("click", handleOutside));
 onUnmounted(() => document.removeEventListener("click", handleOutside));
 </script>
-
-<style scoped>
-.user-menu-wrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.user-name-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.88rem;
-  color: inherit;
-  font-weight: 500;
-  padding: 0;
-  white-space: nowrap;
-}
-
-.user-name-btn .caret {
-  font-size: 0.65rem;
-}
-
-.login-link {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.88rem;
-  white-space: nowrap;
-  color: inherit;
-  text-decoration: none;
-}
-
-.user-panel {
-  position: absolute;
-  top: calc(100% + 14px);
-  right: 0;
-  background: #fff;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
-  padding: 22px 24px;
-  min-width: 200px;
-  z-index: 9999;
-  border-top: 2px solid var(--theme-color, #0989ff);
-}
-
-.user-panel-head {
-  padding-bottom: 14px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.user-panel-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.user-panel-email {
-  font-size: 0.78rem;
-  color: #999;
-  margin: 3px 0 0;
-}
-
-.user-panel-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.user-panel-list li {
-  margin: 8px 0;
-}
-
-.user-panel-list li a {
-  font-size: 0.85rem;
-  color: #444;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: color 0.2s;
-}
-
-.user-panel-list li a:hover {
-  color: var(--theme-color, #0989ff);
-}
-</style>

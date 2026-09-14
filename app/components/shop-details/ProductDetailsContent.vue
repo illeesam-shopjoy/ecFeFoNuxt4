@@ -36,33 +36,36 @@
     <div class="product__modal-form">
       <form action="#">
         <!-- 색상 선택 (위) -->
+        <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — color-swatch/size-chip
+             커스텀 클래스를 Tailwind로 대체. --swatch-color 커스텀 프로퍼티는 옵션별로 값이 달라
+             인라인 :style은 유지하고, 소비하는 쪽만 bg-[var(--swatch-color)]로 바꿈. -->
         <div class="product__modal-input color mb-20">
           <label>색상 선택</label>
-          <div class="color-swatches">
+          <div class="flex flex-wrap gap-2.5 mt-2.5 mb-2">
             <button
               v-for="opt in item.optionColors"
               :key="opt.optionCode ?? opt.optionId"
               type="button"
               :title="opt.optionNm"
-              class="color-swatch"
-              :class="{ selected: selectedColor === (opt.optionCode ?? String(opt.optionId)) }"
+              class="relative w-[26px] h-[26px] rounded-full border-[1.5px] border-black/10 cursor-pointer bg-[var(--swatch-color)] shadow-[0_1px_3px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-150 hover:scale-110 hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
+              :class="{ 'scale-110 shadow-[0_0_0_2px_#fff,0_0_0_4px_#555,0_2px_6px_rgba(0,0,0,0.2)]': selectedColor === (opt.optionCode ?? String(opt.optionId)) }"
               :style="{ '--swatch-color': colorMap[opt.optionCode ?? ''] ?? '#ccc' }"
               @click="selectedColor = opt.optionCode ?? String(opt.optionId)"
             ></button>
           </div>
-          <span v-if="selectedColor" class="selected-label">선택: {{ item.optionColors.find((o) => (o.optionCode ?? String(o.optionId)) === selectedColor)?.optionNm }}</span>
+          <span v-if="selectedColor" class="text-xs text-[#666] ml-0.5">선택: {{ item.optionColors.find((o) => (o.optionCode ?? String(o.optionId)) === selectedColor)?.optionNm }}</span>
         </div>
         <!-- 사이즈 선택 (아래) -->
         <div class="product__modal-input size mb-20">
           <label>사이즈 <i class="fas fa-star-of-life"></i></label>
-          <div class="size-chips">
-            <span v-if="!item.optionSizes?.length" class="size-none">사이즈 없음</span>
+          <div class="flex flex-wrap gap-2 mt-2.5">
+            <span v-if="!item.optionSizes?.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
             <button
               v-for="opt in item.optionSizes"
               :key="opt.optionCode ?? opt.optionId"
               type="button"
-              class="size-chip"
-              :class="{ selected: selectedSize === (opt.optionCode ?? String(opt.optionId)) }"
+              class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222]"
+              :class="{ '!border-[#222] !bg-[#222] !text-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]': selectedSize === (opt.optionCode ?? String(opt.optionId)) }"
               @click="selectedSize = opt.optionCode ?? String(opt.optionId)"
             >
               {{ opt.optionNm }}
@@ -133,90 +136,3 @@ const colorMap: Record<string, string> = {
 };
 </script>
 
-<style scoped>
-/* ── 색상 스와치 ── */
-.color-swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-  margin-bottom: 8px;
-}
-
-.color-swatch {
-  --swatch-color: #ccc;
-  position: relative;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(0, 0, 0, 0.12);
-  cursor: pointer;
-  background: var(--swatch-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
-}
-
-.color-swatch:hover {
-  transform: scale(1.12);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.color-swatch.selected {
-  transform: scale(1.12);
-  box-shadow:
-    0 0 0 2px #fff,
-    0 0 0 4px #555,
-    0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.selected-label {
-  font-size: 12px;
-  color: #666;
-  margin-left: 2px;
-}
-
-/* ── 사이즈 칩 ── */
-.size-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.size-chip {
-  padding: 6px 16px;
-  border-radius: 999px;
-  border: 1.5px solid #d0d0d0;
-  background: #fafafa;
-  font-size: 13px;
-  font-weight: 500;
-  color: #444;
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s,
-    color 0.15s,
-    box-shadow 0.15s;
-  letter-spacing: 0.02em;
-}
-
-.size-chip:hover {
-  border-color: #888;
-  background: #f0f0f0;
-  color: #222;
-}
-
-.size-chip.selected {
-  border-color: #222;
-  background: #222;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-}
-
-.size-none {
-  font-size: 13px;
-  color: #aaa;
-}
-</style>
