@@ -7,7 +7,7 @@ export const MODE: string = process.env.NUXT_PUBLIC_MODE ?? "default";
  */
 export const PROD_CDN: string = process.env.NUXT_PUBLIC_PROD_CDN_BASE ?? "https://22400.illeesam.synology.me/api";
 
-/** 템플릿 데모 이미지용 별칭 — PROD_CDN과 완전히 동일 값(app/conts/baseConst.ts의 동명 상수 참조). */
+/** 템플릿 데모 이미지용 별칭 — PROD_CDN과 완전히 동일 값(app/conts/beConst.ts의 동명 상수 참조). */
 export const CDN_URL: string = PROD_CDN;
 
 /**

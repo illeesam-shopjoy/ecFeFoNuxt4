@@ -105,7 +105,7 @@
 
 <script setup lang="ts">
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
-import { CDN_URL } from "~/conts/baseConst";
+import { CDN_URL } from "~/conts/beConst";
 
 interface FooterLinkSection {
   title: string;

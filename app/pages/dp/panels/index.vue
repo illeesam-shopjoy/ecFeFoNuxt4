@@ -138,7 +138,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from "vue";
-import { CDN_URL } from "~/conts/baseConst";
+import { CDN_URL } from "~/conts/beConst";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { dpAdminSvc, type DpUiRow, type DpAreaRow, type DpPanelRow } from "~/svc/fo/ec/dp/dpAdminSvc";
 import type { DpAreaWidgetItem } from "~/svc/fo/ec/dp/dpAreaSvc";

@@ -77,7 +77,7 @@
 
 <script setup lang="ts">
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
-import { CDN_URL } from "~/conts/baseConst";
+import { CDN_URL } from "~/conts/beConst";
 
 defineProps({
   box_style: { type: Boolean, default: false },

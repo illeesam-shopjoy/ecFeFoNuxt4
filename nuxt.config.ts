@@ -1,10 +1,12 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { fileURLToPath } from "node:url";
 // 2026-09-14(요청사항: "nuxt.config.ts 파일의 process.env 정보 baseConst.ts에 정의하고
-// 사용하는건 어때?") — api/cdn/mode 관련 값(전부 public, 노출 무해)의 근원을 baseConst.ts
-// 하나로 통일. 결제/소셜로그인 시크릿 등 서버 전용 민감정보는 그대로 여기서 직접 읽는다
-// (app/ 밑 파일은 클라이언트 번들에도 들어갈 수 있어 시크릿을 두기엔 부적절).
-import { CDN_URL, API_URL, RUN_MODE } from "./app/conts/baseConst";
+// 사용하는건 어때?" → 이후 "beConst.ts/feConst.ts로 분리하는건 어때?") — api/cdn(백엔드
+// origin) 값은 beConst.ts, mode(이 앱 자체 상태)는 feConst.ts로 근원을 통일. 결제/소셜로그인
+// 시크릿 등 서버 전용 민감정보는 그대로 여기서 직접 읽는다(app/ 밑 파일은 클라이언트
+// 번들에도 들어갈 수 있어 시크릿을 두기엔 부적절).
+import { CDN_URL, API_URL } from "./app/conts/beConst";
+import { RUN_MODE } from "./app/conts/feConst";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-12-12",
@@ -104,7 +106,7 @@ export default defineNuxtConfig({
       // ecBeBo가 내려주는 prodImgs[].cdnImgUrl 등은 이미 완전한 절대 URL이라 보통 그대로 쓰면 되고,
       // 상대경로만 오는 경우(예: sy_attach.url)에 한해 `${prodCdnBase}/cdn${relativePath}`로 조립한다.
       // 2026-09-14: 값 자체는 "/cdn" 없는 API origin까지만(".../api") — "/cdn"은 각 사용처가
-      // 필요할 때 직접 붙인다(app/conts/baseConst.ts의 CDN_URL과 동일 값, 그대로 재사용).
+      // 필요할 때 직접 붙인다(app/conts/beConst.ts의 CDN_URL과 동일 값, 그대로 재사용).
       prodCdnBase: CDN_URL,
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
       // 2026-09-13 추가: 헤더 로고 아래 "현재 접속 중인 환경(prod/dev/local) + api/cdn 대상"

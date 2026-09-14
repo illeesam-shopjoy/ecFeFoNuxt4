@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { CDN_URL } from "~/conts/baseConst";
+import { CDN_URL } from "~/conts/beConst";
 import { type SyMenuTreeType } from "~/types/syMenuTreeType";
 import { foMenuSvc } from "~/svc/fo/foMenuSvc";
 
