@@ -36,7 +36,10 @@
 
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
-                <button class="os-btn w-full" :disabled="loading">
+                <!-- 2026-09-14(요청사항: "로그인 버튼 흰색이라 잘 안보이는데 개선해줄수 있어?") —
+                     os-btn(테두리만 있는 투명 버튼)만 쓰고 있어 흰 배경에서 거의 안 보였다.
+                     아래 회원가입 링크와 같은 os-btn-black(검정 배경)으로 통일. -->
+                <button class="os-btn os-btn-black w-full" :disabled="loading">
                   {{ loading ? "로그인 중..." : "로그인" }}
                 </button>
 
