@@ -959,3 +959,11 @@ p {
   -o-transform: scale(1.05);
   transform: scale(1.05);
 }
+
+/* 2026-09-14(요청사항: "위시리스트 추가하면 하드색상 븐홍색계열로 변경해줘") — vue3-toastify
+   success 토스트(위시리스트 추가 시 $toast.success)의 기본 아이콘/진행바 색이 초록(#07bc0c)
+   이라 버건디/와인색 계열로 교체. 라이브러리가 CSS 커스텀 프로퍼티로 색을 노출해줘서(진행바·
+   아이콘 모두 --toastify-color-success를 var()로 참조) 이 값 하나만 덮어쓰면 둘 다 바뀐다. */
+:root {
+  --toastify-color-success: #8c1c3f;
+}
