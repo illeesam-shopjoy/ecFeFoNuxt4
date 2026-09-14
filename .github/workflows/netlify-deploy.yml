@@ -7,6 +7,13 @@ name: Deploy to Netlify
 # 배포결과 이메일 통지(선택, 2026-09-10 추가): NOTIFY_EMAIL_TO, NOTIFY_EMAIL_FROM,
 # NOTIFY_EMAIL_APP_PASSWORD(Gmail 앱 비밀번호) — 없으면 조용히 스킵됨.
 # 2026-09-10: DATABASE_URL 시크릿은 더 이상 안 씀(BFF 전환으로 Prisma 제거, server/utils/beApi.ts 참조).
+# 2026-09-15(요청사항: "토스관련키야 전체적으로 이 정보 업데이타 잘 됐는지 체크해주고 안되었으면
+# 수정해줘") — 이 워크플로가 순수 `nuxt build`만 실행해서(.env.production은 .gitignore 처리돼
+# 러너에 없음, nuxt.config.ts의 "Netlify는 .env.production 미로드" 주석 참조) Build 단계에
+# 토스 키를 넘겨주지 않고 있었다 — 즉 실제 배포된 운영 사이트는 토스 클라이언트/시크릿 키가 항상
+# 빈 문자열이라 결제 자체가 동작하지 않았던 상태. NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY/
+# TOSSPAYMENTS_SECRET_KEY 시크릿을 추가하고 Build 단계에 주입해서 바로잡음(현재 값은
+# .env.production과 동일한 토스 문서예제 테스트 키 — 실 결제 없음).
 
 on:
   push:
@@ -44,6 +51,8 @@ jobs:
         env:
           NETLIFY: "true"
           NITRO_PRESET: netlify
+          NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY: ${{ secrets.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY }}
+          TOSSPAYMENTS_SECRET_KEY: ${{ secrets.TOSSPAYMENTS_SECRET_KEY }}
 
       - name: Deploy to Netlify
         run: |
