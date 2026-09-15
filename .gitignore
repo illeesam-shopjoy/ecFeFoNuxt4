@@ -6,13 +6,10 @@ node_modules
 .output
 dist
 
-# 환경변수 파일 (민감 정보 포함 가능)
-# .env.development 는 커밋 허용 (민감 정보 없음)
-.env
-.env.local
-.env.development
-.env.production
-# scripts/deploy-sites.mjs 전용 비밀(Netlify 토큰/Gmail 앱 비밀번호) — .env.deploy.example 만 커밋
+# 환경변수 파일 — 2026-09-15 사용자 지시로 .env/.env.local/.env.development/.env.production
+# 전부 커밋 허용으로 전환(이전엔 여기서 제외했었음). 안에 실키(토스페이먼츠 시크릿 등)가
+# 들어있고 이 저장소는 Public이라는 점을 사용자에게 알리고 명시적으로 진행 확인받았음.
+# scripts/deploy-sites.mjs 전용 비밀(Netlify 토큰/Gmail 앱 비밀번호)만 계속 제외 — .env.deploy.example 만 커밋
 .env.deploy
 
 # 추가 ###########
