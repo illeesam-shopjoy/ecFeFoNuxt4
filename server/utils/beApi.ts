@@ -99,7 +99,8 @@ async function beFetch<T>(path: string, opts: BeCallOptions = {}): Promise<T> {
 }
 
 export const beApi = {
-  get: <T>(path: string, query?: Record<string, unknown>, headers?: Record<string, string>) => beFetch<T>(path, { method: "GET", query, headers }),
+  /** timeout(ms) 생략 시 기본 5초 — 응답이 평소 더 오래 걸리는 걸 아는 호출(예: 전체상품 1000건)만 넉넉히 늘려서 넘길 것 */
+  get: <T>(path: string, query?: Record<string, unknown>, headers?: Record<string, string>, timeout?: number) => beFetch<T>(path, { method: "GET", query, headers, timeout }),
   post: <T>(path: string, body?: unknown, headers?: Record<string, string>) => beFetch<T>(path, { method: "POST", body, headers }),
   put: <T>(path: string, body?: unknown, headers?: Record<string, string>) => beFetch<T>(path, { method: "PUT", body, headers }),
   delete: <T>(path: string, headers?: Record<string, string>) => beFetch<T>(path, { method: "DELETE", headers }),

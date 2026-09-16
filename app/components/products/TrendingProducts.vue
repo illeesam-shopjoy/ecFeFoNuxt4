@@ -26,12 +26,12 @@
              sm-5와 같은 성격), .row 거터 확장(-22.5px)만 Tailwind 임의값(-mx-[22.5px])으로
              인라인 전환. product__item 패딩(6px)도 px-1.5로 직접 부여. -->
         <div :class="`row ${style_3 ? 'row-cols-xl-5 -mx-[22.5px]' : ''}`">
-          <div v-for="item in trending_prd.slice(0, perView)" :key="item.prodId" class="col-lg-3 col-md-4 product__item px-1.5">
+          <div v-for="item in trending_prd" :key="item.prodId" class="col-lg-3 col-md-4 product__item px-1.5">
             <product-item :item="item" />
           </div>
         </div>
       </div>
-      <div class="row" v-if="perView < trending_prd.length">
+      <div class="row" v-if="hasMore">
         <div class="col-xl-12">
           <div class="product__load-btn text-center mt-25">
             <a @click.prevent="handleLoadMore" href="#" class="os-btn os-btn-3">더 보기</a>
@@ -47,24 +47,44 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('트렌드 상품');
-import { ref, computed } from "vue";
-import { useProductsStore } from "~/store/useProductsStore";
+import { ref } from "vue";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
+import { type PdProductType } from "~/types/pdProductType";
 import ProductItem from "./ProductItem.vue";
 
 const props = defineProps({
   style_2: { type: Boolean, default: false },
   style_3: { type: Boolean, default: false },
 });
-const store = useProductsStore();
-// 2026-09-13 버그수정: trending=true 상품이 없으면 항상 비어 보이던 문제 — 없으면 전체로 대체.
-const trending_prd = computed(() => {
-  const trending = store.products.filter((p) => p.trending);
-  return trending.length ? trending : store.products;
-});
-const perView = ref(props.style_3 ? 12 : 8);
-// 2026-09-14(요청사항: "더보기 버튼 클릭하면 8개씩 더 나오게 해줘")
-function handleLoadMore() {
-  perView.value += 8;
+
+// 2026-09-17 버그수정: 예전엔 useProductsStore(전체 상품 최대 1000건 캐시)에서
+// trending=true(항상 false — 실 스키마에 대응 컬럼 없음, mapProduct.ts 참조) 필터 후
+// 없으면 전체로 대체하는 방식이었다. 결과적으로 "화면엔 8~12개만 보여주려고 매번 전체
+// 카탈로그를 통째로 받아오는" 구조였는데, 상품이 631건까지 늘면서 그 전체조회 자체가
+// 15초 가까이 걸려 타임아웃(502)이 나 이 섹션이 통째로 비어 보이는 원인이 됐다
+// ([[ecfefonuxt4-bff-migration-plan]] beApi 5초 타임아웃 참조). trending 플래그 자체가
+// 실질적 의미가 없었으므로(항상 fallback), 처음부터 필요한 개수만 서버 페이징으로 받는다.
+const initialSize = props.style_3 ? 12 : 8;
+const pageNo = ref(1);
+const hasMore = ref(false);
+const loadingMore = ref(false);
+
+const { data: firstPage } = await useAsyncData(`dp-trending-products-${initialSize}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: initialSize }));
+const trending_prd = ref<PdProductType[]>(firstPage.value?.items ?? []);
+hasMore.value = firstPage.value?.hasMore ?? false;
+
+// 2026-09-14(요청사항: "더보기 버튼 클릭하면 8개씩 더 나오게 해줘") — 이제 서버에서 다음 페이지를 실제로 더 받아온다.
+async function handleLoadMore() {
+  if (loadingMore.value || !hasMore.value) return;
+  loadingMore.value = true;
+  try {
+    pageNo.value += 1;
+    const res = await pdProductSvc.getPaged({ pageNo: pageNo.value, pageSize: 8 });
+    trending_prd.value.push(...res.items);
+    hasMore.value = res.hasMore;
+  } finally {
+    loadingMore.value = false;
+  }
 }
 </script>
 
