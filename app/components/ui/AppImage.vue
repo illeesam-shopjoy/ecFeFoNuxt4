@@ -2,16 +2,21 @@
   <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — app-image-* 커스텀 클래스를
        Tailwind로 대체(.app-image-wrap > img 자식결합자는 <img>에 기본 클래스를 직접 부여하는
        방식으로 대체). shimmer 애니메이션은 tailwind.config.ts의 animate-shimmer 재사용. -->
-  <div :class="['relative block overflow-hidden', wrapClass]" :style="[wrapStyle, containerAspectStyle]">
+  <div ref="wrapRef" :class="['relative block overflow-hidden', wrapClass]" :style="[wrapStyle, containerAspectStyle]">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
-    <!-- 스켈레톤 (로딩 중) -->
+    <!-- 스켈레톤 (로딩 중 — deferUntilVisible로 아직 뷰포트 근처에 안 왔을 때도 이 상태) -->
     <div v-if="loading" class="absolute inset-0 rounded animate-shimmer bg-gradient-to-r from-[#f0f0f0] via-[#e0e0e0] to-[#f0f0f0] bg-[length:200%_100%]" :style="skeletonStyle" />
 
     <!-- 실제 이미지 -->
     <!-- 2026-09-13: <img>가 width:100%(.w-img)만 상속하고 height/object-fit이 없어서 래퍼 박스를
          못 채우던 문제 — 기본으로 박스를 꽉 채우게 한다. 호출측이 imgStyle로 직접 objectFit 등을
          지정하면 인라인 스타일이라 이 기본 클래스보다 항상 우선한다(안전). -->
+    <!-- 2026-09-17(요청사항: "화면에 보이는 이미지부터 로드되면 좋겠는데") — deferUntilVisible이면
+         <img> 자체를 뷰포트 근처에 오기 전까지 DOM에 만들지 않는다(v-if). src를 미리 넣고
+         native loading="lazy"에만 맡기면, 마소너리처럼 JS가 레이아웃을 재배치하는 화면에서
+         초기 배치 시점에 "뷰포트 안"으로 잘못 판정돼 전부 한꺼번에 요청되는 경우가 있었다. -->
     <img
+      v-if="visible"
       ref="imgRef"
       v-show="!loading"
       :src="currentSrc"
@@ -58,12 +63,20 @@ interface Props {
    * 내부 로딩상태(스켈레톤용) ref가 이미 `loading`이라는 이름을 쓰고 있어(아래 script) 이름
    * 충돌을 피하려고 브라우저 속성명과 다르게 imgLoading으로 둔다. */
   imgLoading?: "lazy" | "eager";
+  /** 2026-09-17(요청사항: "화면에 보이는 이미지부터 로드되면 좋겠는데") — true면 이 컴포넌트의
+   * <img> 자체를 래퍼가 뷰포트 근처(rootMargin)에 들어오기 전까지 DOM에 만들지 않는다(자체
+   * IntersectionObserver). 마소너리처럼 JS가 아이템을 재배치하는 목록에서 native
+   * loading="lazy"만으론 초기 배치 시점에 다 "뷰포트 안"으로 오판돼 한꺼번에 요청되는
+   * 문제를 막는다. 기본 false — 기존 30여 곳 사용처는 전혀 영향 없음, 이런 문제가 있는
+   * 화면(마소너리/무한스크롤 그리드)에서만 명시적으로 켤 것. */
+  deferUntilVisible?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   alt: "이미지",
   wrapClass: "",
   imgLoading: "lazy",
+  deferUntilVisible: false,
 });
 
 // 2026-09-13(요청사항: "상품항목별 이미지란도 약간 크게 해줘") — skeletonStyle의 aspectRatio는
@@ -81,8 +94,38 @@ const containerAspectStyle = computed(() => {
 });
 
 const imgRef = ref<HTMLImageElement | null>(null);
+const wrapRef = ref<HTMLElement | null>(null);
 const loading = ref(true);
 const currentSrc = ref(props.src || NO_IMAGE_SVG);
+
+// 2026-09-17: deferUntilVisible=false(기본, 기존 30여 곳 전부)면 항상 true — 지금까지와 100%
+// 동일하게 즉시 <img>를 만든다. deferUntilVisible=true인 화면(마소너리 등)만 래퍼가
+// 뷰포트 근처에 들어올 때까지 false로 시작해 <img> 자체를 DOM에 안 만든다.
+const visible = ref(!props.deferUntilVisible || props.imgLoading === "eager");
+let visibilityObserver: IntersectionObserver | null = null;
+
+function stopObservingVisibility() {
+  visibilityObserver?.disconnect();
+  visibilityObserver = null;
+}
+
+function startObservingVisibility() {
+  if (visible.value || typeof IntersectionObserver === "undefined" || !wrapRef.value) {
+    // 관찰자 API가 없는 구형 환경 등에선 안전하게 바로 보여준다(미표시보다 즉시 로드가 낫다).
+    visible.value = true;
+    return;
+  }
+  visibilityObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting) {
+        visible.value = true;
+        stopObservingVisibility();
+      }
+    },
+    { rootMargin: "600px 0px" } // 실제로 보이기 전에 미리 당겨받기 시작(끊김 없는 스크롤)
+  );
+  visibilityObserver.observe(wrapRef.value);
+}
 
 // 2026-09-15(요청사항: "블로그 글등 계속 진행중으로 표시되는경우가 있는데 어느정도
 // 시간지나면 default 정보로 표시해줘") — CDN 이미지가 응답이 없거나(네트워크 문제 등)
@@ -109,13 +152,23 @@ watch(
   (newSrc) => {
     loading.value = true;
     currentSrc.value = newSrc || NO_IMAGE_SVG;
-    armLoadTimeout();
+    if (visible.value) armLoadTimeout(); // 아직 안 보이는 상태면 실제로 보일 때(watch(visible) 참조)만 재개
   }
 );
+
+// deferUntilVisible로 아직 <img>를 안 만든 상태였다가 뷰포트 근처에 들어와 실제로 만들어지는
+// 시점 — 이제부터 로드가 시작되므로 여기서 타임아웃을 건다(mounted onMounted는 이미 지나간 뒤라서).
+watch(visible, (v) => {
+  if (v) armLoadTimeout();
+});
 
 // SSR 하이드레이션 후 이미 로드된 이미지 처리
 // (서버에서 렌더링된 img가 Vue 이벤트 리스너 등록 전에 로드 완료된 경우)
 onMounted(() => {
+  if (!visible.value) {
+    startObservingVisibility();
+    return;
+  }
   armLoadTimeout();
   const img = imgRef.value;
   if (!img || !img.complete) return;
@@ -126,7 +179,10 @@ onMounted(() => {
   }
 });
 
-onUnmounted(clearLoadTimeout);
+onUnmounted(() => {
+  clearLoadTimeout();
+  stopObservingVisibility();
+});
 
 function onLoad() {
   loading.value = false;
