@@ -12,8 +12,25 @@
  */
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 
+/** 주문품목 — 2026-09 od_order_item 생성 배관 신설과 함께 추가 (prodSkuId는 FE에 SKU 개념이
+ *  아직 없어 무옵션 상품 한정으로 undefined 전달 → 백엔드가 재고차감을 건너뜀, 후속 과제) */
+export interface FoOrderCreateItem {
+  prodId: string;
+  prodSkuId?: string;
+  prodNm?: string;
+  unitPrice?: number;
+  orderQty: number;
+  rsPoolId?: string; // 타임딜(이벤트/기획전) 구매 시 세팅
+}
+
+export interface FoOrderCreateBody {
+  payAmt: number;
+  totalAmt: number;
+  items: FoOrderCreateItem[];
+}
+
 export const foOrderSvc = {
-  /** POST /api/fo/ec/order/create — ecBeBo에 주문 기록 생성 (로그인 필요) */
-  createOrder: (body: { payAmt: number; totalAmt: number }) =>
+  /** POST /api/fo/ec/order/create — ecBeBo에 주문+품목 생성 (로그인 필요) */
+  createOrder: (body: FoOrderCreateBody) =>
     $fetch("/api/fo/ec/order/create", { method: "POST", body, headers: useAuthHeaders() }),
 };

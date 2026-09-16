@@ -28,6 +28,9 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { usePrice } from "~/composables/usePrice";
 import { paymentSvc } from "~/svc/payments/paymentSvc";
 import { foOrderSvc } from "~/svc/fo/ec/order/foOrderSvc";
+import { useCartStore } from "~/store/useCartStore";
+
+const cartStore = useCartStore();
 
 const route = useRoute();
 const { formatPrice } = usePrice();
@@ -54,10 +57,22 @@ onMounted(async () => {
     await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value });
     status.value = "success";
 
-    // ecBeBo에 주문 기록 생성 — 결제(Toss)는 이미 끝났으므로 이 호출이 실패해도(예: 세션 만료)
+    // ecBeBo에 주문+품목 기록 생성 — 결제(Toss)는 이미 끝났으므로 이 호출이 실패해도(예: 세션 만료)
     // 결제완료 화면은 그대로 보여준다. 자세한 제약은 server/api/fo/ec/order/create.post.ts 주석 참조.
+    // prodSkuId는 FE에 아직 SKU 개념이 없어(무옵션 상품 전제) 넘기지 않는다 — 옵션상품 재고
+    // 차감은 후속 과제([[ecfefonuxt4-bff-migration-plan]] 유사 성격의 별도 작업 필요).
     try {
-      await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: amount.value });
+      const items = cartStore.cartProducts.map((p) => ({
+        prodId: p.prodId,
+        prodNm: p.prodNm,
+        unitPrice: p.salePrice,
+        orderQty: p.orderQuantity ?? 1,
+      }));
+      if (items.length) {
+        await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: amount.value, items });
+        cartStore.cartProducts = [];
+        if (process.client) localStorage.setItem("cart_products", JSON.stringify([]));
+      }
     } catch (e) {
       console.warn("[checkout/success] 주문 기록 생성 실패(결제는 정상 완료됨):", e);
     }

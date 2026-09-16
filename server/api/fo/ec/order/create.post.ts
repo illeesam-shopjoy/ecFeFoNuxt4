@@ -9,19 +9,37 @@ import { logger } from "~~/server/utils/logger";
  *     다만 결제(Toss) 자체는 이 호출과 무관하게 이미 성공했으므로, 세션 만료 등으로 이
  *     호출이 실패해도 "결제 완료" 화면 자체를 막지 않도록 호출부(checkout/success.vue)에서
  *     실패를 흡수하게 했다.
- *  2) ecBeBo FoOdOrderService.placeOrder()는 od_order "헤더" 한 줄만 저장하고 주문
- *     품목(od_order_item)은 별도 처리하지 않는다(2026-09 실제 서비스 코드 확인) — 즉
- *     지금 이 엔드포인트만으로는 "주문했다"는 기록만 남고 무엇을 주문했는지는 안 남는다.
- *     품목까지 정식으로 남기려면 od_order_item 쪽 API가 먼저 필요 — 이번 전환 범위 밖.
+ *  2) 2026-09: ecBeBo FoOdOrderService.placeOrder()가 od_order_item 생성 + SKU 재고
+ *     원자적 차감을 지원하도록 확장됨 — items를 그대로 전달한다. 다만 FE 상품 타입에
+ *     아직 prodSkuId 개념이 없어(무옵션 상품 전제) items[].prodSkuId 는 대부분 undefined로
+ *     넘어가고, 이 경우 백엔드는 재고차감을 건너뛴다(옵션상품 SKU 연동은 후속 과제).
  */
+interface FoOrderCreateItemBody {
+  prodId?: string;
+  prodSkuId?: string;
+  prodNm?: string;
+  unitPrice?: number;
+  orderQty?: number;
+  rsPoolId?: string;
+}
+
 export default defineEventHandler(async (event) => {
   const method = event.method;
   const url = getRequestURL(event)?.href ?? "";
   logger.info("[api] ▶", method, url);
 
-  const body = await readBody<{ totalAmt?: number; payAmt?: number; ordererEmail?: string; accessChannelCd?: string }>(event).catch(() => ({}) as Record<string, never>);
+  const body = await readBody<{
+    totalAmt?: number;
+    payAmt?: number;
+    ordererEmail?: string;
+    accessChannelCd?: string;
+    items?: FoOrderCreateItemBody[];
+  }>(event).catch(() => ({}) as Record<string, never>);
   if (!body?.payAmt || body.payAmt < 1) {
     throw createError({ statusCode: 400, statusMessage: "결제 금액이 필요합니다." });
+  }
+  if (!body.items?.length) {
+    throw createError({ statusCode: 400, statusMessage: "주문 품목이 필요합니다." });
   }
 
   // memberId/orderId/orderStatusCd 등은 ecBeBo가 인증 컨텍스트로 직접 채운다 — 여기선 안 보냄.
@@ -32,6 +50,7 @@ export default defineEventHandler(async (event) => {
       payAmt: body.payAmt,
       ordererEmail: body.ordererEmail,
       accessChannelCd: body.accessChannelCd ?? "WEB_PC",
+      items: body.items,
     },
     authHeaderFrom(event),
   );

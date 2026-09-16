@@ -74,7 +74,16 @@
               <div class="row">
                 <div class="col-lg-6">
                   <div class="checkbox-form">
-                    <h3>결제 정보</h3>
+                    <h3 class="flex items-center justify-between">
+                      <span>결제 정보</span>
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold whitespace-nowrap"
+                        @click="handleAutoFillBilling"
+                      >
+                        ⚡ 자동입력
+                      </button>
+                    </h3>
                     <!-- 청구 정보 시작 -->
                     <div class="row">
                       <div class="col-md-12">
@@ -395,6 +404,19 @@ const billingForm = reactive({
   email: "",
   phone: "",
 });
+// [자동입력] 버튼 — 이름/성/회사명/이메일/연락처처럼 검색 없이 바로 채울 수 있는 간단한
+// 항목만 대상. 주소는 이미 "주소 검색" 모달 + 로그인 시 기본배송지 자동채움이 있어 제외.
+// 로그인 상태면 회원 프로필 값으로, 비로그인/미보유 값은 테스트용 기본값으로 채운다.
+function handleAutoFillBilling() {
+  const authStore = useAuthStore();
+  const user = authStore.user;
+  billingForm.name = user?.userNm || "홍길동";
+  billingForm.lastName = billingForm.lastName || "-";
+  billingForm.company = billingForm.company || "-";
+  billingForm.email = user?.userEmail || "illeesam@gmail.com";
+  billingForm.phone = user?.userPhone || "01038050206";
+}
+
 const addrSearchModalRef = ref<InstanceType<typeof AddrSearchModal> | null>(null);
 function handleAddrSelected(result: AddrSearchResult) {
   billingForm.zipCode = result.zonecode;
