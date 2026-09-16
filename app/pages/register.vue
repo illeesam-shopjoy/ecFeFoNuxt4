@@ -34,6 +34,34 @@
                      "검정색 로그인 버튼으로 변경했네 좀 안이쁘다" → "이 색도 안이뻐 밝은 연두,
                      밝은회색 쪽이 나을거 같아" → 밝은 연두 선택) — os-btn-green 적용. -->
                 <button type="submit" class="os-btn os-btn-green w-full" :disabled="loading">{{ loading ? "가입 중..." : "회원가입" }}</button>
+
+                <!-- 소셜 회원가입 — 소셜 로그인과 동일 엔드포인트(최초 로그인 시 자동 가입) -->
+                <div class="social-login mt-20">
+                  <div class="flex flex-wrap gap-2 justify-center">
+                    <a
+                      href="/api/auth/google"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#5a9cf8] to-[#4285F4] hover:from-[#4285F4] hover:to-[#3367d6] text-white text-sm font-medium shadow-sm hover:shadow-md transition"
+                    >
+                      <span class="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[#4285F4] text-xs font-bold">G</span>
+                      구글로 시작하기
+                    </a>
+                    <a
+                      href="/api/auth/naver"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#2ed769] to-[#03C75A] hover:from-[#03C75A] hover:to-[#02b350] text-white text-sm font-medium shadow-sm hover:shadow-md transition"
+                    >
+                      <span class="w-5 h-5 rounded flex items-center justify-center text-[#03C75A] bg-white text-[10px] font-bold">N</span>
+                      네이버로 시작하기
+                    </a>
+                    <a
+                      href="/api/auth/kakao"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#FFEB6E] to-[#FEE500] hover:from-[#FEE500] hover:to-[#f5d900] text-[#191919] text-sm font-medium shadow-sm hover:shadow-md transition"
+                    >
+                      <span class="w-5 h-5 rounded flex items-center justify-center text-[12px] font-bold">K</span>
+                      카카오로 시작하기
+                    </a>
+                  </div>
+                </div>
+
                 <div class="or-divide"><span>또는</span></div>
                 <nuxt-link href="/login" class="os-btn os-btn-black w-full">로그인</nuxt-link>
               </Form>
