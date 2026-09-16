@@ -22,6 +22,7 @@
                         alt="blog"
                         wrap-class="w-img"
                         :skeleton-style="{ width: '100%', aspectRatio: '16/10' }"
+                        defer-until-visible
                       />
                     </nuxt-link>
                   </div>
