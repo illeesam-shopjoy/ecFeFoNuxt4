@@ -91,7 +91,7 @@
           </div>
           <div class="pro-cart-btn shrink-0 max-sm:w-full">
             <a
-              @click.prevent="state.addStCartProduct(item)"
+              @click.prevent="handleAddToCart"
               href="#"
               class="os-btn os-btn-black os-btn-3 max-sm:flex max-sm:justify-center max-sm:w-full"
               >+ 장바구니 추가</a
@@ -112,7 +112,7 @@ import { ref } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
 import { useCartStore } from "~/store/useCartStore";
 
-defineProps<{
+const props = defineProps<{
   item: PdProductType;
   style_2?: boolean;
 }>();
@@ -121,6 +121,42 @@ const { formatPrice } = usePrice();
 
 const selectedColor = ref("");
 const selectedSize = ref("");
+
+// 2026-09 추가 — 선택한 옵션조합(색상/사이즈)에 해당하는 SKU를 찾아 장바구니에 담는다.
+// optionColors/optionSizes 의 optionLevel(1|2)로 prodOpt1Id/prodOpt2Id 중 어느 자리와
+// 비교해야 하는지 판별한다(상품마다 어느 레벨이 색상/사이즈인지 다를 수 있음).
+function findMatchedSku() {
+  const skus = props.item.prodSkus ?? [];
+  if (!skus.length) return undefined;
+
+  const selectedColorOpt = props.item.optionColors?.find((o) => (o.optionCode ?? String(o.optionId)) === selectedColor.value);
+  const selectedSizeOpt = props.item.optionSizes?.find((o) => (o.optionCode ?? String(o.optionId)) === selectedSize.value);
+
+  const matchesLevel = (skuOpt1?: string | null, skuOpt2?: string | null, opt?: typeof selectedColorOpt) => {
+    if (!opt) return true; // 이 슬롯에 해당하는 옵션 선택이 없으면(옵션 자체가 없는 상품) 통과
+    const skuOptId = opt.optionLevel === 2 ? skuOpt2 : skuOpt1;
+    return skuOptId === opt.optionId;
+  };
+
+  return skus.find((s) => matchesLevel(s.prodOpt1Id, s.prodOpt2Id, selectedColorOpt) && matchesLevel(s.prodOpt1Id, s.prodOpt2Id, selectedSizeOpt));
+}
+
+function handleAddToCart() {
+  if (props.item.optionSizes?.length && !selectedSize.value) {
+    useNuxtApp().$toast.error("사이즈를 선택해주세요.");
+    return;
+  }
+  const matchedSku = findMatchedSku();
+  if (props.item.prodSkus?.length && !matchedSku) {
+    useNuxtApp().$toast.error("선택한 옵션 조합의 재고 정보를 찾을 수 없습니다.");
+    return;
+  }
+  if (matchedSku?.stockQty != null && matchedSku.stockQty <= 0) {
+    useNuxtApp().$toast.error("선택한 옵션은 품절되었습니다.");
+    return;
+  }
+  state.addStCartProduct(props.item, matchedSku?.prodSkuId);
+}
 
 const colorMap: Record<string, string> = {
   color01: "#E74C3C", // 빨강

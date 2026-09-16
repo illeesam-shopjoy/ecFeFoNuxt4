@@ -59,11 +59,12 @@ onMounted(async () => {
 
     // ecBeBo에 주문+품목 기록 생성 — 결제(Toss)는 이미 끝났으므로 이 호출이 실패해도(예: 세션 만료)
     // 결제완료 화면은 그대로 보여준다. 자세한 제약은 server/api/fo/ec/order/create.post.ts 주석 참조.
-    // prodSkuId는 FE에 아직 SKU 개념이 없어(무옵션 상품 전제) 넘기지 않는다 — 옵션상품 재고
-    // 차감은 후속 과제([[ecfefonuxt4-bff-migration-plan]] 유사 성격의 별도 작업 필요).
+    // 2026-09: 옵션상품(SKU) 지원 — 장바구니에서 선택된 selectedProdSkuId를 그대로 실어 보내
+    // 백엔드가 옵션상품도 재고차감하도록 함. 무옵션 상품은 undefined로 넘어가 기존과 동일.
     try {
       const items = cartStore.cartProducts.map((p) => ({
         prodId: p.prodId,
+        prodSkuId: p.selectedProdSkuId,
         prodNm: p.prodNm,
         unitPrice: p.salePrice,
         orderQty: p.orderQuantity ?? 1,

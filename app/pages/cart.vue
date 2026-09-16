@@ -43,7 +43,7 @@
                           <div class="cart-plus-minus">
                             <input type="text" v-model="item.orderQuantity" />
                             <div @click="state.setStQuantityDecrement(item)" class="dec qtybutton">-</div>
-                            <div @click="state.addStCartProduct(item)" class="inc qtybutton">+</div>
+                            <div @click="state.addStCartProduct(item, item.selectedProdSkuId)" class="inc qtybutton">+</div>
                           </div>
                         </td>
                         <td class="product-subtotal">

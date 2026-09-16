@@ -14,19 +14,21 @@ export const useCartStore = defineStore("cart", {
     total: 0 as number, // 총 금액
   }),
   actions: {
-    addStCartProduct(payload: PdProductType) {
-      // 상품을 장바구니에 추가 (이미 있으면 수량만 증가)
-      const isExist = this.cartProducts.some((i) => i.prodId === payload.prodId);
+    // 2026-09 추가 — 옵션상품(SKU) 지원: prodSkuId 가 다르면 같은 상품이라도 별도 줄로 담는다
+    // (예: 같은 티셔츠의 빨강/파랑을 각각 다른 재고로 관리해야 하므로 수량을 합치면 안 됨).
+    addStCartProduct(payload: PdProductType, prodSkuId?: string) {
+      const isExist = this.cartProducts.some((i) => i.prodId === payload.prodId && i.selectedProdSkuId === prodSkuId);
       if (!isExist) {
         const newItem: OrCartItemType = {
           ...payload,
           orderQuantity: 1,
+          selectedProdSkuId: prodSkuId,
         };
         this.cartProducts.push(newItem);
         useNuxtApp().$toast.success(`${payload.prodNm} 장바구니에 추가됨`);
       } else {
         this.cartProducts.map((item) => {
-          if (item.prodId === payload.prodId) {
+          if (item.prodId === payload.prodId && item.selectedProdSkuId === prodSkuId) {
             if (typeof item.orderQuantity !== "undefined") {
               if (item.prodStock >= item.orderQuantity + this.orderQuantity) {
                 item.orderQuantity = this.orderQuantity !== 1 ? this.orderQuantity + item.orderQuantity : item.orderQuantity + 1;
@@ -42,10 +44,11 @@ export const useCartStore = defineStore("cart", {
       }
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
     },
-    setStQuantityDecrement(payload: PdProductType) {
-      // 해당 상품 수량 1 감소 (1 미만으로 내려가지 않음)
+    setStQuantityDecrement(payload: OrCartItemType) {
+      // 해당 상품 수량 1 감소 (1 미만으로 내려가지 않음). selectedProdSkuId까지 일치해야
+      // 같은 상품의 다른 옵션(SKU) 줄을 잘못 건드리지 않는다.
       this.cartProducts.map((item) => {
-        if (item.prodId === payload.prodId) {
+        if (item.prodId === payload.prodId && item.selectedProdSkuId === payload.selectedProdSkuId) {
           if (typeof item.orderQuantity !== "undefined") {
             if (item.orderQuantity > 1) {
               item.orderQuantity = item.orderQuantity - 1;
@@ -57,8 +60,8 @@ export const useCartStore = defineStore("cart", {
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
     },
     // remover_cart_products
-    removerStCartProducts(payload: PdProductType) {
-      this.cartProducts = this.cartProducts.filter((p) => p.prodId !== payload.prodId);
+    removerStCartProducts(payload: OrCartItemType) {
+      this.cartProducts = this.cartProducts.filter((p) => !(p.prodId === payload.prodId && p.selectedProdSkuId === payload.selectedProdSkuId));
       useNuxtApp().$toast.error(`${payload.prodNm} 장바구니에서 제거됨`);
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
     },

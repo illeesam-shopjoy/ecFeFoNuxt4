@@ -3,6 +3,18 @@ import type { CoCategoryType } from "~/types/coCategoryType";
 import type { CoBrandType } from "~/types/coBrandType";
 import type { PdReviewType } from "~/types/pdReviewType";
 
+/** 옵션조합 SKU (2026-09 추가) — 장바구니/주문 시 재고차감 대상을 정확히 지정하기 위해
+ * 상품상세 응답의 prodSkus[]를 그대로 통과시킨다. optionColors/optionSizes 의 optionLevel과
+ * prodOpt1Id/prodOpt2Id를 매칭해 사용자가 고른 옵션 조합에 해당하는 SKU를 찾는다. */
+export interface PdSkuType {
+  prodSkuId: string;
+  prodOpt1Id?: string | null;
+  prodOpt2Id?: string | null;
+  skuCode?: string | null;
+  addPrice?: number | null;
+  stockQty?: number | null;
+}
+
 /**
  * 상품 타입. 2026-09 BFF 전환 — 필드명을 ecBeBo(JPA) PdProdDto.Item 기준으로 정렬함
  * (이전엔 Prisma 가상 스키마 기준 title/price/quantity 등 자체 명명이었음).
@@ -34,6 +46,7 @@ export interface PdProductType {
   smDesc: string; // 짧은 설명 — ecBeBo엔 없어 advrtStmt/contentHtml에서 BFF가 요약 생성
   optionSizes?: PdOptionType[]; // 사이즈 옵션 목록 (ecBeBo prodOpts 중 SIZE 계열)
   optionColors: PdOptionType[]; // 컬러 옵션 목록 (ecBeBo prodOpts 중 COLOR·기타 계열)
+  prodSkus?: PdSkuType[]; // 옵션조합 SKU 목록 (ecBeBo prodSkus, 2026-09 추가 — 재고차감 대상 식별용)
   weight?: number; // 무게 (ecBeBo weight)
   dimension?: string; // 치수 — ecBeBo에 대응 컬럼 없음
   reviews?: PdReviewType[]; // 리뷰 목록 (상세 조회 시 BFF가 별도 tier2 호출로 병합)

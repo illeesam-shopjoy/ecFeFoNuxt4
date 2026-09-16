@@ -39,6 +39,7 @@ export interface BeProdSkuItem {
   prodOpt2Id?: string | null;
   skuCode?: string | null; // 2026-09-14: ecBeBo PdProdSkuDto.prodSkuCode → skuCode 리네이밍에 맞춤
   addPrice?: number | null;
+  stockQty?: number | null;
   useYn?: string | null;
 }
 
@@ -177,6 +178,16 @@ export function mapProduct(p: BeProdItem): Record<string, unknown> {
     contentHtml: p.contentHtml ?? "",
     optionSizes,
     optionColors,
+    prodSkus: (p.prodSkus ?? [])
+      .filter((s) => s.useYn !== "N")
+      .map((s) => ({
+        prodSkuId: s.prodSkuId,
+        prodOpt1Id: s.prodOpt1Id,
+        prodOpt2Id: s.prodOpt2Id,
+        skuCode: s.skuCode,
+        addPrice: s.addPrice,
+        stockQty: s.stockQty,
+      })),
     reviews: [] as PdReviewType[],
     // 아래 3개(trending/banner/topRated)는 실 스키마에 대응 컬럼이 없음 — 큐레이션 기능 재도입 시 별도 정책 필요, 지금은 항상 false
     trending: false,
