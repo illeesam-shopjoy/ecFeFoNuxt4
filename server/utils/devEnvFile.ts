@@ -25,7 +25,7 @@ export async function readEnvMap(): Promise<Record<string, string>> {
   const map: Record<string, string> = {};
   for (const line of content.split("\n")) {
     const m = line.match(/^([A-Z0-9_]+)\s*=\s*(.*)$/);
-    if (m) map[m[1]] = m[2].trim();
+    if (m?.[1] !== undefined) map[m[1]] = (m[2] ?? "").trim();
   }
   return map;
 }
@@ -60,7 +60,7 @@ export async function upsertEnvValue(key: string, value: string): Promise<void> 
   } else if (commentedIdx !== -1) {
     lines[commentedIdx] = `${key}=${value}`;
   } else {
-    if (lines.length && lines[lines.length - 1].trim() !== "") lines.push("");
+    if (lines.length && (lines[lines.length - 1] ?? "").trim() !== "") lines.push("");
     lines.push(`${key}=${value}`);
   }
 

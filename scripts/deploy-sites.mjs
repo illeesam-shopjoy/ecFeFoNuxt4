@@ -189,9 +189,30 @@ async function waitGithubActionsRun(target, sha) {
 
   log(`[${label}] run #${run_.databaseId} 발견 → 완료까지 대기: ${run_.url}`);
   const watchRes = await run('gh', ['run', 'watch', String(run_.databaseId), '--repo', ghRepo, '--exit-status']);
-  const ok = watchRes.ok;
-  log(`[${label}] GitHub Actions 결과: ${ok ? '✅ 성공' : '❌ 실패'}`);
-  return { ok, detail: watchRes.stdout || watchRes.stderr, url: run_.url };
+
+  // 2026-09-19: `gh run watch`의 종료코드만 믿으면, 빌드는 성공했는데 GitHub API 연결이 잠깐 끊겼을 때
+  // ("wsarecv: An existing connection was forcibly closed") "❌ 실패"로 오탐한다(실제로 발생 — run은 success).
+  // 그래서 watch가 실패했으면 그 결과를 그대로 쓰지 않고, run의 실제 상태(status/conclusion)를 재조회해서
+  // 판정한다. 아직 진행 중이면 최대 10분까지 재조회하고, 끝내 확인 못 하면 실패가 아니라 불확실(ok:null).
+  let ok = watchRes.ok;
+  let detail = watchRes.stdout || watchRes.stderr;
+  if (!ok) {
+    log(`[${label}] gh run watch 비정상 종료 — run 상태 재조회로 실제 결과 확인 (${(watchRes.stderr || '').split('\n')[0]})`);
+    ok = null;
+    for (let i = 0; i < 60 && ok === null; i++) {
+      const viewRes = await run('gh', ['run', 'view', String(run_.databaseId), '--repo', ghRepo, '--json', 'status,conclusion']);
+      if (viewRes.ok) {
+        try {
+          const v = JSON.parse(viewRes.stdout || '{}');
+          if (v.status === 'completed') { ok = v.conclusion === 'success'; detail = `conclusion=${v.conclusion}`; }
+        } catch (_) { /* 파싱 실패 시 재시도 */ }
+      }
+      if (ok === null) await sleep(10000);
+    }
+    if (ok === null) detail = 'run 상태를 확인하지 못함(네트워크 오류 지속) — Actions 탭에서 직접 확인 필요';
+  }
+  log(`[${label}] GitHub Actions 결과: ${ok === null ? '❔ 확인 불가' : ok ? '✅ 성공' : '❌ 실패'}`);
+  return { ok, detail, url: run_.url };
 }
 
 /* ── 2-B단계: Netlify 네이티브 auto-build 대상 — Netlify API로 해당 커밋 deploy를 폴링 ── */

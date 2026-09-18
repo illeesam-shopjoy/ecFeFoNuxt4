@@ -275,7 +275,7 @@ import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
 import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
-import { Field, Form, ErrorMessage } from "vee-validate";
+import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
 import * as yup from "yup";
 
 const route = useRoute();
@@ -515,7 +515,8 @@ const reviewSchema = yup.object({
 });
 const reviewFormLoading = ref(false);
 
-async function handleReviewSubmit(values: { comments: string }, { resetForm }: { resetForm: () => void }) {
+async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { resetForm: () => void }) {
+  const values = rawValues as { comments: string }; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
   const contentTrim = values.comments.trim();
   if (!replyingToReviewId.value && (reviewRating.value < 0.5 || !item.value?.prodId)) {
     $toast?.error?.("별점을 선택해 주세요.");

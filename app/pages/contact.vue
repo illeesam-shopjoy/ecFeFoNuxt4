@@ -93,7 +93,7 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import Social from "~/components/social/Social.vue";
 import type { CoContactInfoItemType } from "~/types/coContactInfoItemType";
-import { Field, Form, ErrorMessage } from "vee-validate";
+import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
 import * as yup from "yup";
 import type { CoInquiryType } from "~/types/coInquiryType";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
@@ -139,7 +139,8 @@ const schema = yup.object({
   msg: yup.string().required("메시지를 입력해 주세요").min(20, "메시지는 20자 이상이어야 합니다").label("메시지"),
 });
 
-async function onSubmit(values: CoInquiryType, { resetForm }: { resetForm: () => void }) {
+async function onSubmit(rawValues: GenericObject, { resetForm }: { resetForm: () => void }) {
+  const values = rawValues as CoInquiryType; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
   await useAlert().openAlert(JSON.stringify(values, null, 2));
   resetForm();
 }

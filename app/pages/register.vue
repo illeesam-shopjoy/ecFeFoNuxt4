@@ -79,7 +79,7 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { ref } from "vue";
-import { Field, Form, ErrorMessage } from "vee-validate";
+import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
 import * as yup from "yup";
 import type { MbRegisterFormType } from "~/types/mbRegisterFormType";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -102,7 +102,8 @@ const schema = yup.object({
   password: yup.string().required("비밀번호를 입력해 주세요").min(6, "비밀번호는 6자 이상이어야 합니다").label("비밀번호"),
 });
 
-async function onSubmit(values: MbRegisterFormType, { resetForm }: { resetForm: () => void }) {
+async function onSubmit(rawValues: GenericObject, { resetForm }: { resetForm: () => void }) {
+  const values = rawValues as MbRegisterFormType; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
   const { name, email, password } = values;
   loading.value = true;
   errorMsg.value = "";
