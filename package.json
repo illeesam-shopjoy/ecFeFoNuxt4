@@ -7,7 +7,7 @@
   },
   "scripts": {
     "local": "nuxt dev --dotenv .env.local",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --dotenv .env.development",
     "dev:local": "nuxt dev --dotenv .env.local",
     "dev:prod": "nuxt dev --dotenv .env.production",
     "build": "nuxt build",

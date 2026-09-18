@@ -126,8 +126,16 @@ export function mapProduct(p: BeProdItem): Record<string, unknown> {
   const sorted = [...imgs].sort((a, b) => (a.sortOrd ?? 0) - (b.sortOrd ?? 0));
   const secondary = sorted.find((i) => i !== thumb);
 
-  const img = resolveProdCdnUrl(thumb?.cdnImgUrl) ?? resolveProdCdnUrl(p.thumbnailUrl) ?? "";
-  const thumbImg = resolveProdCdnUrl(secondary?.cdnImgUrl) ?? (img || undefined); // 호버 시 보여줄 "다른 사진" — 없으면 대표 이미지 재사용
+  // 2026-09-17(요청사항: "목록에 나오는 상품이미지 썸네일로 나오는거지? 아니라면 썸네일로
+  // 나오게 개선해줘") — 지금까지 목록 카드(ProductItem.vue 등 30여 곳이 쓰는 `img`)가
+  // cdnThumbUrl(실제 리사이즈된 썸네일)이 아니라 cdnImgUrl(원본 풀사이즈)을 그대로 쓰고
+  // 있었다. 한 화면에 상품카드가 수십 개씩 뜨는 목록에서 전부 원본 크기를 받는 셈이라
+  // 불필요하게 무거웠고, 자택 NAS 동시부하(→ AppImage 8초 타임아웃)를 키우는 요인이기도
+  // 했다. `img`(목록용)는 썸네일을 우선하고, `bigImg`(상세/배너 등 큰 이미지 전용,
+  // TrendingProductThree.vue/home-2·7.vue 참조)만 원본을 그대로 쓴다.
+  const fullImg = resolveProdCdnUrl(thumb?.cdnImgUrl) ?? resolveProdCdnUrl(p.thumbnailUrl) ?? "";
+  const img = resolveProdCdnUrl(thumb?.cdnThumbUrl) ?? fullImg;
+  const thumbImg = resolveProdCdnUrl(secondary?.cdnImgUrl) ?? (fullImg || undefined); // 호버 시 보여줄 "다른 사진" — 없으면 대표 이미지 재사용
   const relatedImages = sorted
     .filter((i) => i !== thumb && i !== secondary)
     .map((i) => resolveProdCdnUrl(i.cdnImgUrl))
@@ -162,7 +170,7 @@ export function mapProduct(p: BeProdItem): Record<string, unknown> {
     prodId: p.prodId,
     img,
     thumbImg,
-    bigImg: img || undefined,
+    bigImg: fullImg || undefined,
     prodNm: p.prodNm,
     salePrice,
     stdPrice,

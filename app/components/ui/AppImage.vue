@@ -147,9 +147,17 @@ function armLoadTimeout() {
   }, LOAD_TIMEOUT_MS);
 }
 
+// 2026-09-17(요청사항: "전체적으로 상품 이미지 없으면 이미지 넣어줘" 조사 결과 — 실제로는 상품/
+// 카테고리/배너/브랜드로고 CDN 파일이 전부 존재했다. 자택 NAS(CDN+API가 같은 장비)에 한 화면에서
+// 수십 개 이미지가 동시에 몰리면 그중 일부가 8초 타임아웃을 넘겨 "이미지 없음"으로 잘못
+// 표시되던 것 — 데이터가 없는 게 아니라 일시적 혼잡. 완전히 포기하기 전에 짧게 재시도한다.
+const MAX_RETRIES = 2;
+let retryCount = 0;
+
 watch(
   () => props.src,
   (newSrc) => {
+    retryCount = 0;
     loading.value = true;
     currentSrc.value = newSrc || NO_IMAGE_SVG;
     if (visible.value) armLoadTimeout(); // 아직 안 보이는 상태면 실제로 보일 때(watch(visible) 참조)만 재개
@@ -186,12 +194,26 @@ onUnmounted(() => {
 
 function onLoad() {
   loading.value = false;
+  retryCount = 0;
   clearLoadTimeout();
 }
 
 function onError() {
+  clearLoadTimeout();
+  const original = props.src;
+  if (original && retryCount < MAX_RETRIES) {
+    // 일시적 혼잡/타임아웃일 수 있으므로 조금 기다렸다가 캐시버스터를 붙여 다시 요청한다
+    // (같은 URL을 그대로 재대입하면 브라우저가 새 요청을 안 보낼 수 있어서).
+    retryCount++;
+    const attempt = retryCount;
+    setTimeout(() => {
+      loading.value = true;
+      currentSrc.value = `${original}${original.includes("?") ? "&" : "?"}_retry=${attempt}`;
+      armLoadTimeout();
+    }, 800 * attempt);
+    return;
+  }
   loading.value = false;
   currentSrc.value = NO_IMAGE_SVG;
-  clearLoadTimeout();
 }
 </script>
