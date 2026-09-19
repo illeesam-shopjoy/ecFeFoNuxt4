@@ -23,29 +23,7 @@
                   <div @click.prevent="handleOffcanvas" class="mobile-menu-btn lg:hidden">
                     <a href="#" class="mobile-menu-toggle"><i class="fas fa-bars"></i></a>
                   </div>
-                  <div class="header__action">
-                    <ul>
-                      <li>
-                        <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle"> <i class="fas fa-search"></i> 검색 </a>
-                      </li>
-                      <li>
-                        <a href="#" class="cart"
-                          ><i class="fas fa-shopping-bag"></i> 장바구니
-                          <span>({{ state.getStTotalPriceQuantity.quantity }})</span>
-                        </a>
-                        <!-- 장바구니 미니 시작 -->
-                        <cart-mini />
-                        <!-- 장바구니 미니 끝 -->
-                      </li>
-                      <li>
-                        <div style="display:inline-flex;align-items:center;gap:18px;">
-                          <user-dropdown />
-                          <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
-                        </div>
-                        <extra-info v-show="showExtraInfo" />
-                      </li>
-                    </ul>
-                  </div>
+                  <div><header-top-actions @search="handleOpenSearchBar" /></div>
                 </div>
               </div>
             </div>
@@ -76,21 +54,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { useCartStore } from "~/store/useCartStore";
 import Menus from "./Menus.vue";
-import CartMini from "./header-com/CartMini.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
-import UserDropdown from "./header-com/UserDropdown.vue";
-import ExtraInfo from "./header-com/ExtraInfo.vue";
+import HeaderTopActions from "./header-com/HeaderTopActions.vue";
 import EnvModeBadge from "./header-com/EnvModeBadge.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 
-const state = useCartStore();
 const isSticky = ref(false);
 const search_popup = ref<{ openSearchPopup(): void } | null>(null);
 const offcanvas = ref<{ OpenOffcanvas(): void } | null>(null);
-// 로그인 옆 햄버거(far fa-bars) 클릭 시 ExtraInfo 토글 — 기본값 닫힘(2026-09-13).
-const showExtraInfo = ref(false);
 
 function handleSticky() {
   isSticky.value = window.scrollY > 80;

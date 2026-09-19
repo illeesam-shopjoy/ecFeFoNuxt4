@@ -2,7 +2,7 @@
   <!-- 2026-09-15(요청사항: "링크복사, 카카오공유하기, PDF다운로드 기능 추가하고 싶어
        2번째 이미지 최상단처럼 저 최상단은 모바일보기에서는 설정안에서보여") — ecFeBo 헤더
        최상단의 고정 아이콘 3개를 포팅. variant="icons"는 데스크탑 헤더에 hidden 처리해
-       모바일에서 숨기고(sm 이상만 표시), variant="menu"는 ExtraInfo(설정) 드롭다운 안에
+       모바일에서 숨기고(sm 이상만 표시), variant="menu"는 HeaderSettings(설정) 드롭다운 안에
        동일 기능을 목록형으로 노출해 모바일에서도 항상 쓸 수 있게 한다. -->
   <div v-if="variant === 'icons'" class="hidden sm:flex items-center gap-1.5">
     <button

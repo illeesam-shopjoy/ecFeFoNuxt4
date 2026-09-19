@@ -4,12 +4,11 @@
   <div class="relative inline-flex items-center" ref="wrapRef">
     <!-- 로그인 상태: 이름 버튼 + 드롭다운 -->
     <template v-if="authStore.isStLoggedIn">
-      <!-- 2026-09-19: 알림 종(안읽음 배지 + 팝오버) — 로그인 상태에서만 -->
-      <noti-bell class="mr-3.5" />
-      <button class="bg-transparent border-0 cursor-pointer flex items-center gap-[5px] text-[0.88rem] text-inherit font-medium p-0 whitespace-nowrap" @click.stop="open = !open">
-        <i class="fas fa-user"></i>
-        <span>{{ authStore.user?.userNm }}</span>
-        <i :class="`fas fa-chevron-${open ? 'up' : 'down'} text-[0.65rem]`"></i>
+      <!-- 2026-09-20(요청사항: 상단정보 로그인정보) — 아바타(이름 첫 글자) + 이름 + ▾ 알약 버튼. 알림 종은 HeaderTopActions 가 앞에 둔다 -->
+      <button class="h-10 pl-1.5 pr-3 rounded-full bg-white border border-[#e5e7eb] shadow-sm cursor-pointer inline-flex items-center gap-2 text-[0.88rem] text-[#1a1a1a] font-semibold whitespace-nowrap hover:border-gray-400 transition" @click.stop="open = !open">
+        <span class="w-7 h-7 rounded-full bg-gray-900 text-white inline-flex items-center justify-center text-[0.75rem] font-bold">{{ (authStore.user?.userNm || "?").slice(0, 1) }}</span>
+        <span class="max-w-[110px] truncate">{{ authStore.user?.userNm }}</span>
+        <i :class="`fas fa-chevron-${open ? 'up' : 'down'} text-[0.6rem] text-gray-500`"></i>
       </button>
 
       <div v-show="open" class="absolute top-[calc(100%+14px)] right-0 bg-white shadow-[0_10px_35px_rgba(0,0,0,0.12)] px-6 py-5 min-w-[200px] z-[9999] border-t-2 border-theme">
@@ -35,7 +34,7 @@
     </template>
 
     <!-- 비로그인 상태: 로그인 링크 -->
-    <nuxt-link v-else href="/login" class="flex items-center gap-[5px] text-[0.88rem] whitespace-nowrap text-inherit no-underline"> <i class="fas fa-user"></i> 로그인 </nuxt-link>
+    <nuxt-link v-else href="/login" class="h-10 px-4 rounded-full bg-white border border-[#e5e7eb] shadow-sm inline-flex items-center gap-2 text-[0.88rem] font-semibold whitespace-nowrap text-[#1a1a1a] no-underline hover:border-gray-400 transition"> <i class="fas fa-user text-[0.8rem]"></i> 로그인 </nuxt-link>
 
     <!-- 프로필 수정 / 비밀번호 변경 (각자 Teleport 모달 — 실제로 ecBeBo 에 저장) -->
     <profile-edit-modal v-if="authStore.isStLoggedIn" ref="profileRef" />
@@ -47,7 +46,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useAuthStore } from "~/store/useAuthStore";
 import { useRouter } from "vue-router";
-import NotiBell from "./NotiBell.vue";
 import ProfileEditModal from "~/components/modals/ProfileEditModal.vue";
 import PasswordChangeModal from "~/components/modals/PasswordChangeModal.vue";
 

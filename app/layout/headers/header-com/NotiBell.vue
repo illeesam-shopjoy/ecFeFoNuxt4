@@ -4,7 +4,7 @@
   <div ref="wrapRef" class="relative inline-flex items-center">
     <button
       type="button"
-      class="relative flex items-center justify-center w-9 h-9 rounded-full border border-[#e5e7eb] bg-transparent text-inherit cursor-pointer hover:bg-black/5"
+      class="relative flex items-center justify-center w-10 h-10 rounded-xl border border-[#e5e7eb] bg-white text-gray-600 cursor-pointer hover:border-gray-400 transition"
       :class="{ 'noti-shake': shake }"
       :aria-label="`알림 ${unread}건`"
       :aria-expanded="open"

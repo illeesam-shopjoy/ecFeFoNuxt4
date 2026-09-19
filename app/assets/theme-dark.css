@@ -1,0 +1,17 @@
+/*
+ * 다크 테마 (2026-09-20) — html.theme-dark 일 때 페이지 전체를 반전(invert)하고, 이미지/영상/지도 등 미디어는 다시 반전해
+ * 원색을 유지한다. 색상 변수가 아닌 필터 방식이라 모든 화면(레거시 SCSS 포함)에 한 번에 적용된다.
+ */
+html.theme-dark {
+  background: #f2f2f2;
+  filter: invert(1) hue-rotate(180deg);
+}
+html.theme-dark img,
+html.theme-dark video,
+html.theme-dark iframe,
+html.theme-dark canvas,
+html.theme-dark svg image,
+html.theme-dark [style*="background-image"],
+html.theme-dark .no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}

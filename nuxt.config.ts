@@ -17,7 +17,7 @@ export default defineNuxtConfig({
       open: "chrome",
     },
   },
-  css: ["vue3-carousel/dist/carousel.css", "~/assets/prod/scss/main.scss"],
+  css: ["vue3-carousel/dist/carousel.css", "~/assets/prod/scss/main.scss", "~/assets/theme-dark.css"],
   modules: [
     "@nuxtjs/tailwindcss",
     [

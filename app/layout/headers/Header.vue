@@ -36,80 +36,11 @@
               <env-mode-badge />
             </div>
             <div v-if="!header_big" class="header__action-col" style="order: 3;">
-              <div class="header__action">
-                <ul>
-                  <li>
-                    <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle">
-                      <i class="fas fa-search"></i> <span class="hidden sm:inline">검색</span>
-                    </a>
-                  </li>
-                  <li>
-                    <!-- 2026-09-15(요청사항: "링크복사, 카카오공유하기, PDF다운로드 기능
-                         추가하고 싶어 2번째 이미지 최상단처럼 저 최상단은 모바일보기에서는
-                         설정안에서보여") — 모바일에서는 숨기고(ExtraInfo 설정 안에서 대신 노출). -->
-                    <share-tools-buttons variant="icons" />
-                  </li>
-                  <li>
-                    <!-- 2026-09-13(요청사항: "상담에 숨겨진 글시가 원인일수도 장바구니(3) 에서
-                         (3) 으로만 표시해줘도 될거 같아") — 실측 결과 이 액션 영역(검색/장바구니/
-                         유저메뉴/햄버거)이 모바일 폭(412px)에서 실제로 폭이 넘쳐 헤더 전체가
-                         (position:absolute인 transparent 헤더에서) 뷰포트 밖으로 튀어나가
-                         가로 스크롤을 유발하고 있었다 — 정확히 사용자가 짚은 지점이 맞았다.
-                         "장바구니" 글자를 작은 화면에서만 숨겨 아이콘+숫자만 보이게 함. -->
-                    <a href="#" class="cart"
-                      ><i class="fas fa-shopping-bag"></i> <span class="hidden sm:inline">장바구니</span>
-                      <client-only><span>({{ state.getStTotalPriceQuantity.quantity }})</span></client-only>
-                    </a>
-                    <!-- 장바구니 미니 시작 -->
-                    <client-only><cart-mini /></client-only>
-                    <!-- 장바구니 미니 끝 -->
-                  </li>
-                  <li>
-                    <div style="display:inline-flex;align-items:center;gap:18px;">
-                      <client-only><user-dropdown /></client-only>
-                      <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
-                    </div>
-                    <extra-info v-show="showExtraInfo" />
-                  </li>
-                </ul>
-              </div>
+              <div><header-top-actions @search="handleOpenSearchBar" /></div>
             </div>
 
             <div v-if="header_big" class="w-full sm:w-10/12 md:w-1/2 lg:w-3/12" style="order: 3;">
-              <div class="header__action header__action-2 ml-auto">
-                <ul>
-                  <li>
-                    <a @click.prevent="handleOpenSearchBar" href="#" class="search-toggle">
-                      <i class="fas fa-search"></i> <span class="hidden sm:inline">검색</span>
-                    </a>
-                  </li>
-                  <li>
-                    <share-tools-buttons variant="icons" />
-                  </li>
-                  <li>
-                    <!-- 2026-09-13(요청사항: "상담에 숨겨진 글시가 원인일수도 장바구니(3) 에서
-                         (3) 으로만 표시해줘도 될거 같아") — 실측 결과 이 액션 영역(검색/장바구니/
-                         유저메뉴/햄버거)이 모바일 폭(412px)에서 실제로 폭이 넘쳐 헤더 전체가
-                         (position:absolute인 transparent 헤더에서) 뷰포트 밖으로 튀어나가
-                         가로 스크롤을 유발하고 있었다 — 정확히 사용자가 짚은 지점이 맞았다.
-                         "장바구니" 글자를 작은 화면에서만 숨겨 아이콘+숫자만 보이게 함. -->
-                    <a href="#" class="cart"
-                      ><i class="fas fa-shopping-bag"></i> <span class="hidden sm:inline">장바구니</span>
-                      <client-only><span>({{ state.getStTotalPriceQuantity.quantity }})</span></client-only>
-                    </a>
-                    <!-- 장바구니 미니 시작 -->
-                    <client-only><cart-mini /></client-only>
-                    <!-- 장바구니 미니 끝 -->
-                  </li>
-                  <li>
-                    <div style="display:inline-flex;align-items:center;gap:18px;">
-                      <client-only><user-dropdown /></client-only>
-                      <a href="#" @click.prevent="showExtraInfo = !showExtraInfo"><i class="far fa-bars"></i></a>
-                    </div>
-                    <extra-info v-show="showExtraInfo" />
-                  </li>
-                </ul>
-              </div>
+              <div class="ml-auto"><header-top-actions @search="handleOpenSearchBar" /></div>
             </div>
           </div>
         </div>
@@ -127,12 +58,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { useCartStore } from "~/store/useCartStore";
 import Menus from "./Menus.vue";
-import CartMini from "./header-com/CartMini.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
-import UserDropdown from "./header-com/UserDropdown.vue";
-import ExtraInfo from "./header-com/ExtraInfo.vue";
+import HeaderTopActions from "./header-com/HeaderTopActions.vue";
 import EnvModeBadge from "./header-com/EnvModeBadge.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 import ShareToolsButtons from "~/components/common/ShareToolsButtons.vue";
@@ -142,13 +70,9 @@ defineProps({
   white_bg: { type: Boolean, default: false },
   transparent: { type: Boolean, default: false },
 });
-const state = useCartStore();
 const isSticky = ref(false);
 const search_popup = ref<{ openSearchPopup(): void } | null>(null);
 const offcanvas = ref<{ OpenOffcanvas(): void } | null>(null);
-// 로그인 옆 햄버거(far fa-bars) 클릭 시 ExtraInfo(내 계정/언어/통화 등) 토글 — 기본값 닫힘
-// (2026-09-13 요청사항: "클릭하여 안나오게 할수도 있게 옵션 넣어줘, 기본값은 안나오게").
-const showExtraInfo = ref(false);
 
 function handleSticky() {
   isSticky.value = window.scrollY > 80;
