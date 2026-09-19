@@ -16,26 +16,8 @@
                 <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — 아래 product-details__*
                      커스텀 클래스들을 전부 Tailwind 유틸리티로 대체. -->
                 <div class="grid grid-cols-[auto_1fr] gap-4 items-start">
-                  <div class="col-start-1">
-                    <div class="flex flex-col gap-2 m-0 p-0 list-none" id="product-details" role="tablist">
-                      <button
-                        v-for="(img, i) in item.relatedImages"
-                        :key="i"
-                        :class="['m-0 p-0 border-2 rounded block bg-transparent cursor-pointer', img === active_img ? 'border-theme' : 'border-transparent']"
-                        @click="handleActiveImg(img)"
-                        type="button"
-                      >
-                        <div class="product__nav-img w-img">
-                          <app-image
-                            :src="img"
-                            alt="product-thumb"
-                            :img-style="{ width: '95px', height: '120px', objectFit: 'cover', display: 'block', borderRadius: '2px' }"
-                            :skeleton-style="{ width: '95px', height: '120px' }"
-                          />
-                        </div>
-                      </button>
-                    </div>
-                  </div>
+                  <!-- 썸네일이 많을 때: 메인 이미지 높이에 맞춘 세로 스크롤 + 위/아래 화살표 (ProductThumbStrip) -->
+                  <product-thumb-strip class="col-start-1" :images="item.relatedImages ?? []" :active="active_img" @select="handleActiveImg" />
                   <div class="col-start-2 min-w-0" id="product-detailsContent">
                     <div class="product__modal-img product__thumb w-img border border-[#e0e0e0] rounded overflow-hidden">
                       <app-image
@@ -270,6 +252,7 @@ import { type PdProductType } from "~/types/pdProductType";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
+import ProductThumbStrip from "~/components/shop-details/ProductThumbStrip.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";

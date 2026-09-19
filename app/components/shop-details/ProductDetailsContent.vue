@@ -38,38 +38,114 @@
         <!-- 색상 선택 (위) -->
         <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — color-swatch/size-chip
              커스텀 클래스를 Tailwind로 대체. --swatch-color 커스텀 프로퍼티는 옵션별로 값이 달라
-             인라인 :style은 유지하고, 소비하는 쪽만 bg-[var(--swatch-color)]로 바꿈. -->
-        <div class="product__modal-input color mb-20">
+             인라인 :style은 유지하고, 소비하는 쪽만 bg-[var(--swatch-color)]로 바꿈.
+             2026-09-19(요청사항: "옵션이 어느정도 이상되면 더보기아이콘 표시되고 popover 표시") — 색상은 COLOR_VISIBLE(8)개,
+             사이즈는 SIZE_VISIBLE(6)개까지만 한 줄에 보이고 나머지는 "…" 버튼을 누르면 뜨는 팝오버에 전체 목록이 나온다.
+             선택한 옵션이 접힌 쪽에 있어도 줄 안에 보이도록(마지막 칸과 교체) 처리하고, 바깥 클릭/Esc 로 팝오버가 닫힌다.
+             색상표는 옵션코드가 VAL_COLOR_* 인데 매핑이 color01.. 형식뿐이라 전부 회색으로 보이던 것도 함께 수정(colorMap). -->
+        <div class="product__modal-input color mb-20 relative">
           <label>색상 선택</label>
-          <div class="flex flex-wrap gap-2.5 mt-2.5 mb-2">
+          <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
             <button
-              v-for="opt in item.optionColors"
+              v-for="opt in visibleColors"
               :key="opt.optionCode ?? opt.optionId"
               type="button"
               :title="opt.optionNm"
+              :aria-label="opt.optionNm"
               class="relative w-[26px] h-[26px] rounded-full border-[1.5px] border-black/10 cursor-pointer bg-[var(--swatch-color)] shadow-[0_1px_3px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-150 hover:scale-110 hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
-              :class="{ 'scale-110 shadow-[0_0_0_2px_#fff,0_0_0_4px_#555,0_2px_6px_rgba(0,0,0,0.2)]': selectedColor === (opt.optionCode ?? String(opt.optionId)) }"
-              :style="{ '--swatch-color': colorMap[opt.optionCode ?? ''] ?? '#ccc' }"
-              @click="selectedColor = opt.optionCode ?? String(opt.optionId)"
+              :class="{ 'scale-110 shadow-[0_0_0_2px_#fff,0_0_0_4px_#555,0_2px_6px_rgba(0,0,0,0.2)]': selectedColor === optKey(opt) }"
+              :style="{ '--swatch-color': swatchColor(opt) }"
+              @click="selectedColor = optKey(opt)"
             ></button>
+            <button
+              v-if="hasMoreColors"
+              type="button"
+              class="w-[26px] h-[26px] rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
+              :title="`색상 전체 보기 (${colors.length})`"
+              :aria-label="`색상 전체 보기 (${colors.length})`"
+              aria-haspopup="true"
+              :aria-expanded="openPopover === 'color'"
+              @click.stop="togglePopover('color')"
+            >
+              <i class="fas fa-ellipsis-h text-[0.7rem]"></i>
+            </button>
           </div>
-          <span v-if="selectedColor" class="text-xs text-[#666] ml-0.5">선택: {{ item.optionColors.find((o) => (o.optionCode ?? String(o.optionId)) === selectedColor)?.optionNm }}</span>
+          <span v-if="selectedColor" class="text-xs text-[#666] ml-0.5">선택: {{ colors.find((o) => optKey(o) === selectedColor)?.optionNm }}</span>
+          <!-- 색상 전체 팝오버 -->
+          <div
+            v-if="openPopover === 'color'"
+            class="absolute left-0 top-full z-30 mt-1 w-[min(100%,360px)] max-h-[260px] overflow-y-auto rounded-lg border border-[#e0e0e0] bg-white p-3 shadow-[0_8px_24px_rgba(0,0,0,0.14)]"
+            role="dialog"
+            aria-label="색상 전체 목록"
+            @click.stop
+          >
+            <div class="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3">
+              <button
+                v-for="opt in colors"
+                :key="opt.optionCode ?? opt.optionId"
+                type="button"
+                class="flex items-center gap-2 rounded px-1.5 py-1 text-left text-[13px] text-[#444] bg-transparent border-0 cursor-pointer hover:bg-[#f4f4f4]"
+                :class="{ 'font-bold bg-[#f4f4f4]': selectedColor === optKey(opt) }"
+                @click="pickColor(opt)"
+              >
+                <span
+                  class="inline-block w-[20px] h-[20px] shrink-0 rounded-full border-[1.5px] border-black/10 bg-[var(--swatch-color)]"
+                  :class="{ 'shadow-[0_0_0_2px_#fff,0_0_0_3.5px_#555]': selectedColor === optKey(opt) }"
+                  :style="{ '--swatch-color': swatchColor(opt) }"
+                ></span>
+                <span class="truncate">{{ opt.optionNm }}</span>
+              </button>
+            </div>
+          </div>
         </div>
         <!-- 사이즈 선택 (아래) -->
-        <div class="product__modal-input size mb-20">
+        <div class="product__modal-input size mb-20 relative">
           <label>사이즈 <i class="fas fa-star-of-life"></i></label>
-          <div class="flex flex-wrap gap-2 mt-2.5">
-            <span v-if="!item.optionSizes?.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
+          <div class="flex flex-wrap items-center gap-2 mt-2.5">
+            <span v-if="!sizes.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
             <button
-              v-for="opt in item.optionSizes"
+              v-for="opt in visibleSizes"
               :key="opt.optionCode ?? opt.optionId"
               type="button"
               class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222]"
-              :class="{ '!border-[#222] !bg-[#222] !text-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]': selectedSize === (opt.optionCode ?? String(opt.optionId)) }"
-              @click="selectedSize = opt.optionCode ?? String(opt.optionId)"
+              :class="{ '!border-[#222] !bg-[#222] !text-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]': selectedSize === optKey(opt) }"
+              @click="selectedSize = optKey(opt)"
             >
               {{ opt.optionNm }}
             </button>
+            <button
+              v-if="hasMoreSizes"
+              type="button"
+              class="px-3 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
+              :title="`사이즈 전체 보기 (${sizes.length})`"
+              :aria-label="`사이즈 전체 보기 (${sizes.length})`"
+              aria-haspopup="true"
+              :aria-expanded="openPopover === 'size'"
+              @click.stop="togglePopover('size')"
+            >
+              <i class="fas fa-ellipsis-h text-[0.8rem]"></i>
+            </button>
+          </div>
+          <!-- 사이즈 전체 팝오버 -->
+          <div
+            v-if="openPopover === 'size'"
+            class="absolute left-0 top-full z-30 mt-1 w-[min(100%,360px)] max-h-[260px] overflow-y-auto rounded-lg border border-[#e0e0e0] bg-white p-3 shadow-[0_8px_24px_rgba(0,0,0,0.14)]"
+            role="dialog"
+            aria-label="사이즈 전체 목록"
+            @click.stop
+          >
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="opt in sizes"
+                :key="opt.optionCode ?? opt.optionId"
+                type="button"
+                class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222]"
+                :class="{ '!border-[#222] !bg-[#222] !text-white': selectedSize === optKey(opt) }"
+                @click="pickSize(opt)"
+              >
+                {{ opt.optionNm }}
+              </button>
+            </div>
           </div>
         </div>
         <div class="product__modal-required mb-5">
@@ -108,7 +184,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle("상품 상세 내용");
-import { ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
 import { useCartStore } from "~/store/useCartStore";
 
@@ -121,6 +197,54 @@ const { formatPrice } = usePrice();
 
 const selectedColor = ref("");
 const selectedSize = ref("");
+
+// ── 옵션 더보기 팝오버 (2026-09-19) ──────────────────────────────────────
+type OptionItem = PdProductType["optionColors"][number];
+const COLOR_VISIBLE = 8; // 색상표는 이 개수까지만 한 줄에 노출, 넘으면 "…" 팝오버
+const SIZE_VISIBLE = 6; // 사이즈 칩도 동일
+const colors = computed<OptionItem[]>(() => props.item.optionColors ?? []);
+const sizes = computed<OptionItem[]>(() => props.item.optionSizes ?? []);
+const optKey = (o: OptionItem) => o.optionCode ?? String(o.optionId);
+
+// 앞쪽 N개를 보여주되, 선택한 옵션이 접힌 쪽에 있으면 마지막 칸을 그 옵션으로 교체해 선택 상태가 줄 안에서 보이게 한다
+function foldOptions(all: OptionItem[], limit: number, selected: string): OptionItem[] {
+  if (all.length <= limit) return all;
+  const head = all.slice(0, limit);
+  if (!selected || head.some((o) => optKey(o) === selected)) return head;
+  const sel = all.find((o) => optKey(o) === selected);
+  return sel ? [...head.slice(0, limit - 1), sel] : head;
+}
+const visibleColors = computed(() => foldOptions(colors.value, COLOR_VISIBLE, selectedColor.value));
+const visibleSizes = computed(() => foldOptions(sizes.value, SIZE_VISIBLE, selectedSize.value));
+const hasMoreColors = computed(() => colors.value.length > COLOR_VISIBLE);
+const hasMoreSizes = computed(() => sizes.value.length > SIZE_VISIBLE);
+
+const openPopover = ref<"color" | "size" | null>(null);
+function togglePopover(kind: "color" | "size") {
+  openPopover.value = openPopover.value === kind ? null : kind;
+}
+function pickColor(opt: OptionItem) {
+  selectedColor.value = optKey(opt);
+  openPopover.value = null;
+}
+function pickSize(opt: OptionItem) {
+  selectedSize.value = optKey(opt);
+  openPopover.value = null;
+}
+function closePopover() {
+  openPopover.value = null;
+}
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape") closePopover();
+}
+onMounted(() => {
+  document.addEventListener("click", closePopover); // 팝오버 내부/트리거는 @click.stop 으로 막혀 있어 바깥 클릭에만 닫힌다
+  document.addEventListener("keydown", onKeydown);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener("click", closePopover);
+  document.removeEventListener("keydown", onKeydown);
+});
 
 // 2026-09 추가 — 선택한 옵션조합(색상/사이즈)에 해당하는 SKU를 찾아 장바구니에 담는다.
 // optionColors/optionSizes 의 optionLevel(1|2)로 prodOpt1Id/prodOpt2Id 중 어느 자리와
@@ -169,6 +293,23 @@ const colorMap: Record<string, string> = {
   color08: "#F8F9FA", // 흰색
   color09: "#8B6347", // 갈색
   color10: "#000000", // 블랙
+  // 2026-09-19: 실제 옵션코드는 VAL_COLOR_* (pd_prod_opt_val) — 위 color01..10 매핑만으로는 전부 회색(#ccc)으로 나왔다
+  VAL_COLOR_BLACK: "#1A1A1A", // 블랙
+  VAL_COLOR_WHITE: "#FFFFFF", // 화이트
+  VAL_COLOR_IVORY: "#F5EFDC", // 아이보리
+  VAL_COLOR_GRAY: "#9E9E9E", // 그레이
+  VAL_COLOR_CHARCOAL: "#36454F", // 차콜
+  VAL_COLOR_NAVY: "#1F2A44", // 네이비
+  VAL_COLOR_BLUE: "#2F6FDE", // 블루
+  VAL_COLOR_KHAKI: "#8B8A55", // 카키
+  VAL_COLOR_BEIGE: "#D9C3A0", // 베이지
+  VAL_COLOR_BROWN: "#7B4B2A", // 브라운
+  VAL_COLOR_RED: "#D32F2F", // 레드
+  VAL_COLOR_BURGUNDY: "#7B1E3A", // 버건디
+  VAL_COLOR_PINK: "#F4A6C0", // 핑크
+  VAL_COLOR_PURPLE: "#7E57C2", // 퍼플
+  VAL_COLOR_MUSTARD: "#D4A017", // 머스타드
+  VAL_COLOR_ORANGE: "#F57C00", // 오렌지
 };
+const swatchColor = (opt: OptionItem) => colorMap[opt.optionCode ?? ""] ?? "#ccc";
 </script>
-
