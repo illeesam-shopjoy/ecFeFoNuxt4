@@ -38,15 +38,8 @@ export interface PdProductPageParams {
 
 export const pdProductSvc = {
   /**
-   * GET /api/fo/ec/pd/prod/page — 상품 전체 목록(캐시된 "거의 전체" 모드, 쿼리 없음).
-   * useProductsStore(홈 화면 인기상품/베스트/장바구니 등)가 쓰는 기존 방식 — 그대로 유지.
-   */
-  getPage: () => axiosSsr.get<PdProductType[]>("/api/fo/ec/pd/prod/page").then((r) => r.data),
-
-  /**
    * 2026-09-13(요청사항: "10000개가 될수도 있기에 페이징 api 조회") 추가 — 진짜 서버 페이징/필터
-   * 모드(같은 라우트, pageNo 쿼리 유무로 서버가 분기). /shop 페이지 전용, useProductsStore와
-   * 무관한 로컬 상태(useShopProducts.ts)에서만 사용 — 다른 화면(홈 등)에 영향 없음.
+   * 홈 위젯(useLatestProducts.ts)·/shop(useShopProducts.ts)·상품상세 관련상품이 각자 필요한 만큼만 조회한다.
    * 배열은 콤마 조합 문자열로 보낸다(axios 배열 직렬화 방식이 서버 파싱과 안 맞을 위험 방지 —
    * server/api/fo/ec/pd/prod/page.get.ts에서 다시 split해 ecBeBo에 반복 파라미터로 전달).
    */

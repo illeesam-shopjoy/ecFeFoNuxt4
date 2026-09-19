@@ -64,6 +64,10 @@ export default defineNuxtConfig({
     "/shop": { ssr: true }, // 상품 목록: SSR + SEO
     "/prod-dtl/**": { ssr: true }, // 상품 상세 (/:id): SSR + SEO
     "/blog-dtl/**": { ssr: true }, // 블로그 상세 (/:id): SSR + SEO
+    // 옛 템플릿 쇼핑 변형 페이지(전체 상품을 받아 클라이언트 필터링) — 서버 페이징 /shop 으로 통합
+    "/shop-right": { redirect: { to: "/shop", statusCode: 301 } },
+    "/shop-3-col": { redirect: { to: "/shop", statusCode: 301 } },
+    "/shop-4-col": { redirect: { to: "/shop", statusCode: 301 } },
   },
   // CDN: app/assets 폴더 전체(prod/{css,fonts,img,scss})를 /cdn 경로로 정적 서빙 (절대경로로 해석 보장)
   // 예: app/assets/prod/img/logo.png → /cdn/prod/img/logo.png

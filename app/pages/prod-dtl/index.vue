@@ -229,7 +229,7 @@
             </div>
           </div>
           <div class="row">
-            <div v-for="(prdItem, i) in store.getStRelatedProducts(item.category?.categoryId ?? '', item.prodId)" :key="i" class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+            <div v-for="(prdItem, i) in relatedProducts" :key="i" class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
               <product-item :item="prdItem" />
             </div>
           </div>
@@ -259,20 +259,25 @@ import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
 import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
 import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
 import * as yup from "yup";
-import { useProductsStore } from "~/store/useProductsStore";
 
 // 이 페이지는 /prod-dtl (id 없이 접근) 전용 — 상품 목록 첫 항목을 상세로 보여줌
 const { data: item, pending } = await useAsyncData<PdProductType | null>("product-detail-index", async () => {
-  const list = await pdProductSvc.getPage();
-  const first = list[0];
+  const first = (await pdProductSvc.getPaged({ pageNo: 1, pageSize: 1 })).items[0];
   if (!first) return null;
   return pdProductSvc.getById(first.prodId);
 });
 
-const store = useProductsStore();
-if (import.meta.client && !store.loaded) {
-  store.loadStProducts();
-}
+// 관련 상품 — 같은 카테고리 상품 4개만 별도 조회(전체 카탈로그 X). SEO 대상이 아니라 서버 렌더에서는 뺀다.
+const { data: relatedList } = useAsyncData<PdProductType[]>(
+  `related-${item.value?.prodId ?? "none"}`,
+  async () => {
+    const categoryId = item.value?.category?.categoryId;
+    if (!categoryId) return [];
+    return (await pdProductSvc.getPaged({ pageNo: 1, pageSize: 5, categoryIds: [categoryId] })).items;
+  },
+  { default: () => [], lazy: true, server: false }
+);
+const relatedProducts = computed(() => relatedList.value.filter((p) => p.prodId !== item.value?.prodId).slice(0, 4));
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({ title: "상품 상세" });

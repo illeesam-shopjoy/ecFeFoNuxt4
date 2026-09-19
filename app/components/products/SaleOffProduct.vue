@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
-        <div class="col" v-for="(item, i) in store.products.filter((p) => p.saleDiscntRate).slice(0, 5)" :key="i">
+        <div class="col" v-for="(item, i) in saleItems" :key="i">
           <product-item :item="item" />
         </div>
       </div>
@@ -29,7 +29,9 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('할인 상품');
 import ProductItem from "./ProductItem.vue";
-import { useProductsStore } from "~/store/useProductsStore";
+import { computed } from "vue";
 
-const store = useProductsStore();
+// 최신 24개 중 할인 상품 5개 — 전체 카탈로그를 받지 않는다(useLatestProducts.ts 참조).
+const products = useLatestProducts();
+const saleItems = computed(() => products.value.filter((p) => p.saleDiscntRate).slice(0, 5));
 </script>

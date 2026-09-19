@@ -113,7 +113,6 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('특가 상품');
 import { ref, computed } from "vue";
 import { Carousel, Slide } from "vue3-carousel";
-import { useProductsStore } from "~/store/useProductsStore";
 import SmProductItem from "./SmProductItem.vue";
 
 defineProps({
@@ -122,24 +121,26 @@ defineProps({
 const slider_1 = ref<{ next(): void; prev(): void } | null>(null);
 const slider_2 = ref<{ next(): void; prev(): void } | null>(null);
 const slider_3 = ref<{ next(): void; prev(): void } | null>(null);
-const store = useProductsStore();
-// 2026-09-13 버그수정: trending=true 상품이 없으면 항상 비어 보이던 문제 — 없으면 전체로 대체.
-const trending_products = computed(() => {
-  const trending = store.products.filter((p) => p.trending);
-  const base = trending.length ? trending : store.products;
+// trending/topRated 플래그는 실 스키마에 없어 항상 false(mapProduct.ts) — 최신 상품 24개 기준으로 노출한다.
+const products = useLatestProducts();
+const trending_products = computed(() => [
+  { id: 1, items: products.value.slice(0, 3) },
+  { id: 2, items: products.value.slice(3, 6) },
+]);
+const sale_products = computed(() => {
+  const sale = products.value.filter((p) => p.saleDiscntRate);
   return [
-    { id: 1, items: base.slice(0, 3) },
-    { id: 2, items: base.slice(3, 6) },
+    { id: 1, items: sale.slice(0, 3) },
+    { id: 2, items: sale.slice(3, 6) },
   ];
 });
-const sale_products = computed(() => [
-  { id: 1, items: store.products.filter((p) => p.saleDiscntRate).slice(0, 3) },
-  { id: 2, items: store.products.filter((p) => p.saleDiscntRate).slice(3, 6) },
-]);
-const top_products = computed(() => [
-  { id: 1, items: store.products.filter((p) => p.topRated).slice(0, 3) },
-  { id: 2, items: store.products.filter((p) => p.topRated).slice(3, 6) },
-]);
+const top_products = computed(() => {
+  const top = products.value.filter((p) => p.topRated);
+  return [
+    { id: 1, items: top.slice(0, 3) },
+    { id: 2, items: top.slice(3, 6) },
+  ];
+});
 function handleNext() {
   slider_1.value?.next();
 }

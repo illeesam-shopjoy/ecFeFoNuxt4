@@ -97,7 +97,6 @@ import LayoutTwo from "~/layout/LayoutTwo.vue";
 import { computed } from "vue";
 import HomeTwoHeroSlider from "~/components/hero-banner/HomeTwoHeroSlider.vue";
 import CategoryArea from "~/components/category/CategoryArea.vue";
-import { useProductsStore } from "~/store/useProductsStore";
 import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import ShopBanner from "~/components/shop-banner/ShopBanner.vue";
@@ -111,13 +110,9 @@ useHead({
 });
 usePageTitle("홈 2");
 
-const productsStore = useProductsStore();
-const trendingBigItem = computed(() => productsStore.products.find((p) => p.bigImg));
-// 2026-09-13 버그수정: "인기상품 표시되어야 해" — 현재 시딩된 상품 중 trending=true인
-// 항목이 없어 "인기 상품" 섹션이 항상 비어 있었다. trending 상품이 없으면 최근 상품으로 대체.
-const trendingProducts = computed(() => {
-  const trending = productsStore.products.filter((p) => p.trending);
-  return (trending.length ? trending : productsStore.products).slice(0, 6);
-});
-const saleProducts = computed(() => productsStore.products.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));
+// 최신 상품 24개만 조회(전체 카탈로그 X) — trending 플래그는 실 스키마에 없어 항상 false(mapProduct.ts)라 최신순으로 노출.
+const products = useLatestProducts();
+const trendingBigItem = computed(() => products.value.find((p) => p.bigImg));
+const trendingProducts = computed(() => products.value.slice(0, 6));
+const saleProducts = computed(() => products.value.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));
 </script>

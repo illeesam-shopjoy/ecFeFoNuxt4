@@ -39,11 +39,10 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('쇼핑 배너');
-import { useProductsStore } from "~/store/useProductsStore";
 import AppImage from "~/components/ui/AppImage.vue";
 
 defineProps<{ style_2?: boolean; style_3?: boolean }>();
-const store = useProductsStore();
+const products = useLatestProducts();
 const { formatPrice } = usePrice();
 
 // 2026-09-13(요청사항: "할인 위에 Bottle With Wooden Cork / Hauteville Plywood Chair 가 있어야 해") —
@@ -54,9 +53,7 @@ const { formatPrice } = usePrice();
 const { public: { prodCdnBase } } = useRuntimeConfig();
 const FALLBACK_BANNER_IMGS = ["banner-big-1.jpg", "banner-big-2.jpg"];
 const bannerItems = computed(() => {
-  const withBanner = store.products.filter((p) => p.banner);
-  const source = (withBanner.length ? withBanner : store.products).slice(0, 2);
-  return source.map((item, index) => ({
+  return products.value.slice(0, 2).map((item, index) => ({
     ...item,
     bannerImg: item.bannerImg || `${prodCdnBase}/cdn/prod/img/shop/banner/${FALLBACK_BANNER_IMGS[index]}`,
   }));

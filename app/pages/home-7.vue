@@ -344,7 +344,6 @@ import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataTypeThree } from "~/types/coHeroSliderDataTypeThree";
 import AppImage from "~/components/ui/AppImage.vue";
 import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
-import { useProductsStore } from "~/store/useProductsStore";
 import ProductItemTwo from "~/components/products/ProductItemTwo.vue";
 import VideoModal from "~/components/modals/VideoModal.vue";
 import { useBlogs } from "~/composables/useBlogs";
@@ -406,13 +405,16 @@ const { data: catData } = useAsyncData<CategoryTreeResponse>(
 );
 const categoryItems = computed(() => (catData.value?.categoryTree ?? []).slice(3, 6));
 
-// 베스트 상품 + 추천 상품 (같은 스토어 공유)
-const productsStore = useProductsStore();
-const bestSaleProducts = computed(() => productsStore.products.filter((p) => p.isBest));
+// 베스트 상품 + 추천 상품 — 최신 상품 24개 중 isBest, 없으면 최신순으로 대체(백엔드 목록 API에 isBest 필터가 없어 전체 카탈로그 없이는 서버에서 못 거름)
+const latestProducts = useLatestProducts();
+const bestSaleProducts = computed(() => {
+  const best = latestProducts.value.filter((p) => p.isBest);
+  return best.length ? best : latestProducts.value;
+});
 const bigPrd1 = computed(() => bestSaleProducts.value.filter((p) => p.bigImg)[0]);
 const bigPrd2 = computed(() => bestSaleProducts.value.filter((p) => p.bigImg)[1]);
 const smBestPrd = computed(() => bestSaleProducts.value.filter((p) => !p.bigImg));
-const featuredProducts = computed(() => productsStore.products.filter((p) => p.isBest).filter((p) => !p.bigImg));
+const featuredProducts = computed(() => bestSaleProducts.value.filter((p) => !p.bigImg));
 
 // 동영상
 const videoBg = `${CDN_URL}/cdn/prod/img/bg/bg-video.webp`;

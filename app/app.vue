@@ -34,11 +34,9 @@ useHead({
   titleTemplate: (title) => title ? `${title} | ${appTitle}` : appTitle,
 });
 import { useCartStore } from "~/store/useCartStore";
-import { useProductsStore } from "~/store/useProductsStore";
 import { useAuthStore } from "~/store/useAuthStore";
 
 const cartStore = useCartStore();
-const productsStore = useProductsStore();
 const authStore = useAuthStore();
 
 onMounted(async () => {
@@ -48,9 +46,6 @@ onMounted(async () => {
   // 토큰 로드 후 사용자 정보 조회
   authStore.loadStToken();
   await authStore.loadStAuthInfo();
-
-  // 상품 목록 로드 (CSR)
-  productsStore.loadStProducts();
 });
 
 // 2026-09-13 버그수정: "블로그 상세 페이지에서 category-tree/sy/code가 조회되면 안 되는데"

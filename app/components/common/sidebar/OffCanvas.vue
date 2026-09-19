@@ -81,9 +81,6 @@ const mobile_menus: MenuDataType[] = [
         dropdown: true,
         dropdownMenu: [
           { link: "/shop", title: "기본 쇼핑" },
-          { link: "/shop-right", title: "쇼핑 (우측 사이드바)" },
-          { link: "/shop-4-col", title: "쇼핑 4단" },
-          { link: "/shop-3-col", title: "쇼핑 3단" },
           { link: "/prod-dtl", title: "상품 상세" },
         ],
       },

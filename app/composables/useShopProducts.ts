@@ -4,9 +4,8 @@
  * 2026-09-13(요청사항: "상품이 10000개가 될수도 있기에 페이징 api 조회 해야해" +
  * "하단은 페이징을두지말고 더보기 자동 스크롤로 해줘" +
  * "좌측 항목은 가급적 멀티 선택할 수 있도록 해줘 항목마다 토글이지") —
- * 기존 useProductsStore(전체 상품을 한 번에 불러와 클라이언트에서 .filter())는 홈 화면
- * 인기상품/베스트/장바구니 등 다른 여러 화면이 그대로 기대고 있어 건드리지 않고,
- * 이 컴포저블은 /shop 전용 "서버가 페이지 단위로 내려주는" 별도 상태를 갖는다.
+ * 전체 상품을 한 번에 받아 클라이언트에서 .filter() 하던 옛 useProductsStore 는 제거됐고
+ * (2026-09-20), 이 컴포저블이 /shop 전용 "서버가 페이지 단위로 내려주는" 상태를 갖는다.
  *
  * 카테고리/브랜드/사이즈는 전부 배열(멀티선택, 토글)로 관리하고 ecBeBo(2026-09-13 확장
  * — categoryIds/brandIds/sizeInfoCds IN 조건)에 그대로 넘겨 진짜 서버에서 필터링된다.
@@ -123,6 +122,13 @@ export function useShopProducts(initialKeyword = "") {
     }
   }
 
+  // 사이드바 색상 스와치 — 지금까지 불러온 상품의 옵션 색상(색상 필터 적용 전 기준이라 선택해도 목록이 줄지 않는다).
+  const allColors = computed(() => {
+    const codes = new Set<string>();
+    items.value.forEach((p) => p.optionColors?.forEach((o) => codes.add(o.optionCode ?? String(o.optionId))));
+    return Array.from(codes);
+  });
+
   // 색상만 클라이언트 보조필터 적용(위 주석 참조) — 나머지는 전부 서버에서 이미 걸러져 온 결과.
   const displayItems = computed(() => {
     if (!colorFilter.value) return items.value;
@@ -198,6 +204,7 @@ export function useShopProducts(initialKeyword = "") {
     loadMore,
     // 결과
     items: displayItems,
+    allColors,
     rawCount: computed(() => items.value.length),
     totalCount,
     hasMore,

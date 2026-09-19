@@ -229,7 +229,7 @@
             </div>
           </div>
           <div class="row">
-            <div v-for="(prdItem, i) in store.getStRelatedProducts(item.category?.categoryId ?? '', item.prodId)" :key="i" class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+            <div v-for="(prdItem, i) in relatedProducts" :key="i" class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
               <product-item :item="prdItem" />
             </div>
           </div>
@@ -248,7 +248,6 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonProductDetail from "~/components/ui/SkeletonProductDetail.vue";
-import { useProductsStore } from "~/store/useProductsStore";
 import { type PdProductType } from "~/types/pdProductType";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
@@ -273,11 +272,17 @@ const { data: item, pending } = await useAsyncData<PdProductType | null>(
   { default: () => null }
 );
 
-// 전체 상품 목록은 CSR에서 별도 로드 (관련 상품 등 활용) — 관련상품 섹션(store.getStRelatedProducts)도 이 스토어 재사용
-const store = useProductsStore();
-if (import.meta.client && !store.loaded) {
-  store.loadStProducts();
-}
+// 관련 상품 — 같은 카테고리 상품 4개만 별도 조회(전체 카탈로그 X). SEO 대상이 아니라 서버 렌더에서는 뺀다.
+const { data: relatedList } = useAsyncData<PdProductType[]>(
+  `related-${item.value?.prodId ?? "none"}`,
+  async () => {
+    const categoryId = item.value?.category?.categoryId;
+    if (!categoryId) return [];
+    return (await pdProductSvc.getPaged({ pageNo: 1, pageSize: 5, categoryIds: [categoryId] })).items;
+  },
+  { default: () => [], lazy: true, server: false }
+);
+const relatedProducts = computed(() => relatedList.value.filter((p) => p.prodId !== item.value?.prodId).slice(0, 4));
 
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useGa } from "~/composables/useGa";

@@ -66,16 +66,12 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('트렌드 상품 3');
 import { computed } from "vue";
-import { useProductsStore } from "~/store/useProductsStore";
 import ProductItem from "./ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 
-const store = useProductsStore();
-const big_item_1 = computed(() => store.products.filter((p) => p.bigImg)[0]);
-const big_item_2 = computed(() => store.products.filter((p) => p.bigImg)[1]);
-// 2026-09-13 버그수정: trending=true 상품이 없으면 항상 비어 보이던 문제 — 없으면 전체로 대체.
-const trending_products = computed(() => {
-  const trending = store.products.filter((p) => p.trending);
-  return (trending.length ? trending : store.products).slice(0, 4);
-});
+// trending 플래그는 실 스키마에 없어 항상 false(mapProduct.ts) — 최신 상품 기준으로 노출한다.
+const products = useLatestProducts();
+const big_item_1 = computed(() => products.value.filter((p) => p.bigImg)[0]);
+const big_item_2 = computed(() => products.value.filter((p) => p.bigImg)[1]);
+const trending_products = computed(() => products.value.slice(0, 4));
 </script>

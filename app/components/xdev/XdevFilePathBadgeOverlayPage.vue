@@ -68,9 +68,6 @@ const PAGES_FILE_MAP: { filePath: string; routePath: string }[] = [
   { filePath: "compare.vue", routePath: "/compare" },
   { filePath: "wishlist.vue", routePath: "/wishlist" },
   { filePath: "shop.vue", routePath: "/shop" },
-  { filePath: "shop-right.vue", routePath: "/shop-right" },
-  { filePath: "shop-3-col.vue", routePath: "/shop-3-col" },
-  { filePath: "shop-4-col.vue", routePath: "/shop-4-col" },
   { filePath: "blog.vue", routePath: "/blog" },
   { filePath: "blog-2-col.vue", routePath: "/blog-2-col" },
   { filePath: "blog-3-col.vue", routePath: "/blog-3-col" },
@@ -121,7 +118,7 @@ function buildPagesTree(): SelectTreeItem[] {
   }
   const dirOrder = [
     "index", "404", "contact", "login", "register", "account", "cart", "checkout", "compare", "wishlist",
-    "shop", "shop-right", "shop-3-col", "shop-4-col", "blog", "blog-dtl", "prod-dtl",
+    "shop", "blog", "blog-dtl", "prod-dtl",
     "home-2", "home-3", "home-4", "home-5", "home-6", "home-7",
     "dp", "xdev-open-comp",
   ];
@@ -214,7 +211,6 @@ const COMPONENT_PATHS = [
   "products/TrendingProductTwo",
   "products/TrendingProductThree",
   "products/TrendingProducts",
-  "shop/filter-widget/SortFiltering",
   "shop-banner/ShopBanner",
   "shop-details/ProductDetailsContent",
   "social/Social",

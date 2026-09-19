@@ -267,7 +267,6 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
-import { useProductsStore } from "~/store/useProductsStore";
 import ProductItem from "~/components/products/ProductItem.vue";
 import ProductListItem from "~/components/products/ProductListItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
@@ -291,9 +290,7 @@ const route = useRoute();
 const initialQuery = typeof route.query.q === "string" ? route.query.q : "";
 
 // ── 쇼핑 영역 — 2026-09-13(요청사항: "10000개가 될수도 있기에 페이징 api 조회 해야해") ──
-// 기존 useProductsStore(전체 상품 클라이언트 필터링)를 안 쓰고, /shop 전용 서버
-// 페이징/멀티선택 필터 컴포저블을 쓴다. useProductsStore는 "추천 상품" 등 다른 화면과
-// 공유되는 부분에서만 계속 쓴다(app.vue의 전역 로드가 채워줌).
+// /shop 전용 서버 페이징/멀티선택 필터 컴포저블(전체 상품 클라이언트 필터링 X).
 const shopProducts = useShopProducts(initialQuery);
 const { formatPrice } = usePrice();
 
@@ -352,19 +349,15 @@ const { data: brandList } = useAsyncData(
   { default: () => [], lazy: true, server: false }
 );
 
-// ── 사이드바: 상품 색상 (옛 ProductColor) — useProductsStore가 채워주는 전역 상품목록에서
-//    옵션값만 훑는다(색상은 ecBeBo 서버 필터가 아직 없어 이 화면 자체 필터링용 참고 목록).
-const store = useProductsStore();
-const allColor = computed(() => {
-  const optionIds = new Set<string>();
-  store.products.forEach((product) => {
-    product.optionColors?.forEach((opt) => optionIds.add(opt.optionCode ?? String(opt.optionId)));
-  });
-  return Array.from(optionIds);
-});
+// ── 사이드바: 상품 색상 — 지금까지 불러온 상품의 옵션값(색상은 ecBeBo 서버 필터가 아직 없음) ──
+const allColor = shopProducts.allColors;
 
-// ── 사이드바: 추천 상품 (옛 ProductsFeatured) ─────────────────────────────
-const featuredProducts = computed(() => store.products.filter((p) => p.trending).slice(0, 2));
+// ── 사이드바: 추천 상품 — 최신 상품 24개 중 베스트 2개, 없으면 최신 2개(백엔드에 isBest 서버 필터 없음) ──
+const latestProducts = useLatestProducts();
+const featuredProducts = computed(() => {
+  const best = latestProducts.value.filter((p) => p.isBest);
+  return (best.length ? best : latestProducts.value).slice(0, 2);
+});
 
 // ── 더보기 자동 스크롤(IntersectionObserver) ─────────────────────────────
 const loadMoreSentinel = ref<HTMLElement | null>(null);

@@ -1,24 +1,20 @@
 import { beApi, type BePage } from "~~/server/utils/beApi";
 import { mapProduct, type BeProdItem } from "~~/server/utils/mapProduct";
-import { getAllProdPage } from "~~/server/utils/beProducts";
 import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
 
 /**
- * 상품 목록. ecBeBo GET /api/fo/ec/pd/prod/page 프록시 (BFF, 2026-09 전환 — DB 직접조회 없음).
+ * 상품 목록(서버 페이징/멀티선택 필터). ecBeBo GET /api/fo/ec/pd/prod/page 프록시 (BFF, 2026-09 전환).
  *
- * 2026-09-13(요청사항: "상품이 10000개가 될수도 있기에 페이징 api 조회 해야해" +
- * "좌측 항목은 가급적 멀티 선택할 수 있도록") — 두 가지 모드로 동작한다:
+ * 2026-09-20: 쿼리 없이 호출하면 전체 카탈로그(최대 1000건, 실측 15초+)를 내려주던 "전체 목록 모드"는
+ * 제거했다 — 전역 useProductsStore 가 사라지고 모든 화면이 필요한 만큼만 페이징으로 조회한다.
+ * pageNo 가 없으면 1페이지로 처리한다.
  *
- *  1) 쿼리스트링 없이 호출(예전 그대로) → useProductsStore가 쓰는 "거의 전체 목록 한 번에"
- *     모드 유지(getAllProdPage 캐시 공유). 홈 화면 인기상품/베스트/장바구니 등 여러 화면이
- *     이 store 하나에 기대고 있어 건드리지 않는다.
- *  2) pageNo 쿼리가 있으면 → 진짜 서버 페이징/멀티선택 필터 모드. ecBeBo(2026-09-13 확장,
- *     PdProdDto.Request의 categoryIds/brandIds/sizeInfoCds(List)+priceMin/priceMax)에
- *     그대로 위임 — categoryIds/brandIds/sizeCds는 프론트에서 콤마 조합 문자열로 보내고
- *     여기서 다시 배열로 쪼개 beApi에 반복 파라미터로 넘긴다(Spring @ModelAttribute List<String>
- *     바인딩은 동일 이름 반복 파라미터 형식을 기대함).
+ * ecBeBo(2026-09-13 확장, PdProdDto.Request의 categoryIds/brandIds/sizeInfoCds(List)+priceMin/priceMax)에
+ * 그대로 위임 — categoryIds/brandIds/sizeCds는 프론트에서 콤마 조합 문자열로 보내고
+ * 여기서 다시 배열로 쪼개 beApi에 반복 파라미터로 넘긴다(Spring @ModelAttribute List<String>
+ * 바인딩은 동일 이름 반복 파라미터 형식을 기대함).
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -26,25 +22,16 @@ export default defineEventHandler(async (event) => {
   logger.info("[api] ▶", method, url);
 
   const query = getQuery(event);
-  const isPaged = query.pageNo !== undefined;
-
-  if (!isPaged) {
-    // 기존 모드: 전체 목록(캐시 공유) — useProductsStore 등 기존 소비자 그대로 유지.
-    const page = await getAllProdPage();
-    const out = page.pageList.map((p) => mapProduct(p));
-    logger.info("[api] ◀", method, url, "list size=" + out.length + " (legacy full-list mode)");
-    return out;
-  }
 
   const splitCsv = (v: unknown): string[] | undefined => {
     if (typeof v !== "string" || !v) return undefined;
     return v.split(",").filter(Boolean);
   };
 
-  // 진짜 페이징 모드: ecBeBo에 그대로 위임. 동일 조합 요청이 짧은 시간 내 반복될 수 있어
+  // ecBeBo에 그대로 위임. 동일 조합 요청이 짧은 시간 내 반복될 수 있어
   // (스크롤 다시 위로 올렸다 내리는 등) 10초 짧은 캐시로 자택 NAS 부하만 살짝 눌러준다.
   const beQuery: Record<string, unknown> = {
-    pageNo: query.pageNo,
+    pageNo: query.pageNo ?? 1,
     pageSize: query.pageSize ?? 12,
     useYn: "Y",
   };
