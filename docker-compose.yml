@@ -23,6 +23,15 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+    # ───── 백엔드 주소 런타임 오버라이드 ─────
+    # 빌드 시 .env.development 의 NUXT_API_BASE_URL(=https://22300.illeesam.synology.me, 이 NAS 자신의
+    # 공인 DDNS)이 번들에 들어가는데, 컨테이너가 자기 NAS 의 공인 주소로 나갔다 되돌아오는 경로(NAT
+    # 헤어핀)는 공유기에 따라 타임아웃난다(2026-09-19 실측: /shop 이 502/timeout). ecBeBo compose 의
+    # DB_HOST=host.docker.internal 과 같은 이유 — 같은 NAS 의 ecBeBo(22300)를 호스트 경유로 직접 부른다.
+    # (Nitro 는 NUXT_* 환경변수가 번들 기본값보다 우선한다. 브라우저용 공개 값은 영향 없음.)
+    environment:
+      NUXT_API_BASE_URL: "http://host.docker.internal:22300"
+
     # ───── 포트 (호스트:컨테이너) ─────
     # 22100: 기존 22000(ecFeBo)/22099(gateway)/22300(ecBeBo)/22400(ecBeCdn)/22379(redis)/22900(jenkins)
     # 와 겹치지 않는 번호. DSM 리버스 프록시로 22100.illeesam.synology.me(HTTPS)를 이 포트에
