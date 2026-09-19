@@ -49,7 +49,7 @@ async function beFetchOnce<T>(url: string, method: string, opts: BeCallOptions):
     // 2026-09-13 재조정: 8초는 재시도까지 겹치면(8+8=16초) 페이지 전체가 15초 넘게
     // 멎어 보이는 원인이었다 — 자택 NAS가 느릴 땐 8초를 기다려도 대체로 성공하지
     // 않았으므로(직접 curl은 항상 0.2~2초) 5초로 낮춰 실패를 더 빨리 확정한다.
-    timeout: opts.timeout ?? 5000,
+    timeout: opts.timeout ?? 4000,
     // ecBeBo는 오류도 200이 아닌 실제 HTTP status(400/401/404/500...)로 내려준다.
     // $fetch가 던지는 FetchError를 아래 catch에서 envelope 형태로 다시 해석한다.
   } as Parameters<typeof $fetch>[1]);
@@ -83,9 +83,13 @@ async function beFetch<T>(path: string, opts: BeCallOptions = {}): Promise<T> {
     // 이미 밀린 상태라 바로 다시 붙어도 또 5초를 태울 뿐 성공률이 크게 오르지 않았고,
     // 오히려 사용자 체감 대기시간만 두 배(최대 10초)로 늘렸다. 타임아웃이 아닌 순간적인
     // 연결 오류(ECONNRESET 등)만 재시도 가치가 있다고 보고 그 경우에만 1회 재시도한다.
+    //
+    // 2026-09-19 재조정: 그 뒤 ecBeBo 쪽 DB 커넥션 유지 설정으로 NAS 가 평소엔 0.1초대로 응답하게 됐다. 지금 남은 타임아웃의 주된 원인은
+    // "콜드스타트한 함수 인스턴스의 첫 NAS 연결이 몇 초 멈추는" 일과성 지연(운영 실측: 배포/유휴 직후 첫 몇 요청만 5~6초 뒤 502, 이후 정상)이라
+    // 타임아웃이어도 재시도하면 대체로 성공한다 — 1차 타임아웃을 4초로 줄이고 GET 은 타임아웃에도 1회 재시도한다(최악 8초 < 이전 10초).
     const isTimeout = (fetchErr?.message ?? "").toLowerCase().includes("timeout") || (err as { name?: string })?.name === "TimeoutError";
-    if (method === "GET" && !isTimeout) {
-      logger.warn("[beApi]", method, url, "연결 실패 — 1회 재시도:", fetchErr?.message ?? err);
+    if (method === "GET") {
+      logger.warn("[beApi]", method, url, isTimeout ? "타임아웃 — 1회 재시도:" : "연결 실패 — 1회 재시도:", fetchErr?.message ?? err);
       try {
         return await beFetchOnce<T>(url, method, opts);
       } catch (retryErr) {
@@ -99,7 +103,7 @@ async function beFetch<T>(path: string, opts: BeCallOptions = {}): Promise<T> {
 }
 
 export const beApi = {
-  /** timeout(ms) 생략 시 기본 5초 — 응답이 평소 더 오래 걸리는 걸 아는 호출(예: 전체상품 1000건)만 넉넉히 늘려서 넘길 것 */
+  /** timeout(ms) 생략 시 기본 4초 — 응답이 평소 더 오래 걸리는 걸 아는 호출(예: 전체상품 1000건)만 넉넉히 늘려서 넘길 것 */
   get: <T>(path: string, query?: Record<string, unknown>, headers?: Record<string, string>, timeout?: number) => beFetch<T>(path, { method: "GET", query, headers, timeout }),
   post: <T>(path: string, body?: unknown, headers?: Record<string, string>) => beFetch<T>(path, { method: "POST", body, headers }),
   put: <T>(path: string, body?: unknown, headers?: Record<string, string>) => beFetch<T>(path, { method: "PUT", body, headers }),

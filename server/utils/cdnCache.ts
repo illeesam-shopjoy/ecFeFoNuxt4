@@ -10,10 +10,12 @@ import type { H3Event } from "h3";
  * - `Netlify-CDN-Cache-Control` 은 Netlify CDN 전용 헤더(브라우저·다른 호스팅에선 무시됨 — synol Docker 에서도 무해).
  *   ⚠ 이 대상지정 헤더에서는 s-maxage 가 아니라 max-age 를 써야 신선도로 인정된다(s-maxage 로 보냈더니 저장만 되고 매번 원본 재조회 — 2026-09-19 실측).
  *   durable = 엣지 노드마다가 아니라 Netlify 중앙(내구성) 캐시를 함께 써서 트래픽이 적어도 hit 가 나오게 한다.
+
+ * - stale-if-error: 원본(함수→NAS)이 502 등으로 실패해도 하루까지는 직전 캐시본을 대신 내려준다(콜드스타트 직후 첫 호출 실패 완화).
  * - max-age 동안은 신선, 그 뒤 swr 동안은 낡은 응답을 즉시 주면서 뒤에서 갱신(stale-while-revalidate).
  * - 새 배포 시 Netlify 가 캐시를 자동 무효화한다.
  * - 성공(2xx) 응답에서만 호출할 것 — 오류 응답(502 등)이 캐시되면 안 된다. 로그인이 필요한/사용자별 응답에는 절대 쓰지 말 것.
  */
 export function cdnCache(event: H3Event, seconds: number, swrSeconds = seconds * 5): void {
-  setHeader(event, "netlify-cdn-cache-control", `public, max-age=${seconds}, stale-while-revalidate=${swrSeconds}, durable`);
+  setHeader(event, "netlify-cdn-cache-control", `public, max-age=${seconds}, stale-while-revalidate=${swrSeconds}, stale-if-error=86400, durable`);
 }

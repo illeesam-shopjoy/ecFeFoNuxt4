@@ -6,5 +6,5 @@
 export function useCdnCache(seconds: number, swrSeconds = seconds * 5): void {
   if (!import.meta.server) return;
   const header = useResponseHeader("netlify-cdn-cache-control");
-  header.value = `public, max-age=${seconds}, stale-while-revalidate=${swrSeconds}, durable`;
+  header.value = `public, max-age=${seconds}, stale-while-revalidate=${swrSeconds}, stale-if-error=86400, durable`;
 }
