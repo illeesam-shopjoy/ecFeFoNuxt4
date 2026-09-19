@@ -109,7 +109,7 @@ async function onSubmit() {
     await useAlert().openAlert("가입이 완료되었습니다. 로그인해 주세요.");
     router.push("/login");
   } else {
-    errorMsg.value = result.message ?? "회원가입에 실패했습니다.";
+    errorMsg.value = (result.message ?? "회원가입에 실패했습니다.").split("::")[0]!;
   }
 }
 </script>

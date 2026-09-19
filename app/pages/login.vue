@@ -15,7 +15,7 @@
                    입력칸은 fo-form 이 그리고, 그 아래 로그인 유지/버튼/소셜/회원가입 영역은 #actions 슬롯(같은 form 안)에 둔다. -->
               <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="onSubmit">
                 <template #actions>
-                <div class="login-action mb-20 fix">
+                <div class="login-action mb-20 fix flex items-center justify-between">
                   <span class="log-rem f-left">
                     <input id="remember" type="checkbox" />
                     <label for="remember">로그인 상태 유지</label>
@@ -160,7 +160,7 @@ async function onSubmit() {
     form.password = "";
     router.push("/");
   } else {
-    errorMsg.value = result.message ?? "로그인에 실패했습니다.";
+    errorMsg.value = (result.message ?? "로그인에 실패했습니다.").split("::")[0]!;
   }
 }
 </script>

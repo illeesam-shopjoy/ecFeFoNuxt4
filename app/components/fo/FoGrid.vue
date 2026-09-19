@@ -237,22 +237,23 @@ const actVisible = (a: FoGridRowAction, row: FoRow, idx: number) => (a.visible ?
   border-bottom: 1.5px solid #e5e7eb;
   white-space: nowrap;
 }
-.fo-grid-table tbody td {
+.fo-grid-table :deep(tbody td) {
   padding: 10px 12px;
   color: #4b5563;
   border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
 }
-.fo-grid-table tbody tr:nth-child(even):not(.fo-grid-expand-row) {
+.fo-grid-table :deep(tbody tr:nth-child(even):not(.fo-grid-expand-row)) {
   background: #fcfcfb;
 }
-.fo-grid-table tbody tr.fo-grid-clickable {
+.fo-grid-table :deep(tbody tr.fo-grid-clickable) {
   cursor: pointer;
 }
-.fo-grid-table tbody tr.fo-grid-clickable:hover {
+.fo-grid-table :deep(tbody tr.fo-grid-clickable:hover) {
   background: #faf5ee;
 }
-.fo-grid-table tfoot td {
+.fo-grid-table :deep(tfoot td),
+.fo-grid-table :deep(tfoot th) {
   padding: 10px 12px;
   border-top: 1.5px solid #e5e7eb;
   font-weight: 700;
