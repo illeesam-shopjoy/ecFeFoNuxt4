@@ -337,6 +337,7 @@ function handleAddrSelected(result: AddrSearchResult) {
 // 로그인 회원의 기본 배송지가 있으면 결제 정보에 미리 채워준다.
 onMounted(async () => {
   const authStore = useAuthStore();
+  authStore.loadStToken(); // app.vue 의 토큰 복원보다 페이지 마운트가 먼저라(자식 onMounted 가 먼저) 새로고침 시 로그인 상태가 비어 있었다 — useMyList.ts 와 같은 처리
   if (!authStore.isStLoggedIn) return;
   try {
     const addrs = await myAddrSvc.getMyAddrs();
