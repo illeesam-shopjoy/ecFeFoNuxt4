@@ -401,7 +401,7 @@ function handleHeroPrev() {
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
-  { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true }
+  { default: () => ({ categoryTree: [], categoryIdToName: {}, categoryIdToDescendants: {} }), lazy: true }
 );
 const categoryItems = computed(() => (catData.value?.categoryTree ?? []).slice(3, 6));
 

@@ -21,6 +21,12 @@ export interface CategoryTreeItem {
 export interface CategoryTreeResponse {
   categoryTree: CategoryTreeItem[];
   categoryIdToName: Record<string, string>;
+  /**
+   * 카테고리 id → 자기 자신 + 모든 하위 카테고리 id.
+   * 상품은 보통 최하위(3단계) 카테고리에 속하는데 백엔드 categoryIds 필터는 정확히 일치만 지원하므로,
+   * 사이드바에서 상위/중간 카테고리를 고르면 이 목록으로 확장해서 조회한다(useShopProducts).
+   */
+  categoryIdToDescendants: Record<string, string[]>;
 }
 
 interface BeCategory {
@@ -62,6 +68,10 @@ export const pdCategorySvc = {
         smDesc: c.categoryDesc ?? undefined,
       }));
 
-    return { categoryTree, categoryIdToName: nameById };
+    // 자기 자신 + 모든 깊이의 하위 id (트리 깊이 제한 없음)
+    const descendants = (id: string): string[] => [id, ...(childrenByParent.get(id) ?? []).flatMap((c) => descendants(c.id))];
+    const categoryIdToDescendants = Object.fromEntries(rows.map((c) => [c.categoryId, descendants(c.categoryId)]));
+
+    return { categoryTree, categoryIdToName: nameById, categoryIdToDescendants };
   },
 };

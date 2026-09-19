@@ -61,13 +61,6 @@
                       <span class="w-5 h-5 rounded flex items-center justify-center text-[12px] font-bold">K</span>
                       카카오 로그인
                     </a>
-                    <a
-                      href="/api/auth/apple"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-800 bg-gradient-to-br from-[#3a3a3a] to-black hover:from-black hover:to-black text-white text-sm font-medium shadow-sm hover:shadow-md transition"
-                    >
-                      <span class="w-5 h-5 rounded flex items-center justify-center text-white text-sm">&#63743;</span>
-                      Apple 로그인
-                    </a>
                   </div>
                 </div>
 

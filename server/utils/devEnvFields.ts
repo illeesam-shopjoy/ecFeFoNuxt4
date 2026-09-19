@@ -31,10 +31,6 @@ export const DEV_ENV_FIELDS: DevEnvField[] = [
   { key: "NAVER_CLIENT_ID", label: "클라이언트 ID", group: "네이버 로그인", secret: false },
   { key: "NAVER_CLIENT_SECRET", label: "클라이언트 시크릿", group: "네이버 로그인", secret: true },
 
-  { key: "APPLE_CLIENT_ID", label: "Service ID", group: "애플 로그인", secret: false },
-  { key: "APPLE_TEAM_ID", label: "Team ID", group: "애플 로그인", secret: false },
-  { key: "APPLE_KEY_ID", label: "Key ID", group: "애플 로그인", secret: false },
-  { key: "APPLE_PRIVATE_KEY", label: "Private Key", group: "애플 로그인", secret: true },
 
   // 2026-09-14 시점엔 아직 지도 위젯이 실제로 연동돼 있지 않음(코드에서 안 씀) — 값만 미리
   // 저장해둘 수 있게 자리만 마련. nuxt.config.ts public.kakaoMapKey/googleMapsKey로 노출.

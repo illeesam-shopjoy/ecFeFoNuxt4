@@ -212,7 +212,6 @@ import Layout from "~/layout/Layout.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
 import { type CoBlogType } from "~/types/coBlogType";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { computed } from "vue";
 import BlogItem from "~/components/blogs/BlogItem.vue";
 import BlogSidebar from "~/components/common/sidebar/BlogSidebar.vue";
@@ -227,11 +226,10 @@ import * as yup from "yup";
 const route = useRoute();
 const id = route.params.id as string;
 
-// SEO 단위화면: 서버 렌더링(SSR)일 때만 server/api(같은 Lambda 안 내부 호출, axiosSsr) → SEO 메타 적용.
-// 브라우저(클라이언트 내비게이션)는 svc 로 ecBeBo 를 직접 호출한다.
+// CSR 화면 — 브라우저가 svc 로 ecBeBo 를 직접 호출한다(2026-09-20: 블로그 상세는 SEO 서버 렌더 대상에서 제외).
 const { data: item, pending } = await useAsyncData<CoBlogType>(
   `blog-${id}`,
-  () => (import.meta.server ? axiosSsr.get<CoBlogType>(`/api/fo/ec/cm/bltn/${id}`).then((r) => r.data) : coBlogSvc.getById(id))
+  () => coBlogSvc.getById(id)
 );
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -244,7 +242,6 @@ useSeoMeta({
   ogImage: item.value?.img,
 });
 usePageTitle("블로그 상세");
-if (item.value) useCdnCache(60); // 서버 렌더 결과(데이터 있음)만 Netlify CDN 60초 캐시 — 오류/빈 페이지는 캐시 안 함
 
 // GA4: 상세 조회 데이터 기준으로 page_view 전송
 const { sendPageView } = useGa();

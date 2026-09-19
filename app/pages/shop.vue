@@ -311,7 +311,7 @@ const { data: catData } = useAsyncData<CategoryTreeResponse>(
   () => pdCategorySvc.getCategoryTree(),
   // 2026-09-19: server:false — 사이드바는 SEO 대상이 아닌데 서버 렌더가 이걸 기다리면(특히 Netlify→NAS WAN) 페이지 응답이 그만큼 늦어진다.
   //   브라우저에서 불러오며 응답은 CDN 캐시(server/utils/cdnCache.ts)를 탄다.
-  { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true, server: false }
+  { default: () => ({ categoryTree: [], categoryIdToName: {}, categoryIdToDescendants: {} }), lazy: true, server: false }
 );
 
 const parentCategories = computed(() => {

@@ -14,29 +14,11 @@
  * (전체 카탈로그 기준 아님 — 색상은 서버 필터 추가 전까지 이 한계를 안고 감).
  */
 import { ref, computed, watch, onBeforeUnmount } from "vue";
-import { pdProductSvc, type PdProductPageParams, type PdProductPagedResult } from "~/svc/fo/ec/pd/pdProductSvc";
-import { axiosSsr } from "~/utils/axiosSsr";
+import { pdProductSvc, type PdProductPagedResult } from "~/svc/fo/ec/pd/pdProductSvc";
 import { type PdProductType } from "~/types/pdProductType";
+import type { CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
 
 const PAGE_SIZE = 12;
-
-/**
- * 상품 목록 조회. /shop 은 SEO 단위화면이라 **서버 렌더링(SSR)일 때만** server/api(같은 Lambda 안 내부 호출, axiosSsr)를 거치고,
- * 브라우저(필터 변경·더보기)는 svc 로 ecBeBo 를 직접 호출한다.
- * server/api 는 배열 파라미터를 콤마 문자열로 받는다(server/api/fo/ec/pd/prod/page.get.ts).
- */
-function fetchProducts(params: PdProductPageParams): Promise<PdProductPagedResult> {
-  if (!import.meta.server) return pdProductSvc.getPaged(params);
-  const q: Record<string, string | number> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12 };
-  if (params.categoryIds?.length) q.categoryIds = params.categoryIds.join(",");
-  if (params.brandIds?.length) q.brandIds = params.brandIds.join(",");
-  if (params.sizeCds?.length) q.sizeCds = params.sizeCds.join(",");
-  if (params.priceMin != null) q.priceMin = params.priceMin;
-  if (params.priceMax != null) q.priceMax = params.priceMax;
-  if (params.sort) q.sort = params.sort;
-  if (params.keyword) q.keyword = params.keyword;
-  return axiosSsr.get<PdProductPagedResult>("/api/fo/ec/pd/prod/page", { params: q }).then((r) => r.data);
-}
 
 function toggleIn(arr: string[], value: string): string[] {
   return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
@@ -53,9 +35,17 @@ export function useShopProducts(initialKeyword = "") {
   // 색상만 서버 필터가 없어 클라이언트 보조필터로 남김(위 주석 참조)
   const colorFilter = ref("");
 
+  // 사이드바에서 고른 카테고리를 하위 카테고리까지 확장해서 조회한다 — 백엔드 categoryIds 필터는 정확히 일치만 지원하고
+  // 상품은 최하위 카테고리에 속하기 때문. shop.vue 가 이미 불러온 카테고리 트리(key "category-tree")의 캐시를 그대로 쓴다.
+  const { data: categoryTree } = useNuxtData<CategoryTreeResponse>("category-tree");
+  const expandCategoryIds = (ids: string[]): string[] => {
+    const map = categoryTree.value?.categoryIdToDescendants ?? {};
+    return [...new Set(ids.flatMap((id) => map[id] ?? [id]))];
+  };
+
   function buildParams(pageNo: number) {
     const params: Parameters<typeof pdProductSvc.getPaged>[0] = { pageNo, pageSize: PAGE_SIZE };
-    if (categoryIds.value.length) params.categoryIds = categoryIds.value;
+    if (categoryIds.value.length) params.categoryIds = expandCategoryIds(categoryIds.value);
     if (brandIds.value.length) params.brandIds = brandIds.value;
     if (sizeCds.value.length) params.sizeCds = sizeCds.value;
     if (priceRange.value[0] > 0) params.priceMin = priceRange.value[0];
@@ -76,7 +66,7 @@ export function useShopProducts(initialKeyword = "") {
     data: firstPage,
     pending,
     refresh,
-  } = useAsyncData<PdProductPagedResult>("shop-products-paged", () => fetchProducts(buildParams(1)));
+  } = useAsyncData<PdProductPagedResult>("shop-products-paged", () => pdProductSvc.getPaged(buildParams(1)));
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   watch(
@@ -130,7 +120,7 @@ export function useShopProducts(initialKeyword = "") {
     loadingMore.value = true;
     try {
       const next = pageNo.value + 1;
-      const res = await pdProductSvc.getPaged(buildParams(next)); // 더보기는 브라우저 전용 — svc 직접 호출
+      const res = await pdProductSvc.getPaged(buildParams(next));
       extraItems.value = [...extraItems.value, ...res.items];
       pageNo.value = next;
       extraHasMore.value = res.hasMore;

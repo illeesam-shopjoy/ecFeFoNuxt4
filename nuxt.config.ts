@@ -61,12 +61,10 @@ export default defineNuxtConfig({
   // 하이브리드 렌더링: SEO 필요 페이지만 SSR, 나머지는 CSR
   routeRules: {
     "/**": { ssr: false }, // 기본: CSR (SPA)
-    "/shop": { ssr: true }, // 상품 목록: SSR + SEO
+    // 2026-09-20: SSR(SEO)은 상품 상세(/prod-dtl/:id)만 — server/api 도 이 화면용(fo/ec/pd/prod/[id])만 둔다. 나머지는 전부 CSR.
     "/prod-dtl/**": { ssr: true }, // 상품 상세 (/:id): SSR + SEO
-    "/blog-dtl/**": { ssr: true }, // 블로그 상세 (/:id): SSR + SEO
-    // id 없는 /prod-dtl, /blog-dtl 은 "목록 첫 건" 미리보기(SEO 대상 아님) — CSR(svc 직접 호출). 더 구체적인 규칙이 위 와일드카드보다 우선한다.
+    // id 없는 /prod-dtl 은 "목록 첫 건" 미리보기(SEO 대상 아님) — CSR(svc 직접 호출). 더 구체적인 규칙이 위 와일드카드보다 우선한다.
     "/prod-dtl": { ssr: false },
-    "/blog-dtl": { ssr: false },
     // 옛 템플릿 쇼핑 변형 페이지(전체 상품을 받아 클라이언트 필터링) — 서버 페이징 /shop 으로 통합
     "/shop-right": { redirect: { to: "/shop", statusCode: 301 } },
     "/shop-3-col": { redirect: { to: "/shop", statusCode: 301 } },
@@ -110,10 +108,6 @@ export default defineNuxtConfig({
     naverClientSecret: process.env.NAVER_CLIENT_SECRET ?? "",
     kakaoClientId: process.env.KAKAO_CLIENT_ID ?? "",
     kakaoClientSecret: process.env.KAKAO_CLIENT_SECRET ?? "",
-    appleClientId: process.env.APPLE_CLIENT_ID ?? "",
-    appleTeamId: process.env.APPLE_TEAM_ID ?? "",
-    appleKeyId: process.env.APPLE_KEY_ID ?? "",
-    applePrivateKey: process.env.APPLE_PRIVATE_KEY ?? "",
     // 2026-09-12: 자체 Redis/JWT 로그인 제거 — 인증은 전부 ecBeBo(FoAuthController)를 통하고
     // 이 Nuxt 서버는 beApi.ts로 프록시만 한다(server/api/auth/*.ts 참조). useRedis/redisUrl/
     // authJwtSecret/authAccessTokenTtlSec/authRefreshTokenTtlSec 런타임설정은 그래서 폐기.
@@ -152,9 +146,6 @@ export default defineNuxtConfig({
   },
   hooks: {
     ready(nuxt) {
-      const port = nuxt.options.devServer?.port ?? 3000;
-      const host = (nuxt.options.devServer?.host === "0.0.0.0" ? "localhost" : nuxt.options.devServer?.host) ?? "localhost";
-      const swaggerUrl = `http://${host}:${port}/api/docs`;
       console.log("\n[Env] NUXT_* 환경변수:");
       Object.keys(process.env)
         .filter((k) => k.startsWith("NUXT_"))
@@ -167,7 +158,6 @@ export default defineNuxtConfig({
         envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
         appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       });
-      console.log("\n[Swagger] API 문서:", swaggerUrl, "\n");
     },
   },
 });
