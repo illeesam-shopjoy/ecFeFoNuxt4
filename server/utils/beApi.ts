@@ -107,6 +107,8 @@ export const beApi = {
   get: <T>(path: string, query?: Record<string, unknown>, headers?: Record<string, string>, timeout?: number) => beFetch<T>(path, { method: "GET", query, headers, timeout }),
   post: <T>(path: string, body?: unknown, headers?: Record<string, string>) => beFetch<T>(path, { method: "POST", body, headers }),
   put: <T>(path: string, body?: unknown, headers?: Record<string, string>) => beFetch<T>(path, { method: "PUT", body, headers }),
+  /** 2026-09-19: 알림 읽음 처리(PATCH /fo/my/noti/{id}/read) 용 */
+  patch: <T>(path: string, body?: unknown, headers?: Record<string, string>) => beFetch<T>(path, { method: "PATCH", body, headers }),
   delete: <T>(path: string, headers?: Record<string, string>) => beFetch<T>(path, { method: "DELETE", headers }),
 };
 
