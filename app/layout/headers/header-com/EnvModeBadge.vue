@@ -21,9 +21,17 @@
  * server-only)로만 이뤄지고, 여기서 쓰는 값들은 화면표시용 미러 — 호스트명일 뿐
  * 비밀값이 아니라 노출해도 무해하다.
  * 2026-09-14: RUN_MODE/API_URL/CDN_URL(app/conts/baseConst.ts)로 값 출처 통일.
+ * 2026-09-19 버그수정(요청사항: "netlify 는 prod, synology 는 dev 로 표시되어야") — baseConst 의 process.env.NUXT_PUBLIC_MODE 는
+ * nuxt.config.ts 를 읽는 빌드 시점에만 값이 있고, 빌드된 앱(브라우저/서버 런타임)에서는 process.env 가 비어 항상 기본값 "prod" 가
+ * 표시됐다(synology dev 도 prod 로 보임). 빌드 때 nuxt.config.ts 가 주입해 둔 runtimeConfig.public(mode/apiBaseUrlDisplay/prodCdnBase)을 쓴다:
+ * synology dev = .env.development 로 빌드 → dev, Netlify = 순수 nuxt build(모드 미지정) → 기본 prod.
  */
 import { computed } from "vue";
-import { RUN_MODE, API_URL, CDN_URL } from "~/conts/baseConst";
+
+const { public: pub } = useRuntimeConfig();
+const RUN_MODE = String(pub.mode ?? "");
+const API_URL = String(pub.apiBaseUrlDisplay ?? "");
+const CDN_URL = String(pub.prodCdnBase ?? "");
 
 const modeLabel = computed(() => {
   switch (RUN_MODE) {
