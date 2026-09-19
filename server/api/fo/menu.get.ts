@@ -103,6 +103,10 @@ const STATIC_MENUS: SyMenuTreeType[] = [
     title: "고객센터",
     hasDropdown: true,
     dropdownItems: [
+      { link: "/faq", title: "FAQ" },
+      { link: "/event", title: "이벤트" },
+      { link: "/about", title: "회사소개" },
+      { link: "/location", title: "위치안내" },
       { link: "/contact", title: "문의하기" },
       { link: "/register", title: "회원가입" },
       { link: "/login", title: "로그인" },

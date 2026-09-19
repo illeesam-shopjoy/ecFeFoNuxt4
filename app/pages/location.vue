@@ -1,0 +1,134 @@
+<template>
+  <layout :transparent="true">
+    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
+    <breadcrumb-area title="위치안내" subtitle="위치안내" />
+
+    <!-- 2026-09-19(요청사항: "회사위치 … ecFeFoNuxt4 페이지에 만들어줘") — ecFeBo(pages/fo/Location.js) 이식.
+         지도(구글 embed) + 외부 지도앱 링크 + 주소/영업시간/연락처 + 교통편. 카카오/네이버 SDK 지도는 키·도메인 등록이 필요해
+         이번 이식에서는 구글 embed 를 기본으로 하고 카카오/네이버는 새 창 링크로 연결한다(ecFeBo 도 SDK 실패 시 구글로 폴백). -->
+    <section class="pt-16 pb-24 bg-white">
+      <div class="max-w-7xl mx-auto px-4">
+        <!-- 지도 -->
+        <div class="bg-white border border-[#e5e7eb] rounded-lg overflow-hidden mb-6">
+          <iframe
+            :src="mapSrc"
+            title="ShopJoy 위치 지도"
+            width="100%"
+            class="block border-0 h-[clamp(240px,40vw,340px)]"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+          <div class="flex flex-wrap items-center gap-2 px-5 py-3 border-t border-[#e5e7eb]">
+            <span class="flex-1 min-w-[200px] text-[0.83rem] text-gray-600"><i class="fas fa-map-marker-alt text-red-500 mr-1.5"></i>{{ ADDR }} 201호</span>
+            <div class="flex gap-1.5 shrink-0 flex-wrap">
+              <a :href="kakaoLink" target="_blank" rel="noopener" class="map-link" style="background: #fee500; color: #3c1e1e">카카오맵</a>
+              <a :href="naverLink" target="_blank" rel="noopener" class="map-link" style="background: #03c75a; color: #fff">네이버지도</a>
+              <a :href="googleLink" target="_blank" rel="noopener" class="map-link" style="background: #4285f4; color: #fff">구글지도</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 주소 / 영업시간 / 연락처 -->
+        <div class="grid gap-4 mb-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+          <div class="bg-white border border-[#e5e7eb] rounded-lg p-5">
+            <div class="flex items-center gap-2.5 mb-3.5">
+              <div class="w-10 h-10 rounded-[10px] bg-blue-50 flex items-center justify-center text-blue-500"><i class="fas fa-map-marker-alt"></i></div>
+              <div class="text-base font-extrabold text-gray-900">주소</div>
+            </div>
+            <div class="text-[0.88rem] text-gray-600 leading-[1.8]">
+              <div class="font-semibold text-gray-900 mb-1">경기도 성남시 중원구</div>
+              <div>성남대로 997번길 49-14, 201호</div>
+              <div class="mt-2 text-[0.8rem] text-gray-400">우편번호: 13401</div>
+            </div>
+          </div>
+
+          <div class="bg-white border border-[#e5e7eb] rounded-lg p-5">
+            <div class="flex items-center gap-2.5 mb-3.5">
+              <div class="w-10 h-10 rounded-[10px] bg-green-50 flex items-center justify-center text-green-600"><i class="fas fa-clock"></i></div>
+              <div class="text-base font-extrabold text-gray-900">영업시간</div>
+            </div>
+            <div class="text-[0.87rem] text-gray-600 leading-[2]">
+              <div v-for="h in hours" :key="h.day" class="flex justify-between">
+                <span>{{ h.day }}</span>
+                <span class="font-bold" :class="h.closed ? 'text-red-500 font-semibold' : 'text-gray-900'">{{ h.time }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white border border-[#e5e7eb] rounded-lg p-5">
+            <div class="flex items-center gap-2.5 mb-3.5">
+              <div class="w-10 h-10 rounded-[10px] bg-blue-50 flex items-center justify-center text-blue-500"><i class="fas fa-phone"></i></div>
+              <div class="text-base font-extrabold text-gray-900">연락처</div>
+            </div>
+            <div class="text-[0.87rem] text-gray-600 leading-[2]">
+              <div class="flex justify-between items-center"><span>전화</span><a :href="`tel:${TEL}`" class="font-bold text-blue-600 no-underline">{{ TEL }}</a></div>
+              <div class="flex justify-between items-center"><span>이메일</span><a :href="`mailto:${EMAIL}`" class="font-bold text-blue-600 no-underline text-[0.82rem]">{{ EMAIL }}</a></div>
+              <div class="flex justify-between items-center"><span>카카오채널</span><span class="font-bold text-gray-900">@shopjoy</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 교통편 -->
+        <div class="bg-white border border-[#e5e7eb] rounded-lg p-5 sm:p-6">
+          <div class="text-base font-extrabold text-gray-900 mb-4"><i class="fas fa-bus text-theme mr-2"></i>교통편 안내</div>
+          <div class="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+            <div v-for="t in transports" :key="t.title" class="p-3.5 bg-[#f9fafb] rounded-[10px]">
+              <div class="text-[0.85rem] font-bold text-gray-900 mb-1.5">{{ t.icon }} {{ t.title }}</div>
+              <div class="text-[0.82rem] text-gray-600 leading-relaxed">{{ t.line1 }}</div>
+              <div class="text-[0.78rem] text-gray-400 leading-relaxed">{{ t.line2 }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </layout>
+</template>
+
+<script setup lang="ts">
+import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
+const currentFilePath = useCurrentFilePath();
+import Layout from "~/layout/Layout.vue";
+import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
+import { usePageTitle } from "~/composables/usePageTitle";
+
+useHead({ title: "위치안내" });
+usePageTitle("위치안내");
+
+// 본사 좌표/주소/연락처 — ecFeBo Location.js 와 동일 값
+const LAT = 37.4407;
+const LNG = 127.1468;
+const ADDR = "경기도 성남시 중원구 성남대로 997번길 49-14";
+const ADDR_ENC = encodeURIComponent(ADDR);
+const TEL = "010-3805-0206";
+const EMAIL = "illeesam@gmail.com";
+
+const mapSrc = `https://maps.google.com/maps?q=${ADDR_ENC}&output=embed&hl=ko&z=17`;
+const kakaoLink = `https://map.kakao.com/link/map/ShopJoy,${LAT},${LNG}`;
+const naverLink = `https://map.naver.com/v5/search/${ADDR_ENC}`;
+const googleLink = `https://maps.google.com/maps?q=${ADDR_ENC}`;
+
+const hours = [
+  { day: "월요일 ~ 금요일", time: "09:00 – 18:00", closed: false },
+  { day: "토요일", time: "10:00 – 15:00", closed: false },
+  { day: "일요일 / 공휴일", time: "휴무", closed: true },
+];
+const transports = [
+  { icon: "🚇", title: "지하철", line1: "8호선 성남역 2번 출구", line2: "도보 약 10분" },
+  { icon: "🚌", title: "버스", line1: "성남대로 정류장 하차", line2: "220, 500번 이용" },
+  { icon: "🚗", title: "자가용", line1: "성남IC에서 약 5분", line2: "건물 내 주차 가능 (무료 2시간)" },
+];
+</script>
+
+<style scoped>
+.map-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+</style>
