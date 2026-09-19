@@ -54,6 +54,7 @@
 
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import AppImage from "~/components/ui/AppImage.vue"; // 자동 등록명이 UiAppImage 라 <app-image> 를 쓰려면 명시 import 가 필요하다
 
 const props = defineProps<{
   images: string[];

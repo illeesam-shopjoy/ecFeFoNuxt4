@@ -17,7 +17,7 @@
                      커스텀 클래스들을 전부 Tailwind 유틸리티로 대체. -->
                 <div class="grid grid-cols-[auto_1fr] gap-4 items-start">
                   <!-- 썸네일이 많을 때: 메인 이미지 높이에 맞춘 세로 스크롤 + 위/아래 화살표 (ProductThumbStrip) -->
-                  <product-thumb-strip class="col-start-1" :images="item.relatedImages ?? []" :active="active_img" @select="handleActiveImg" />
+                  <product-thumb-strip :images="item.relatedImages ?? []" :active="active_img" @select="handleActiveImg" />
                   <div class="col-start-2 min-w-0" id="product-detailsContent">
                     <div class="product__modal-img product__thumb w-img border border-[#e0e0e0] rounded overflow-hidden">
                       <app-image
