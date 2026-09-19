@@ -312,7 +312,9 @@ const SIZE_OPTIONS = ["FREE", "XS", "S", "M", "L", "XL"];
 const { data: catData } = useAsyncData<CategoryTreeResponse>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
-  { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true }
+  // 2026-09-19: server:false — 사이드바는 SEO 대상이 아닌데 서버 렌더가 이걸 기다리면(특히 Netlify→NAS WAN) 페이지 응답이 그만큼 늦어진다.
+  //   브라우저에서 불러오며 응답은 CDN 캐시(server/utils/cdnCache.ts)를 탄다.
+  { default: () => ({ categoryTree: [], categoryIdToName: {} }), lazy: true, server: false }
 );
 
 const parentCategories = computed(() => {
@@ -346,7 +348,8 @@ function resetAllFilters() {
 const { data: brandList } = useAsyncData(
   "shop-brand-list",
   () => syBrandSvc.getBrands(),
-  { default: () => [], lazy: true }
+  // 2026-09-19: server:false — 브랜드 목록은 상품 1000건을 받아 가공하는 무거운 호출이라(운영 SSR 11초의 주범) 서버 렌더에서 뺀다.
+  { default: () => [], lazy: true, server: false }
 );
 
 // ── 사이드바: 상품 색상 (옛 ProductColor) — useProductsStore가 채워주는 전역 상품목록에서
