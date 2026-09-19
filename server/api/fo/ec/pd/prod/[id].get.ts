@@ -1,6 +1,7 @@
 import { beApi } from "~~/server/utils/beApi";
 import { mapProduct, mapReview, type BeProdItem, type BeReviewItem } from "~~/server/utils/mapProduct";
 import { logger } from "~~/server/utils/logger";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 interface BeReviewsResponse {
   summary: { avgRating?: number; reviewCount?: number };
@@ -43,5 +44,6 @@ export default defineEventHandler(async (event) => {
 
   const s = JSON.stringify(out);
   logger.info("[api] ◀", method, url, s.length > 200 ? s.slice(0, 200) + "..." : s);
+  cdnCache(event, 30); // 공개 조회 — Netlify CDN 30초 캐시
   return out;
 });

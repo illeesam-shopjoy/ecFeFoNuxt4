@@ -271,6 +271,7 @@ useSeoMeta({
   ogImage: item.value?.img,
 });
 usePageTitle("블로그 상세");
+if (item.value) useCdnCache(60); // 서버 렌더 결과(데이터 있음)만 Netlify CDN 60초 캐시 — 오류/빈 페이지는 캐시 안 함
 
 // GA4: 상세 조회 데이터 기준으로 page_view 전송
 const { sendPageView } = useGa();

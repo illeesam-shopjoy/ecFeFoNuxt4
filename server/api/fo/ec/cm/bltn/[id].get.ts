@@ -1,6 +1,7 @@
 import { beApi } from "~~/server/utils/beApi";
 import { mapBlog, type BeBlogItem } from "~~/server/utils/mapBlog";
 import { logger } from "~~/server/utils/logger";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 /** 블로그 상세. ecBeBo GET /api/fo/ec/cm/bltn/{id} 프록시 (BFF, 2026-09 전환). */
 export default defineEventHandler(async (event) => {
@@ -20,5 +21,6 @@ export default defineEventHandler(async (event) => {
 
   const s = JSON.stringify(out);
   logger.info("[api] ◀", method, url, s.length > 200 ? s.slice(0, 200) + "..." : s);
+  cdnCache(event, 60); // 공개 조회 — Netlify CDN 60초 캐시
   return out;
 });

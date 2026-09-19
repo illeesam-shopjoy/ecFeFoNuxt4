@@ -1,6 +1,7 @@
 import { beApi } from "~~/server/utils/beApi";
 import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 export interface BeDpPanelItem {
   panelItemId: string;
@@ -31,5 +32,6 @@ export default defineEventHandler(async (event) => {
   const list = await cachedCall(`be:dp:area:${areaCd}`, 600_000, () => beApi.get<BeDpPanelItem[]>(`/fo/ec/dp/area/${encodeURIComponent(areaCd)}`));
 
   logger.info("[api] ◀", method, url, "list size=" + (list?.length ?? 0));
+  cdnCache(event, 120); // 공개 조회 — Netlify CDN 120초 캐시
   return list ?? [];
 });

@@ -3,6 +3,7 @@ import type { BeProdItem } from "~~/server/utils/mapProduct";
 import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
 import type { CoBrandType } from "~/types/coBrandType";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 /**
  * 브랜드 목록. categories.get.ts와 같은 이유로 상품 목록에서 distinct 재구성한다 —
@@ -24,5 +25,6 @@ export default defineEventHandler(async (event) => {
   const out = [...seen.values()];
 
   logger.info("[api] ◀", method, url, "list size=" + out.length);
+  cdnCache(event, 300); // 공개 조회 — Netlify CDN 300초 캐시
   return out;
 });

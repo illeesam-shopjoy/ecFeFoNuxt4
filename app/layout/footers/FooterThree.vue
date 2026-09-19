@@ -30,7 +30,7 @@
             <div class="footer__widget mb-30">
               <div class="footer__widget-title mb-25">
                 <nuxt-link href="/">
-                  <img :src="`${CDN_URL}/cdn/prod/img/logo/log-3.webp`" alt="logo" />
+                  <img src="/logo/shopjoy-logo-olive.svg" alt="shopjoy" />
                 </nuxt-link>
               </div>
               <div class="footer__widget-content">

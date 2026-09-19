@@ -2,6 +2,7 @@ import { beApi, type BePage } from "~~/server/utils/beApi";
 import { mapBlog, type BeBlogItem } from "~~/server/utils/mapBlog";
 import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 /**
  * 블로그 목록. ecBeBo GET /api/fo/ec/cm/bltn/page 프록시 (BFF, 2026-09 전환).
@@ -40,5 +41,6 @@ export default defineEventHandler(async (event) => {
     hasMore: page.pageNo < page.pageTotalPage,
   };
   logger.info("[api] ◀", method, url, "paged size=" + out.items.length + "/" + out.pageTotalCount);
+  cdnCache(event, 60); // 공개 조회 — Netlify CDN 60초 캐시
   return out;
 });

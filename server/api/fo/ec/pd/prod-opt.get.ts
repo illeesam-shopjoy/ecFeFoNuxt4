@@ -2,6 +2,7 @@ import { beApi, type BePage } from "~~/server/utils/beApi";
 import { logger } from "~~/server/utils/logger";
 import type { PdOptionType } from "~/types/pdOptionType";
 import type { BeProdItem, BeProdOptItem } from "~~/server/utils/mapProduct";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 interface BeSizeCode {
   codeId: string;
@@ -78,5 +79,6 @@ export default defineEventHandler(async (event) => {
 
   const out = [...colors, ...sizes];
   logger.info("[api] ◀", method, url, "list size=" + out.length, `(색상 실측 ${colors.length}건, 표본 ${SAMPLE_SIZE}개 상품)`);
+  cdnCache(event, 120); // 공개 조회 — Netlify CDN 120초 캐시
   return out;
 });

@@ -7,7 +7,7 @@
             <div class="col-xl-2 col-lg-2 col-md-4 col-sm-3">
               <div class="logo">
                 <nuxt-link href="/">
-                  <img :src="`${CDN_URL}/cdn/prod/img/logo/log-3.webp`" alt="logo" />
+                  <img src="/logo/shopjoy-logo-olive.svg" alt="shopjoy" />
                 </nuxt-link>
               </div>
               <env-mode-badge />
@@ -68,7 +68,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { CDN_URL } from "~/conts/baseConst";
 import { useCartStore } from "~/store/useCartStore";
 import Menus from "./Menus.vue";
 import CartMini from "./header-com/CartMini.vue";

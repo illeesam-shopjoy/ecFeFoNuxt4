@@ -1,5 +1,6 @@
 import { getAllProdPage } from "~~/server/utils/beProducts";
 import { logger } from "~~/server/utils/logger";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 interface CategoryTreeItem {
   categoryId: string;
@@ -66,5 +67,6 @@ export default defineEventHandler(async (event) => {
   const out = { categoryTree, categoryIdToName };
   const s = JSON.stringify(out);
   logger.info("[api] ◀", method, url, s.length > 200 ? s.slice(0, 200) + "..." : s);
+  cdnCache(event, 300); // 공개 조회 — Netlify CDN 300초 캐시
   return out;
 });

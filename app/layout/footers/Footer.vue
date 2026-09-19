@@ -9,7 +9,7 @@
             <div class="footer__widget mb-30">
               <div class="footer__widget-title mb-25">
                 <nuxt-link href="/">
-                  <img :src="`${CDN_URL}/cdn/prod/img/logo/logo-2.png`" alt="logo" />
+                  <img src="/logo/shopjoy-logo-tan.svg" alt="shopjoy" />
                 </nuxt-link>
               </div>
               <div class="footer__widget-content">
@@ -79,7 +79,6 @@
 
 <script setup lang="ts">
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
-import { CDN_URL } from "~/conts/baseConst";
 
 defineProps({
   box_style: { type: Boolean, default: false },

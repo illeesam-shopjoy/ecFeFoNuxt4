@@ -3,6 +3,7 @@ import { mapProduct, type BeProdItem } from "~~/server/utils/mapProduct";
 import { getAllProdPage } from "~~/server/utils/beProducts";
 import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 /**
  * 상품 목록. ecBeBo GET /api/fo/ec/pd/prod/page 프록시 (BFF, 2026-09 전환 — DB 직접조회 없음).
@@ -72,5 +73,6 @@ export default defineEventHandler(async (event) => {
     hasMore: page.pageNo < page.pageTotalPage,
   };
   logger.info("[api] ◀", method, url, "paged size=" + out.items.length + "/" + out.pageTotalCount);
+  cdnCache(event, 30); // 공개 조회 — Netlify CDN 30초 캐시
   return out;
 });

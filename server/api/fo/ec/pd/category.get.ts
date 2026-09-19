@@ -2,6 +2,7 @@ import { beApi, type BePage } from "~~/server/utils/beApi";
 import type { BeProdItem } from "~~/server/utils/mapProduct";
 import { logger } from "~~/server/utils/logger";
 import type { CoCategoryType } from "~/types/coCategoryType";
+import { cdnCache } from "~~/server/utils/cdnCache";
 
 /**
  * 카테고리 목록. ecBeBo에 공개(FO/비로그인) 카테고리 API가 없다 — 카테고리 CRUD는
@@ -30,5 +31,6 @@ export default defineEventHandler(async (event) => {
   const out = [...seen.values()];
 
   logger.info("[api] ◀", method, url, "list size=" + out.length);
+  cdnCache(event, 300); // 공개 조회 — Netlify CDN 300초 캐시
   return out;
 });

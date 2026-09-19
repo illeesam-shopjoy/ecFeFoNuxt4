@@ -26,7 +26,8 @@
             alt="product-thumb"
             :img-style="{ width: '95px', height: '120px', objectFit: 'cover', display: 'block', borderRadius: '2px' }"
             :skeleton-style="{ width: '95px', height: '120px' }"
-          />
+            :wrap-style="{ width: '95px', height: '120px' }"
+          /> <!-- wrap-style: 박스 크기를 이미지 로드와 무관하게 고정 — 안 그러면 로드 전 높이 0(스켈레톤도 안 보임)이라 스크롤 길이/화살표가 뒤늦게 바뀐다 -->
         </div>
       </button>
     </div>
