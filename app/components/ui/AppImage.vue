@@ -8,6 +8,10 @@
     <div v-if="loading" class="absolute inset-0 rounded animate-shimmer bg-gradient-to-r from-[#f0f0f0] via-[#e0e0e0] to-[#f0f0f0] bg-[length:200%_100%]" :style="skeletonStyle" />
 
     <!-- 실제 이미지 -->
+    <!-- 2026-09-19(요청사항: "F5 하면 이미지가 로드되지 않는 증상 … 이미지가 url 로부터 로드되면 정상적으로 표시되면 좋겠어") —
+         원인 ①: 로딩 중 <img>를 v-show(display:none)로 숨겼는데, display:none 인 loading="lazy" 이미지는 브라우저가
+         요청 자체를 시작하지 않는다(레이아웃 박스가 없어 "뷰포트 근처" 판정이 안 됨) — 스켈레톤만 남고 8초 뒤 "이미지 없음"이 됐다.
+         → display:none 대신 absolute+opacity-0(박스는 유지, 레이아웃엔 기여 안 함)으로 숨겨 lazy 판정이 정상 동작하게 한다. -->
     <!-- 2026-09-13: <img>가 width:100%(.w-img)만 상속하고 height/object-fit이 없어서 래퍼 박스를
          못 채우던 문제 — 기본으로 박스를 꽉 채우게 한다. 호출측이 imgStyle로 직접 objectFit 등을
          지정하면 인라인 스타일이라 이 기본 클래스보다 항상 우선한다(안전). -->
@@ -18,10 +22,9 @@
     <img
       v-if="visible"
       ref="imgRef"
-      v-show="!loading"
       :src="currentSrc"
       :alt="alt"
-      :class="['w-full h-full object-cover block', imgClass]"
+      :class="['w-full h-full object-cover block', loading ? 'absolute inset-0 opacity-0 pointer-events-none' : '', imgClass]"
       :style="imgStyle"
       :loading="imgLoading"
       decoding="async"
@@ -143,8 +146,27 @@ function armLoadTimeout() {
   clearLoadTimeout();
   if (currentSrc.value === NO_IMAGE_SVG) return;
   loadTimeoutId = setTimeout(() => {
-    if (loading.value) onError();
+    if (!loading.value) return;
+    // 2026-09-19 원인 ②: 8초 로드 타임아웃이 <img> 생성 시점부터 흘렀는데, 화면 밖 lazy 이미지는 브라우저가 아직 요청도 안 한 상태라
+    // 8초 뒤 그냥 "이미지 없음"으로 굳었다(F5 로 이미지 수십 장이 한꺼번에 생기는 홈 등). 그래서:
+    // 화면에서 멀리 떨어졌거나(가로 슬라이더의 복제 슬라이드 등) 안 보이는(display:none 조상) 이미지는
+    // 브라우저가 아직 요청 자체를 안 한 상태라 "느린 로드"가 아니다 — 실패로 치지 않고 타이머만 다시 건다.
+    // (그러지 않으면 나중에 슬라이드가 화면으로 들어와도 이미 "이미지 없음"으로 굳어 있었다.)
+    if (!isNearViewport()) {
+      armLoadTimeout();
+      return;
+    }
+    onError();
   }, LOAD_TIMEOUT_MS);
+}
+
+function isNearViewport(): boolean {
+  const el = wrapRef.value;
+  if (!el || typeof window === "undefined") return true;
+  if (!el.getClientRects().length) return false; // 레이아웃 박스 없음(숨김 영역)
+  const r = el.getBoundingClientRect();
+  const m = 800; // 브라우저 lazy 판정 거리와 비슷하게 넉넉히
+  return r.bottom > -m && r.top < window.innerHeight + m && r.right > -m && r.left < window.innerWidth + m;
 }
 
 // 2026-09-17(요청사항: "전체적으로 상품 이미지 없으면 이미지 넣어줘" 조사 결과 — 실제로는 상품/
