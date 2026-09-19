@@ -1,19 +1,16 @@
 import { beApi } from "~~/server/utils/beApi";
-import { mapProduct, mapReview, type BeProdItem, type BeReviewItem } from "~~/app/utils/mapProduct";
+import { mapProduct, type BeProdItem } from "~~/app/utils/mapProduct";
 import { PROD_CDN } from "~~/server/utils/cdn";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
 
-interface BeReviewsResponse {
-  summary: { avgRating?: number; reviewCount?: number };
-  reviewPage: { pageList: BeReviewItem[]; pageTotalCount: number };
-}
-
 /**
- * 상품 상세. ecBeBo의 3계층 설계(정책서 pd.10) 중 Tier1(GET /{id})과 Tier2 리뷰(GET /{id}/reviews)를
- * BFF에서 한 번에 합쳐서 내려준다 — 기존 화면(ProductDetailsReview.vue 등)이 product.reviews를
- * props로 그대로 읽는 구조라 이 계층을 프론트까지 들고 가지 않기 위함(“Nuxt4 기본구조는 그대로” 방침).
- * QnA/연관상품/프로모션(Tier2/3 나머지)은 필요해지면 별도 라우트로 추가할 것.
+ * 상품 상세 — **SEO 서버 렌더링(SSR) 전용 최소 정보** (2026-09-20).
+ *
+ * 메타 태그·JSON-LD·첫 화면(이름/이미지/가격/짧은 설명)에 필요한 것만 내려준다. 리뷰·옵션·SKU·상세 본문(contentHtml)은
+ * 뺀다 — 그것들은 화면이 뜬 뒤 브라우저가 ecBeBo 에서 직접 전체 조회한다(app/svc/fo/ec/pd/pdProductSvc.getById).
+ * 변하는 데이터(리뷰·재고 등)가 없어 Netlify CDN 에 길게 캐시해도 리뷰가 안 보이는 문제가 생기지 않는다.
+ * 응답은 PdProductType 모양을 유지하되 무거운 필드만 비운다(화면이 배열 필드를 그대로 읽으므로 undefined 로 두지 않는다).
  */
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -25,26 +22,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: "잘못된 상품 ID입니다." });
   }
 
-  const [detail, reviewsRes] = await Promise.all([
-    beApi.get<BeProdItem>(`/fo/ec/pd/prod/${id}`).catch((e: unknown) => {
-      const err = e as { statusCode?: number };
-      if (err?.statusCode === 404) throw createError({ statusCode: 404, statusMessage: "상품을 찾을 수 없습니다." });
-      throw e;
-    }),
-    beApi.get<BeReviewsResponse>(`/fo/ec/pd/prod/${id}/reviews`, { pageSize: 50 }).catch((e: unknown) => {
-      logger.warn("[api]", url, "리뷰 조회 실패(상품 상세는 계속 진행):", (e as Error)?.message);
-      return { summary: {}, reviewPage: { pageList: [], pageTotalCount: 0 } } as BeReviewsResponse;
-    }),
-  ]);
+  const detail = await beApi.get<BeProdItem>(`/fo/ec/pd/prod/${id}`).catch((e: unknown) => {
+    const err = e as { statusCode?: number };
+    if (err?.statusCode === 404) throw createError({ statusCode: 404, statusMessage: "상품을 찾을 수 없습니다." });
+    throw e;
+  });
 
   const out = mapProduct(detail, PROD_CDN);
-  out.reviews = reviewsRes.reviewPage.pageList.map(mapReview);
-  if (typeof reviewsRes.summary?.avgRating === "number") {
-    out.rating = reviewsRes.summary.avgRating;
-  }
+  Object.assign(out, { contentHtml: "", relatedImages: [], optionSizes: [], optionColors: [], prodSkus: [], reviews: [] });
 
-  const s = JSON.stringify(out);
-  logger.info("[api] ◀", method, url, s.length > 200 ? s.slice(0, 200) + "..." : s);
-  cdnCache(event, 30); // 공개 조회 — Netlify CDN 30초 캐시
+  logger.info("[api] ◀", method, url, `prodId=${out.prodId}`);
+  cdnCache(event, 300); // 변하지 않는 SEO 정보 — Netlify CDN 5분 캐시(+swr)
   return out;
 });

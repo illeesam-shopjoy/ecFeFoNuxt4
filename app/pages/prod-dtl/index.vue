@@ -261,7 +261,7 @@ import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
 import * as yup from "yup";
 
 // 이 페이지는 /prod-dtl (id 없이 접근) 전용 — 상품 목록 첫 항목을 상세로 보여줌
-const { data: item, pending } = await useAsyncData<PdProductType | null>("product-detail-index", async () => {
+const { data: item, pending, refresh: refreshItem } = await useAsyncData<PdProductType | null>("product-detail-index", async () => {
   const first = (await pdProductSvc.getPaged({ pageNo: 1, pageSize: 1 })).items[0];
   if (!first) return null;
   return pdProductSvc.getById(first.prodId);
@@ -434,7 +434,7 @@ async function deleteReview(reviewId: string, isReply: boolean) {
     const res = isReply ? await pdReviewSvc.deleteReviewComment(reviewId) : await pdReviewSvc.deleteReview(reviewId);
     if (res?.success) {
       $toast?.success?.(res.message ?? "삭제되었습니다.");
-      router.go(0);
+      await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
     }
   } catch (e: any) {
     const msg = e?.data?.message ?? e?.message ?? "삭제에 실패했습니다.";
@@ -466,14 +466,14 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         $toast?.success?.(res.message ?? "답글이 등록되었습니다.");
         resetForm();
         replyingToReviewId.value = null;
-        router.go(0);
+        await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     } else if (item.value) {
       const res = await pdReviewSvc.createReview({ prodId: item.value.prodId, content: contentTrim, rating: reviewRating.value });
       if (res?.success) {
         $toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");
         resetForm();
-        router.go(0);
+        await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     }
   } catch (e: any) {

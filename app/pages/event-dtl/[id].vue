@@ -83,14 +83,21 @@ import { usePageTitle } from "~/composables/usePageTitle";
 const route = useRoute();
 const id = String(route.params.id ?? "");
 
-const { data: ev, pending } = await useAsyncData<PmEventDetailType | null>(
+// SEO 단위화면(useSeoDetail): 서버 렌더링은 SEO 용 최소 정보(제목/설명/기간)만, 화면이 뜬 뒤 브라우저가 ecBeBo 에서 혜택·대상까지 직접 조회한다.
+const { item: ev, pending, seo } = await useSeoDetail<PmEventDetailType>(
   `event-dtl-${id}`,
-  () => (id ? foPmEventSvc.getById(id).catch(() => null) : Promise.resolve(null)),
-  { server: false }
+  id ? `/api/fo/ec/pm/event/${encodeURIComponent(id)}` : null,
+  () => (id ? foPmEventSvc.getById(id) : Promise.resolve(null))
 );
 
 usePageTitle("이벤트 상세");
 useHead({ title: computed(() => (ev.value?.title ? `${ev.value.title}` : "이벤트 상세")) });
+useSeoMeta({
+  ogTitle: () => ev.value?.title ?? "이벤트 상세",
+  description: () => ev.value?.desc,
+  ogDescription: () => ev.value?.desc,
+});
+if (seo.value) useCdnCache(300); // 서버 렌더 결과(SEO 정보 있음)만 Netlify CDN 5분 캐시 — 오류/빈 페이지는 캐시 안 함
 
 // 히어로 배경 — ecFeBo 와 동일한 보라 그라데이션
 const heroBg = "linear-gradient(135deg,#5b6cff 0%,#8a4fff 100%)";

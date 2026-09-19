@@ -61,10 +61,15 @@ export default defineNuxtConfig({
   // 하이브리드 렌더링: SEO 필요 페이지만 SSR, 나머지는 CSR
   routeRules: {
     "/**": { ssr: false }, // 기본: CSR (SPA)
-    // 2026-09-20: SSR(SEO)은 상품 상세(/prod-dtl/:id)만 — server/api 도 이 화면용(fo/ec/pd/prod/[id])만 둔다. 나머지는 전부 CSR.
+    // 2026-09-20: SSR 은 SEO 가 필요한 콘텐츠 화면(상품 목록/상세, 블로그 상세, 이벤트 상세)뿐이고 서버는 SEO 용 최소 정보만 채운다
+    // (server/api/fo/ec/** — useSeoDetail). 실제 데이터는 브라우저가 ecBeBo 를 직접 호출한다. 나머지는 전부 CSR.
+    "/shop": { ssr: true }, // 상품 목록: 첫 페이지 SSR + SEO
     "/prod-dtl/**": { ssr: true }, // 상품 상세 (/:id): SSR + SEO
-    // id 없는 /prod-dtl 은 "목록 첫 건" 미리보기(SEO 대상 아님) — CSR(svc 직접 호출). 더 구체적인 규칙이 위 와일드카드보다 우선한다.
+    "/blog-dtl/**": { ssr: true }, // 블로그 상세 (/:id): SSR + SEO
+    "/event-dtl/**": { ssr: true }, // 이벤트 상세 (/:id): SSR + SEO
+    // id 없는 /prod-dtl, /blog-dtl 은 "목록 첫 건" 미리보기(SEO 대상 아님) — CSR(svc 직접 호출). 더 구체적인 규칙이 위 와일드카드보다 우선한다.
     "/prod-dtl": { ssr: false },
+    "/blog-dtl": { ssr: false },
     // 옛 템플릿 쇼핑 변형 페이지(전체 상품을 받아 클라이언트 필터링) — 서버 페이징 /shop 으로 통합
     "/shop-right": { redirect: { to: "/shop", statusCode: 301 } },
     "/shop-3-col": { redirect: { to: "/shop", statusCode: 301 } },

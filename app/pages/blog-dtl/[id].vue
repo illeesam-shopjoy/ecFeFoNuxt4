@@ -226,22 +226,20 @@ import * as yup from "yup";
 const route = useRoute();
 const id = route.params.id as string;
 
-// CSR 화면 — 브라우저가 svc 로 ecBeBo 를 직접 호출한다(2026-09-20: 블로그 상세는 SEO 서버 렌더 대상에서 제외).
-const { data: item, pending } = await useAsyncData<CoBlogType>(
-  `blog-${id}`,
-  () => coBlogSvc.getById(id)
-);
+// SEO 단위화면(useSeoDetail): 서버 렌더링은 SEO 용 최소 정보(제목/요약/이미지)만, 화면이 뜬 뒤 브라우저가 ecBeBo 에서 본문까지 직접 조회한다.
+const { item, pending, seo } = await useSeoDetail<CoBlogType>(`blog-${id}`, id ? `/api/fo/ec/cm/bltn/${encodeURIComponent(id)}` : null, () => coBlogSvc.getById(id));
 
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useGa } from "~/composables/useGa";
 useSeoMeta({
-  title: item.value ? `${item.value.blogTitle} | Outstock 블로그` : "블로그 상세",
-  ogTitle: item.value?.blogTitle ?? "블로그 상세",
-  description: item.value?.blogSummary,
-  ogDescription: item.value?.blogSummary,
-  ogImage: item.value?.img,
+  title: () => (item.value ? `${item.value.blogTitle} | Outstock 블로그` : "블로그 상세"),
+  ogTitle: () => item.value?.blogTitle ?? "블로그 상세",
+  description: () => item.value?.blogSummary,
+  ogDescription: () => item.value?.blogSummary,
+  ogImage: () => item.value?.img,
 });
 usePageTitle("블로그 상세");
+if (seo.value) useCdnCache(300); // 서버 렌더 결과(SEO 정보 있음)만 Netlify CDN 5분 캐시 — 오류/빈 페이지는 캐시 안 함
 
 // GA4: 상세 조회 데이터 기준으로 page_view 전송
 const { sendPageView } = useGa();

@@ -250,7 +250,6 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonProductDetail from "~/components/ui/SkeletonProductDetail.vue";
 import { type PdProductType } from "~/types/pdProductType";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
-import { axiosSsr } from "~/utils/axiosSsr";
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
 import ProductThumbStrip from "~/components/shop-details/ProductThumbStrip.vue";
@@ -267,35 +266,33 @@ const id = route.params.id as string;
 // 대신 URL에 점(.)이 들어간 경우(.css.map 등 정적 리소스 오요청)만 걸러낸다(2026-09 BFF 전환).
 const isValidProdId = Boolean(id) && !id.includes(".");
 
-// SEO 단위화면: 서버 렌더링(SSR)일 때만 server/api(같은 Lambda 안 내부 호출, axiosSsr — 리뷰 병합·CDN 캐시 포함)를 거치고,
-// 브라우저(클라이언트 내비게이션)는 svc 로 ecBeBo 를 직접 호출한다.
-const fetchProduct = () => (import.meta.server ? axiosSsr.get<PdProductType>(`/api/fo/ec/pd/prod/${id}`).then((r) => r.data) : pdProductSvc.getById(id));
-const { data: item, pending } = await useAsyncData<PdProductType | null>(
+// SEO 단위화면(useSeoDetail): 서버 렌더링은 SEO 용 최소 정보만(server/api), 화면이 뜬 뒤 브라우저가 ecBeBo 에서 전체 정보(리뷰·옵션·본문)를 직접 조회한다.
+const { item, pending, refresh: refreshItem, seo } = await useSeoDetail<PdProductType>(
   `product-${id}`,
-  () => (isValidProdId ? fetchProduct() : Promise.resolve(null)),
-  { default: () => null }
+  isValidProdId ? `/api/fo/ec/pd/prod/${id}` : null,
+  () => (isValidProdId ? pdProductSvc.getById(id) : Promise.resolve(null))
 );
 
 // 관련 상품 — 같은 카테고리 상품 4개만 별도 조회(전체 카탈로그 X). SEO 대상이 아니라 서버 렌더에서는 뺀다.
 const { data: relatedList } = useAsyncData<PdProductType[]>(
-  `related-${item.value?.prodId ?? "none"}`,
+  `related-${id}`,
   async () => {
     const categoryId = item.value?.category?.categoryId;
     if (!categoryId) return [];
     return (await pdProductSvc.getPaged({ pageNo: 1, pageSize: 5, categoryIds: [categoryId] })).items;
   },
-  { default: () => [], lazy: true, server: false }
+  { default: () => [], lazy: true, server: false, watch: [() => item.value?.category?.categoryId] } // 클라이언트 내비게이션은 카테고리를 뒤늦게 알게 되므로 바뀌면 재조회
 );
 const relatedProducts = computed(() => relatedList.value.filter((p) => p.prodId !== item.value?.prodId).slice(0, 4));
 
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useGa } from "~/composables/useGa";
 useSeoMeta({
-  title: item.value ? `${item.value.prodNm} | Outstock` : "상품 상세",
-  ogTitle: item.value?.prodNm ?? "상품 상세",
-  description: item.value?.smDesc,
-  ogDescription: item.value?.smDesc,
-  ogImage: item.value?.img,
+  title: () => (item.value ? `${item.value.prodNm} | Outstock` : "상품 상세"),
+  ogTitle: () => item.value?.prodNm ?? "상품 상세",
+  description: () => item.value?.smDesc,
+  ogDescription: () => item.value?.smDesc,
+  ogImage: () => item.value?.img,
 });
 // 상품 구조화 데이터(JSON-LD) — 검색결과에 가격/재고/평점이 노출될 수 있게(2026-09 SEO 보강).
 useHead(() => ({
@@ -325,7 +322,7 @@ useHead(() => ({
     : [],
 }));
 usePageTitle("상품 상세");
-if (item.value) useCdnCache(60); // 서버 렌더 결과(데이터 있음)만 Netlify CDN 60초 캐시 — 오류/빈 페이지는 캐시 안 함
+if (seo.value) useCdnCache(300); // 서버 렌더 결과(SEO 정보 있음)만 Netlify CDN 5분 캐시 — 변하는 데이터(리뷰 등)는 SSR 에 없어 안전, 오류/빈 페이지는 캐시 안 함
 
 // GA4: 상세 조회 데이터 기준으로 page_view 전송
 const { sendPageView } = useGa();
@@ -491,7 +488,7 @@ async function deleteReview(reviewId: string, isReply: boolean) {
     const res = isReply ? await pdReviewSvc.deleteReviewComment(reviewId) : await pdReviewSvc.deleteReview(reviewId);
     if (res?.success) {
       $toast?.success?.(res.message ?? "삭제되었습니다.");
-      router.go(0);
+      await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
     }
   } catch (e: any) {
     const msg = e?.data?.message ?? e?.message ?? "삭제에 실패했습니다.";
@@ -523,14 +520,14 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         $toast?.success?.(res.message ?? "답글이 등록되었습니다.");
         resetForm();
         replyingToReviewId.value = null;
-        router.go(0);
+        await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     } else if (item.value) {
       const res = await pdReviewSvc.createReview({ prodId: item.value.prodId, content: contentTrim, rating: reviewRating.value });
       if (res?.success) {
         $toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");
         resetForm();
-        router.go(0);
+        await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     }
   } catch (e: any) {
