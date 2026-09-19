@@ -2,8 +2,8 @@
   <!-- 2026-09-20(요청사항: "상단정보 알림, 로그인정보, 좋아요, 장바구니, 테마, 설정 — 첨부이미지 참고하여 적용") —
        헤더 우측 액션 영역 공통 컴포넌트: [검색] [🔔알림] [로그인정보▾] [♡좋아요(n)] [🛒장바구니(n)] [🌙테마] [⚙설정].
        모든 헤더(Header/HeaderTwo/Three/Four)가 이 컴포넌트 하나를 쓴다. 로그인/좋아요/장바구니 수량은 localStorage 기반이라 client-only. -->
-  <div class="inline-flex flex-wrap justify-end items-center gap-2">
-    <a href="#" class="w-10 h-10 rounded-xl inline-flex items-center justify-center bg-white border border-[#e5e7eb] text-gray-600 hover:border-gray-400 transition" aria-label="검색" title="검색" @click.prevent="emit('search')">
+  <div class="inline-flex flex-nowrap justify-end items-center gap-1.5 sm:gap-2">
+    <a href="#" class="hidden sm:inline-flex w-10 h-10 rounded-xl items-center justify-center bg-white border border-[#e5e7eb] text-gray-600 hover:border-gray-400 transition" aria-label="검색" title="검색" @click.prevent="emit('search')">
       <i class="fas fa-search text-[14px]"></i>
     </a>
 

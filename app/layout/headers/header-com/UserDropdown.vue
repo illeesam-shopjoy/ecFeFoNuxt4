@@ -5,10 +5,10 @@
     <!-- 로그인 상태: 이름 버튼 + 드롭다운 -->
     <template v-if="authStore.isStLoggedIn">
       <!-- 2026-09-20(요청사항: 상단정보 로그인정보) — 아바타(이름 첫 글자) + 이름 + ▾ 알약 버튼. 알림 종은 HeaderTopActions 가 앞에 둔다 -->
-      <button class="h-10 pl-1.5 pr-3 rounded-full bg-white border border-[#e5e7eb] shadow-sm cursor-pointer inline-flex items-center gap-2 text-[0.88rem] text-[#1a1a1a] font-semibold whitespace-nowrap hover:border-gray-400 transition" @click.stop="open = !open">
+      <button class="h-10 pl-1.5 pr-1.5 sm:pr-3 rounded-full bg-white border border-[#e5e7eb] shadow-sm cursor-pointer inline-flex items-center gap-2 text-[0.88rem] text-[#1a1a1a] font-semibold whitespace-nowrap hover:border-gray-400 transition" @click.stop="open = !open">
         <span class="w-7 h-7 rounded-full bg-gray-900 text-white inline-flex items-center justify-center text-[0.75rem] font-bold">{{ (authStore.user?.userNm || "?").slice(0, 1) }}</span>
-        <span class="max-w-[110px] truncate">{{ authStore.user?.userNm }}</span>
-        <i :class="`fas fa-chevron-${open ? 'up' : 'down'} text-[0.6rem] text-gray-500`"></i>
+        <span class="hidden sm:inline max-w-[110px] truncate">{{ authStore.user?.userNm }}</span>
+        <i :class="`hidden sm:inline fas fa-chevron-${open ? 'up' : 'down'} text-[0.6rem] text-gray-500`"></i>
       </button>
 
       <div v-show="open" class="absolute top-[calc(100%+14px)] right-0 bg-white shadow-[0_10px_35px_rgba(0,0,0,0.12)] px-6 py-5 min-w-[200px] z-[9999] border-t-2 border-theme">
