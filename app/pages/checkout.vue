@@ -21,26 +21,21 @@
                   <div v-if="checkoutLogin" id="checkout-login" class="coupon-content">
                     <div class="coupon-info">
                       <p class="coupon-text">기존 회원은 로그인 후 주문을 이어가실 수 있습니다.</p>
-                      <form @submit.prevent="handleSubmit">
-                        <p class="form-row-first">
-                          <label>아이디 또는 이메일 <span class="required">*</span></label>
-                          <input type="text" v-model="formValue.name_or_email" />
-                        </p>
-                        <p class="form-row-last">
-                          <label>비밀번호 <span class="required">*</span></label>
-                          <input type="text" v-model="formValue.password" />
-                        </p>
-                        <p class="form-row">
-                          <button class="os-btn os-btn-black" type="submit">로그인</button>
-                          <label>
-                            <input type="checkbox" v-model="formValue.isChecked" />
-                            로그인 상태 유지
-                          </label>
-                        </p>
-                        <p class="lost-password">
-                          <nuxt-link href="/login">비밀번호를 잊으셨나요?</nuxt-link>
-                        </p>
-                      </form>
+                      <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — <fo-form> 으로 교체 -->
+                      <fo-form :columns="loginCols" :form="formValue" :cols="1" :gap="12" @submit="handleSubmit">
+                        <template #actions>
+                          <p class="form-row">
+                            <button class="os-btn os-btn-black" type="submit">로그인</button>
+                            <label>
+                              <input type="checkbox" v-model="formValue.isChecked" />
+                              로그인 상태 유지
+                            </label>
+                          </p>
+                          <p class="lost-password">
+                            <nuxt-link href="/login">비밀번호를 잊으셨나요?</nuxt-link>
+                          </p>
+                        </template>
+                      </fo-form>
                     </div>
                   </div>
                   <!-- 아코디언 끝 -->
@@ -85,80 +80,24 @@
                       </button>
                     </h3>
                     <!-- 청구 정보 시작 -->
+                    <fo-form as="div" :columns="billingCols" :form="billingForm" :cols="2" :gap="16">
+                      <template #country><country-select /></template>
+                      <template #addr="{ form }">
+                        <span class="flex items-center justify-between text-[0.78rem] text-gray-500 mb-1">
+                          <span>주소 <span class="text-theme">*</span></span>
+                          <!-- 2026-09-15(요청사항: "주문하기의 카카오주소검색이야 모달처럼 띄워지는데 http://localhost:3100/checkout 에도 추가해줘") -->
+                          <button
+                            type="button"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white text-xs font-semibold whitespace-nowrap"
+                            @click="addrSearchModalRef?.show()"
+                          >
+                            📮 주소 검색
+                          </button>
+                        </span>
+                        <input type="text" class="w-full px-[13px] py-[10px] border-[1.5px] border-[#e5e7eb] rounded-lg bg-[#f9fafb] text-[0.88rem] outline-none" placeholder="도로명 주소" v-model="form.address" readonly />
+                      </template>
+                    </fo-form>
                     <div class="row">
-                      <div class="col-md-12">
-                        <country-select />
-                      </div>
-                      <div class="col-md-6">
-                        <div class="checkout-form-list">
-                          <label>이름 <span class="required">*</span></label>
-                          <input type="text" placeholder="이름" v-model="billingForm.name" />
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="checkout-form-list">
-                          <label>성 <span class="required">*</span></label>
-                          <input type="text" placeholder="성" v-model="billingForm.lastName" />
-                        </div>
-                      </div>
-                      <div class="col-md-12">
-                        <div class="checkout-form-list">
-                          <label>회사명</label>
-                          <input type="text" placeholder="회사명 (선택)" v-model="billingForm.company" />
-                        </div>
-                      </div>
-                      <div class="col-md-12">
-                        <div class="checkout-form-list">
-                          <label class="flex items-center justify-between">
-                            <span>주소 <span class="required">*</span></span>
-                            <!-- 2026-09-15(요청사항: "주문하기의 카카오주소검색이야 모달처럼
-                                 띄워지는데 http://localhost:3100/checkout 에도 추가해줘") -->
-                            <button
-                              type="button"
-                              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white text-xs font-semibold whitespace-nowrap"
-                              @click="addrSearchModalRef?.show()"
-                            >
-                              📮 주소 검색
-                            </button>
-                          </label>
-                          <input type="text" placeholder="도로명 주소" v-model="billingForm.address" readonly />
-                        </div>
-                      </div>
-                      <div class="col-md-12">
-                        <div class="checkout-form-list">
-                          <input type="text" placeholder="상세 주소 (동, 호수 등, 선택)" v-model="billingForm.addressDetail" />
-                        </div>
-                      </div>
-                      <div class="col-md-12">
-                        <div class="checkout-form-list">
-                          <label>시/군/구 <span class="required">*</span></label>
-                          <input type="text" placeholder="시/군/구" v-model="billingForm.sigungu" />
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="checkout-form-list">
-                          <label>시/도 <span class="required">*</span></label>
-                          <input type="text" placeholder="시/도" v-model="billingForm.sido" />
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="checkout-form-list">
-                          <label>우편번호 <span class="required">*</span></label>
-                          <input type="text" placeholder="우편번호" v-model="billingForm.zipCode" readonly />
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="checkout-form-list">
-                          <label>이메일 <span class="required">*</span></label>
-                          <input type="email" placeholder="이메일" v-model="billingForm.email" />
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="checkout-form-list">
-                          <label>연락처 <span class="required">*</span></label>
-                          <input type="text" placeholder="연락처" v-model="billingForm.phone" />
-                        </div>
-                      </div>
                       <div class="col-md-12">
                         <div class="checkout-form-list create-acc">
                           <input @click="handleCreateAccount" id="cbox" type="checkbox" />
@@ -182,76 +121,12 @@
                         </h3>
                       </div>
                       <div v-if="shipBox" id="ship-box-info">
-                        <div class="row">
-                          <div class="col-md-12">
-                            <country-select />
-                          </div>
-                          <div class="col-md-6">
-                            <div class="checkout-form-list">
-                              <label>이름 <span class="required">*</span></label>
-                              <input type="text" placeholder="이름" />
-                            </div>
-                          </div>
-                          <div class="col-md-6">
-                            <div class="checkout-form-list">
-                              <label>성 <span class="required">*</span></label>
-                              <input type="text" placeholder="성" />
-                            </div>
-                          </div>
-                          <div class="col-md-12">
-                            <div class="checkout-form-list">
-                              <label>회사명</label>
-                              <input type="text" placeholder="회사명 (선택)" />
-                            </div>
-                          </div>
-                          <div class="col-md-12">
-                            <div class="checkout-form-list">
-                              <label>주소 <span class="required">*</span></label>
-                              <input type="text" placeholder="도로명 주소" />
-                            </div>
-                          </div>
-                          <div class="col-md-12">
-                            <div class="checkout-form-list">
-                              <input type="text" placeholder="상세 주소 (동, 호수 등, 선택)" />
-                            </div>
-                          </div>
-                          <div class="col-md-12">
-                            <div class="checkout-form-list">
-                              <label>시/군/구 <span class="required">*</span></label>
-                              <input type="text" placeholder="시/군/구" />
-                            </div>
-                          </div>
-                          <div class="col-md-6">
-                            <div class="checkout-form-list">
-                              <label>시/도 <span class="required">*</span></label>
-                              <input type="text" placeholder="시/도" />
-                            </div>
-                          </div>
-                          <div class="col-md-6">
-                            <div class="checkout-form-list">
-                              <label>우편번호 <span class="required">*</span></label>
-                              <input type="text" placeholder="우편번호" />
-                            </div>
-                          </div>
-                          <div class="col-md-6">
-                            <div class="checkout-form-list">
-                              <label>이메일 <span class="required">*</span></label>
-                              <input type="email" placeholder="이메일" />
-                            </div>
-                          </div>
-                          <div class="col-md-6">
-                            <div class="checkout-form-list">
-                              <label>연락처 <span class="required">*</span></label>
-                              <input type="text" placeholder="연락처" />
-                            </div>
-                          </div>
-                        </div>
+                        <fo-form as="div" :columns="shipCols" :form="shipForm" :cols="2" :gap="16">
+                          <template #country><country-select /></template>
+                        </fo-form>
                       </div>
                       <div class="order-notes">
-                        <div class="checkout-form-list">
-                          <label>배송 메모</label>
-                          <textarea id="checkout-mess" cols="30" rows="10" placeholder="주문/배송 시 요청사항을 입력하세요." />
-                        </div>
+                        <fo-form as="div" :columns="memoCols" :form="memoForm" :cols="1" />
                       </div>
                     </div>
                     <!-- 다른 배송지 끝 -->
@@ -261,25 +136,15 @@
                   <!-- 주문 영역 시작 -->
                   <div class="your-order mb-30">
                     <h3>주문 내역</h3>
-                    <div class="your-order-table table-responsive">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th class="product-name">상품</th>
-                            <th class="product-total">합계</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(item, i) in state.cartProducts" :key="i" class="cart_item">
-                            <td class="product-name">
-                              {{ item.prodNm }} <strong class="product-quantity"> x {{ item.orderQuantity }}</strong>
-                            </td>
-                            <td class="product-total">
-                              <span class="amount">{{ formatPrice(item.salePrice) }}</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                        <tfoot>
+                    <div class="your-order-table">
+                      <fo-grid bare :columns="orderCols" :rows="state.cartProducts">
+                        <template #cell-prodNm="{ row }">
+                          <td class="product-name text-left">{{ row.prodNm }} <strong class="product-quantity"> x {{ row.orderQuantity }}</strong></td>
+                        </template>
+                        <template #cell-total="{ row }">
+                          <td class="product-total text-right"><span class="amount">{{ formatPrice(row.salePrice) }}</span></td>
+                        </template>
+                        <template #tfoot>
                           <tr class="cart-subtotal">
                             <th>장바구니 소계</th>
                             <td>
@@ -319,8 +184,8 @@
                               </strong>
                             </td>
                           </tr>
-                        </tfoot>
-                      </table>
+                        </template>
+                      </fo-grid>
                     </div>
 
                     <div class="payment-method">
@@ -371,6 +236,9 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import CountrySelect from "~/components/checkout/CountrySelect.vue";
+import FoForm from "~/components/fo/FoForm.vue";
+import FoGrid from "~/components/fo/FoGrid.vue";
+import type { FoFormColumn, FoGridColumn } from "~/types/foCompType";
 import CouponModal from "~/components/modals/CouponModal.vue";
 import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
 import { ref, reactive, computed, watch, onMounted } from "vue";
@@ -404,6 +272,47 @@ const billingForm = reactive({
   email: "",
   phone: "",
 });
+// 결제 정보 입력 필드 정의(<fo-form>) — 주소 행은 검색 버튼이 있어 슬롯으로 그린다
+const billingCols: FoFormColumn[] = [
+  { key: "country", type: "slot", name: "country", colSpan: 2 },
+  { key: "name", label: "이름", type: "text", required: true, placeholder: "이름" },
+  { key: "lastName", label: "성", type: "text", required: true, placeholder: "성" },
+  { key: "company", label: "회사명", type: "text", placeholder: "회사명 (선택)", colSpan: 2 },
+  { key: "addr", type: "slot", colSpan: 2 },
+  { key: "addressDetail", type: "text", hideLabel: true, placeholder: "상세 주소 (동, 호수 등, 선택)", colSpan: 2 },
+  { key: "sigungu", label: "시/군/구", type: "text", required: true, placeholder: "시/군/구", colSpan: 2 },
+  { key: "sido", label: "시/도", type: "text", required: true, placeholder: "시/도" },
+  { key: "zipCode", label: "우편번호", type: "text", required: true, placeholder: "우편번호", readonly: true },
+  { key: "email", label: "이메일", type: "email", required: true, placeholder: "이메일" },
+  { key: "phone", label: "연락처", type: "text", required: true, placeholder: "연락처" },
+];
+// 다른 배송지(화면 입력만 — 결제 요청에는 아직 쓰지 않는다)
+const shipForm = reactive({ name: "", lastName: "", company: "", address: "", addressDetail: "", sigungu: "", sido: "", zipCode: "", email: "", phone: "" });
+const shipCols: FoFormColumn[] = [
+  { key: "country", type: "slot", name: "country", colSpan: 2 },
+  { key: "name", label: "이름", type: "text", required: true, placeholder: "이름" },
+  { key: "lastName", label: "성", type: "text", required: true, placeholder: "성" },
+  { key: "company", label: "회사명", type: "text", placeholder: "회사명 (선택)", colSpan: 2 },
+  { key: "address", label: "주소", type: "text", required: true, placeholder: "도로명 주소", colSpan: 2 },
+  { key: "addressDetail", type: "text", hideLabel: true, placeholder: "상세 주소 (동, 호수 등, 선택)", colSpan: 2 },
+  { key: "sigungu", label: "시/군/구", type: "text", required: true, placeholder: "시/군/구", colSpan: 2 },
+  { key: "sido", label: "시/도", type: "text", required: true, placeholder: "시/도" },
+  { key: "zipCode", label: "우편번호", type: "text", required: true, placeholder: "우편번호" },
+  { key: "email", label: "이메일", type: "email", required: true, placeholder: "이메일" },
+  { key: "phone", label: "연락처", type: "text", required: true, placeholder: "연락처" },
+];
+const memoForm = reactive({ memo: "" });
+const memoCols: FoFormColumn[] = [{ key: "memo", label: "배송 메모", type: "textarea", rows: 10, placeholder: "주문/배송 시 요청사항을 입력하세요." }];
+const loginCols: FoFormColumn[] = [
+  { key: "name_or_email", label: "아이디 또는 이메일", type: "text", required: true },
+  { key: "password", label: "비밀번호", type: "password", required: true },
+];
+// 주문 내역 표(<fo-grid>) 컬럼 — 셀은 슬롯으로 그린다
+const orderCols: FoGridColumn[] = [
+  { key: "prodNm", label: "상품", align: "left" },
+  { key: "total", label: "합계", width: "160px", align: "right" },
+];
+
 // [자동입력] 버튼 — 이름/성/회사명/이메일/연락처처럼 검색 없이 바로 채울 수 있는 간단한
 // 항목만 대상. 주소는 이미 "주소 검색" 모달 + 로그인 시 기본배송지 자동채움이 있어 제외.
 // 로그인 상태면 회원 프로필 값으로, 비로그인/미보유 값은 테스트용 기본값으로 채운다.

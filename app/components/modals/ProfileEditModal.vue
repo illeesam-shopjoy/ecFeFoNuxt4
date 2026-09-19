@@ -12,63 +12,47 @@
         </div>
 
         <div v-if="loading" class="py-10 text-center text-gray-400 text-[0.9rem]">불러오는 중...</div>
-        <form v-else class="flex flex-col gap-3" @submit.prevent="save">
-          <label class="block">
-            <span class="block text-[0.78rem] text-gray-400 mb-1">이름 <span class="text-theme">*</span></span>
-            <input v-model="f.memberNm" class="pf-input" placeholder="이름" maxlength="50" />
-          </label>
-          <label class="block">
-            <span class="block text-[0.78rem] text-gray-400 mb-1">이메일</span>
-            <input :value="f.memberEmail || f.loginId" class="pf-input bg-[#f9fafb] cursor-default" readonly />
-          </label>
-          <label class="block">
-            <span class="block text-[0.78rem] text-gray-400 mb-1">휴대폰</span>
-            <input v-model="f.memberPhone" class="pf-input" placeholder="010-0000-0000" maxlength="20" inputmode="tel" />
-          </label>
-
-          <div>
-            <span class="block text-[0.78rem] text-gray-400 mb-1">주소</span>
+        <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체(주소/성별은 슬롯) -->
+        <fo-form v-else :columns="formCols" :form="f" :cols="2" :gap="12" min-col-width="140px" @submit="save">
+          <template #addr="{ form }">
+            <span class="block text-[0.78rem] text-gray-500 mb-1">주소</span>
             <div class="flex gap-2 mb-1.5">
-              <input v-model="f.memberZipCode" class="pf-input !w-[110px] shrink-0 bg-[#f9fafb] cursor-default" placeholder="우편번호" readonly />
+              <input v-model="form.memberZipCode" class="pf-input !w-[110px] shrink-0 bg-[#f9fafb] cursor-default" placeholder="우편번호" readonly />
               <button type="button" class="px-3.5 border-[1.5px] border-theme rounded-lg bg-[#fdf6ee] text-theme text-[0.82rem] font-bold cursor-pointer whitespace-nowrap" @click="addrRef?.show()">
                 <i class="fas fa-search mr-1"></i>주소 검색
               </button>
             </div>
-            <input v-model="f.memberAddr" class="pf-input bg-[#f9fafb] cursor-default mb-1.5" placeholder="도로명 주소" readonly />
-            <input v-model="f.memberAddrDetail" class="pf-input" placeholder="상세 주소 (동/호수 등)" maxlength="100" />
-          </div>
+            <input v-model="form.memberAddr" class="pf-input bg-[#f9fafb] cursor-default mb-1.5" placeholder="도로명 주소" readonly />
+            <input v-model="form.memberAddrDetail" class="pf-input" placeholder="상세 주소 (동/호수 등)" maxlength="100" />
+          </template>
 
-          <div class="grid grid-cols-2 gap-2.5">
-            <label class="block">
-              <span class="block text-[0.78rem] text-gray-400 mb-1">생년월일</span>
-              <input v-model="f.birthDate" type="date" class="pf-input" />
-            </label>
-            <div>
-              <span class="block text-[0.78rem] text-gray-400 mb-1">성별</span>
-              <div class="flex gap-1.5">
-                <button
-                  v-for="g in genders"
-                  :key="g.v"
-                  type="button"
-                  class="flex-1 py-2.5 px-0.5 rounded-lg text-[0.78rem] font-semibold cursor-pointer border-[1.5px]"
-                  :class="f.memberGender === g.v ? 'bg-gray-900 text-white border-gray-900' : 'bg-[#f9fafb] text-gray-500 border-[#e5e7eb]'"
-                  @click="f.memberGender = g.v"
-                >
-                  {{ g.l }}
-                </button>
-              </div>
+          <template #gender="{ form }">
+            <span class="block text-[0.78rem] text-gray-500 mb-1">성별</span>
+            <div class="flex gap-1.5">
+              <button
+                v-for="g in genders"
+                :key="g.v"
+                type="button"
+                class="flex-1 py-2.5 px-0.5 rounded-lg text-[0.78rem] font-semibold cursor-pointer border-[1.5px]"
+                :class="form.memberGender === g.v ? 'bg-gray-900 text-white border-gray-900' : 'bg-[#f9fafb] text-gray-500 border-[#e5e7eb]'"
+                @click="form.memberGender = g.v"
+              >
+                {{ g.l }}
+              </button>
             </div>
-          </div>
+          </template>
 
-          <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 bg-red-50 rounded-md">{{ errorMsg }}</div>
+          <template #actions>
+            <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 bg-red-50 rounded-md">{{ errorMsg }}</div>
 
-          <div class="flex gap-2.5 mt-3">
-            <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="close">취소</button>
-            <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" :disabled="!f.memberNm.trim() || saving">
-              {{ saving ? "저장 중..." : "저장" }}
-            </button>
-          </div>
-        </form>
+            <div class="flex gap-2.5 mt-3">
+              <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="close">취소</button>
+              <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" :disabled="!f.memberNm.trim() || saving">
+                {{ saving ? "저장 중..." : "저장" }}
+              </button>
+            </div>
+          </template>
+        </fo-form>
       </div>
     </div>
   </Teleport>
@@ -84,6 +68,8 @@
  */
 import { reactive, ref, watch } from "vue";
 import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
+import FoForm from "~/components/fo/FoForm.vue";
+import type { FoFormColumn } from "~/types/foCompType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import { useAuthStore } from "~/store/useAuthStore";
 
@@ -113,6 +99,15 @@ const f = reactive({
   memberAddr: "",
   memberAddrDetail: "",
 });
+
+const formCols: FoFormColumn[] = [
+  { key: "memberNm", label: "이름", type: "text", required: true, placeholder: "이름", maxlength: 50, colSpan: 2 },
+  { key: "memberEmail", label: "이메일", type: "readonly", colSpan: 2, fmt: (v, form) => String(v || form.loginId || "-") },
+  { key: "memberPhone", label: "휴대폰", type: "tel", placeholder: "010-0000-0000", maxlength: 20, colSpan: 2 },
+  { key: "addr", type: "slot", colSpan: 2 },
+  { key: "birthDate", label: "생년월일", type: "date" },
+  { key: "gender", type: "slot" },
+];
 
 function errMsg(e: unknown, fallback: string): string {
   const x = e as { data?: { statusMessage?: string; message?: string }; statusMessage?: string; message?: string };

@@ -11,19 +11,10 @@
             <div class="basic-login">
               <h3 class="text-center mb-60">로그인</h3>
               <!-- 폼 시작 -->
-              <Form :validation-schema="schema" @submit="onSubmit">
-                <div class="mb-20">
-                  <label for="email-id">이메일 주소 <span class="required">*</span></label>
-                  <Field name="email" id="email-id" type="text" placeholder="이메일 주소..." />
-                  <ErrorMessage name="email" class="text-danger" />
-                </div>
-
-                <div class="mb-20">
-                  <label for="pass">비밀번호 <span class="required">*</span></label>
-                  <Field name="password" id="pass" type="password" placeholder="비밀번호 입력..." />
-                  <ErrorMessage name="password" class="text-danger" />
-                </div>
-
+              <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체.
+                   입력칸은 fo-form 이 그리고, 그 아래 로그인 유지/버튼/소셜/회원가입 영역은 #actions 슬롯(같은 form 안)에 둔다. -->
+              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="onSubmit">
+                <template #actions>
                 <div class="login-action mb-20 fix">
                   <span class="log-rem f-left">
                     <input id="remember" type="checkbox" />
@@ -39,7 +30,7 @@
                 <!-- 2026-09-14(요청사항: "로그인 버튼 흰색이라 잘 안보이는데 개선해줄수 있어?" →
                      "검정색 로그인 버튼으로 변경했네 좀 안이쁘다" → "이 색도 안이뻐 밝은 연두,
                      밝은회색 쪽이 나을거 같아" → 밝은 연두 선택) — os-btn-green 적용. -->
-                <button class="os-btn os-btn-green w-full" :disabled="loading">
+                <button type="submit" class="os-btn os-btn-green w-full" :disabled="loading">
                   {{ loading ? "로그인 중..." : "로그인" }}
                 </button>
 
@@ -93,7 +84,8 @@
                 >
                   테스트 계정으로 로그인
                 </button>
-              </Form>
+                </template>
+              </fo-form>
               <!-- 폼 끝 -->
             </div>
           </div>
@@ -113,7 +105,9 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import DemoMemberLoginModal from "~/components/modals/DemoMemberLoginModal.vue";
 import TermsAgreementModal from "~/components/modals/TermsAgreementModal.vue";
 import { ref } from "vue";
-import { Field, Form, ErrorMessage } from "vee-validate";
+import FoForm from "~/components/fo/FoForm.vue";
+import { useFoValidate } from "~/composables/useFoValidate";
+import type { FoFormColumn } from "~/types/foCompType";
 import * as yup from "yup";
 import type { SyLoginFormType } from "~/types/syLoginFormType";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -148,17 +142,22 @@ const schema = yup.object({
   password: yup.string().required("비밀번호를 입력해 주세요").min(6, "비밀번호는 6자 이상이어야 합니다").label("비밀번호"),
 });
 
-async function onSubmit(
-  values: Record<string, unknown>,
-  ctx: { resetForm: () => void }
-) {
-  const { email, password } = values as unknown as SyLoginFormType;
+const form = reactive({ email: "", password: "" });
+const formCols: FoFormColumn[] = [
+  { key: "email", label: "이메일 주소", type: "text", required: true, placeholder: "이메일 주소...", autocomplete: "username" },
+  { key: "password", label: "비밀번호", type: "password", required: true, placeholder: "비밀번호 입력...", autocomplete: "current-password" },
+];
+const { errors, validate } = useFoValidate(schema, form);
+
+async function onSubmit() {
+  if (!(await validate())) return;
+  const { email, password } = form as unknown as SyLoginFormType;
   loading.value = true;
   errorMsg.value = "";
   const result = await authStore.login(email, password);
   loading.value = false;
   if (result.ok) {
-    ctx.resetForm();
+    form.password = "";
     router.push("/");
   } else {
     errorMsg.value = result.message ?? "로그인에 실패했습니다.";

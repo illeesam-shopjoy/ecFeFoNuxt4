@@ -16,35 +16,27 @@
           <div class="text-base font-bold text-green-600">비밀번호가 변경되었습니다!</div>
         </div>
 
-        <form v-else class="flex flex-col gap-3" @submit.prevent="save">
-          <label class="block">
-            <span class="block text-[0.78rem] text-gray-400 mb-1">현재 비밀번호</span>
-            <input v-model="current" type="password" class="pw-input" placeholder="현재 비밀번호 입력" autocomplete="current-password" />
-          </label>
-          <label class="block">
-            <span class="block text-[0.78rem] text-gray-400 mb-1">새 비밀번호 <span class="text-[0.72rem]">(6자 이상)</span></span>
-            <input v-model="next" type="password" class="pw-input" placeholder="새 비밀번호 입력" autocomplete="new-password" />
-          </label>
-          <label class="block">
-            <span class="block text-[0.78rem] text-gray-400 mb-1">새 비밀번호 확인</span>
-            <input v-model="next2" type="password" class="pw-input" placeholder="새 비밀번호 재입력" autocomplete="new-password" />
-          </label>
-
+        <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체 -->
+        <fo-form v-else :columns="formCols" :form="form" :cols="1" :gap="12" @submit="save">
           <!-- 강도 표시 -->
-          <div v-if="next" class="flex gap-1 items-center">
-            <div v-for="i in 4" :key="i" class="flex-1 h-[3px] rounded-sm transition-colors" :class="i <= strength.level ? 'bg-theme' : 'bg-[#e5e7eb]'"></div>
-            <span class="text-[0.72rem] text-gray-400 ml-1.5 whitespace-nowrap">{{ strength.label }}</span>
-          </div>
+          <template #strength>
+            <div v-if="form.next" class="flex gap-1 items-center">
+              <div v-for="i in 4" :key="i" class="flex-1 h-[3px] rounded-sm transition-colors" :class="i <= strength().level ? 'bg-theme' : 'bg-[#e5e7eb]'"></div>
+              <span class="text-[0.72rem] text-gray-400 ml-1.5 whitespace-nowrap">{{ strength().label }}</span>
+            </div>
+          </template>
 
-          <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 bg-red-50 rounded-md">{{ errorMsg }}</div>
+          <template #actions>
+            <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 mb-3 bg-red-50 rounded-md">{{ errorMsg }}</div>
 
-          <div class="flex gap-2.5 mt-2">
-            <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="close">취소</button>
-            <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50" :disabled="saving">
-              {{ saving ? "변경 중..." : "변경하기" }}
-            </button>
-          </div>
-        </form>
+            <div class="flex gap-2.5 mt-2">
+              <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="close">취소</button>
+              <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50" :disabled="saving">
+                {{ saving ? "변경 중..." : "변경하기" }}
+              </button>
+            </div>
+          </template>
+        </fo-form>
       </div>
     </div>
   </Teleport>
@@ -55,7 +47,9 @@
  * 비밀번호 변경 모달 (2026-09-19, ecFeBo foAppHeader 의 비밀번호 변경 모달 이식).
  * POST /api/fo/ec/my/password(ecBeBo FoMyPageController.changePassword) — 현재 비밀번호가 틀리면 서버 메시지를 그대로 보여준다.
  */
-import { computed, ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
+import FoForm from "~/components/fo/FoForm.vue";
+import type { FoFormColumn } from "~/types/foCompType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 
 // ProfileEditModal 과 같은 방식 — 부모가 ref.show() / ref.close() 로 연다.
@@ -68,9 +62,13 @@ function close() {
 }
 defineExpose({ show, close });
 
-const current = ref("");
-const next = ref("");
-const next2 = ref("");
+const form = reactive({ current: "", next: "", next2: "" });
+const formCols: FoFormColumn[] = [
+  { key: "current", label: "현재 비밀번호", type: "password", placeholder: "현재 비밀번호 입력", autocomplete: "current-password" },
+  { key: "next", label: "새 비밀번호", hint: "(6자 이상)", type: "password", placeholder: "새 비밀번호 입력", autocomplete: "new-password" },
+  { key: "next2", label: "새 비밀번호 확인", type: "password", placeholder: "새 비밀번호 재입력", autocomplete: "new-password" },
+  { key: "strength", type: "slot" },
+];
 const errorMsg = ref("");
 const saving = ref(false);
 const done = ref(false);
@@ -79,26 +77,26 @@ watch(
   visible,
   (v) => {
     if (!v) return;
-    current.value = next.value = next2.value = errorMsg.value = "";
+    form.current = form.next = form.next2 = errorMsg.value = "";
     done.value = false;
   }
 );
 
-const strength = computed(() => {
-  const n = next.value;
+function strength() {
+  const n = form.next;
   const level = n.length < 6 ? 1 : n.length < 8 ? 2 : /[^a-zA-Z0-9]/.test(n) ? 4 : 3;
   return { level, label: ["", "약함", "보통", "양호", "강함"][level] };
-});
+}
 
 async function save() {
   errorMsg.value = "";
-  if (!current.value) return void (errorMsg.value = "현재 비밀번호를 입력하세요.");
-  if (next.value.length < 6) return void (errorMsg.value = "새 비밀번호는 6자 이상이어야 합니다.");
-  if (next.value !== next2.value) return void (errorMsg.value = "새 비밀번호가 일치하지 않습니다.");
-  if (next.value === current.value) return void (errorMsg.value = "현재 비밀번호와 다른 비밀번호를 입력하세요.");
+  if (!form.current) return void (errorMsg.value = "현재 비밀번호를 입력하세요.");
+  if (form.next.length < 6) return void (errorMsg.value = "새 비밀번호는 6자 이상이어야 합니다.");
+  if (form.next !== form.next2) return void (errorMsg.value = "새 비밀번호가 일치하지 않습니다.");
+  if (form.next === form.current) return void (errorMsg.value = "현재 비밀번호와 다른 비밀번호를 입력하세요.");
   saving.value = true;
   try {
-    await myInfoSvc.changePassword(current.value, next.value);
+    await myInfoSvc.changePassword(form.current, form.next);
     done.value = true;
     setTimeout(close, 1400);
   } catch (e) {
@@ -110,19 +108,3 @@ async function save() {
   }
 }
 </script>
-
-<style scoped>
-.pw-input {
-  width: 100%;
-  padding: 10px 13px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  color: #111827;
-  font-size: 0.88rem;
-  outline: none;
-}
-.pw-input:focus {
-  border-color: #bc8246;
-}
-</style>

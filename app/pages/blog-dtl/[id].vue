@@ -186,39 +186,8 @@
                 <h3>댓글 남기기</h3>
               </div>
               <!-- 댓글 등록 폼 (옛 BlogDetailsForm) -->
-              <Form :validation-schema="schema" @submit="onSubmit" id="contacts-form" class="conatct-post-form" action="#">
-                <div class="row">
-                  <div class="col-xl-6 col-lg-6 col-md-6">
-                    <div class="contact-icon relative contacts-name">
-                      <Field name="name" type="text" placeholder="이름" />
-                      <ErrorMessage name="name" class="text-danger" />
-                    </div>
-                  </div>
-                  <div class="col-xl-6 col-lg-6 col-md-6">
-                    <div class="contact-icon relative contacts-name">
-                      <Field name="email" type="email" placeholder="이메일" />
-                      <ErrorMessage name="email" class="text-danger" />
-                    </div>
-                  </div>
-                  <div class="col-xl-12">
-                    <div class="contact-icon relative contacts-email">
-                      <Field name="subject" type="text" placeholder="제목" />
-                      <ErrorMessage name="subject" class="text-danger" />
-                    </div>
-                  </div>
-                  <div class="col-xl-12">
-                    <div class="contact-icon relative contacts-message">
-                      <Field name="msg" v-slot="{ field }">
-                        <textarea v-bind="field" name="msg" cols="30" rows="10" placeholder="내용"></textarea>
-                      </Field>
-                      <ErrorMessage name="msg" class="text-danger" />
-                    </div>
-                  </div>
-                  <div class="col-xl-12">
-                    <button class="os-btn os-btn-black" type="submit">댓글 등록</button>
-                  </div>
-                </div>
-              </Form>
+              <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
+              <fo-form :columns="commentCols" :form="commentForm" :errors="errors" :cols="2" :gap="16" show-actions submit-label="댓글 등록" @submit="onSubmit" />
             </div>
           </div>
 
@@ -249,7 +218,9 @@ import BlogSidebar from "~/components/common/sidebar/BlogSidebar.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import { CDN_URL } from "~/conts/baseConst";
-import { Field, Form, ErrorMessage } from "vee-validate";
+import FoForm from "~/components/fo/FoForm.vue";
+import { useFoValidate } from "~/composables/useFoValidate";
+import type { FoFormColumn } from "~/types/foCompType";
 import * as yup from "yup";
 
 const route = useRoute();
@@ -344,8 +315,18 @@ const schema = yup.object({
   msg: yup.string().required("메시지를 입력해 주세요").min(20, "메시지는 20자 이상이어야 합니다").label("메시지"),
 });
 
-async function onSubmit(values: object, { resetForm }: { resetForm: () => void }) {
-  await useAlert().openAlert(JSON.stringify(values, null, 2));
-  resetForm();
+const commentForm = reactive({ name: "", email: "", subject: "", msg: "" });
+const commentCols: FoFormColumn[] = [
+  { key: "name", label: "이름", type: "text", placeholder: "이름" },
+  { key: "email", label: "이메일", type: "email", placeholder: "이메일" },
+  { key: "subject", label: "제목", type: "text", placeholder: "제목", colSpan: 2 },
+  { key: "msg", label: "내용", type: "textarea", placeholder: "내용", rows: 10, colSpan: 2 },
+];
+const { errors, validate } = useFoValidate(schema, commentForm);
+
+async function onSubmit() {
+  if (!(await validate())) return;
+  await useAlert().openAlert(JSON.stringify(commentForm, null, 2));
+  Object.assign(commentForm, { name: "", email: "", subject: "", msg: "" });
 }
 </script>

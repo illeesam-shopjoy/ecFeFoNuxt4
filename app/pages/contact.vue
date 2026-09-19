@@ -31,52 +31,8 @@
           <div class="col-xl-6 col-lg-6">
             <div class="contact__form">
               <h3>문의하기</h3>
-              <!-- 폼 시작 -->
-              <Form :validation-schema="schema" @submit="onSubmit" id="contact-form">
-                <div class="row">
-                  <div class="col-xl-6 col-lg-6">
-                    <div class="contact__input mb-20">
-                      <label>이름 <span class="required">*</span></label>
-                      <Field name="name" type="text" />
-                      <ErrorMessage name="name" class="text-danger" />
-                    </div>
-                  </div>
-                  <div class="col-xl-6 col-lg-6">
-                    <div class="contact__input mb-20">
-                      <label>이메일 <span class="required">*</span></label>
-                      <Field name="email" type="email" />
-                      <ErrorMessage name="email" class="text-danger" />
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xl-12">
-                    <div class="contact__input mb-20">
-                      <label>제목 <span class="required">*</span></label>
-                      <Field name="subject" type="text" />
-                      <ErrorMessage name="subject" class="text-danger" />
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xl-12">
-                    <div class="contact__input mb-45">
-                      <label>메시지</label>
-                      <Field name="msg" v-slot="{ field }">
-                        <textarea v-bind="field" name="msg" cols="30" rows="10"></textarea>
-                      </Field>
-                      <ErrorMessage name="msg" class="text-danger" />
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xl-12">
-                    <div class="contact__submit">
-                      <button type="submit" class="os-btn os-btn-black">메시지 보내기</button>
-                    </div>
-                  </div>
-                </div>
-              </Form>
+              <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
+              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="2" :gap="20" show-actions submit-label="메시지 보내기" @submit="onSubmit" />
               <!-- 폼 끝 -->
             </div>
           </div>
@@ -93,9 +49,10 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import Social from "~/components/social/Social.vue";
 import type { CoContactInfoItemType } from "~/types/coContactInfoItemType";
-import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
+import FoForm from "~/components/fo/FoForm.vue";
+import { useFoValidate } from "~/composables/useFoValidate";
+import type { FoFormColumn } from "~/types/foCompType";
 import * as yup from "yup";
-import type { CoInquiryType } from "~/types/coInquiryType";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -139,9 +96,18 @@ const schema = yup.object({
   msg: yup.string().required("메시지를 입력해 주세요").min(20, "메시지는 20자 이상이어야 합니다").label("메시지"),
 });
 
-async function onSubmit(rawValues: GenericObject, { resetForm }: { resetForm: () => void }) {
-  const values = rawValues as CoInquiryType; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
-  await useAlert().openAlert(JSON.stringify(values, null, 2));
-  resetForm();
+const form = reactive({ name: "", email: "", subject: "", msg: "" });
+const formCols: FoFormColumn[] = [
+  { key: "name", label: "이름", type: "text", required: true },
+  { key: "email", label: "이메일", type: "email", required: true },
+  { key: "subject", label: "제목", type: "text", required: true, colSpan: 2 },
+  { key: "msg", label: "메시지", type: "textarea", rows: 10, colSpan: 2 },
+];
+const { errors, validate } = useFoValidate(schema, form);
+
+async function onSubmit() {
+  if (!(await validate())) return;
+  await useAlert().openAlert(JSON.stringify(form, null, 2));
+  Object.assign(form, { name: "", email: "", subject: "", msg: "" });
 }
 </script>

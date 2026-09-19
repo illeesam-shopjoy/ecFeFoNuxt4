@@ -91,13 +91,13 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends FoRow">
 import type { FoGridColumn, FoGridRowAction, FoRow } from "~/types/foCompType";
 
 const props = withDefaults(
   defineProps<{
     columns: FoGridColumn[];
-    rows?: FoRow[];
+    rows?: T[];
     /** 행 key 로 쓸 필드명 (없으면 index) */
     rowKey?: string;
     listTitle?: string;
@@ -116,10 +116,10 @@ const props = withDefaults(
     /** 번호 계산용(페이징 화면): (pageNo-1)*pageSize+idx+1 */
     pageNo?: number;
     pageSize?: number;
-    rowClick?: (row: FoRow) => void;
-    rowClass?: (row: FoRow, idx: number) => string;
-    rowStyle?: (row: FoRow, idx: number) => string | Record<string, string>;
-    isExpanded?: (row: FoRow, idx: number) => boolean;
+    rowClick?: (row: T) => void;
+    rowClass?: (row: T, idx: number) => string;
+    rowStyle?: (row: T, idx: number) => string | Record<string, string>;
+    isExpanded?: (row: T, idx: number) => boolean;
     rowActionsCols?: FoGridRowAction[];
     layout?: "table" | "card";
     cardMinWidth?: string;
@@ -129,8 +129,8 @@ const props = withDefaults(
 );
 const emit = defineEmits<{
   (e: "sort", key: string): void;
-  (e: "row-click", row: FoRow): void;
-  (e: "cell-click", payload: { row: FoRow; col?: FoGridColumn; colKey?: string; rowIndex: number }): void;
+  (e: "row-click", row: T): void;
+  (e: "cell-click", payload: { row: T; col?: FoGridColumn; colKey?: string; rowIndex: number }): void;
 }>();
 
 // 파생값은 computed 대신 일반 함수 — 템플릿 렌더 시 props 를 읽으므로 반응성은 그대로 유지된다
@@ -142,7 +142,7 @@ const firstText = (row: FoRow) => {
 };
 const rowNo = (idx: number) => ((props.pageNo ?? 1) - 1) * (props.pageSize ?? props.rows.length) + idx + 1;
 
-function onRowClick(row: FoRow) {
+function onRowClick(row: T) {
   props.rowClick?.(row);
   emit("row-click", row);
 }
@@ -194,7 +194,7 @@ const badgeStyle = (col: FoGridColumn, row: FoRow) => {
 };
 
 // ── 행 액션 (label/cls/title 은 문자열 또는 (row,idx)=>값) ──────────────────
-const val = <T,>(v: T | ((row: FoRow, idx: number) => T) | undefined, row: FoRow, idx: number): T | undefined => (typeof v === "function" ? (v as (r: FoRow, i: number) => T)(row, idx) : v);
+const val = <V,>(v: V | ((row: FoRow, idx: number) => V) | undefined, row: FoRow, idx: number): V | undefined => (typeof v === "function" ? (v as (r: FoRow, i: number) => V)(row, idx) : v);
 const actVisible = (a: FoGridRowAction, row: FoRow, idx: number) => (a.visible ? !!a.visible(row, idx) : true);
 </script>
 

@@ -12,52 +12,39 @@
                 <nuxt-link class="os-btn os-btn-black mt-20" to="/shop"> 쇼핑하기 </nuxt-link>
               </div>
               <form v-if="state.cartProducts.length > 0" action="#">
-                <div class="table-content table-responsive">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th class="product-thumbnail">이미지</th>
-                        <th class="cart-product-name">상품</th>
-                        <th class="product-price">단가</th>
-                        <th class="product-quantity">수량</th>
-                        <th class="product-subtotal">합계</th>
-                        <th class="product-remove">삭제</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(item, i) in state.cartProducts" :key="i">
-                        <td class="product-thumbnail">
-                          <nuxt-link :to="`/prod-dtl/${item.prodId}`">
-                            <app-image :src="item.img" :alt="item.prodNm" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
-                          </nuxt-link>
-                        </td>
-                        <td class="product-name">
-                          <nuxt-link :to="`/prod-dtl/${item.prodId}`">
-                            <span v-html="item.prodNm"></span>
-                          </nuxt-link>
-                        </td>
-                        <td class="product-price">
-                          <span class="amount">{{ formatPrice(item.salePrice) }}</span>
-                        </td>
-                        <td class="product-quantity">
-                          <div class="cart-plus-minus">
-                            <input type="text" v-model="item.orderQuantity" />
-                            <div @click="state.setStQuantityDecrement(item)" class="dec qtybutton">-</div>
-                            <div @click="state.addStCartProduct(item, item.selectedProdSkuId)" class="inc qtybutton">+</div>
-                          </div>
-                        </td>
-                        <td class="product-subtotal">
-                          <span class="amount">{{ formatPrice((item.orderQuantity ?? 0) * item.salePrice) }}</span>
-                        </td>
-                        <td class="product-remove" @click.prevent="state.removerStCartProducts(item)">
-                          <a href="#">
-                            <i class="fa fa-times"></i>
-                          </a>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 장바구니 표를 <fo-grid> 로 교체(셀은 슬롯으로 커스텀) -->
+                <fo-grid bare min-width="640px" empty-text="장바구니에 상품이 없습니다" :columns="columns" :rows="state.cartProducts">
+            <template #cell-img="{ row }">
+              <td class="text-center">
+                <nuxt-link :to="`/prod-dtl/${row.prodId}`">
+                  <app-image :src="row.img" :alt="row.prodNm" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
+                </nuxt-link>
+              </td>
+            </template>
+            <template #cell-prodNm="{ row }">
+              <td class="text-left">
+                <nuxt-link :to="`/prod-dtl/${row.prodId}`"><span v-html="row.prodNm"></span></nuxt-link>
+              </td>
+            </template>
+                  <template #cell-salePrice="{ row }">
+                    <td class="text-right"><span class="amount">{{ formatPrice(row.salePrice) }}</span></td>
+                  </template>
+                  <template #cell-orderQuantity="{ row }">
+                    <td class="text-center">
+                      <div class="cart-plus-minus">
+                        <input type="text" v-model="row.orderQuantity" />
+                        <div @click="state.setStQuantityDecrement(row)" class="dec qtybutton">-</div>
+                        <div @click="state.addStCartProduct(row, row.selectedProdSkuId)" class="inc qtybutton">+</div>
+                      </div>
+                    </td>
+                  </template>
+                  <template #cell-subtotal="{ row }">
+                    <td class="text-right"><span class="amount">{{ formatPrice((row.orderQuantity ?? 0) * row.salePrice) }}</span></td>
+                  </template>
+                  <template #cell-remove="{ row }">
+                    <td class="text-center cursor-pointer" @click.prevent="state.removerStCartProducts(row)"><i class="fa fa-times"></i></td>
+                  </template>
+                </fo-grid>
                 <div class="row">
                   <div class="col-12">
                     <div class="coupon-all">
@@ -110,6 +97,8 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { useCartStore } from "~/store/useCartStore";
 import AppImage from "~/components/ui/AppImage.vue";
+import FoGrid from "~/components/fo/FoGrid.vue";
+import type { FoGridColumn } from "~/types/foCompType";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -118,5 +107,13 @@ useHead({
 usePageTitle("장바구니");
 
 const state = useCartStore();
+const columns: FoGridColumn[] = [
+  { key: "img", label: "이미지", width: "110px" },
+  { key: "prodNm", label: "상품", align: "left" },
+  { key: "salePrice", label: "단가", width: "130px", align: "right" },
+  { key: "orderQuantity", label: "수량", width: "150px", align: "center" },
+  { key: "subtotal", label: "합계", width: "130px", align: "right" },
+  { key: "remove", label: "삭제", width: "70px", align: "center" },
+];
 const { formatPrice } = usePrice();
 </script>

@@ -12,48 +12,30 @@
                 <nuxt-link class="os-btn os-btn-black mt-20" to="/shop"> 쇼핑하기 </nuxt-link>
               </div>
               <form v-if="state.wishlists.length > 0" action="#">
-                <div class="table-content table-responsive">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th class="product-thumbnail">이미지</th>
-                        <th class="cart-product-name">상품</th>
-                        <th class="product-price">단가</th>
-                        <th class="product-quantity">수량</th>
-                        <th class="product-subtotal">합계</th>
-                        <th class="product-remove">삭제</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(item, i) in state.wishlists" :key="i">
-                        <td class="product-thumbnail">
-                          <nuxt-link :to="`/prod-dtl/${item.prodId}`">
-                            <app-image :src="item.img" :alt="item.prodNm" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
-                          </nuxt-link>
-                        </td>
-                        <td class="product-name">
-                          <nuxt-link :to="`/prod-dtl/${item.prodId}`">
-                            <span v-html="item.prodNm"></span>
-                          </nuxt-link>
-                        </td>
-                        <td class="product-price">
-                          <span class="amount">{{ formatPrice(item.salePrice) }}</span>
-                        </td>
-                        <td class="product-quantity" @click.prevent="cartState.addStCartProduct(item)">
-                          <button class="os-btn os-btn-black" type="submit">장바구니에 담기</button>
-                        </td>
-                        <td class="product-subtotal">
-                          <span class="amount">{{ formatPrice(item.salePrice) }}</span>
-                        </td>
-                        <td class="product-remove" @click.prevent="state.removeStWishlist(item)">
-                          <a href="#">
-                            <i class="fa fa-times"></i>
-                          </a>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 위시리스트 표를 <fo-grid> 로 교체(셀은 슬롯으로 커스텀) -->
+                <fo-grid bare min-width="640px" empty-text="위시리스트에 담긴 상품이 없습니다" :columns="columns" :rows="state.wishlists">
+            <template #cell-img="{ row }">
+              <td class="text-center">
+                <nuxt-link :to="`/prod-dtl/${row.prodId}`">
+                  <app-image :src="row.img" :alt="row.prodNm" :img-style="{ width: '80px', height: '100px', objectFit: 'cover' }" :skeleton-style="{ width: '80px', height: '100px' }" />
+                </nuxt-link>
+              </td>
+            </template>
+            <template #cell-prodNm="{ row }">
+              <td class="text-left">
+                <nuxt-link :to="`/prod-dtl/${row.prodId}`"><span v-html="row.prodNm"></span></nuxt-link>
+              </td>
+            </template>
+                  <template #cell-salePrice="{ row }">
+                    <td class="text-right"><span class="amount">{{ formatPrice(row.salePrice) }}</span></td>
+                  </template>
+                  <template #cell-cart="{ row }">
+                    <td class="text-center"><button class="os-btn os-btn-black" type="button" @click.prevent="cartState.addStCartProduct(row)">장바구니에 담기</button></td>
+                  </template>
+                  <template #cell-remove="{ row }">
+                    <td class="text-center cursor-pointer" @click.prevent="state.removeStWishlist(row)"><i class="fa fa-times"></i></td>
+                  </template>
+                </fo-grid>
               </form>
             </div>
           </div>
@@ -72,6 +54,8 @@ import { onMounted } from "vue";
 import { useCartStore } from "~/store/useCartStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
 import AppImage from "~/components/ui/AppImage.vue";
+import FoGrid from "~/components/fo/FoGrid.vue";
+import type { FoGridColumn } from "~/types/foCompType";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -80,6 +64,13 @@ useHead({
 usePageTitle("위시리스트");
 
 const state = useWishlistStore();
+const columns: FoGridColumn[] = [
+  { key: "img", label: "이미지", width: "110px" },
+  { key: "prodNm", label: "상품", align: "left" },
+  { key: "salePrice", label: "단가", width: "130px", align: "right" },
+  { key: "cart", label: "장바구니", width: "170px", align: "center" },
+  { key: "remove", label: "삭제", width: "70px", align: "center" },
+];
 const cartState = useCartStore();
 const { formatPrice } = usePrice();
 onMounted(() => {

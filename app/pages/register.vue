@@ -8,25 +8,9 @@
           <div class="col-lg-8 col-12 mx-auto">
             <div class="basic-login">
               <h3 class="text-center mb-60">회원가입</h3>
-              <Form :validation-schema="schema" @submit="onSubmit">
-                <div class="mb-20">
-                  <label for="name">사용자명 <span class="required">*</span></label>
-                  <Field name="name" id="name" type="text" placeholder="사용자명 입력" />
-                  <ErrorMessage name="name" class="text-danger" />
-                </div>
-
-                <div class="mb-20">
-                  <label for="email-id">이메일 주소 <span class="required">*</span></label>
-                  <Field name="email" id="email-id" type="text" placeholder="이메일 주소..." />
-                  <ErrorMessage name="email" class="text-danger" />
-                </div>
-
-                <div class="mb-20">
-                  <label for="pass">비밀번호 <span class="required">*</span></label>
-                  <Field name="password" id="pass" type="password" placeholder="비밀번호 입력..." />
-                  <ErrorMessage name="password" class="text-danger" />
-                </div>
-
+              <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
+              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="onSubmit">
+                <template #actions>
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
                 <div class="mt-10"></div>
@@ -64,7 +48,8 @@
 
                 <div class="or-divide"><span>또는</span></div>
                 <nuxt-link href="/login" class="os-btn os-btn-black w-full">로그인</nuxt-link>
-              </Form>
+                </template>
+              </fo-form>
             </div>
           </div>
         </div>
@@ -79,7 +64,9 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { ref } from "vue";
-import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
+import FoForm from "~/components/fo/FoForm.vue";
+import { useFoValidate } from "~/composables/useFoValidate";
+import type { FoFormColumn } from "~/types/foCompType";
 import * as yup from "yup";
 import type { MbRegisterFormType } from "~/types/mbRegisterFormType";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -102,15 +89,23 @@ const schema = yup.object({
   password: yup.string().required("비밀번호를 입력해 주세요").min(6, "비밀번호는 6자 이상이어야 합니다").label("비밀번호"),
 });
 
-async function onSubmit(rawValues: GenericObject, { resetForm }: { resetForm: () => void }) {
-  const values = rawValues as MbRegisterFormType; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
-  const { name, email, password } = values;
+const form = reactive({ name: "", email: "", password: "" });
+const formCols: FoFormColumn[] = [
+  { key: "name", label: "사용자명", type: "text", required: true, placeholder: "사용자명 입력", autocomplete: "name" },
+  { key: "email", label: "이메일 주소", type: "text", required: true, placeholder: "이메일 주소...", autocomplete: "username" },
+  { key: "password", label: "비밀번호", type: "password", required: true, placeholder: "비밀번호 입력...", autocomplete: "new-password" },
+];
+const { errors, validate } = useFoValidate(schema, form);
+
+async function onSubmit() {
+  if (!(await validate())) return;
+  const { name, email, password } = form as unknown as MbRegisterFormType;
   loading.value = true;
   errorMsg.value = "";
   const result = await authStore.register(name, email, password);
   loading.value = false;
   if (result.ok) {
-    resetForm();
+    Object.assign(form, { name: "", email: "", password: "" });
     await useAlert().openAlert("가입이 완료되었습니다. 로그인해 주세요.");
     router.push("/login");
   } else {

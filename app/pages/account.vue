@@ -97,38 +97,15 @@
                       <button type="button" class="order__info-btn"><i class="fa-regular fa-trash-can"></i> 비우기</button>
                     </div>
                     <div class="order__list order__list--wide white-bg table-responsive">
-                      <table class="table w-full">
-                        <thead>
-                          <tr>
-                            <th scope="col" class="order__th-id">주문 번호</th>
-                            <th scope="col" class="order__th-name">상품명</th>
-                            <th scope="col" class="order__th-amount">금액</th>
-                            <th scope="col" class="order__th-detail">상세</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td class="order__id">#3520</td>
-                            <td>
-                              <nuxt-link href="/prod-dtl" class="order__title">대학 세미나 시리즈 글로벌.</nuxt-link>
-                            </td>
-                            <td>{{ formatPrice(144000) }}</td>
-                            <td>
-                              <nuxt-link href="/prod-dtl" class="order__view-btn">보기</nuxt-link>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td class="order__id">#2441</td>
-                            <td>
-                              <nuxt-link href="/prod-dtl" class="order__title">웹 코딩과 아파치 기초</nuxt-link>
-                            </td>
-                            <td>{{ formatPrice(59540) }}</td>
-                            <td>
-                              <nuxt-link href="/prod-dtl" class="order__view-btn">보기</nuxt-link>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                      <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 표를 <fo-grid> 로 교체 -->
+                      <fo-grid bare :columns="orderCols" :rows="orders" row-key="orderNo">
+                        <template #cell-orderNo="{ row }"><td class="order__id text-left">{{ row.orderNo }}</td></template>
+                        <template #cell-title="{ row }">
+                          <td class="text-left"><nuxt-link href="/prod-dtl" class="order__title">{{ row.title }}</nuxt-link></td>
+                        </template>
+                        <template #cell-amount="{ row }"><td class="text-right">{{ formatPrice(row.amount) }}</td></template>
+                        <template #cell-detail><td class="text-center"><nuxt-link href="/prod-dtl" class="order__view-btn">보기</nuxt-link></td></template>
+                      </fo-grid>
                     </div>
                   </div>
                 </div>
@@ -138,24 +115,7 @@
                       <h3 class="password__change-title">비밀번호 변경</h3>
                     </div>
                     <div class="password__form white-bg">
-                      <!-- 폼 시작 -->
-                      <form action="#">
-                        <div class="password__input">
-                          <p>현재 비밀번호</p>
-                          <input type="password" placeholder="현재 비밀번호" />
-                        </div>
-                        <div class="password__input">
-                          <p>새 비밀번호</p>
-                          <input type="password" placeholder="새 비밀번호" />
-                        </div>
-                        <div class="password__input">
-                          <p>비밀번호 확인</p>
-                          <input type="password" placeholder="비밀번호 확인" />
-                        </div>
-                        <div class="password__input">
-                          <button type="submit" class="os-btn os-btn-black">비밀번호 변경</button>
-                        </div>
-                      </form>
+                      <fo-form :columns="pwCols" :form="pwForm" :cols="1" :gap="16" show-actions submit-label="비밀번호 변경" />
                       <!-- 폼 끝 -->
                     </div>
                   </div>
@@ -182,6 +142,9 @@ import { useCartStore } from "~/store/useCartStore";
 import { useAuthStore } from "~/store/useAuthStore";
 import AppImage from "~/components/ui/AppImage.vue";
 import ProfileEditModal from "~/components/modals/ProfileEditModal.vue";
+import FoGrid from "~/components/fo/FoGrid.vue";
+import FoForm from "~/components/fo/FoForm.vue";
+import type { FoFormColumn, FoGridColumn } from "~/types/foCompType";
 import { useRouter } from "vue-router";
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -196,6 +159,25 @@ const profileImg = `${CDN_URL}/cdn/prod/img/testimonial/person-1.jpg`;
 
 const { formatPrice } = usePrice();
 const activeTab = ref("account");
+
+// 주문 내역(데모 데이터) — <fo-grid> 컬럼/행
+const orderCols: FoGridColumn[] = [
+  { key: "orderNo", label: "주문 번호", width: "130px", align: "left" },
+  { key: "title", label: "상품명", align: "left" },
+  { key: "amount", label: "금액", width: "140px", align: "right" },
+  { key: "detail", label: "상세", width: "90px", align: "center" },
+];
+const orders = [
+  { orderNo: "#3520", title: "대학 세미나 시리즈 글로벌.", amount: 144000 },
+  { orderNo: "#2441", title: "웹 코딩과 아파치 기초", amount: 59540 },
+];
+// 비밀번호 변경 폼(데모) — 실제 변경은 헤더 사용자 메뉴의 "비밀번호 변경"(PasswordChangeModal)
+const pwForm = reactive({ current: "", next: "", next2: "" });
+const pwCols: FoFormColumn[] = [
+  { key: "current", label: "현재 비밀번호", type: "password", placeholder: "현재 비밀번호" },
+  { key: "next", label: "새 비밀번호", type: "password", placeholder: "새 비밀번호" },
+  { key: "next2", label: "비밀번호 확인", type: "password", placeholder: "비밀번호 확인" },
+];
 const profileEditModalRef = ref<InstanceType<typeof ProfileEditModal> & { show(): void } | null>(null);
 const router = useRouter();
 

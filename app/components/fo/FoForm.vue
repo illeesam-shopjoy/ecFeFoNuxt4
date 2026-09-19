@@ -2,7 +2,7 @@
   <!-- 2026-09-19(요청사항: "ecFeBo 참조하여 <fo-form 컴포넌트도 만들어서 화면구성에 활용") — ecFeBo(components/comp/FoAreaComp.js)의
        FoFormArea(<fo-form-area>) 이식. 필드 정의(columns)와 form/errors 객체만 넘기면 라벨·입력·오류 메시지를 그려준다.
        type: text|email|tel|password|number|date|textarea|select|readonly|slot|rowBreak|group. 한 줄 필드 수는 cols, 필드 폭은 colSpan. -->
-  <form class="fo-form" @submit.prevent="emit('submit')">
+  <component :is="as" class="fo-form" @submit.prevent="as === 'form' && emit('submit')">
     <div v-for="(row, ri) in layoutRows()" :key="ri" class="grid" :style="{ gridTemplateColumns: `repeat(auto-fit, minmax(${minColWidth}, 1fr))`, gap: `${gap}px`, marginBottom: `${gap}px` }">
       <div v-for="col in row" :key="col.key || col.label" :style="col.colSpan && col.colSpan > 1 ? { gridColumn: `span ${Math.min(col.colSpan, cols)}` } : {}">
         <!-- 섹션 제목 -->
@@ -48,13 +48,15 @@
       </div>
     </div>
 
-    <!-- 제출 영역 -->
-    <div v-if="showActions" class="flex gap-2 justify-end mt-2">
-      <slot name="actions-before" />
-      <button type="submit" class="px-6 py-3 bg-gray-900 text-white border-0 rounded-lg text-[0.88rem] font-bold cursor-pointer">{{ submitLabel }}</button>
-      <slot name="actions-after" />
-    </div>
-  </form>
+    <!-- 제출 영역: #actions 슬롯을 주면 통째로 교체(폼 안에 있으므로 type="submit" 버튼이 제출한다), 아니면 showActions 일 때 기본 버튼 -->
+    <slot name="actions">
+      <div v-if="showActions" class="flex gap-2 justify-end mt-2">
+        <slot name="actions-before" />
+        <button type="submit" class="px-6 py-3 bg-gray-900 text-white border-0 rounded-lg text-[0.88rem] font-bold cursor-pointer">{{ submitLabel }}</button>
+        <slot name="actions-after" />
+      </div>
+    </slot>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -74,8 +76,10 @@ const props = withDefaults(
     /** true 면 하단에 제출 버튼을 그린다 (FO 화면은 별도 버튼이 많아 기본 off) */
     showActions?: boolean;
     submitLabel?: string;
+    /** 다른 <form> 안에 넣을 때(중첩 form 방지)는 "div" */
+    as?: "form" | "div";
   }>(),
-  { form: () => ({}), errors: () => ({}), cols: 2, minColWidth: "240px", gap: 14, showActions: false, submitLabel: "확인" }
+  { form: () => ({}), errors: () => ({}), cols: 2, minColWidth: "240px", gap: 14, showActions: false, submitLabel: "확인", as: "form" }
 );
 const emit = defineEmits<{ (e: "submit"): void }>();
 
