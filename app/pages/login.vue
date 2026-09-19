@@ -13,7 +13,7 @@
               <!-- 폼 시작 -->
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체.
                    입력칸은 fo-form 이 그리고, 그 아래 로그인 유지/버튼/소셜/회원가입 영역은 #actions 슬롯(같은 form 안)에 둔다. -->
-              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="onSubmit">
+              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="handleBtnAction('form-submit')">
                 <template #actions>
                 <div class="login-action mb-20 fix flex items-center justify-between">
                   <span class="log-rem f-left">
@@ -163,4 +163,15 @@ async function onSubmit() {
     errorMsg.value = (result.message ?? "로그인에 실패했습니다.").split("::")[0]!;
   }
 }
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ login.vue : handleBtnAction -> ", cmd, param);
+  // 로그인 (검증 → authStore.login)
+  if (cmd === "form-submit") {
+    return onSubmit();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>

@@ -32,7 +32,7 @@
             <div class="contact__form">
               <h3>문의하기</h3>
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
-              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="2" :gap="20" show-actions submit-label="메시지 보내기" @submit="onSubmit" />
+              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="2" :gap="20" show-actions submit-label="메시지 보내기" @submit="handleBtnAction('form-submit')" />
               <!-- 폼 끝 -->
             </div>
           </div>
@@ -110,4 +110,15 @@ async function onSubmit() {
   await useAlert().openAlert(JSON.stringify(form, null, 2));
   Object.assign(form, { name: "", email: "", subject: "", msg: "" });
 }
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ contact.vue : handleBtnAction -> ", cmd, param);
+  // 문의 등록(검증 후 전송)
+  if (cmd === "form-submit") {
+    return onSubmit();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>

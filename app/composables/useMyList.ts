@@ -1,10 +1,10 @@
 /**
  * useMyList — 마이페이지 목록 화면(pages/my/*.vue) 공통 조회 상태/동작 (2026-09-19).
  * 등록기간(프리셋) + 서버 페이징 + 로딩/오류/펼침 상태를 한 곳에서 관리한다. 화면마다 다른 것은 loader(어떤 API 를 부르는가)와
- * extra(탭별 추가 필터)뿐이다. 마운트 시 로그인 여부를 확인하고(비로그인이면 /login), 401 이 오면 로그아웃 처리 후 /login 으로 보낸다.
+ * extra(탭별 추가 필터)뿐이다. 로그인 확인은 ensureLogin() (각 화면 initPage 첫 단계), 401 이 오면 로그아웃 처리 후 /login 으로 보낸다.
  * 반환값은 reactive 객체라 템플릿/프레임(components/my/MyPageFrame.vue)에서 .value 없이 바로 쓴다.
  */
-import { onMounted, reactive } from "vue";
+import { reactive } from "vue";
 import { useAuthStore } from "~/store/useAuthStore";
 import type { MyListParams, MyRow } from "~/types/foMyType";
 
@@ -30,6 +30,9 @@ export type MyTabKey = (typeof MY_TABS)[number]["key"];
 export const ymd = (v: unknown) => (v ? String(v).slice(0, 10) : "");
 /** 한글 코드명이 있으면 그것을, 없으면 코드→한글 매핑, 그것도 없으면 원문 */
 export const kor = (nm: unknown, cd: unknown, map: Record<string, string>) => (nm && /[가-힣]/.test(String(nm)) ? String(nm) : map[String(cd ?? "").toUpperCase()] || String(nm || cd || ""));
+
+/** 코드그룹 목록 → { 코드값(대문자) → 라벨 } (kor() 의 매핑 인자용) */
+export const codeMap = (list: { codeValue: string; codeLabel: string }[]) => Object.fromEntries(list.map((c) => [String(c.codeValue).toUpperCase(), c.codeLabel]));
 
 export interface MyListLoadResult {
   rows: MyRow[];
@@ -71,6 +74,7 @@ export interface MyListState {
   goPage: (n: number) => Promise<void> | undefined;
   changePageSize: () => Promise<void>;
   toggle: (id: string) => void;
+  ensureLogin: () => Promise<boolean>;
 }
 
 const fmtYmd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -107,6 +111,7 @@ export function useMyList(opts: UseMyListOptions): MyListState {
     goPage,
     changePageSize,
     toggle,
+    ensureLogin,
   });
 
   async function load(): Promise<void> {
@@ -182,14 +187,13 @@ export function useMyList(opts: UseMyListOptions): MyListState {
     my.openId = my.openId === id ? null : id;
   }
 
-  onMounted(async () => {
+  /** 로그인 확인 — 비로그인이면 /login 으로 보내고 false. 각 화면의 initPage 가 첫 단계로 호출한다 */
+  async function ensureLogin(): Promise<boolean> {
     authStore.loadStToken(); // app.vue 의 토큰 복원보다 페이지 마운트가 먼저일 수 있어 여기서도 복원
-    if (!authStore.token) {
-      await router.replace("/login");
-      return;
-    }
-    load();
-  });
+    if (authStore.token) return true;
+    await router.replace("/login");
+    return false;
+  }
 
   return my;
 }

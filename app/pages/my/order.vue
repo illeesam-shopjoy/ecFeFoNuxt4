@@ -1,20 +1,21 @@
 <template>
   <!-- 2026-09-19(요청사항: "ecFeBo pages/fo/my/MyOrder.js 처럼 app/pages/my 아래 페이지") — 마이페이지 > 주문 (/my/order).
-       ecFeBo MyOrder.js 이식. 기간 + 주문상태 서버 페이징, 행 클릭 시 상품/결제/배송 펼침. 목록은 <fo-grid>. -->
-  <my-page-frame tab="order" :my="my" :file-path="currentFilePath" empty-text="주문 내역이 없습니다.">
+       ecFeBo MyOrder.js 이식. 기간 + 주문상태 서버 페이징, 행 클릭 시 상품/결제/배송 펼침. 목록은 <fo-grid>.
+       2026-09-20(요청사항: "ecFeBo DpDispWidgetPreview.js 처럼 구조 통일") — [01]초기변수 [02]액션모음(handleBtnAction/handleSelectAction/fnCallbackModal) [03]내장함수(fnLoadCodes/handleSearchList/initPage). -->
+  <my-page-frame tab="order" :my="my" :file-path="currentFilePath" empty-text="주문 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="flex flex-wrap items-center gap-1 px-3.5 py-2.5 mb-4 bg-[#f4f6f8] rounded-lg text-[0.8rem]">
-        <button type="button" class="px-3 py-1 rounded-full border-0 cursor-pointer font-bold" :class="orderStatus === '' ? 'bg-green-600 text-white' : 'bg-white text-gray-500'" @click="setStatus('')">주문</button>
+        <button type="button" class="px-3 py-1 rounded-full border-0 cursor-pointer font-bold" :class="searchParam.orderStatusCd === '' ? 'bg-green-600 text-white' : 'bg-white text-gray-500'" @click="handleSelectAction('orders-status', '')">주문</button>
         <template v-for="s in ORDER_STEPS" :key="s.cd">
           <span class="text-gray-300">·</span>
-          <button type="button" class="px-2 py-1 rounded-full border-0 bg-transparent cursor-pointer" :class="orderStatus === s.cd ? 'font-bold text-gray-900 underline' : 'text-gray-400'" @click="setStatus(s.cd)">{{ s.label }}</button>
+          <button type="button" class="px-2 py-1 rounded-full border-0 bg-transparent cursor-pointer" :class="searchParam.orderStatusCd === s.cd ? 'font-bold text-gray-900 underline' : 'text-gray-400'" @click="handleSelectAction('orders-status', s.cd)">{{ s.label }}</button>
         </template>
-        <button type="button" class="ml-auto w-6 h-6 rounded-full border border-[#d1d5db] bg-white text-gray-500 text-[0.72rem] cursor-pointer" aria-label="주문 진행 안내" @click="helpOpen = true">?</button>
+        <button type="button" class="ml-auto w-6 h-6 rounded-full border border-[#d1d5db] bg-white text-gray-500 text-[0.72rem] cursor-pointer" aria-label="주문 진행 안내" @click="handleBtnAction('orders-helpOpen')">?</button>
       </div>
     </template>
 
     <div class="bg-white border border-[#e5e7eb] rounded-lg overflow-hidden">
-      <fo-grid bare :columns="columns" :rows="my.rows" row-key="orderId" :row-click="(r) => my.toggle(r.orderId)" :is-expanded="(r) => my.openId === r.orderId" :loading="my.loading">
+      <fo-grid bare :columns="columns" :rows="my.rows" row-key="orderId" :row-click="(r) => handleSelectAction('orders-toggle', r.orderId)" :is-expanded="(r) => my.openId === r.orderId" :loading="my.loading">
         <template #row-expand="{ row, colspan }">
           <td :colspan="colspan" class="!p-0 !border-b !border-[#f3f4f6]">
             <div class="px-4 pb-4 text-[0.85rem]">
@@ -52,9 +53,9 @@
     <template #modal>
       <!-- 주문 진행 안내 모달 -->
       <Teleport to="body">
-        <div v-if="helpOpen" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" @click.self="helpOpen = false">
+        <div v-if="uiState.helpOpen" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" @click.self="fnCallbackModal('orders-help', {}, null)">
           <div class="relative w-full max-w-[460px] max-h-[85vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-            <button type="button" class="absolute top-3 right-3 p-1 text-gray-400 bg-transparent border-0 cursor-pointer" aria-label="닫기" @click="helpOpen = false"><i class="fal fa-times"></i></button>
+            <button type="button" class="absolute top-3 right-3 p-1 text-gray-400 bg-transparent border-0 cursor-pointer" aria-label="닫기" @click="fnCallbackModal('orders-help', {}, null)"><i class="fal fa-times"></i></button>
             <h3 class="text-lg font-extrabold text-gray-900 mb-1">주문 진행 안내</h3>
             <p class="text-[0.8rem] text-gray-400 mb-4">주문 접수부터 구매확정까지 아래 순서로 진행됩니다.</p>
             <ol class="list-none m-0 p-0 grid gap-2.5">
@@ -75,10 +76,14 @@ import MyPageFrame from "~/components/my/MyPageFrame.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
-import { useMyList, kor, ymd } from "~/composables/useMyList";
+import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
+import { useCodeStore } from "~/store/useCodeStore";
 import { myOrderSvc } from "~/svc/fo/my/myOrderSvc";
 import type { MyRow } from "~/types/foMyType";
+import type { SyCodeType } from "~/types/syCodeType";
 import type { FoGridColumn } from "~/types/foCompType";
+
+/* ##### [01] 초기 변수 정의 ################################################## */
 
 const currentFilePath = useCurrentFilePath();
 const { formatPrice } = usePrice();
@@ -110,34 +115,9 @@ const FLOW_HELP = [
   { icon: "🏁", status: "구매확정", desc: "구매가 확정되었습니다." },
 ];
 
-const orderStatus = ref("");
-const helpOpen = ref(false);
-
-// 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptOrder)
-function adapt(o: MyRow) {
-    const dliv = Array.isArray(o.orderDlivs) && o.orderDlivs.length ? o.orderDlivs[0] : null;
-    return {
-      orderId: String(o.orderId),
-      orderDate: ymd(o.orderDate),
-      status: kor(o.orderStatusCdNm, o.orderStatusCd, ORDER_STATUS_KOR),
-      totalPrice: Number(o.payAmt ?? o.totalAmt ?? 0),
-      shippingFee: Number(o.shippingFee ?? 0),
-      cashPaid: Number(o.saveUseAmt ?? 0),
-      courier: dliv ? dliv.outboundCourierCdNm || dliv.outboundCourierCd || "" : "",
-      trackingNo: dliv ? dliv.outboundTrackingNo || "" : "",
-      items: (Array.isArray(o.orderItems) ? o.orderItems : []).map((it: MyRow) => ({ prodNm: it.prodNm, color: it.optItemNm1 || "", size: it.optItemNm2 || "", qty: Number(it.orderQty ?? 0), price: Number(it.unitPrice ?? 0) })),
-      pays: (Array.isArray(o.orderPays) ? o.orderPays : []).map((p: MyRow) => ({ type: p.payMethodCdNm || p.payMethodCd || "결제", amount: Number(p.payAmt ?? 0), datetime: ymd(p.payDate) })),
-    };
-}
-
-const my = useMyList({
-  dateType: "order_date",
-  loader: async (p) => {
-    const r = await myOrderSvc.getPage(p);
-    return { rows: (r.pageList ?? []).map(adapt), total: r.pageTotalCount ?? 0, totalPage: r.pageTotalPage || 1 };
-  },
-  extra: () => (orderStatus.value ? { orderStatusCd: orderStatus.value } : {}),
-});
+const codes = reactive({ order_status: [] as SyCodeType[] });
+const uiState = reactive({ helpOpen: false });
+const searchParam = reactive({ orderStatusCd: "" });
 
 const columns: FoGridColumn[] = [
   { key: "orderId", label: "주문번호", width: "200px", mono: true, align: "left", cellStyle: "font-weight:700;color:#111827" },
@@ -146,12 +126,109 @@ const columns: FoGridColumn[] = [
   { key: "totalPrice", label: "결제금액", align: "right", fmt: (v) => formatPrice(Number(v)), cellStyle: "font-weight:800;color:#111827" },
 ];
 
-function setStatus(cd: string) {
-  orderStatus.value = cd;
-  my.search();
+// 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptOrder) — 조회 시점에 1회 변환. 상태 라벨: 서버 한글명 → 공통코드(ORDER_STATUS_CD) → 기본 매핑
+function adapt(o: MyRow) {
+  const dliv = Array.isArray(o.orderDlivs) && o.orderDlivs.length ? o.orderDlivs[0] : null;
+  return {
+    orderId: String(o.orderId),
+    orderDate: ymd(o.orderDate),
+    status: kor(o.orderStatusCdNm, o.orderStatusCd, { ...ORDER_STATUS_KOR, ...codeMap(codes.order_status) }),
+    totalPrice: Number(o.payAmt ?? o.totalAmt ?? 0),
+    shippingFee: Number(o.shippingFee ?? 0),
+    cashPaid: Number(o.saveUseAmt ?? 0),
+    courier: dliv ? dliv.outboundCourierCdNm || dliv.outboundCourierCd || "" : "",
+    trackingNo: dliv ? dliv.outboundTrackingNo || "" : "",
+    items: (Array.isArray(o.orderItems) ? o.orderItems : []).map((it: MyRow) => ({ prodNm: it.prodNm, color: it.optItemNm1 || "", size: it.optItemNm2 || "", qty: Number(it.orderQty ?? 0), price: Number(it.unitPrice ?? 0) })),
+    pays: (Array.isArray(o.orderPays) ? o.orderPays : []).map((p: MyRow) => ({ type: p.payMethodCdNm || p.payMethodCd || "결제", amount: Number(p.payAmt ?? 0), datetime: ymd(p.payDate) })),
+  };
 }
+
+const my = useMyList({
+  dateType: "order_date",
+  loader: async (p) => {
+    const r = await myOrderSvc.getPage(p);
+    return { rows: (r.pageList ?? []).map(adapt), total: r.pageTotalCount ?? 0, totalPage: r.pageTotalPage || 1 };
+  },
+  extra: () => (searchParam.orderStatusCd ? { orderStatusCd: searchParam.orderStatusCd } : {}),
+});
+
+/* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ my/order.vue : handleBtnAction -> ", cmd, param);
+  // 검색조건으로 목록 조회
+  if (cmd === "searchParam-list") {
+    return my.search();
+    // 검색조건 초기화
+  } else if (cmd === "searchParam-reset") {
+    searchParam.orderStatusCd = "";
+    return my.resetSearch();
+    // 도움말 모달 열기
+  } else if (cmd === "orders-helpOpen") {
+    uiState.helpOpen = true;
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
+
+/* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleSelectAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ my/order.vue : handleSelectAction -> ", cmd, param);
+  // 등록기간 프리셋 변경
+  if (cmd === "searchParam-preset") {
+    return my.applyPreset();
+    // 페이지 크기 변경
+  } else if (cmd === "pager-size") {
+    return my.changePageSize();
+    // 페이지 이동 (param: pageNo)
+  } else if (cmd === "pager-page") {
+    return my.goPage(param as number);
+    // 주문 상태 필터 (param: 상태코드, '' = 전체)
+  } else if (cmd === "orders-status") {
+    searchParam.orderStatusCd = param as string;
+    return my.search();
+    // 주문 행 펼침/접힘 (param: orderId)
+  } else if (cmd === "orders-toggle") {
+    my.toggle(param as string);
+  } else {
+    console.warn("[handleSelectAction] unknown cmd:", cmd);
+  }
+};
+
+/* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+const fnCallbackModal = (popCmd: string, param: unknown, result: unknown) => {
+  console.log(" ■■ my/order.vue : fnCallbackModal -> ", popCmd, param, result);
+  // 주문 진행 안내 모달 닫기
+  if (popCmd === "orders-help") {
+    uiState.helpOpen = false;
+  } else {
+    console.warn("[fnCallbackModal] unknown popCmd:", popCmd);
+  }
+};
+
+/* ##### [03] 내장 사용 함수 ################################################### */
+
+/* fnLoadCodes — 이 화면이 쓰는 코드그룹만 로딩 */
+const fnLoadCodes = async () => {
+  const codeStore = useCodeStore();
+  await codeStore.saLoadCodes(["ORDER_STATUS_CD"]);
+  codes.order_status = codeStore.sgGetGrpCodes("ORDER_STATUS_CD");
+};
+
+/* handleSearchList — 서버 페이징 조회 (기간 + 주문상태) */
+const handleSearchList = () => my.load();
+
 function flowStyle(status: string, si: number) {
   const done = status !== "취소됨" && ORDER_FLOW.indexOf(status) >= si;
   return { background: status === "취소됨" ? "#e5e7eb" : done ? "#dcfce7" : "#f3f4f6", color: status === "취소됨" ? "#9ca3af" : done ? "#15803d" : "#9ca3af" };
 }
+
+/* initPage — 화면 로드 시퀀스: 로그인 확인 → 코드 로딩 → 초기 조회 (코드 기반 라벨이 빈 채로 첫 조회가 나가지 않게 순서를 한 곳에 모음) */
+const initPage = async () => {
+  if (!(await my.ensureLogin())) return;
+  await fnLoadCodes();
+  await handleSearchList();
+};
+onMounted(initPage);
 </script>

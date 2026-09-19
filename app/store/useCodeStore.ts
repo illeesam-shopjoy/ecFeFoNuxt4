@@ -13,6 +13,10 @@ export const useCodeStore = defineStore("code", {
   }),
 
   actions: {
+    /** 화면이 쓰는 코드그룹 로딩 (ecFeBo foCodeStore.saLoadCodes 와 같은 이름). 현재는 전체 코드를 1회 로드·캐시하므로 grps 는 표기용 */
+    async saLoadCodes(_grps?: string[]) {
+      await this.loadStCodes();
+    },
     async loadStCodes() {
       if (this.loaded) return;
       try {
@@ -25,6 +29,11 @@ export const useCodeStore = defineStore("code", {
   },
 
   getters: {
+    /** 코드그룹의 코드 목록 조회 (ecFeBo foCodeStore.sgGetGrpCodes 와 같은 이름) — 사용: useCodeStore().sgGetGrpCodes("CLAIM_TYPE_CD") */
+    sgGetGrpCodes() {
+      return (grp: string): SyCodeType[] => (this.getStCodes as Record<string, SyCodeType[]>)[grp] ?? [];
+    },
+
     /**
      * 그룹별 코드 맵 { codeGrp → SyCodeType[] }
      * 예: getCodes["YN"] → [{ codeValue:"Y", codeLabel:"예" }, ...]

@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" aria-labelledby="pw-change-title" @click.self="close">
+    <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" aria-labelledby="pw-change-title" @click.self="handleBtnAction('modal-close')">
       <div class="relative w-full max-w-[400px] rounded-xl bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-        <button type="button" class="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer" aria-label="닫기" @click="close">
+        <button type="button" class="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer" aria-label="닫기" @click="handleBtnAction('modal-close')">
           <i class="fal fa-times"></i>
         </button>
 
@@ -17,7 +17,7 @@
         </div>
 
         <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체 -->
-        <fo-form v-else :columns="formCols" :form="form" :cols="1" :gap="12" @submit="save">
+        <fo-form v-else :columns="formCols" :form="form" :cols="1" :gap="12" @submit="handleBtnAction('form-save')">
           <!-- 강도 표시 -->
           <template #strength>
             <div v-if="form.next" class="flex gap-1 items-center">
@@ -30,7 +30,7 @@
             <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 mb-3 bg-red-50 rounded-md">{{ errorMsg }}</div>
 
             <div class="flex gap-2.5 mt-2">
-              <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="close">취소</button>
+              <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="handleBtnAction('modal-close')">취소</button>
               <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50" :disabled="saving">
                 {{ saving ? "변경 중..." : "변경하기" }}
               </button>
@@ -107,4 +107,18 @@ async function save() {
     saving.value = false;
   }
 }
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ PasswordChangeModal.vue : handleBtnAction -> ", cmd, param);
+  // 비밀번호 변경 저장
+  if (cmd === "form-save") {
+    return save();
+  // 모달 닫기
+  } else if (cmd === "modal-close") {
+    return close();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>

@@ -9,7 +9,7 @@
             <div class="basic-login">
               <h3 class="text-center mb-60">회원가입</h3>
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
-              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="onSubmit">
+              <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="handleBtnAction('form-submit')">
                 <template #actions>
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
@@ -112,4 +112,15 @@ async function onSubmit() {
     errorMsg.value = (result.message ?? "회원가입에 실패했습니다.").split("::")[0]!;
   }
 }
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ register.vue : handleBtnAction -> ", cmd, param);
+  // 회원가입 (검증 → authStore.register)
+  if (cmd === "form-submit") {
+    return onSubmit();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>

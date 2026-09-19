@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title" @click.self="close">
+    <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title" @click.self="handleBtnAction('modal-close')">
       <div class="relative w-full max-w-[440px] max-h-[88vh] overflow-y-auto rounded-xl bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-        <button type="button" class="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer" aria-label="닫기" @click="close">
+        <button type="button" class="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer" aria-label="닫기" @click="handleBtnAction('modal-close')">
           <i class="fal fa-times"></i>
         </button>
 
@@ -13,12 +13,12 @@
 
         <div v-if="loading" class="py-10 text-center text-gray-400 text-[0.9rem]">불러오는 중...</div>
         <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체(주소/성별은 슬롯) -->
-        <fo-form v-else :columns="formCols" :form="f" :cols="2" :gap="12" min-col-width="140px" @submit="save">
+        <fo-form v-else :columns="formCols" :form="f" :cols="2" :gap="12" min-col-width="140px" @submit="handleBtnAction('form-save')">
           <template #addr="{ form }">
             <span class="block text-[0.78rem] text-gray-500 mb-1">주소</span>
             <div class="flex gap-2 mb-1.5">
               <input v-model="form.memberZipCode" class="pf-input !w-[110px] shrink-0 bg-[#f9fafb] cursor-default" placeholder="우편번호" readonly />
-              <button type="button" class="px-3.5 border-[1.5px] border-theme rounded-lg bg-[#fdf6ee] text-theme text-[0.82rem] font-bold cursor-pointer whitespace-nowrap" @click="addrRef?.show()">
+              <button type="button" class="px-3.5 border-[1.5px] border-theme rounded-lg bg-[#fdf6ee] text-theme text-[0.82rem] font-bold cursor-pointer whitespace-nowrap" @click="handleBtnAction('addr-search')">
                 <i class="fas fa-search mr-1"></i>주소 검색
               </button>
             </div>
@@ -46,7 +46,7 @@
             <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 bg-red-50 rounded-md">{{ errorMsg }}</div>
 
             <div class="flex gap-2.5 mt-3">
-              <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="close">취소</button>
+              <button type="button" class="flex-1 py-3 border-[1.5px] border-[#e5e7eb] rounded-lg bg-transparent text-gray-500 text-[0.88rem] font-semibold cursor-pointer" @click="handleBtnAction('modal-close')">취소</button>
               <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" :disabled="!f.memberNm.trim() || saving">
                 {{ saving ? "저장 중..." : "저장" }}
               </button>
@@ -168,6 +168,23 @@ async function save() {
     saving.value = false;
   }
 }
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ ProfileEditModal.vue : handleBtnAction -> ", cmd, param);
+  // 프로필 저장
+  if (cmd === "form-save") {
+    return save();
+  // 모달 닫기
+  } else if (cmd === "modal-close") {
+    return close();
+  // 주소 검색 모달 열기
+  } else if (cmd === "addr-search") {
+    addrRef.value?.show();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>
 
 <style scoped>
