@@ -10,8 +10,9 @@
 FROM node:22-alpine
 WORKDIR /app
 COPY .output ./.output
-ENV NODE_ENV=production \
-    HOST=0.0.0.0 \
-    PORT=3000
+# 줄바꿈이 CRLF 로 바뀌어도 안전하도록 ENV 는 한 줄씩(백슬래시 이어쓰기 사용 안 함)
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
