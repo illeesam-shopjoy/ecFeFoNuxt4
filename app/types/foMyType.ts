@@ -1,7 +1,7 @@
 /**
  * foMyType.ts — FO 마이페이지(주문/클레임/쿠폰/캐쉬/문의/채팅/알림) API 공통 타입 (2026-09-19).
  * app/svc/fo/my/*Svc.ts 가 공유한다. 행(row) 데이터는 ecBeBo DTO 원본 필드를 그대로 통과시키므로 MyRow 로 느슨하게 둔다 —
- * 화면(pages/my/[tab].vue)이 종류별로 필요한 필드만 꺼내 쓴다.
+ * 화면(pages/my/*.vue)이 종류별로 필요한 필드만 꺼내 쓴다.
  */
 
 /** ecBeBo 페이지 응답 공통 형태(BFF 가 그대로 통과) */
