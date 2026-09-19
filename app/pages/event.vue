@@ -90,10 +90,8 @@
         </div>
 
         <!-- 페이지네이션 (2페이지 이상일 때만) -->
-        <div v-if="pageTotalPage > 1" class="flex flex-wrap items-center justify-center gap-1.5 mt-10">
-          <button type="button" class="pg-btn" :disabled="pageNo <= 1" aria-label="이전" @click="goPage(pageNo - 1)">‹</button>
-          <button v-for="n in pageTotalPage" :key="n" type="button" class="pg-btn" :class="{ 'pg-on': n === pageNo }" @click="goPage(n)">{{ n }}</button>
-          <button type="button" class="pg-btn" :disabled="pageNo >= pageTotalPage" aria-label="다음" @click="goPage(pageNo + 1)">›</button>
+        <div v-if="pager.pageTotalPage > 1" class="mt-10">
+          <fo-pager :pager="pager" :on-set-page="n => handleSelectAction('pager-setPage', n)" />
         </div>
       </div>
     </section>
@@ -106,6 +104,7 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { foPmEventSvc, type PmEventCardType, type PmEventPagedResult } from "~/svc/fo/ec/pm/foPmEventSvc";
+import FoPager from "~/components/fo/FoPager.vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 
 useHead({ title: "이벤트" });
@@ -142,9 +141,7 @@ const route = useRoute();
 const searchValue = ref(typeof route.query.eventId === "string" ? route.query.eventId : "");
 const activeTab = ref<TabKey>("ongoing");
 const sortBy = ref<SortKey>("latest");
-const pageNo = ref(1);
-const pageSize = 20;
-const pageTotalPage = ref(1);
+const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalPage: 1 });
 const pageTotalCount = ref(0);
 const broadened = ref(false);
 const loading = ref(false);
@@ -176,8 +173,8 @@ const ongoingCount = computed(() => {
 async function fetchEvents(statusCd: string | null): Promise<PmEventPagedResult> {
   const sv = searchValue.value.trim();
   return foPmEventSvc.getPage({
-    pageNo: pageNo.value,
-    pageSize,
+    pageNo: pager.pageNo,
+    pageSize: pager.pageSize,
     ...(statusCd ? { eventStatusCd: statusCd } : {}),
     ...(sortBy.value === "deadline" ? { sort: "endDate asc" } : {}),
     ...(sv ? { searchValue: sv } : {}),
@@ -205,11 +202,11 @@ async function load() {
     }
     events.value = r.items;
     pageTotalCount.value = r.pageTotalCount;
-    pageTotalPage.value = r.pageTotalPage || 1;
+    pager.pageTotalPage = r.pageTotalPage || 1;
   } catch {
     events.value = [];
     pageTotalCount.value = 0;
-    pageTotalPage.value = 1;
+    pager.pageTotalPage = 1;
     errorMsg.value = "이벤트를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
   } finally {
     loading.value = false;
@@ -217,7 +214,7 @@ async function load() {
 }
 
 function search() {
-  pageNo.value = 1;
+  pager.pageNo = 1;
   load();
 }
 function resetSearch() {
@@ -227,47 +224,33 @@ function resetSearch() {
 function changeTab(k: TabKey) {
   if (activeTab.value === k) return;
   activeTab.value = k;
-  pageNo.value = 1;
+  pager.pageNo = 1;
   load();
 }
 function changeSort(k: SortKey) {
   if (sortBy.value === k) return;
   sortBy.value = k;
-  pageNo.value = 1;
+  pager.pageNo = 1;
   load();
 }
 function goPage(n: number) {
-  if (n < 1 || n > pageTotalPage.value || n === pageNo.value) return;
-  pageNo.value = n;
+  if (n < 1 || n > pager.pageTotalPage || n === pager.pageNo) return;
+  pager.pageNo = n;
   load();
 }
 
 onMounted(load);
+
+/* handleSelectAction — 선택/페이징 액션 dispatch (cmd: '{영역명}-기능명') */
+const handleSelectAction = (cmd: string, param: unknown = {}) => {
+  // 페이지 이동 (param: pageNo)
+  if (cmd === "pager-setPage") {
+    return goPage(param as number);
+  } else {
+    console.warn("[handleSelectAction] unknown cmd:", cmd);
+  }
+};
 </script>
 
 <style scoped>
-.pg-btn {
-  min-width: 36px;
-  height: 36px;
-  padding: 0 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #fff;
-  color: #374151;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-.pg-btn:hover:not(:disabled) {
-  border-color: #9ca3af;
-}
-.pg-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.pg-on {
-  background: #171717;
-  border-color: #171717;
-  color: #fff;
-  font-weight: 700;
-}
 </style>

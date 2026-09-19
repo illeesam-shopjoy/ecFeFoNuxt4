@@ -84,3 +84,12 @@ export interface FoFormColumn {
   fmt?: (v: unknown, form: FoRow) => string;
   clearErrOnInput?: boolean;
 }
+
+/** FoPager / useClientPager 상태 (ecFeBo pager 와 같은 필드) */
+export interface FoPagerState {
+  pageNo: number;
+  pageSize: number;
+  pageTotalPage: number;
+  pageTotalCount?: number;
+  pageSizes?: number[];
+}

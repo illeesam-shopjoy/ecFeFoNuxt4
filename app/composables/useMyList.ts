@@ -65,8 +65,6 @@ export interface MyListState {
   loading: boolean;
   errorMsg: string;
   openId: string | null;
-  /** 페이지 버튼 번호(현재 페이지 중심 5개) */
-  pageNumbers: () => number[];
   load: () => Promise<void>;
   search: () => Promise<void>;
   resetSearch: () => Promise<void>;
@@ -103,7 +101,6 @@ export function useMyList(opts: UseMyListOptions): MyListState {
     loading: false,
     errorMsg: "",
     openId: null as string | null,
-    pageNumbers,
     load,
     search,
     resetSearch,
@@ -149,12 +146,6 @@ export function useMyList(opts: UseMyListOptions): MyListState {
     } finally {
       if (mySeq === seq) my.loading = false;
     }
-  }
-
-  function pageNumbers(): number[] {
-    const t = my.pageTotalPage;
-    const s = Math.max(1, Math.min(my.pageNo - 2, t - 4));
-    return Array.from({ length: Math.min(t, s + 4) - s + 1 }, (_, i) => s + i);
   }
 
   function search(): Promise<void> {

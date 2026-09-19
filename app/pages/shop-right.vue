@@ -15,7 +15,7 @@
               <div class="shop__header flex flex-wrap justify-between items-center mb-40">
                 <div class="shop__header-left">
                   <div class="show-text">
-                    <span>전체 {{ store.products.length }}개 중 {{ displayStart }}–{{ displayEnd }}개 표시</span>
+                    <span>전체 {{ store.products.length }}개 중 {{ cp.rows().length ? (cp.pager.pageNo - 1) * cp.pager.pageSize + 1 : 0 }}–{{ (cp.pager.pageNo - 1) * cp.pager.pageSize + cp.rows().length }}개 표시</span>
                   </div>
                 </div>
                 <div class="shop__header-right flex items-center justify-between sm:justify-end">
@@ -34,15 +34,15 @@
               </div>
               <div id="pills-tabContent">
                 <div v-show="viewMode === 'grid'" id="pills-grid" role="tabpanel">
-                  <product-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                  <product-item v-for="(item, i) in cp.rows()" :key="i" :item="item" />
                 </div>
                 <div v-show="viewMode === 'list'" id="pills-list" role="tabpanel">
-                  <product-list-item v-for="(item, i) in store.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                  <product-list-item v-for="(item, i) in cp.rows()" :key="i" :item="item" />
                 </div>
               </div>
 
               <div class="shop__pagination-area mt-40">
-                <pagination :items="store.filterProducts" :count-of-page="9" @paginatedData="paginatedData" />
+                <fo-pager v-if="cp.pager.pageTotalCount" :pager="cp.pager" :on-set-page="n => handleSelectAction('pager-setPage', n)" :on-size-change="() => handleSelectAction('pager-sizeChange')" />
               </div>
             </div>
           </div>
@@ -223,7 +223,8 @@ import { useProductsStore } from "~/store/useProductsStore";
 import { ref, reactive, computed } from "vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import ProductListItem from "~/components/products/ProductListItem.vue";
-import Pagination from "~/components/ui/Pagination.vue";
+import FoPager from "~/components/fo/FoPager.vue";
+import { useClientPager } from "~/composables/useClientPager";
 import AppImage from "~/components/ui/AppImage.vue";
 import Slider from "@vueform/slider";
 import "@vueform/slider/themes/default.css";
@@ -242,17 +243,20 @@ const { formatPrice } = usePrice();
 const { getSizeLabel } = useFilterLabels();
 
 const viewMode = ref<"grid" | "list">("grid");
-const pageStart = ref(0);
-const countOfPage = ref(9);
+const cp = useClientPager(() => store.filterProducts, 9, [9, 18, 36]);
 
-const currentPageItems = computed(() => store.filterProducts.slice(pageStart.value, pageStart.value + countOfPage.value));
-const displayStart = computed(() => (currentPageItems.value.length ? pageStart.value + 1 : 0));
-const displayEnd = computed(() => pageStart.value + currentPageItems.value.length);
-
-function paginatedData(_rows: unknown[], start: number, count: number) {
-  pageStart.value = start;
-  countOfPage.value = count;
-}
+/* handleSelectAction — 선택/페이징 액션 dispatch (cmd: '{영역명}-기능명') */
+const handleSelectAction = (cmd: string, param: unknown = {}) => {
+  // 페이지 이동 (param: pageNo)
+  if (cmd === "pager-setPage") {
+    return cp.setPage(param as number);
+    // 페이지 크기 변경
+  } else if (cmd === "pager-sizeChange") {
+    return cp.sizeChange();
+  } else {
+    console.warn("[handleSelectAction] unknown cmd:", cmd);
+  }
+};
 
 // ── 사이드바: 상품 카테고리 (옛 ProductCategory) ─────────────────────────────
 // 2026-09-13(성능 개선): lazy:true — 메인 상품 목록만 SSR을 블로킹하고 사이드바 카테고리는

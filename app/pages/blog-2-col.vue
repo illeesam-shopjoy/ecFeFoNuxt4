@@ -12,13 +12,13 @@
         </div>
         <template v-else>
           <div class="row">
-            <div v-for="(blog, i) in filteredRows.slice(pageStart, pageStart + countOfPage)" :key="i" class="col-xl-6 col-lg-6 col-md-6">
+            <div v-for="(blog, i) in cp.rows()" :key="i" class="col-xl-6 col-lg-6 col-md-6">
               <blog-standard-item :blog="blog" :style_2="true" />
             </div>
           </div>
           <div class="row">
             <div class="col-xl-12">
-              <pagination :items="standardBlogs" :count-of-page="4" @paginatedData="paginatedData" />
+              <fo-pager v-if="cp.pager.pageTotalCount" :pager="cp.pager" :on-set-page="n => handleSelectAction('pager-setPage', n)" :on-size-change="() => handleSelectAction('pager-sizeChange')" />
             </div>
           </div>
         </template>
@@ -35,7 +35,8 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { ref, reactive, computed } from "vue";
 import { useBlogs } from "~/composables/useBlogs";
 import { type CoBlogType } from "~/types/coBlogType";
-import Pagination from "~/components/ui/Pagination.vue";
+import FoPager from "~/components/fo/FoPager.vue";
+import { useClientPager } from "~/composables/useClientPager";
 import BlogStandardItem from "~/components/blogs/BlogStandardItem.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 
@@ -51,12 +52,18 @@ const { blogs, pending } = useBlogs();
 // 필터 제거, 전체 블로그 사용.
 const standardBlogs = computed(() => blogs.value ?? []);
 
-const filteredRows = reactive<CoBlogType[]>([]);
-const pageStart = ref(0);
-const countOfPage = ref(4);
-function paginatedData(rows: unknown[], start: number, count: number) {
-  filteredRows.splice(0, filteredRows.length, ...(rows ?? []) as CoBlogType[]);
-  pageStart.value = start;
-  countOfPage.value = count;
-}
+const cp = useClientPager(() => standardBlogs.value, 4, [4, 8, 16]);
+
+/* handleSelectAction — 선택/페이징 액션 dispatch (cmd: '{영역명}-기능명') */
+const handleSelectAction = (cmd: string, param: unknown = {}) => {
+  // 페이지 이동 (param: pageNo)
+  if (cmd === "pager-setPage") {
+    return cp.setPage(param as number);
+    // 페이지 크기 변경
+  } else if (cmd === "pager-sizeChange") {
+    return cp.sizeChange();
+  } else {
+    console.warn("[handleSelectAction] unknown cmd:", cmd);
+  }
+};
 </script>

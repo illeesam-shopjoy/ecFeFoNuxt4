@@ -59,7 +59,7 @@
                   :aria-expanded="openFaqId === faq.faqId"
                   @click="toggleFaq(faq)"
                 >
-                  <span class="shrink-0 mr-3 min-w-[24px] text-right text-[0.85rem] font-bold text-gray-400">{{ (pageNo - 1) * pageSize + idx + 1 }}</span>
+                  <span class="shrink-0 mr-3 min-w-[24px] text-right text-[0.85rem] font-bold text-gray-400">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</span>
                   <span class="flex-1 pr-3">{{ faq.q }}</span>
                   <span class="shrink-0 mr-2.5 text-[0.72rem] text-gray-400 font-medium whitespace-nowrap" title="읽음 수">
                     <i class="far fa-eye mr-1"></i>{{ (faq.viewCount || 0).toLocaleString() }}
@@ -74,16 +74,9 @@
               </div>
             </div>
 
-            <!-- 페이지네이션 -->
-            <div v-if="faqs.length" class="flex flex-wrap items-center justify-center gap-1.5 mb-8">
-              <button type="button" class="pg-btn" :disabled="pageNo <= 1" aria-label="처음" @click="goPage(1)">«</button>
-              <button type="button" class="pg-btn" :disabled="pageNo <= 1" aria-label="이전" @click="goPage(pageNo - 1)">‹</button>
-              <button v-for="n in pageNumbers" :key="n" type="button" class="pg-btn" :class="{ 'pg-on': n === pageNo }" @click="goPage(n)">{{ n }}</button>
-              <button type="button" class="pg-btn" :disabled="pageNo >= pageTotalPage" aria-label="다음" @click="goPage(pageNo + 1)">›</button>
-              <button type="button" class="pg-btn" :disabled="pageNo >= pageTotalPage" aria-label="마지막" @click="goPage(pageTotalPage)">»</button>
-              <select v-model.number="pageSize" class="ml-1.5 h-9 px-2 border border-[#e5e7eb] rounded-md bg-white text-[0.82rem] cursor-pointer" aria-label="페이지 크기" @change="changePageSize">
-                <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-              </select>
+            <!-- 페이지네이션 (2026-09-20 요청사항: <fo-pager) -->
+            <div v-if="faqs.length" class="mb-8">
+              <fo-pager :pager="pager" :on-set-page="n => handleSelectAction('pager-setPage', n)" :on-size-change="() => handleSelectAction('pager-sizeChange')" />
             </div>
 
             <!-- 문의 유도 -->
@@ -104,6 +97,7 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { coFaqSvc, type FaqItemType, type FaqTreeType } from "~/svc/fo/ec/cm/coFaqSvc";
+import FoPager from "~/components/fo/FoPager.vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 
 useHead({ title: "FAQ" });
@@ -117,9 +111,7 @@ const { data: treeData } = useAsyncData<FaqTreeType>("faq-tree", () => coFaqSvc.
 // ── 목록 (분류·페이지·페이지크기가 바뀔 때마다 서버 재조회) ────────────────────
 const selectedPathId = ref<string | null>(null);
 const faqs = ref<FaqItemType[]>([]);
-const pageNo = ref(1);
-const pageSize = ref(10);
-const pageTotalPage = ref(1);
+const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalPage: 1, pageSizes: PAGE_SIZES });
 const loading = ref(false);
 const errorMsg = ref("");
 const openFaqId = ref<string | null>(null);
@@ -128,12 +120,12 @@ async function loadFaqs() {
   loading.value = true;
   errorMsg.value = "";
   try {
-    const res = await coFaqSvc.getPage({ pageNo: pageNo.value, pageSize: pageSize.value, pathId: selectedPathId.value });
+    const res = await coFaqSvc.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, pathId: selectedPathId.value });
     faqs.value = res.items;
-    pageTotalPage.value = res.pageTotalPage || 1;
+    pager.pageTotalPage = res.pageTotalPage || 1;
   } catch {
     faqs.value = [];
-    pageTotalPage.value = 1;
+    pager.pageTotalPage = 1;
     errorMsg.value = "FAQ를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
   } finally {
     loading.value = false;
@@ -143,28 +135,33 @@ async function loadFaqs() {
 function selectPath(id: string | null) {
   selectedPathId.value = id;
   openFaqId.value = null;
-  pageNo.value = 1;
+  pager.pageNo = 1;
   loadFaqs();
 }
 function goPage(n: number) {
-  if (n < 1 || n > pageTotalPage.value || n === pageNo.value) return;
-  pageNo.value = n;
+  if (n < 1 || n > pager.pageTotalPage || n === pager.pageNo) return;
+  pager.pageNo = n;
   openFaqId.value = null;
   loadFaqs();
 }
 function changePageSize() {
-  pageNo.value = 1;
+  pager.pageNo = 1;
   openFaqId.value = null;
   loadFaqs();
 }
 
-// 현재 페이지 기준 최대 5개 번호 창
-const pageNumbers = computed(() => {
-  const total = pageTotalPage.value;
-  const start = Math.max(1, Math.min(pageNo.value - 2, total - 4));
-  const end = Math.min(total, start + 4);
-  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-});
+/* handleSelectAction — 선택/페이징 액션 dispatch (cmd: '{영역명}-기능명') */
+const handleSelectAction = (cmd: string, param: unknown = {}) => {
+  // 페이지 이동 (param: pageNo)
+  if (cmd === "pager-setPage") {
+    return goPage(param as number);
+    // 페이지 크기 변경
+  } else if (cmd === "pager-sizeChange") {
+    return changePageSize();
+  } else {
+    console.warn("[handleSelectAction] unknown cmd:", cmd);
+  }
+};
 
 // ── 아코디언: 펼칠 때 처음 읽는 FAQ만 조회수 +1 (이번 세션 중복 증가 방지) ────────────
 const viewedIds = new Set<string>();
@@ -185,28 +182,4 @@ onMounted(loadFaqs);
 </script>
 
 <style scoped>
-.pg-btn {
-  min-width: 36px;
-  height: 36px;
-  padding: 0 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #fff;
-  color: #374151;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-.pg-btn:hover:not(:disabled) {
-  border-color: #9ca3af;
-}
-.pg-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.pg-on {
-  background: #171717;
-  border-color: #171717;
-  color: #fff;
-  font-weight: 700;
-}
 </style>

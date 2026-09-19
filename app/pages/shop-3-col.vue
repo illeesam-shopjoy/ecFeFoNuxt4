@@ -10,7 +10,7 @@
               <div class="shop__header flex flex-wrap justify-between items-center mb-40">
                 <div class="shop__header-left">
                   <div class="show-text">
-                    <span>전체 {{ state.products.length }}개 중 1–{{ state.products.slice(pageStart, pageStart + countOfPage).length }}개 표시</span>
+                    <span>전체 {{ state.products.length }}개 중 1–{{ cp.rows().length }}개 표시</span>
                   </div>
                 </div>
                 <div class="shop__header-right flex items-center justify-between sm:justify-end">
@@ -29,15 +29,15 @@
               </div>
               <div id="pills-tabContent">
                 <div v-show="viewMode === 'grid'" id="pills-grid" role="tabpanel">
-                  <product-item v-for="(item, i) in state.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                  <product-item v-for="(item, i) in cp.rows()" :key="i" :item="item" />
                 </div>
                 <div v-show="viewMode === 'list'" id="pills-list" role="tabpanel">
-                  <product-list-item v-for="(item, i) in state.filterProducts.slice(pageStart, pageStart + countOfPage)" :key="i" :item="item" />
+                  <product-list-item v-for="(item, i) in cp.rows()" :key="i" :item="item" />
                 </div>
               </div>
               <div class="row mt-40">
                 <div class="col-xl-12">
-                  <pagination :items="state.products" :count-of-page="9" @paginatedData="paginatedData" />
+                  <fo-pager v-if="cp.pager.pageTotalCount" :pager="cp.pager" :on-set-page="n => handleSelectAction('pager-setPage', n)" :on-size-change="() => handleSelectAction('pager-sizeChange')" />
                 </div>
               </div>
             </div>
@@ -58,7 +58,8 @@ import SortFiltering from "~/components/shop/filter-widget/SortFiltering.vue";
 import { useProductsStore } from "~/store/useProductsStore";
 import ProductItem from "~/components/products/ProductItem.vue";
 import ProductListItem from "~/components/products/ProductListItem.vue";
-import Pagination from "~/components/ui/Pagination.vue";
+import FoPager from "~/components/fo/FoPager.vue";
+import { useClientPager } from "~/composables/useClientPager";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -68,13 +69,19 @@ usePageTitle("쇼핑 3단");
 
 const state = useProductsStore();
 const viewMode = ref<"grid" | "list">("grid");
-const filteredRows = reactive<unknown[]>([]);
-const pageStart = ref(0);
-const countOfPage = ref(9);
 
-function paginatedData(rows: unknown[], start: number, count: number) {
-  filteredRows.splice(0, filteredRows.length, ...rows);
-  pageStart.value = start;
-  countOfPage.value = count;
-}
+const cp = useClientPager(() => state.filterProducts, 9, [9, 18, 36]);
+
+/* handleSelectAction — 선택/페이징 액션 dispatch (cmd: '{영역명}-기능명') */
+const handleSelectAction = (cmd: string, param: unknown = {}) => {
+  // 페이지 이동 (param: pageNo)
+  if (cmd === "pager-setPage") {
+    return cp.setPage(param as number);
+    // 페이지 크기 변경
+  } else if (cmd === "pager-sizeChange") {
+    return cp.sizeChange();
+  } else {
+    console.warn("[handleSelectAction] unknown cmd:", cmd);
+  }
+};
 </script>

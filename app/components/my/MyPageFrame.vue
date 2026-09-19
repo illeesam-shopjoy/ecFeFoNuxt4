@@ -57,11 +57,9 @@
         <!-- 목록 아래 안내 -->
         <slot name="bottom" />
 
-        <!-- 페이지네이션 -->
-        <div v-if="my.pageTotalPage > 1" class="flex flex-wrap items-center justify-center gap-1.5 mt-8">
-          <button type="button" class="pg-btn" :disabled="my.pageNo <= 1" aria-label="이전" @click="emit('select-action', 'pager-page', my.pageNo - 1)">‹</button>
-          <button v-for="n in my.pageNumbers()" :key="n" type="button" class="pg-btn" :class="{ 'pg-on': n === my.pageNo }" @click="emit('select-action', 'pager-page', n)">{{ n }}</button>
-          <button type="button" class="pg-btn" :disabled="my.pageNo >= my.pageTotalPage" aria-label="다음" @click="emit('select-action', 'pager-page', my.pageNo + 1)">›</button>
+        <!-- 페이지네이션 (페이지 크기는 위 "N개씩" 선택을 쓰므로 fo-pager 의 크기 선택은 숨김) -->
+        <div v-if="my.pageTotalPage > 1" class="mt-8">
+          <fo-pager :pager="my" :show-size="false" :on-set-page="(n) => emit('select-action', 'pager-page', n)" />
         </div>
       </div>
     </section>
@@ -73,6 +71,7 @@
 
 <script setup lang="ts">
 import Layout from "~/layout/Layout.vue";
+import FoPager from "~/components/fo/FoPager.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { MY_PRESETS, MY_TABS, type MyListState, type MyTabKey } from "~/composables/useMyList";
 
@@ -107,29 +106,5 @@ defineProps<{
   background: #fff;
   color: #111827;
   font-size: 0.85rem;
-}
-.pg-btn {
-  min-width: 36px;
-  height: 36px;
-  padding: 0 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #fff;
-  color: #374151;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-.pg-btn:hover:not(:disabled) {
-  border-color: #9ca3af;
-}
-.pg-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.pg-on {
-  background: #171717;
-  border-color: #171717;
-  color: #fff;
-  font-weight: 700;
 }
 </style>
