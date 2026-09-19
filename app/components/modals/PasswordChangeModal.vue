@@ -56,7 +56,7 @@
  * POST /api/fo/ec/my/password(ecBeBo FoMyPageController.changePassword) — 현재 비밀번호가 틀리면 서버 메시지를 그대로 보여준다.
  */
 import { computed, ref, watch } from "vue";
-import { myPageSvc } from "~/svc/fo/ec/my/myPageSvc";
+import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 
 // ProfileEditModal 과 같은 방식 — 부모가 ref.show() / ref.close() 로 연다.
 const visible = ref(false);
@@ -98,7 +98,7 @@ async function save() {
   if (next.value === current.value) return void (errorMsg.value = "현재 비밀번호와 다른 비밀번호를 입력하세요.");
   saving.value = true;
   try {
-    await myPageSvc.changePassword(current.value, next.value);
+    await myInfoSvc.changePassword(current.value, next.value);
     done.value = true;
     setTimeout(close, 1400);
   } catch (e) {

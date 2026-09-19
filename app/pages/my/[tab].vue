@@ -245,7 +245,13 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import { myPageSvc, type MyRow } from "~/svc/fo/ec/my/myPageSvc";
+import { myOrderSvc } from "~/svc/fo/my/myOrderSvc";
+import { myClaimSvc } from "~/svc/fo/my/myClaimSvc";
+import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
+import { myCashSvc } from "~/svc/fo/my/myCashSvc";
+import { myInquirySvc } from "~/svc/fo/my/myInquirySvc";
+import { myChatSvc } from "~/svc/fo/my/myChatSvc";
+import type { MyListParams, MyPageResult, MyRow } from "~/types/foMyType";
 import { useAuthStore } from "~/store/useAuthStore";
 import { usePageTitle } from "~/composables/usePageTitle";
 
@@ -466,6 +472,14 @@ const shownRows = computed<unknown[]>(() => {
 });
 
 // ── 조회 ────────────────────────────────────────────────────────────────
+// 탭별 서버 페이징 조회 (svc/fo/my/*Svc.ts — BFF /api/fo/my/{kind}/page)
+const PAGE_LOADERS: Record<Exclude<TabKey, "cache">, (p: MyListParams) => Promise<MyPageResult<MyRow>>> = {
+  order: myOrderSvc.getPage,
+  claim: myClaimSvc.getPage,
+  coupon: myCouponSvc.getPage,
+  contact: myInquirySvc.getPage,
+  chatt: myChatSvc.getPage,
+};
 const DATE_TYPE: Record<TabKey, string> = { order: "order_date", claim: "request_date", coupon: "reg_date", cache: "reg_date", contact: "reg_date", chatt: "reg_date" };
 let reqSeq = 0;
 async function load() {
@@ -484,14 +498,14 @@ async function load() {
   };
   try {
     if (tab.value === "cache") {
-      const r = await myPageSvc.getCash(params);
+      const r = await myCashSvc.getPage(params);
       if (seq !== reqSeq) return;
       cashBalance.value = Number(r.balance ?? 0);
       rows.value = r.history?.pageList ?? [];
       total.value = r.history?.pageTotalCount ?? 0;
       pageTotalPage.value = r.history?.pageTotalPage || 1;
     } else {
-      const r = await myPageSvc.getPage(tab.value === "contact" ? "inquiry" : tab.value === "chatt" ? "chat" : tab.value, params);
+      const r = await PAGE_LOADERS[tab.value as Exclude<TabKey, "cache">](params);
       if (seq !== reqSeq) return;
       rows.value = r.pageList ?? [];
       total.value = r.pageTotalCount ?? 0;
@@ -500,7 +514,7 @@ async function load() {
     // 취소/반품/교환 탭의 유형별 건수 배지 — 같은 기간으로 유형별 1건씩만 조회해 총건수만 사용
     if (tab.value === "claim") {
       const { pageNo: _p, pageSize: _s, claimTypeCd: _c, ...base } = params as Record<string, unknown>;
-      Promise.all(CLAIM_FILTERS.map((f) => myPageSvc.getPage("claim", { ...(base as object), pageNo: 1, pageSize: 1, ...(f.key ? { claimTypeCd: f.key } : {}) } as never).then((r) => [f.key, r.pageTotalCount ?? 0] as const)))
+      Promise.all(CLAIM_FILTERS.map((f) => myClaimSvc.getPage({ ...(base as object), pageNo: 1, pageSize: 1, ...(f.key ? { claimTypeCd: f.key } : {}) } as MyListParams).then((r) => [f.key, r.pageTotalCount ?? 0] as const)))
         .then((arr) => {
           if (seq === reqSeq) claimCounts.value = Object.fromEntries(arr);
         })

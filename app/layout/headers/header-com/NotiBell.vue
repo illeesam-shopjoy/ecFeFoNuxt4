@@ -43,7 +43,8 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import { myPageSvc, type MyNotiItem } from "~/svc/fo/ec/my/myPageSvc";
+import { myNotiSvc } from "~/svc/fo/my/myNotiSvc";
+import type { MyNotiItem } from "~/types/foMyType";
 
 const open = ref(false);
 const loading = ref(false);
@@ -87,7 +88,7 @@ function fmtTime(v?: string): string {
 async function loadUnread(silent = true) {
   try {
     const before = unread.value;
-    unread.value = Number(await myPageSvc.getUnreadCount()) || 0;
+    unread.value = Number(await myNotiSvc.getUnreadCount()) || 0;
     if (unread.value > before && silent) {
       shake.value = true; // 새 알림이 오면 종이 잠깐 흔들린다
       setTimeout(() => (shake.value = false), 2000);
@@ -101,7 +102,7 @@ async function reload() {
   loading.value = true;
   errorMsg.value = "";
   try {
-    items.value = await myPageSvc.getNotis(30);
+    items.value = await myNotiSvc.getList(30);
     unread.value = items.value.filter((n) => n.readYn !== "Y").length;
   } catch {
     errorMsg.value = "알림을 불러오지 못했습니다.";
@@ -119,7 +120,7 @@ async function clickItem(n: MyNotiItem) {
   expandedId.value = expandedId.value === n.notiId ? null : n.notiId;
   if (n.readYn !== "Y") {
     try {
-      await myPageSvc.markRead(n.notiId, "Y");
+      await myNotiSvc.markRead(n.notiId, "Y");
       n.readYn = "Y";
       unread.value = Math.max(0, unread.value - 1);
     } catch {
@@ -135,7 +136,7 @@ async function clickItem(n: MyNotiItem) {
 
 async function readAll() {
   try {
-    await myPageSvc.markAllRead();
+    await myNotiSvc.markAllRead();
     items.value.forEach((n) => (n.readYn = "Y"));
     unread.value = 0;
   } catch {

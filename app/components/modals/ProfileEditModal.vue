@@ -84,7 +84,7 @@
  */
 import { reactive, ref, watch } from "vue";
 import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
-import { myPageSvc } from "~/svc/fo/ec/my/myPageSvc";
+import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import { useAuthStore } from "~/store/useAuthStore";
 
 // 2026-09-19: 기존 ProfileEditModal(저장 기능이 없는 껍데기 ProfileEditForm 을 감싸던 모달)을 실제 저장되는 모달로 교체 —
@@ -126,7 +126,7 @@ watch(
     errorMsg.value = "";
     loading.value = true;
     try {
-      Object.assign(f, await myPageSvc.getProfile());
+      Object.assign(f, await myInfoSvc.getProfile());
     } catch (e) {
       errorMsg.value = errMsg(e, "회원 정보를 불러오지 못했습니다.");
     } finally {
@@ -153,7 +153,7 @@ async function save() {
   saving.value = true;
   errorMsg.value = "";
   try {
-    const saved = await myPageSvc.updateProfile({
+    const saved = await myInfoSvc.updateProfile({
       memberNm: f.memberNm,
       memberPhone: f.memberPhone,
       memberGender: f.memberGender,
