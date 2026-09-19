@@ -2,7 +2,7 @@
 #  ShopJoy ecFeFoNuxt4 (Nuxt4 FO) - Docker Compose (개발 서버)
 # ═══════════════════════════════════════════════════════════
 #  배치 위치(NAS): /volume1/docker/shopjoy/apps/ecFeFoNuxt4/docker-compose.yml
-#  배포: npm run "synol deploy dev ecFeFoNuxt4" (= z0scripts/.../deploy-dev-synol-fe-ecFeFoNuxt4.js)
+#  배포: z0scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run "synol DEPLOY ecFeFoNuxt4-22100 (nuxt-node)"
 #        — 빌드(.output) → 압축 전송 → NAS 에서 docker compose build/up 까지 자동.
 #
 #  다른 앱들과 같은 원칙: 컨테이너명 shopjoy-{앱}-{포트}, 완전 독립 스택(네트워크 비공유).
