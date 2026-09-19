@@ -12,7 +12,7 @@
       <user-dropdown />
 
       <!-- 좋아요 -->
-      <nuxt-link href="/wishlist" class="hta-btn" aria-label="위시리스트" title="위시리스트">
+      <nuxt-link href="/wishlist" class="hta-btn max-sm:!hidden" aria-label="위시리스트" title="위시리스트">
         <i class="far fa-heart text-[15px]"></i>
         <span v-if="wishlist.wishlists.length" class="hta-badge">{{ wishlist.wishlists.length }}</span>
       </nuxt-link>
