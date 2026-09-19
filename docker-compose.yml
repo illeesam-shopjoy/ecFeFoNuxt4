@@ -1,0 +1,47 @@
+# ═══════════════════════════════════════════════════════════
+#  ShopJoy ecFeFoNuxt4 (Nuxt4 FO) - Docker Compose (개발 서버)
+# ═══════════════════════════════════════════════════════════
+#  배치 위치(NAS): /volume1/docker/shopjoy/apps/ecFeFoNuxt4/docker-compose.yml
+#  배포: npm run "synol deploy dev ecFeFoNuxt4" (= z0scripts/.../deploy-dev-synol-fe-ecFeFoNuxt4.js)
+#        — 빌드(.output) → 압축 전송 → NAS 에서 docker compose build/up 까지 자동.
+#
+#  다른 앱들과 같은 원칙: 컨테이너명 shopjoy-{앱}-{포트}, 완전 독립 스택(네트워크 비공유).
+#  백엔드(ecBeBo)는 Nuxt 서버가 BFF 로 호출하므로(server/utils/beApi.ts) 이 컨테이너는
+#  NUXT_API_BASE_URL(빌드 시 .env.development 값이 번들에 포함됨)로 지정된 주소로 나간다.
+#  브라우저는 이 컨테이너(22100)만 호출하고 ecBeBo 는 서버→서버라 CORS 와 무관하다.
+# ═══════════════════════════════════════════════════════════
+
+services:
+  ecfefonuxt4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shopjoy/ecfefonuxt4:latest
+    container_name: shopjoy-ecFeFoNuxt4-22100
+
+    # 이 NAS 자신의 다른 컨테이너(ecBeBo 22300 등)를 호스트 경유로 부를 때 쓰는 별칭 — 다른 앱과 동일.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # ───── 포트 (호스트:컨테이너) ─────
+    # 22100: 기존 22000(ecFeBo)/22099(gateway)/22300(ecBeBo)/22400(ecBeCdn)/22379(redis)/22900(jenkins)
+    # 와 겹치지 않는 번호. DSM 리버스 프록시로 22100.illeesam.synology.me(HTTPS)를 이 포트에
+    # 연결하면 브라우저 secure-context 요구를 만족한다(수동 등록 필요).
+    ports:
+      - "22100:3000"
+
+    restart: unless-stopped
+
+    # Nuxt(Nitro) 서버는 SPA 홈(/)이 즉시 200 을 준다 — busybox wget 으로 확인.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
