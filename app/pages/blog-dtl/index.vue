@@ -187,7 +187,7 @@
               </div>
               <!-- 댓글 등록 폼 (옛 BlogDetailsForm) -->
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
-              <fo-form :columns="commentCols" :form="commentForm" :errors="errors" :cols="2" :gap="16" show-actions submit-label="댓글 등록" @submit="onSubmit" />
+              <fo-form :columns="commentCols" :form="commentForm" :errors="errors" :cols="2" :gap="16" show-actions submit-label="댓글 등록" @submit="handleBtnAction('form-submit')" />
             </div>
           </div>
 
@@ -305,4 +305,15 @@ async function onSubmit() {
   await useAlert().openAlert(JSON.stringify(commentForm, null, 2));
   Object.assign(commentForm, { name: "", email: "", subject: "", msg: "" });
 }
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ blog-dtl : handleBtnAction -> ", cmd, param);
+  // 댓글 등록 (검증 후 전송)
+  if (cmd === "form-submit") {
+    return onSubmit();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>

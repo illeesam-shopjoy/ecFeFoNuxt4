@@ -30,10 +30,10 @@
                     <td class="text-right"><span class="amount">{{ formatPrice(row.salePrice) }}</span></td>
                   </template>
                   <template #cell-cart="{ row }">
-                    <td class="text-center"><button class="os-btn os-btn-black" type="button" @click.prevent="cartState.addStCartProduct(row)">장바구니에 담기</button></td>
+                    <td class="text-center"><button class="os-btn os-btn-black" type="button" @click.prevent="handleBtnAction('wish-addCart', row)">장바구니에 담기</button></td>
                   </template>
                   <template #cell-remove="{ row }">
-                    <td class="text-center cursor-pointer" @click.prevent="state.removeStWishlist(row)"><i class="fa fa-times"></i></td>
+                    <td class="text-center cursor-pointer" @click.prevent="handleBtnAction('wish-remove', row)"><i class="fa fa-times"></i></td>
                   </template>
                 </fo-grid>
               </form>
@@ -76,4 +76,18 @@ const { formatPrice } = usePrice();
 onMounted(() => {
   state.getStWishlistProducts;
 });
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ wishlist.vue : handleBtnAction -> ", cmd, param);
+  // 장바구니에 담기 (param: 상품)
+  if (cmd === "wish-addCart") {
+    return cartState.addStCartProduct(param as never);
+  // 위시리스트에서 삭제 (param: 상품)
+  } else if (cmd === "wish-remove") {
+    return state.removeStWishlist(param as never);
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>

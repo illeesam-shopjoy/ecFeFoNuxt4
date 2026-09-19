@@ -33,8 +33,8 @@
                     <td class="text-center">
                       <div class="cart-plus-minus">
                         <input type="text" v-model="row.orderQuantity" />
-                        <div @click="state.setStQuantityDecrement(row)" class="dec qtybutton">-</div>
-                        <div @click="state.addStCartProduct(row, row.selectedProdSkuId)" class="inc qtybutton">+</div>
+                        <div @click="handleBtnAction('cart-qtyDec', row)" class="dec qtybutton">-</div>
+                        <div @click="handleBtnAction('cart-qtyInc', row)" class="inc qtybutton">+</div>
                       </div>
                     </td>
                   </template>
@@ -42,7 +42,7 @@
                     <td class="text-right"><span class="amount">{{ formatPrice((row.orderQuantity ?? 0) * row.salePrice) }}</span></td>
                   </template>
                   <template #cell-remove="{ row }">
-                    <td class="text-center cursor-pointer" @click.prevent="state.removerStCartProducts(row)"><i class="fa fa-times"></i></td>
+                    <td class="text-center cursor-pointer" @click.prevent="handleBtnAction('cart-remove', row)"><i class="fa fa-times"></i></td>
                   </template>
                 </fo-grid>
                 <div class="row">
@@ -53,7 +53,7 @@
                         <button class="os-btn os-btn-black" name="apply_coupon" type="button">쿠폰 적용</button>
                       </div>
                       <div class="coupon2">
-                        <button @click="state.clearStCart" class="os-btn os-btn-black" name="update_cart" type="button">장바구니 비우기</button>
+                        <button @click="handleBtnAction('cart-clear')" class="os-btn os-btn-black" name="update_cart" type="button">장바구니 비우기</button>
                       </div>
                     </div>
                   </div>
@@ -116,4 +116,25 @@ const columns: FoGridColumn[] = [
   { key: "remove", label: "삭제", width: "70px", align: "center" },
 ];
 const { formatPrice } = usePrice();
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ cart.vue : handleBtnAction -> ", cmd, param);
+  // 수량 감소 (param: 장바구니 항목)
+  if (cmd === "cart-qtyDec") {
+    return state.setStQuantityDecrement(param as never);
+  // 수량 증가 (param: 장바구니 항목)
+  } else if (cmd === "cart-qtyInc") {
+    const item = param as { selectedProdSkuId?: string };
+    return state.addStCartProduct(param as never, item.selectedProdSkuId);
+  // 항목 삭제 (param: 장바구니 항목)
+  } else if (cmd === "cart-remove") {
+    return state.removerStCartProducts(param as never);
+  // 장바구니 비우기
+  } else if (cmd === "cart-clear") {
+    return state.clearStCart();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>

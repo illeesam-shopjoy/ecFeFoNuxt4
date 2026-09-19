@@ -16,13 +16,13 @@
                   <!-- 아코디언 시작 -->
                   <h3>
                     기존 회원이신가요?
-                    <span @click="handleCheckoutLogin" id="showlogin">로그인하려면 클릭</span>
+                    <span @click="handleBtnAction('login-toggle')" id="showlogin">로그인하려면 클릭</span>
                   </h3>
                   <div v-if="checkoutLogin" id="checkout-login" class="coupon-content">
                     <div class="coupon-info">
                       <p class="coupon-text">기존 회원은 로그인 후 주문을 이어가실 수 있습니다.</p>
                       <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — <fo-form> 으로 교체 -->
-                      <fo-form :columns="loginCols" :form="formValue" :cols="1" :gap="12" @submit="handleSubmit">
+                      <fo-form :columns="loginCols" :form="formValue" :cols="1" :gap="12" @submit="handleBtnAction('login-submit')">
                         <template #actions>
                           <p class="form-row">
                             <button class="os-btn os-btn-black" type="submit">로그인</button>
@@ -48,13 +48,13 @@
                        반영 안 되던 목업)을 종류별로 골라 적용하는 CouponModal로 교체. -->
                   <h3>
                     쿠폰이 있으신가요?
-                    <span @click="couponModalRef?.show()" id="showcoupon">쿠폰 선택하기</span>
+                    <span @click="handleBtnAction('coupon-modalOpen')" id="showcoupon">쿠폰 선택하기</span>
                   </h3>
                   <div v-if="appliedCouponList.length" class="coupon-checkout-content">
                     <ul class="mt-10">
                       <li v-for="c in appliedCouponList" :key="c.couponId" class="text-[14px] text-[#606060] mb-5">
                         {{ c.name }}
-                        <a href="#" class="ml-10 text-[12px] text-[#999] hover:text-danger" @click.prevent="removeCoupon(c.category)">제거</a>
+                        <a href="#" class="ml-10 text-[12px] text-[#999] hover:text-danger" @click.prevent="handleBtnAction('coupon-remove', c.category)">제거</a>
                       </li>
                     </ul>
                   </div>
@@ -65,7 +65,7 @@
         </section>
         <section class="checkout-area pb-70">
           <div class="max-w-7xl mx-auto px-4">
-            <form @submit.prevent="handleFormSubmit">
+            <form @submit.prevent="handleBtnAction('order-submit')">
               <div class="row">
                 <div class="col-lg-6">
                   <div class="checkbox-form">
@@ -74,7 +74,7 @@
                       <button
                         type="button"
                         class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold whitespace-nowrap"
-                        @click="handleAutoFillBilling"
+                        @click="handleBtnAction('billing-autoFill')"
                       >
                         ⚡ 자동입력
                       </button>
@@ -89,7 +89,7 @@
                           <button
                             type="button"
                             class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white text-xs font-semibold whitespace-nowrap"
-                            @click="addrSearchModalRef?.show()"
+                            @click="handleBtnAction('addr-search')"
                           >
                             📮 주소 검색
                           </button>
@@ -100,7 +100,7 @@
                     <div class="row">
                       <div class="col-md-12">
                         <div class="checkout-form-list create-acc">
-                          <input @click="handleCreateAccount" id="cbox" type="checkbox" />
+                          <input @click="handleBtnAction('account-toggle')" id="cbox" type="checkbox" />
                           <label for="cbox">계정을 만들까요?</label>
                         </div>
                         <div v-if="createAccount" id="cbox_info" class="checkout-form-list create-account">
@@ -117,7 +117,7 @@
                       <div class="ship-different-title">
                         <h3>
                           <label for="ship-box">배송지가 다르면 체크</label>
-                          <input @click="handleShipBox" id="ship-box" type="checkbox" />
+                          <input @click="handleBtnAction('shipBox-toggle')" id="ship-box" type="checkbox" />
                         </h3>
                       </div>
                       <div v-if="shipBox" id="ship-box-info">
@@ -468,4 +468,39 @@ async function handleFormSubmit() {
     await useAlert().openAlert(msg);
   }
 }
+
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd: string, param: unknown = {}) => {
+  console.log(" ■■ checkout.vue : handleBtnAction -> ", cmd, param);
+  // 기존 회원 로그인 영역 열기/닫기
+  if (cmd === "login-toggle") {
+    return handleCheckoutLogin();
+  // 로그인 폼 제출
+  } else if (cmd === "login-submit") {
+    return handleSubmit();
+  // 쿠폰 선택 모달 열기
+  } else if (cmd === "coupon-modalOpen") {
+    couponModalRef.value?.show();
+  // 적용 쿠폰 제거 (param: 쿠폰 종류)
+  } else if (cmd === "coupon-remove") {
+    return removeCoupon(param as CouponCategory);
+  // 결제 정보 자동입력
+  } else if (cmd === "billing-autoFill") {
+    return handleAutoFillBilling();
+  // 주소 검색 모달 열기
+  } else if (cmd === "addr-search") {
+    addrSearchModalRef.value?.show();
+  // 계정 만들기 입력 열기/닫기
+  } else if (cmd === "account-toggle") {
+    return handleCreateAccount();
+  // 다른 배송지 입력 열기/닫기
+  } else if (cmd === "shipBox-toggle") {
+    return handleShipBox();
+  // 주문하기(결제 요청)
+  } else if (cmd === "order-submit") {
+    return handleFormSubmit();
+  } else {
+    console.warn("[handleBtnAction] unknown cmd:", cmd);
+  }
+};
 </script>
