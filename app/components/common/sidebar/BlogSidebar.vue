@@ -200,7 +200,7 @@ const DEFAULT_CONFIG: BlogSidebarCategoryConfig = {
 const { data: fetchedConfig } = useAsyncData<BlogSidebarCategoryConfig | null>(
   "dp-blog-sidebar-category",
   () => dpAreaSvc.getFirstWidgetConfig<BlogSidebarCategoryConfig>("BLOG_SIDEBAR_CATEGORY"),
-  { lazy: true }
+  { lazy: true, server: false } // 2026-09-20: 보조 위젯 — 서버 렌더 제외
 );
 const catNameMap = computed<Record<string, string>>(() => fetchedConfig.value?.catNameMap ?? DEFAULT_CONFIG.catNameMap);
 const categoryTreeData = computed<CoCategoryTreeType[]>(() => fetchedConfig.value?.categoryTreeData?.length ? fetchedConfig.value.categoryTreeData : DEFAULT_CONFIG.categoryTreeData);

@@ -1,14 +1,21 @@
 /**
- * syBrandSvc.ts — 브랜드 목록 API 호출 객체.
- * 2026-09-13(요청사항: "브랜드 상품아이디만 보이는데 브랜드명이 보여야해" 후속 —
- * "페이징 api 조회로 통일") — /shop 사이드바 브랜드 필터가 더 이상 store.products
- * 전체를 스캔하지 않고 이 전용 엔드포인트(server/api/fo/ec/sy/brand.get.ts, 10분 캐시)로
- * brandId+brandNm 쌍을 직접 받는다.
+ * syBrandSvc.ts — 브랜드 API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoSyBrandController(/api/fo/ec/sy/brand, 공개, 2026-09-20 신설) 를 직접 부른다.
+ * 예전에는 상품 1000건을 받아 브랜드를 즉석 집계했다.
  */
-import { axiosSsr } from "~/utils/axiosSsr";
+import { axiosCsr } from "~/utils/axiosCsr";
 import type { CoBrandType } from "~/types/coBrandType";
 
+interface BeBrand {
+  brandId: string;
+  brandCode?: string | null;
+  brandNm: string;
+}
+
 export const syBrandSvc = {
-  /** GET /api/fo/ec/sy/brand — 브랜드 목록(brandId, brandNm) */
-  getBrands: () => axiosSsr.get<CoBrandType[]>("/api/fo/ec/sy/brand").then((r) => r.data),
+  /** GET /fo/ec/sy/brand — 사용 중 브랜드 목록. 상품 필터(brandIds)가 brandId 를 받으므로 brandCode 에도 brandId 를 담는다(기존 동작 유지) */
+  getBrands: async (): Promise<CoBrandType[]> => {
+    const rows = (await axiosCsr.get<BeBrand[]>("/fo/ec/sy/brand")).data ?? [];
+    return rows.map((b) => ({ brandId: b.brandId, brandCode: b.brandId, brandNm: b.brandNm }));
+  },
 };

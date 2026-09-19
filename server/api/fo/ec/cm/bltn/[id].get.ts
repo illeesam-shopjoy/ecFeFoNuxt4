@@ -1,5 +1,6 @@
 import { beApi } from "~~/server/utils/beApi";
-import { mapBlog, type BeBlogItem } from "~~/server/utils/mapBlog";
+import { mapBlog, type BeBlogItem } from "~~/app/utils/mapBlog";
+import { PROD_CDN } from "~~/server/utils/cdn";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
 
@@ -17,7 +18,7 @@ export default defineEventHandler(async (event) => {
     if (err?.statusCode === 404) throw createError({ statusCode: 404, statusMessage: "블로그를 찾을 수 없습니다." });
     throw e;
   });
-  const out = mapBlog(row);
+  const out = mapBlog(row, PROD_CDN);
 
   const s = JSON.stringify(out);
   logger.info("[api] ◀", method, url, s.length > 200 ? s.slice(0, 200) + "..." : s);

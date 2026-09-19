@@ -1,5 +1,6 @@
 import { beApi } from "~~/server/utils/beApi";
-import { mapProduct, mapReview, type BeProdItem, type BeReviewItem } from "~~/server/utils/mapProduct";
+import { mapProduct, mapReview, type BeProdItem, type BeReviewItem } from "~~/app/utils/mapProduct";
+import { PROD_CDN } from "~~/server/utils/cdn";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
 
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event) => {
     }),
   ]);
 
-  const out = mapProduct(detail);
+  const out = mapProduct(detail, PROD_CDN);
   out.reviews = reviewsRes.reviewPage.pageList.map(mapReview);
   if (typeof reviewsRes.summary?.avgRating === "number") {
     out.rating = reviewsRes.summary.avgRating;

@@ -1,17 +1,19 @@
 /**
- * myOrderSvc.ts — 내 주문 API 호출 객체 (로그인 필요). ecFeBo foApiSvc.myOrder 이식 (2026-09-19).
- * 폴더 위치(svc/fo/my/)는 BFF 라우트(server/api/fo/my/order/*)를 그대로 따른다.
- *   getList → GET /api/fo/my/order/list  (ecBeBo /fo/my/order/list)
- *   getPage → GET /api/fo/my/order/page  (ecBeBo /fo/my/order/page — 서버 페이징)
- *   create  → POST /api/fo/ec/order/create (ecBeBo /fo/order/create — 주문 생성은 기존 checkout 이 쓰던 라우트를 그대로 사용)
+ * myOrderSvc.ts — 마이페이지 주문 API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoMyPageController(/api/fo/my/order/list|page, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
+ * 주문 "생성"은 foOrderSvc.createOrder.
  */
+import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 import type { MyListParams, MyPageResult, MyRow } from "~/types/foMyType";
 
 const clean = (p: MyListParams) => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined && v !== ""));
 
 export const myOrderSvc = {
-  getList: (params: MyListParams = {}) => $fetch<MyRow[]>("/api/fo/my/order/list", { headers: useAuthHeaders(), query: clean(params) }),
-  getPage: (params: MyListParams) => $fetch<MyPageResult<MyRow>>("/api/fo/my/order/page", { headers: useAuthHeaders(), query: clean(params) }),
-  create: (body: Record<string, unknown>) => $fetch<unknown>("/api/fo/ec/order/create", { headers: useAuthHeaders(), method: "POST", body }),
+  /** GET /fo/my/order/list — 내 주문 목록 */
+  getList: async (params: MyListParams = {}): Promise<MyRow[]> => (await axiosCsr.get<MyRow[]>("/fo/my/order/list", { headers: useAuthHeaders(), params: clean(params) })).data,
+
+  /** GET /fo/my/order/page — 내 주문 목록(페이징, 기본 1페이지 10건) */
+  getPage: async (params: MyListParams): Promise<MyPageResult<MyRow>> =>
+    (await axiosCsr.get<MyPageResult<MyRow>>("/fo/my/order/page", { headers: useAuthHeaders(), params: { pageNo: 1, pageSize: 10, ...clean(params) } })).data,
 };

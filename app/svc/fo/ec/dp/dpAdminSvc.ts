@@ -1,11 +1,9 @@
 /**
- * dpAdminSvc.ts — 전시패널관리(어드민) API 호출 객체.
- *
- * 2026-09-13 신설 — "전시패널관리" 화면(app/pages/dp/panels/index.vue, 원래 adminEc/dp/panels
- * 였다가 adminSy/adminEc/adminCo/popupAdmin 스캐폴드 전체 삭제 시 dp/panels로 이동) 전용.
- * 로그인한 FO 회원이면 접근 가능(FoDpAdminController, FO_ONLY) — 진짜 BO 관리자 권한분리는
- * 프론트에 BO 로그인 흐름이 생긴 뒤 교체할 것([[ecfefonuxt4-dp-widget-migration]] 메모리 참조).
+ * dpAdminSvc.ts — 전시패널관리 어드민(/dp/panels) API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoDpAdminController(/api/fo/ec/dp/admin/**, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
+ * dp_ui → dp_area → dp_panel → dp_panel_item 4단 전시 구조([[ecfefonuxt4-dp-widget-convention]]).
  */
+import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 import type { DpAreaWidgetItem } from "./dpAreaSvc";
 
@@ -37,35 +35,24 @@ export interface DpPanelRow {
   panelItems?: DpAreaWidgetItem[];
 }
 
+const auth = () => ({ headers: useAuthHeaders() });
+const BASE = "/fo/ec/dp/admin";
+
 export const dpAdminSvc = {
-  /** GET /api/fo/ec/dp/admin/ui — UI 전체 목록 */
-  listUis: () => $fetch<DpUiRow[]>("/api/fo/ec/dp/admin/ui", { headers: useAuthHeaders() }),
+  listUis: async (): Promise<DpUiRow[]> => (await axiosCsr.get<DpUiRow[]>(`${BASE}/ui`, auth())).data ?? [],
+  createUi: async (body: { siteId: string; uiCd: string; uiNm: string; useYn?: string }): Promise<DpUiRow> => (await axiosCsr.post<DpUiRow>(`${BASE}/ui`, body, auth())).data,
 
-  /** POST /api/fo/ec/dp/admin/ui — UI 등록 */
-  createUi: (body: { siteId: string; uiCd: string; uiNm: string; useYn?: string }) =>
-    $fetch<DpUiRow>("/api/fo/ec/dp/admin/ui", { method: "POST", body, headers: useAuthHeaders() }),
+  listAreas: async (): Promise<DpAreaRow[]> => (await axiosCsr.get<DpAreaRow[]>(`${BASE}/area`, auth())).data ?? [],
+  createArea: async (body: { uiId: string; siteId: string; areaCd: string; areaNm: string; useYn?: string }): Promise<DpAreaRow> =>
+    (await axiosCsr.post<DpAreaRow>(`${BASE}/area`, body, auth())).data,
 
-  /** GET /api/fo/ec/dp/admin/area — 영역 전체 목록 */
-  listAreas: () => $fetch<DpAreaRow[]>("/api/fo/ec/dp/admin/area", { headers: useAuthHeaders() }),
+  listPanels: async (areaId?: string): Promise<DpPanelRow[]> => (await axiosCsr.get<DpPanelRow[]>(`${BASE}/panel`, { ...auth(), params: { areaId: areaId || undefined } })).data ?? [],
+  createPanel: async (body: { areaId: string; siteId: string; panelNm: string; panelTypeCd?: string; useYn?: string; dispPanelStatusCd?: string }): Promise<DpPanelRow> =>
+    (await axiosCsr.post<DpPanelRow>(`${BASE}/panel`, body, auth())).data,
 
-  /** POST /api/fo/ec/dp/admin/area — 영역 등록 */
-  createArea: (body: { uiId: string; siteId: string; areaCd: string; areaNm: string; useYn?: string }) =>
-    $fetch<DpAreaRow>("/api/fo/ec/dp/admin/area", { method: "POST", body, headers: useAuthHeaders() }),
-
-  /** GET /api/fo/ec/dp/admin/panel?areaId= — 특정 영역의 패널(패널항목 포함) 목록 */
-  listPanels: (areaId?: string) =>
-    $fetch<DpPanelRow[]>("/api/fo/ec/dp/admin/panel", { query: { areaId }, headers: useAuthHeaders() }),
-
-  /** POST /api/fo/ec/dp/admin/panel — 패널 등록 */
-  createPanel: (body: { areaId: string; siteId: string; panelNm: string; panelTypeCd?: string; useYn?: string; dispPanelStatusCd?: string }) =>
-    $fetch<DpPanelRow>("/api/fo/ec/dp/admin/panel", { method: "POST", body, headers: useAuthHeaders() }),
-
-  /** GET /api/fo/ec/dp/admin/panel-item?panelId= — 특정 패널의 항목 목록 */
-  listPanelItems: (panelId: string) =>
-    $fetch<DpAreaWidgetItem[]>("/api/fo/ec/dp/admin/panel-item", { query: { panelId }, headers: useAuthHeaders() }),
-
-  /** POST /api/fo/ec/dp/admin/panel-item — 패널항목 등록 */
-  createPanelItem: (body: {
+  listPanelItems: async (panelId: string): Promise<DpAreaWidgetItem[]> =>
+    (await axiosCsr.get<DpAreaWidgetItem[]>(`${BASE}/panel-item`, { ...auth(), params: { panelId: panelId || undefined } })).data ?? [],
+  createPanelItem: async (body: {
     panelId: string;
     siteId: string;
     widgetTypeCd: string;
@@ -75,13 +62,11 @@ export const dpAdminSvc = {
     sortOrd?: number;
     useYn?: string;
     dispYn?: string;
-  }) => $fetch<DpAreaWidgetItem>("/api/fo/ec/dp/admin/panel-item", { method: "POST", body, headers: useAuthHeaders() }),
-
-  /** PUT /api/fo/ec/dp/admin/panel-item/{id} — 패널항목 수정 */
-  updatePanelItem: (id: string, body: Partial<DpAreaWidgetItem> & { useYn?: string; dispYn?: string }) =>
-    $fetch<DpAreaWidgetItem>(`/api/fo/ec/dp/admin/panel-item/${encodeURIComponent(id)}`, { method: "PUT", body, headers: useAuthHeaders() }),
-
-  /** DELETE /api/fo/ec/dp/admin/panel-item/{id} — 패널항목 삭제 */
-  deletePanelItem: (id: string) =>
-    $fetch<{ success: boolean }>(`/api/fo/ec/dp/admin/panel-item/${encodeURIComponent(id)}`, { method: "DELETE", headers: useAuthHeaders() }),
+  }): Promise<DpAreaWidgetItem> => (await axiosCsr.post<DpAreaWidgetItem>(`${BASE}/panel-item`, body, auth())).data,
+  updatePanelItem: async (id: string, body: Partial<DpAreaWidgetItem> & { useYn?: string; dispYn?: string }): Promise<DpAreaWidgetItem> =>
+    (await axiosCsr.put<DpAreaWidgetItem>(`${BASE}/panel-item/${encodeURIComponent(id)}`, body, auth())).data,
+  deletePanelItem: async (id: string): Promise<{ success: boolean }> => {
+    await axiosCsr.delete(`${BASE}/panel-item/${encodeURIComponent(id)}`, auth());
+    return { success: true };
+  },
 };

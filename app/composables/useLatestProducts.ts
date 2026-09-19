@@ -14,6 +14,7 @@ export function useLatestProducts(size = 24) {
   const { data } = useAsyncData<PdProductType[]>(`pd-latest-${size}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: size }).then((r) => r.items), {
     default: () => [],
     lazy: true,
+    server: false, // 보조 위젯 — SEO 서버 렌더(/shop 사이드바 등)에서는 뺀다
   });
   return data as Ref<PdProductType[]>;
 }

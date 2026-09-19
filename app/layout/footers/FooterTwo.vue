@@ -111,7 +111,7 @@ const DEFAULT_WIDGET_DATA: FooterLinkGroup[] = [
 const { data: fetchedWidgetData } = useAsyncData<FooterLinkGroup[] | null>(
   "dp-footer-links-two",
   () => dpAreaSvc.getFirstWidgetConfig<FooterLinkGroup[]>("FOOTER_LINKS_TWO"),
-  { lazy: true }
+  { lazy: true, server: false }
 );
 const widget_data = computed<FooterLinkGroup[]>(() => fetchedWidgetData.value?.length ? fetchedWidgetData.value : DEFAULT_WIDGET_DATA);
 </script>

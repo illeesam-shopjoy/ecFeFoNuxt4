@@ -136,7 +136,7 @@ const DEFAULT_FOOTER_DATA: FooterData = {
 const { data: fetchedFooterData } = useAsyncData<FooterData | null>(
   "dp-footer-links-main",
   () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_MAIN"),
-  { lazy: true }
+  { lazy: true, server: false } // 2026-09-20: 푸터는 SEO 본문이 아니라 서버 렌더에서 뺀다(브라우저가 ecBeBo 직접 호출)
 );
 const footerData = computed<FooterData>(() => fetchedFooterData.value ?? DEFAULT_FOOTER_DATA);
 

@@ -1,5 +1,6 @@
 import { beApi, type BePage } from "~~/server/utils/beApi";
-import { mapProduct, type BeProdItem } from "~~/server/utils/mapProduct";
+import { mapProduct, type BeProdItem } from "~~/app/utils/mapProduct";
+import { PROD_CDN } from "~~/server/utils/cdn";
 import { cachedCall } from "~~/server/utils/cache";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
@@ -52,7 +53,7 @@ export default defineEventHandler(async (event) => {
   const cacheKey = "be:prod:paged:" + JSON.stringify(beQuery);
   const page = await cachedCall(cacheKey, 10_000, () => beApi.get<BePage<BeProdItem>>("/fo/ec/pd/prod/page", beQuery));
   const out = {
-    items: page.pageList.map((p) => mapProduct(p)),
+    items: page.pageList.map((p) => mapProduct(p, PROD_CDN)),
     pageNo: page.pageNo,
     pageSize: page.pageSize,
     pageTotalCount: page.pageTotalCount,

@@ -1,26 +1,42 @@
 /**
- * myNotiSvc.ts — 내 알림함(상단 종) API 호출 객체 (로그인 필요). ecFeBo foApiSvc.myNoti 이식 (2026-09-19).
- * 수신자(회원) 조건은 ecBeBo 가 로그인 정보로 강제 주입한다.
- *   getList        → GET    /api/fo/my/noti                 (ecBeBo /fo/my/noti/list — 최신순 limit 건)
- *   getPage        → GET    /api/fo/my/noti/page            (ecBeBo /fo/my/noti/page — 서버 페이징)
- *   getUnreadCount → GET    /api/fo/my/noti/unread-count
- *   markRead       → PATCH  /api/fo/my/noti/{id}/read       (body { readYn: "Y"|"N" })
- *   markAllRead    → POST   /api/fo/my/noti/read-all
- *   remove         → DELETE /api/fo/my/noti/{id}
- *   removeAll      → DELETE /api/fo/my/noti/all
+ * myNotiSvc.ts — 마이페이지 알림 API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoSyNotiController(/api/fo/my/noti, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
  */
+import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 import type { MyListParams, MyNotiItem, MyPageResult } from "~/types/foMyType";
 
 const clean = (p: Record<string, unknown>) => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined && v !== ""));
-const h = () => ({ headers: useAuthHeaders() });
+const auth = () => ({ headers: useAuthHeaders() });
 
 export const myNotiSvc = {
-  getList: (limit = 30) => $fetch<MyNotiItem[]>("/api/fo/my/noti", { ...h(), query: { limit } }),
-  getPage: (params: MyListParams & { readYn?: string; notiTypeCd?: string }) => $fetch<MyPageResult<MyNotiItem>>("/api/fo/my/noti/page", { ...h(), query: clean(params as Record<string, unknown>) }),
-  getUnreadCount: () => $fetch<number>("/api/fo/my/noti/unread-count", h()),
-  markRead: (id: string, readYn: "Y" | "N" = "Y") => $fetch<unknown>(`/api/fo/my/noti/${encodeURIComponent(id)}/read`, { ...h(), method: "PATCH", body: { readYn } }),
-  markAllRead: () => $fetch<number>("/api/fo/my/noti/read-all", { ...h(), method: "POST" }),
-  remove: (id: string) => $fetch<unknown>(`/api/fo/my/noti/${encodeURIComponent(id)}`, { ...h(), method: "DELETE" }),
-  removeAll: () => $fetch<unknown>("/api/fo/my/noti/all", { ...h(), method: "DELETE" }),
+  /** GET /fo/my/noti/list — 알림 목록. 백엔드는 전체를 주므로 최신순 정렬 후 limit(1~100)만 자른다 */
+  getList: async (limit = 30): Promise<MyNotiItem[]> => {
+    const max = Math.min(Math.max(Number(limit) || 30, 1), 100);
+    const list = (await axiosCsr.get<MyNotiItem[]>("/fo/my/noti/list", auth())).data ?? [];
+    return list
+      .slice()
+      .sort((a, b) => String((b as unknown as Record<string, unknown>).regDate ?? "").localeCompare(String((a as unknown as Record<string, unknown>).regDate ?? "")))
+      .slice(0, max);
+  },
+
+  /** GET /fo/my/noti/page — 알림 목록(페이징, 기본 1페이지 10건) */
+  getPage: async (params: MyListParams & { readYn?: string; notiTypeCd?: string }): Promise<MyPageResult<MyNotiItem>> =>
+    (await axiosCsr.get<MyPageResult<MyNotiItem>>("/fo/my/noti/page", { ...auth(), params: { pageNo: 1, pageSize: 10, ...clean(params as Record<string, unknown>) } })).data,
+
+  /** GET /fo/my/noti/unread-count — 안 읽은 알림 수 */
+  getUnreadCount: async (): Promise<number> => (await axiosCsr.get<number>("/fo/my/noti/unread-count", auth())).data ?? 0,
+
+  /** PATCH /fo/my/noti/{id}/read — 읽음/안읽음 처리 */
+  markRead: async (id: string, readYn: "Y" | "N" = "Y"): Promise<unknown> =>
+    (await axiosCsr.patch(`/fo/my/noti/${encodeURIComponent(id)}/read`, { readYn: readYn === "N" ? "N" : "Y" }, auth())).data ?? true,
+
+  /** POST /fo/my/noti/read-all — 전체 읽음. 처리 건수 반환 */
+  markAllRead: async (): Promise<number> => (await axiosCsr.post<number>("/fo/my/noti/read-all", {}, auth())).data ?? 0,
+
+  /** DELETE /fo/my/noti/{id} — 알림 1건 삭제 */
+  remove: async (id: string): Promise<unknown> => (await axiosCsr.delete(`/fo/my/noti/${encodeURIComponent(id)}`, auth())).data,
+
+  /** DELETE /fo/my/noti/all — 알림 전체 삭제 */
+  removeAll: async (): Promise<unknown> => (await axiosCsr.delete("/fo/my/noti/all", auth())).data,
 };

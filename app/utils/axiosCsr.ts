@@ -1,37 +1,62 @@
 /**
  * axiosCsr.ts
- * CSR(브라우저) 전용 HTTP 클라이언트 (axios 기반)
- * - Pinia 스토어 액션, onMounted, 이벤트 핸들러 등 클라이언트 사이드에서 사용
- * - 브라우저가 baseURL을 자동 결정하므로 상대 경로(/api/xxx) 그대로 사용 가능
+ * CSR(브라우저) 전용 HTTP 클라이언트 (axios 기반) — ecBeBo(Spring Boot 백엔드)를 **직접** 호출한다.
+ *
+ * 2026-09-20: 예전엔 브라우저 → Netlify Function(server/api, 미국 Ohio) → 자택 NAS 의 2단 프록시(BFF)였는데,
+ * 서울↔Ohio 왕복 + Lambda→NAS 새 연결 비용 때문에 캐시 미스가 ~9초까지 걸렸다(NAS 직접 호출은 0.3초).
+ * 그래서 app/svc/** 는 이 클라이언트로 ecBeBo 를 직접 부른다. (ecBeBo 는 CORS 허용 — allowedOriginPatterns "*".)
+ * server/api 는 SEO 단위화면(/shop, 상품상세, 블로그상세)의 SSR 전용이며 그쪽은 axiosSsr 를 쓴다.
+ *
+ * - baseURL: runtimeConfig.public.beBaseUrl + "/api"  (예: https://22300.illeesam.synology.me/api) — app/plugins/beClient.ts 가 앱 시작 시 주입한다
+ *   (비동기 구간에선 useRuntimeConfig() 컨텍스트가 사라질 수 있어 인터셉터에서 읽지 않는다).
+ * - ecBeBo 응답 envelope { ok, status, data, message } 를 벗겨 response.data 가 곧 실데이터가 되게 한다.
+ *   (svc 는 기존처럼 `.then((r) => r.data)` 만 하면 된다.)
+ * - 오류는 소비처가 읽어오던 모양(err.statusCode / err.statusMessage / err.data.message)을 맞춰 붙여서 던진다.
+ * - 인증이 필요한 호출은 svc 가 `headers: useAuthHeaders()` 를 명시한다(공개 API 에 만료 토큰이 붙어 401 나는 것 방지).
  */
-import axios from "axios";
+import axios, { AxiosError, type AxiosResponse } from "axios";
 
-const axiosCsr = axios.create();
+const axiosCsr = axios.create({
+  timeout: 15000,
+  // 배열은 categoryIds=a&categoryIds=b 형태(Spring @ModelAttribute List<String> 바인딩)로 직렬화 — axios 기본은 categoryIds[]=a
+  paramsSerializer: { indexes: null },
+});
+
+interface BeEnvelope {
+  ok?: boolean;
+  status?: number;
+  data?: unknown;
+  message?: string;
+}
+
+/** 소비처가 읽는 오류 모양(statusCode / statusMessage / data.message)을 axios 오류에 덧붙인다. 서버 내부 표기(::클래스::메서드:줄)는 소비처가 자른다. */
+export interface BeError extends AxiosError {
+  statusCode?: number;
+  statusMessage?: string;
+  data?: { message?: string; statusMessage?: string };
+}
+
+function toBeError(error: AxiosError<BeEnvelope>, fallbackStatus?: number, fallbackMessage?: string): BeError {
+  const e = error as BeError;
+  const env = error.response?.data;
+  const status = env?.status ?? error.response?.status ?? fallbackStatus;
+  const message = env?.message ?? fallbackMessage ?? error.message;
+  e.statusCode = status;
+  e.statusMessage = message;
+  e.data = { message, statusMessage: message };
+  return e;
+}
 
 // ─── 요청 인터셉터 ───────────────────────────────────────────────────────────
-
-// baseURL이 없어(브라우저가 상대경로를 알아서 현재 origin 기준으로 풂) config.url만 찍으면
-// 상대경로만 보인다 — 2026-09-13(요청사항: "full url로 표시해줘") 실제로 호출되는 절대 URL을
-// 로그에 남기도록 origin을 직접 붙여준다.
-function fullUrl(config: { baseURL?: string; url?: string }): string {
-  const base = config.baseURL || (typeof window !== "undefined" ? window.location.origin : "");
-  const path = config.url ?? "";
-  if (/^https?:\/\//.test(path)) return path;
-  return `${base}${path.startsWith("/") ? path : `/${path}`}`;
-}
 
 axiosCsr.interceptors.request.use(
   (config) => {
     const paramStr = config.params ? JSON.stringify(config.params) : "";
-    console.log(
-      `[axiosCsr] ▶ 요청: ${config.method?.toUpperCase()} ${fullUrl(config)}`,
-      paramStr || ""
-    );
+    console.log(`[axiosCsr] ▶ 요청: ${config.method?.toUpperCase()} ${config.baseURL ?? ""}${config.url ?? ""}`, paramStr || "");
     return config;
   },
   (error) => {
     console.error("[axiosCsr] ✖ 요청 설정 오류:", error?.message ?? error);
-    console.error("[axiosCsr]   상세:", error);
     return Promise.reject(error);
   }
 );
@@ -39,29 +64,23 @@ axiosCsr.interceptors.request.use(
 // ─── 응답 인터셉터 ───────────────────────────────────────────────────────────
 
 axiosCsr.interceptors.response.use(
-  (response) => {
-    console.log(
-      `[axiosCsr] ◀ 응답 성공: ${response.status} ${fullUrl(response.config)}`,
-      Array.isArray(response.data)
-        ? `[${response.data.length}건]`
-        : typeof response.data === "object" && response.data !== null
-          ? `id=${(response.data as any).id ?? "-"}`
-          : response.data
-    );
+  (response: AxiosResponse) => {
+    const body = response.data as BeEnvelope | undefined;
+    if (body && typeof body === "object" && "ok" in body) {
+      // ecBeBo 는 오류도 HTTP 4xx/5xx 로 내려주지만, 200 이면서 ok=false 인 경우도 오류로 취급한다.
+      if (body.ok === false) {
+        const err = new AxiosError(body.message ?? "백엔드 오류가 발생했습니다.", "ERR_BAD_RESPONSE", response.config, response.request, response);
+        return Promise.reject(toBeError(err as AxiosError<BeEnvelope>, body.status ?? response.status));
+      }
+      response.data = body.data;
+    }
+    console.log(`[axiosCsr] ◀ 응답 성공: ${response.status} ${response.config.baseURL ?? ""}${response.config.url ?? ""}`);
     return response;
   },
-  (error) => {
-    const status  = error?.response?.status  ?? "NETWORK";
-    const method  = error?.config?.method?.toUpperCase() ?? "-";
-    const url     = error?.config ? fullUrl(error.config) : "-";
-    const message = error?.message ?? String(error);
-    const resData = error?.response?.data;
-
-    console.error(`[axiosCsr] ✖ 응답 오류 [${status}] ${method} ${url} — ${message}`);
-    if (resData !== undefined) {
-      console.error("[axiosCsr]   서버 응답 데이터:", resData);
-    }
-    return Promise.reject(error);
+  (error: AxiosError<BeEnvelope>) => {
+    const status = error.response?.status ?? "NETWORK";
+    console.error(`[axiosCsr] ✖ 응답 오류 [${status}] ${error.config?.method?.toUpperCase() ?? "-"} ${error.config?.baseURL ?? ""}${error.config?.url ?? ""} — ${error.message}`);
+    return Promise.reject(toBeError(error, undefined, error.code === "ECONNABORTED" ? "요청 시간이 초과되었습니다." : error.response ? undefined : "서버에 연결할 수 없습니다."));
   }
 );
 

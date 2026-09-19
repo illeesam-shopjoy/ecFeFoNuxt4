@@ -212,6 +212,7 @@ import Layout from "~/layout/Layout.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
 import { type CoBlogType } from "~/types/coBlogType";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
+import { axiosSsr } from "~/utils/axiosSsr";
 import { computed } from "vue";
 import BlogItem from "~/components/blogs/BlogItem.vue";
 import BlogSidebar from "~/components/common/sidebar/BlogSidebar.vue";
@@ -226,10 +227,11 @@ import * as yup from "yup";
 const route = useRoute();
 const id = route.params.id as string;
 
-// SSR: 서버에서 /api/fo/ec/cm/bltn/:id 조회 → SEO 메타 적용
+// SEO 단위화면: 서버 렌더링(SSR)일 때만 server/api(같은 Lambda 안 내부 호출, axiosSsr) → SEO 메타 적용.
+// 브라우저(클라이언트 내비게이션)는 svc 로 ecBeBo 를 직접 호출한다.
 const { data: item, pending } = await useAsyncData<CoBlogType>(
   `blog-${id}`,
-  () => coBlogSvc.getById(id)
+  () => (import.meta.server ? axiosSsr.get<CoBlogType>(`/api/fo/ec/cm/bltn/${id}`).then((r) => r.data) : coBlogSvc.getById(id))
 );
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -260,7 +262,7 @@ watch(
 const { data: allBlogs, pending: relatedPending } = useAsyncData<CoBlogType[]>(
   "blog-related",
   () => coBlogSvc.getPage(),
-  { lazy: true }
+  { lazy: true, server: false } // 보조 콘텐츠 — 서버 렌더 제외
 );
 
 const relatedBlogs = computed(() =>

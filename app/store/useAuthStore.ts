@@ -1,8 +1,8 @@
 /**
  * 인증(Auth) Pinia 스토어.
  * 2026-09-12: 자체 데모계정/Redis 세션을 걷어내고 ecBeBo(FoAuthController)를 유일한 인증
- * 소스로 사용한다 — server/api/auth/{login,join,refresh,logout}.post.ts가 beApi.ts로
- * ecBeBo를 그대로 프록시(server/utils/beApi.ts 참조). ecBeBo는 "내 정보 조회" API가 없어서
+ * 소스로 사용한다 — 2026-09-20부터 브라우저가 authSvc(axiosCsr)로 ecBeBo를 직접 호출한다
+ * (예전엔 server/api/auth/{login,join,refresh,logout}.post.ts 프록시 경유). ecBeBo는 "내 정보 조회" API가 없어서
  * (로그인 응답에 이미 담긴 프로필을 그대로 씀) 새로고침 시 서버 재검증 없이 localStorage에
  * 캐싱해둔 프로필을 그대로 복원한다 — 토큰이 실제로 만료됐는지는 이후 인증이 필요한 API를
  * 호출했을 때 401로만 드러난다(그 시점에 이 스토어의 refresh 로직을 호출해서 갱신할 것).
@@ -12,7 +12,7 @@
  * ecBeBo의 /api/co/fo-auth/social-login으로 옮기는 건 다음 작업.
  */
 import { defineStore } from "pinia";
-import { axiosCsr } from "~/utils/axiosCsr";
+import { authSvc } from "~/svc/co/auth/authSvc";
 import { setCookie, deleteCookie } from "~/utils/cmUtil";
 
 export interface AuthUser {
@@ -69,32 +69,30 @@ export const useAuthStore = defineStore("auth", {
       this.setSession(token, user);
     },
 
-    /** 로그인 — ecBeBo FoAuthController.login()을 프록시하는 /api/auth/login 호출 */
+    /** 로그인 — ecBeBo FoAuthController.login() 직접 호출(authSvc) */
     async login(email: string, password: string): Promise<{ ok: boolean; message?: string }> {
       try {
-        const res = await axiosCsr.post<{ token: string; user: AuthUser }>("/api/auth/login", {
-          email,
-          password,
-        });
-        this.setSession(res.data.token, res.data.user);
+        const res = await authSvc.login(email, password);
+        this.setSession(res.token, res.user);
         return { ok: true };
       } catch (err: unknown) {
-        const message = (err as { response?: { data?: { message?: string; statusMessage?: string } } })
-          ?.response?.data?.message
+        const message = (
+          (err as { response?: { data?: { message?: string; statusMessage?: string } } })?.response?.data?.message
           ?? (err as { response?: { data?: { statusMessage?: string } } })?.response?.data?.statusMessage
-          ?? "이메일 또는 비밀번호가 올바르지 않습니다.";
+          ?? "이메일 또는 비밀번호가 올바르지 않습니다."
+        ).split("::")[0]!; // 서버 내부 표기("::클래스::메서드:줄") 제거
         return { ok: false, message };
       }
     },
 
-    /** 회원가입 — ecBeBo FoAuthController.join()을 프록시하는 /api/auth/join 호출 (가입만, 자동로그인은 안 함) */
+    /** 회원가입 — ecBeBo FoAuthController.join() 직접 호출(authSvc) (가입만, 자동로그인은 안 함) */
     async register(name: string, email: string, password: string): Promise<{ ok: boolean; message?: string }> {
       try {
-        await axiosCsr.post("/api/auth/join", { name, email, password });
+        await authSvc.join(name, email, password);
         return { ok: true };
       } catch (err: unknown) {
-        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-          ?? "회원가입에 실패했습니다.";
+        const message = ((err as { response?: { data?: { message?: string } } })?.response?.data?.message
+          ?? "회원가입에 실패했습니다.").split("::")[0]!;
         return { ok: false, message };
       }
     },
@@ -136,10 +134,8 @@ export const useAuthStore = defineStore("auth", {
     async refreshToken(): Promise<boolean> {
       if (!this.token) return false;
       try {
-        const res = await axiosCsr.post<{ token: string }>("/api/auth/refresh", null, {
-          headers: { Authorization: `Bearer ${this.token}` },
-        });
-        this.setToken(res.data.token);
+        const res = await authSvc.refresh(this.token);
+        this.setToken(res.token);
         return true;
       } catch {
         this.setStLogout();
@@ -156,7 +152,7 @@ export const useAuthStore = defineStore("auth", {
         const isApiToken = token && !token.startsWith("oauth_");
         if (isApiToken && token) {
           try {
-            await axiosCsr.post("/api/auth/logout", {}, { headers: { Authorization: `Bearer ${token}` } });
+            await authSvc.logout(token);
           } catch {
             /** 무시 */
           }

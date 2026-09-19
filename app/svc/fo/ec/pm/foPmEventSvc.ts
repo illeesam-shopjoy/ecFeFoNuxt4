@@ -1,20 +1,21 @@
 /**
- * foPmEventSvc.ts — FO 이벤트 API 호출 객체 (2026-09 타임딜 기능 신설로 추가).
- * 2026-09-19: 이벤트 목록/상세(ecFeBo Event.js/EventView.js 이식) 조회를 추가.
+ * foPmEventSvc.ts — 이벤트(pm_event) API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoPmEventController(/api/fo/ec/pm/event, 공개) 를 직접 부른다.
  */
-import { axiosSsr } from "~/utils/axiosSsr";
+import { axiosCsr } from "~/utils/axiosCsr";
 import type { PmTimedealItemType } from "~/types/pmTimedealType";
 
+/** 이벤트 목록 카드 1건 */
 export interface PmEventCardType {
   eventId: string;
   title: string;
   eventTypeCd: string;
-  /** PENDING | ACTIVE | ENDED */
   eventStatusCd: string;
   startDate: string;
   endDate: string;
   imgUrl: string;
 }
+
 export interface PmEventPagedResult {
   items: PmEventCardType[];
   pageNo: number;
@@ -22,6 +23,8 @@ export interface PmEventPagedResult {
   pageTotalCount: number;
   pageTotalPage: number;
 }
+
+/** 이벤트 상세 */
 export interface PmEventDetailType {
   eventId: string;
   title: string;
@@ -35,24 +38,84 @@ export interface PmEventDetailType {
   eventItems: { id: string; targetType: string; targetId: string }[];
 }
 
+interface BePage<T> {
+  pageList: T[];
+  pageTotalCount: number;
+  pageTotalPage: number;
+  pageNo: number;
+  pageSize: number;
+}
+interface BeEventItem {
+  eventId: string;
+  eventNm?: string | null;
+  eventTitle?: string | null;
+  eventTypeCd?: string | null;
+  eventStatusCd?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  imgUrl?: string | null;
+}
+interface BeEventDetail {
+  eventId: string;
+  eventNm?: string | null;
+  eventTitle?: string | null;
+  eventTypeCd?: string | null;
+  eventDesc?: string | null;
+  eventContent?: string | null;
+  eventStatusCd?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  benefits?: { benefitNm?: string | null; benefitTypeCd?: string | null; benefitValue?: string | null; conditionDesc?: string | null }[] | null;
+  eventItems?: { eventItemId: string; targetTypeCd?: string | null; targetId?: string | null }[] | null;
+}
+
+const ymd = (v: string | null | undefined) => (v ?? "").toString().slice(0, 10);
+
 export const foPmEventSvc = {
-  /** GET /api/fo/ec/pm/event/timedeal — 진행중인 FLASH 이벤트의 타임딜 항목 목록 */
-  getTimedealList: () => axiosSsr.get<PmTimedealItemType[]>("/api/fo/ec/pm/event/timedeal").then((r) => r.data),
+  /** GET /fo/ec/pm/event/timedeal — 타임딜 이벤트 목록 */
+  getTimedealList: async (): Promise<PmTimedealItemType[]> => (await axiosCsr.get<PmTimedealItemType[]>("/fo/ec/pm/event/timedeal")).data,
 
-  /** GET /api/fo/ec/pm/event/page — 이벤트 목록(서버 페이징). eventStatusCd 로 진행중/종료 구분 */
-  getPage: (params: { pageNo: number; pageSize: number; eventStatusCd?: string; sort?: string; searchValue?: string }) =>
-    axiosSsr
-      .get<PmEventPagedResult>("/api/fo/ec/pm/event/page", {
-        params: {
-          pageNo: params.pageNo,
-          pageSize: params.pageSize,
-          ...(params.eventStatusCd ? { eventStatusCd: params.eventStatusCd } : {}),
-          ...(params.sort ? { sort: params.sort } : {}),
-          ...(params.searchValue ? { searchValue: params.searchValue, searchType: "eventId,eventTitle" } : {}),
-        },
-      })
-      .then((r) => r.data),
+  /** GET /fo/ec/pm/event/page — 이벤트 목록(페이징) */
+  getPage: async (params: { pageNo: number; pageSize: number; eventStatusCd?: string; sort?: string; searchValue?: string }): Promise<PmEventPagedResult> => {
+    const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize };
+    if (params.eventStatusCd) q.eventStatusCd = params.eventStatusCd;
+    if (params.sort) q.sort = params.sort;
+    if (params.searchValue) {
+      q.searchValue = params.searchValue;
+      q.searchType = "eventId,eventTitle";
+    }
+    const page = (await axiosCsr.get<BePage<BeEventItem>>("/fo/ec/pm/event/page", { params: q })).data;
+    return {
+      items: (page.pageList ?? []).map((e) => ({
+        eventId: e.eventId,
+        title: e.eventTitle || e.eventNm || "",
+        eventTypeCd: e.eventTypeCd ?? "",
+        eventStatusCd: String(e.eventStatusCd ?? "").toUpperCase(),
+        startDate: ymd(e.startDate),
+        endDate: ymd(e.endDate),
+        imgUrl: e.imgUrl ?? "",
+      })),
+      pageNo: page.pageNo,
+      pageSize: page.pageSize,
+      pageTotalCount: page.pageTotalCount,
+      pageTotalPage: page.pageTotalPage,
+    };
+  },
 
-  /** GET /api/fo/ec/pm/event/{id} — 이벤트 상세(혜택/대상 포함) */
-  getById: (id: string) => axiosSsr.get<PmEventDetailType>(`/api/fo/ec/pm/event/${encodeURIComponent(id)}`).then((r) => r.data),
+  /** GET /fo/ec/pm/event/{id} — 이벤트 상세 */
+  getById: async (id: string): Promise<PmEventDetailType> => {
+    const d = (await axiosCsr.get<BeEventDetail>(`/fo/ec/pm/event/${encodeURIComponent(id)}`)).data;
+    return {
+      eventId: d.eventId,
+      title: d.eventTitle || d.eventNm || "",
+      eventTypeCd: d.eventTypeCd ?? "",
+      eventStatusCd: String(d.eventStatusCd ?? "").toUpperCase(),
+      desc: d.eventDesc ?? "",
+      content: d.eventContent ?? "",
+      startDate: ymd(d.startDate),
+      endDate: ymd(d.endDate),
+      benefits: (d.benefits ?? []).map((b) => ({ label: b.benefitNm || b.benefitTypeCd || "혜택", value: b.benefitValue ?? "", desc: b.conditionDesc ?? "" })),
+      eventItems: (d.eventItems ?? []).map((it) => ({ id: it.eventItemId, targetType: it.targetTypeCd ?? "", targetId: it.targetId ?? "" })),
+    };
+  },
 };

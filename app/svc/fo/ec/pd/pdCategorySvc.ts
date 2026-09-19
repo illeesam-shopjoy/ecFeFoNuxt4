@@ -1,22 +1,19 @@
 /**
- * pdCategorySvc.ts — 상품 카테고리(트리) API 호출 객체.
- *
- * 2026-09-12(요청사항: "api url 을 직접호출하지말고 api url 호출 객체를 만들고 연결시켜줘" +
- * "Api.ts 가 아니고 Svc.ts 여야 될거 같은데 + svc/fo/~~~~ 이런식으로 경로에 맞게 구조폴더로
- * 정리해줘") — CategoryArea.vue/CategoryAreaTwo.vue/ProductCategory.vue 세 곳이 각자
- * "/api/fo/ec/pd/category-tree" 문자열을 그대로 axiosSsr.get(...)에 박아 호출하고 타입도
- * 각자 복붙해서 미묘하게 어긋나 있던 걸(smDesc 유무 등) 한 곳으로 모았다. 폴더 위치
- * (svc/fo/ec/pd/)는 실제 라우트 경로(server/api/fo/ec/pd/*)를 그대로 따른다 — server/api와
- * app/svc를 같은 이름(api)으로 두면 헷갈린다는 지적에 따라 app 쪽은 svc로 구분.
+ * pdCategorySvc.ts — 카테고리 API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoPdCategoryController(/api/fo/ec/pd/category, 공개, 2026-09-20 신설)의 평탄 목록을 받아 트리를 조립한다.
+ * 예전에는 상품 1000건을 받아 카테고리를 즉석 집계했다.
  */
-import { axiosSsr } from "~/utils/axiosSsr";
+import { axiosCsr } from "~/utils/axiosCsr";
+import { beConfig } from "~/utils/beConfig";
 
 export interface CategoryTreeItem {
   categoryId: string;
+  /** 카테고리 배너 이미지 */
   img: string;
   parentTitle: string;
+  /** 카테고리 코드 대용(= categoryId) */
   value: string;
-  /** 2026-09-13 버그수정: 이름 문자열이 아니라 진짜 categoryId를 쓸 수 있게 {id,name} 쌍으로 변경 */
+  /** 하위 카테고리 {id, name} */
   children: { id: string; name: string }[];
   smDesc?: string;
 }
@@ -26,8 +23,45 @@ export interface CategoryTreeResponse {
   categoryIdToName: Record<string, string>;
 }
 
+interface BeCategory {
+  categoryId: string;
+  parentCategoryId?: string | null;
+  categoryNm: string;
+  categoryDepth?: number | null;
+  sortOrd?: number | null;
+  imgUrl?: string | null;
+  categoryDesc?: string | null;
+}
+
+// 카테고리 마스터에 배너 이미지가 없을 때 쓰는 CDN 배너(실존 파일 banner-sm-1~5) — 앞 카테고리부터 순서대로 배정.
+const BANNER_IMG_FILES = ["banner-sm-1.jpg", "banner-sm-2.jpg", "banner-sm-3.jpg", "banner-sm-4.jpg", "banner-sm-5.jpg"];
+
 export const pdCategorySvc = {
-  /** GET /api/fo/ec/pd/category-tree — 카테고리 트리(상품목록에서 즉석 집계한 합성 데이터, 로그인 불필요) */
-  getCategoryTree: () =>
-    axiosSsr.get<CategoryTreeResponse>("/api/fo/ec/pd/category-tree").then((r) => r.data),
+  /** GET /fo/ec/pd/category → 최상위 카테고리 최대 6개 + 각 하위 카테고리로 트리 조립 */
+  getCategoryTree: async (): Promise<CategoryTreeResponse> => {
+    const rows = (await axiosCsr.get<BeCategory[]>("/fo/ec/pd/category")).data ?? [];
+
+    const nameById: Record<string, string> = Object.fromEntries(rows.map((c) => [c.categoryId, c.categoryNm]));
+    const childrenByParent = new Map<string, { id: string; name: string }[]>();
+    for (const c of rows) {
+      if (!c.parentCategoryId) continue;
+      const list = childrenByParent.get(c.parentCategoryId) ?? [];
+      list.push({ id: c.categoryId, name: c.categoryNm });
+      childrenByParent.set(c.parentCategoryId, list);
+    }
+
+    const categoryTree: CategoryTreeItem[] = rows
+      .filter((c) => !c.parentCategoryId)
+      .slice(0, 6)
+      .map((c, idx) => ({
+        categoryId: c.categoryId,
+        parentTitle: c.categoryNm,
+        value: c.categoryId,
+        children: childrenByParent.get(c.categoryId) ?? [],
+        img: c.imgUrl || (BANNER_IMG_FILES[idx] ? `${beConfig.cdnBase}/cdn/prod/img/shop/banner/${BANNER_IMG_FILES[idx]}` : ""),
+        smDesc: c.categoryDesc ?? undefined,
+      }));
+
+    return { categoryTree, categoryIdToName: nameById };
+  },
 };

@@ -161,7 +161,7 @@ const DEFAULT_FOOTER_DATA: FooterData = {
 const { data: fetchedFooterData } = useAsyncData<FooterData | null>(
   "dp-footer-links-three",
   () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_THREE"),
-  { lazy: true }
+  { lazy: true, server: false }
 );
 const footerData = computed<FooterData>(() => fetchedFooterData.value ?? DEFAULT_FOOTER_DATA);
 </script>

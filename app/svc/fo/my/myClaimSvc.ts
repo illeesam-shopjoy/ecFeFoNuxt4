@@ -1,15 +1,18 @@
 /**
- * myClaimSvc.ts — 내 클레임(취소/반품/교환) API 호출 객체 (로그인 필요). ecFeBo foApiSvc.myClaim 이식 (2026-09-19).
- *   getList → GET /api/fo/my/claim/list   (ecBeBo /fo/my/claim/list)
- *   getPage → GET /api/fo/my/claim/page   (ecBeBo /fo/my/claim/page — 서버 페이징, claimTypeCd: CANCEL|RETURN|EXCHANGE)
- * 클레임 신청/취소 API 는 ecBeBo FO 쪽에 없다(ecFeBo 도 화면 상태만 바꿈).
+ * myClaimSvc.ts — 마이페이지 클레임(취소/반품/교환) API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoMyPageController(/api/fo/my/claim/list|page, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
  */
+import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 import type { MyListParams, MyPageResult, MyRow } from "~/types/foMyType";
 
 const clean = (p: MyListParams) => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined && v !== ""));
 
 export const myClaimSvc = {
-  getList: (params: MyListParams = {}) => $fetch<MyRow[]>("/api/fo/my/claim/list", { headers: useAuthHeaders(), query: clean(params) }),
-  getPage: (params: MyListParams) => $fetch<MyPageResult<MyRow>>("/api/fo/my/claim/page", { headers: useAuthHeaders(), query: clean(params) }),
+  /** GET /fo/my/claim/list — 내 클레임 목록 */
+  getList: async (params: MyListParams = {}): Promise<MyRow[]> => (await axiosCsr.get<MyRow[]>("/fo/my/claim/list", { headers: useAuthHeaders(), params: clean(params) })).data,
+
+  /** GET /fo/my/claim/page — 내 클레임 목록(페이징, 기본 1페이지 10건) */
+  getPage: async (params: MyListParams): Promise<MyPageResult<MyRow>> =>
+    (await axiosCsr.get<MyPageResult<MyRow>>("/fo/my/claim/page", { headers: useAuthHeaders(), params: { pageNo: 1, pageSize: 10, ...clean(params) } })).data,
 };

@@ -250,6 +250,7 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonProductDetail from "~/components/ui/SkeletonProductDetail.vue";
 import { type PdProductType } from "~/types/pdProductType";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
+import { axiosSsr } from "~/utils/axiosSsr";
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
 import ProductThumbStrip from "~/components/shop-details/ProductThumbStrip.vue";
@@ -266,9 +267,12 @@ const id = route.params.id as string;
 // 대신 URL에 점(.)이 들어간 경우(.css.map 등 정적 리소스 오요청)만 걸러낸다(2026-09 BFF 전환).
 const isValidProdId = Boolean(id) && !id.includes(".");
 
+// SEO 단위화면: 서버 렌더링(SSR)일 때만 server/api(같은 Lambda 안 내부 호출, axiosSsr — 리뷰 병합·CDN 캐시 포함)를 거치고,
+// 브라우저(클라이언트 내비게이션)는 svc 로 ecBeBo 를 직접 호출한다.
+const fetchProduct = () => (import.meta.server ? axiosSsr.get<PdProductType>(`/api/fo/ec/pd/prod/${id}`).then((r) => r.data) : pdProductSvc.getById(id));
 const { data: item, pending } = await useAsyncData<PdProductType | null>(
   `product-${id}`,
-  () => (isValidProdId ? pdProductSvc.getById(id) : Promise.resolve(null)),
+  () => (isValidProdId ? fetchProduct() : Promise.resolve(null)),
   { default: () => null }
 );
 

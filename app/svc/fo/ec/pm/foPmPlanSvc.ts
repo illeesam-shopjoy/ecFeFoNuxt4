@@ -1,10 +1,11 @@
 /**
- * foPmPlanSvc.ts — FO 기획전 API 호출 객체 (2026-09 신설, 이전엔 FO 공개 API 자체가 없었음).
+ * foPmPlanSvc.ts — 기획전(pm_plan) API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoPmPlanController(/api/fo/ec/pm/plan, 공개) 를 직접 부른다.
  */
-import { axiosSsr } from "~/utils/axiosSsr";
+import { axiosCsr } from "~/utils/axiosCsr";
 import type { PmTimedealItemType } from "~/types/pmTimedealType";
 
 export const foPmPlanSvc = {
-  /** GET /api/fo/ec/pm/plan/timedeal — 진행중인 기획전의 타임딜 항목 목록 */
-  getTimedealList: () => axiosSsr.get<PmTimedealItemType[]>("/api/fo/ec/pm/plan/timedeal").then((r) => r.data),
+  /** GET /fo/ec/pm/plan/timedeal — 타임딜 기획전 목록 */
+  getTimedealList: async (): Promise<PmTimedealItemType[]> => (await axiosCsr.get<PmTimedealItemType[]>("/fo/ec/pm/plan/timedeal")).data,
 };

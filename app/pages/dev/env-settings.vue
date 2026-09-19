@@ -65,7 +65,7 @@
  * 개발 서버에서만 동작)를 통해 이뤄진다.
  */
 import { ref, reactive } from "vue";
-import { envSvc, type DevEnvFieldRow } from "~/svc/dev/envSvc";
+import { envSvc, type DevEnvFieldRow } from "~/svcServer/dev/envSvc";
 
 definePageMeta({ layout: "admin" });
 usePageTitle("환경변수 설정");

@@ -1,17 +1,16 @@
 /**
- * pdProductSvc.ts — 상품 API 호출 객체.
- * 2026-09-12(요청사항: "api url 을 직접호출하지말고 api url 호출 객체를 만들고 연결시켜줘" +
- * "svc/fo/~~~~ 이런식으로 경로에 맞게 구조폴더로 정리해줘") —
- * shop.vue/useProductsStore.ts/prod-dtl/*.vue/adminEc/products/*.vue가 각자
- * "/api/fo/ec/pd/prod/..." 문자열을 그대로 axios/$fetch에 박아 호출하던 걸 한 곳으로 모음.
- * 폴더 위치(svc/fo/ec/pd/)는 실제 라우트 경로(server/api/fo/ec/pd/*)를 그대로 따른다.
- * SSR/CSR 어느 쪽에서 불러도 되도록 axiosSsr을 쓴다(SSR은 절대경로, CSR은 상대경로로
- * 자동 처리 — server/utils/axiosSsr.ts 참조).
+ * pdProductSvc.ts — 상품 API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ *
+ * 2026-09-20: BFF(server/api) 경유를 없애고 ecBeBo FoPdProdController(/api/fo/ec/pd/prod)를 직접 부른다.
+ * 예전 server/api/fo/ec/pd/prod/{page,[id]}.get.ts 가 하던 가공(쿼리 매핑, mapProduct, 리뷰 병합)을 여기서 한다.
+ * SEO 단위화면(/shop, /prod-dtl/[id])의 **서버 렌더링**만 server/api 를 거친다 — 그쪽은 화면 코드에서 axiosSsr 로 부른다.
  */
-import { axiosSsr } from "~/utils/axiosSsr";
+import { axiosCsr } from "~/utils/axiosCsr";
+import { mapProduct, mapReview, type BeProdItem, type BeReviewItem } from "~/utils/mapProduct";
+import { beConfig } from "~/utils/beConfig";
 import { type PdProductType } from "~/types/pdProductType";
 
-/** GET /api/fo/ec/pd/prod/page?pageNo=... 응답(페이징 모드) — server/api/fo/ec/pd/prod/page.get.ts 참조 */
+/** 목록 응답(페이징) — SSR 라우트(server/api/fo/ec/pd/prod/page.get.ts)와 같은 모양 */
 export interface PdProductPagedResult {
   items: PdProductType[];
   pageNo: number;
@@ -36,25 +35,57 @@ export interface PdProductPageParams {
   keyword?: string;
 }
 
+interface BePage<T> {
+  pageList: T[];
+  pageTotalCount: number;
+  pageTotalPage: number;
+  pageNo: number;
+  pageSize: number;
+}
+
+interface BeReviewsResponse {
+  summary: { avgRating?: number; reviewCount?: number };
+  reviewPage: { pageList: BeReviewItem[]; pageTotalCount: number };
+}
+
 export const pdProductSvc = {
-  /**
-   * 2026-09-13(요청사항: "10000개가 될수도 있기에 페이징 api 조회") 추가 — 진짜 서버 페이징/필터
-   * 홈 위젯(useLatestProducts.ts)·/shop(useShopProducts.ts)·상품상세 관련상품이 각자 필요한 만큼만 조회한다.
-   * 배열은 콤마 조합 문자열로 보낸다(axios 배열 직렬화 방식이 서버 파싱과 안 맞을 위험 방지 —
-   * server/api/fo/ec/pd/prod/page.get.ts에서 다시 split해 ecBeBo에 반복 파라미터로 전달).
-   */
-  getPaged: (params: PdProductPageParams) => {
-    const q: Record<string, string | number> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12 };
-    if (params.categoryIds?.length) q.categoryIds = params.categoryIds.join(",");
-    if (params.brandIds?.length) q.brandIds = params.brandIds.join(",");
-    if (params.sizeCds?.length) q.sizeCds = params.sizeCds.join(",");
+  /** GET /fo/ec/pd/prod/page — 서버 페이징/멀티선택 필터 상품 목록 */
+  getPaged: async (params: PdProductPageParams): Promise<PdProductPagedResult> => {
+    const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12, useYn: "Y" };
+    if (params.categoryIds?.length) q.categoryIds = params.categoryIds;
+    if (params.brandIds?.length) q.brandIds = params.brandIds;
+    if (params.sizeCds?.length) q.sizeInfoCds = params.sizeCds;
     if (params.priceMin != null) q.priceMin = params.priceMin;
     if (params.priceMax != null) q.priceMax = params.priceMax;
     if (params.sort) q.sort = params.sort;
-    if (params.keyword) q.keyword = params.keyword;
-    return axiosSsr.get<PdProductPagedResult>("/api/fo/ec/pd/prod/page", { params: q }).then((r) => r.data);
+    if (params.keyword) {
+      q.searchType = "prodNm";
+      q.searchValue = params.keyword;
+    }
+    const page = (await axiosCsr.get<BePage<BeProdItem>>("/fo/ec/pd/prod/page", { params: q })).data;
+    const base = beConfig.cdnBase;
+    return {
+      items: page.pageList.map((p) => mapProduct(p, base) as unknown as PdProductType),
+      pageNo: page.pageNo,
+      pageSize: page.pageSize,
+      pageTotalCount: page.pageTotalCount,
+      pageTotalPage: page.pageTotalPage,
+      hasMore: page.pageNo < page.pageTotalPage,
+    };
   },
 
-  /** GET /api/fo/ec/pd/prod/{id} — 상품 단건 */
-  getById: (id: string) => axiosSsr.get<PdProductType>(`/api/fo/ec/pd/prod/${id}`).then((r) => r.data),
+  /** GET /fo/ec/pd/prod/{id} + /{id}/reviews — 상품 단건(리뷰·평점 병합). 리뷰 조회 실패는 빈 리뷰로 대체 */
+  getById: async (id: string): Promise<PdProductType> => {
+    const [detail, reviewsRes] = await Promise.all([
+      axiosCsr.get<BeProdItem>(`/fo/ec/pd/prod/${encodeURIComponent(id)}`).then((r) => r.data),
+      axiosCsr
+        .get<BeReviewsResponse>(`/fo/ec/pd/prod/${encodeURIComponent(id)}/reviews`, { params: { pageSize: 50 } })
+        .then((r) => r.data)
+        .catch(() => ({ summary: {}, reviewPage: { pageList: [], pageTotalCount: 0 } }) as BeReviewsResponse),
+    ]);
+    const out = mapProduct(detail, beConfig.cdnBase);
+    out.reviews = reviewsRes.reviewPage.pageList.map(mapReview);
+    if (typeof reviewsRes.summary?.avgRating === "number") out.rating = reviewsRes.summary.avgRating;
+    return out as unknown as PdProductType;
+  },
 };

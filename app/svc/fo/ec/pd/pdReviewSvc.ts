@@ -1,13 +1,10 @@
 /**
- * pdReviewSvc.ts — 상품 리뷰/리뷰답글 API 호출 객체.
- * 2026-09-12(요청사항: "api url 을 직접호출하지말고 api url 호출 객체를 만들고 연결시켜줘" +
- * "svc/fo/~~~~ 이런식으로 경로에 맞게 구조폴더로 정리해줘") —
- * ReviewForm.vue/ProductDetailsReview.vue가 각자 "/api/fo/ec/pd/review..." 문자열을
- * $fetch에 박아 호출하던 걸 한 곳으로 모음. 전부 로그인 필요(FoPdReviewController/
- * FoPdReviewCommentController, FO_ONLY) — useAuthHeaders()를 여기서 한 번만 붙이면
- * 호출부에서 매번 안 챙겨도 된다. 폴더 위치(svc/fo/ec/pd/)는 실제 라우트 경로
- * (server/api/fo/ec/pd/*)를 그대로 따른다.
+ * pdReviewSvc.ts — 상품 리뷰/리뷰 답글 작성·삭제 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoPdReviewController(/api/fo/ec/pd/review)·FoPdReviewCommentController(/api/fo/ec/pd/review-comment)
+ * — FO_ONLY 인가라 로그인 토큰이 필요하다(useAuthHeaders).
+ * 리뷰 "조회"는 상품 상세(pdProductSvc.getById)가 함께 내려받는다.
  */
+import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 
 interface WriteResult {
@@ -16,20 +13,41 @@ interface WriteResult {
   id?: string;
 }
 
+/** 백엔드 검증 실패 메시지를 소비처(e.data.message / e.message)가 그대로 읽도록 던진다 */
+function badRequest(message: string): never {
+  throw Object.assign(new Error(message), { statusCode: 400, statusMessage: message, data: { message, statusMessage: message } });
+}
+
 export const pdReviewSvc = {
-  /** POST /api/fo/ec/pd/review — 리뷰 등록 */
-  createReview: (body: { prodId: string; content: string; rating: number }) =>
-    $fetch<WriteResult>("/api/fo/ec/pd/review", { method: "POST", body, headers: useAuthHeaders() }),
+  /** POST /fo/ec/pd/review — 리뷰 작성 (별점 0.5~5) */
+  createReview: async (body: { prodId: string; content: string; rating: number }): Promise<WriteResult> => {
+    const reviewContent = String(body.content ?? "").trim();
+    const rating = Number(body.rating);
+    if (!body.prodId) badRequest("상품 ID가 필요합니다.");
+    if (!reviewContent) badRequest("리뷰 내용을 입력해 주세요.");
+    if (!Number.isFinite(rating) || rating < 0.5 || rating > 5) badRequest("별점을 선택해 주세요. (0.5 ~ 5)");
+    const created = (await axiosCsr.post<{ reviewId: string }>("/fo/ec/pd/review", { prodId: body.prodId, reviewTitle: "", reviewContent, rating }, { headers: useAuthHeaders() })).data;
+    return { success: true, message: "리뷰가 등록되었습니다.", id: created.reviewId };
+  },
 
-  /** DELETE /api/fo/ec/pd/review/{id} — 본인 리뷰 삭제 */
-  deleteReview: (reviewId: string) =>
-    $fetch<WriteResult>(`/api/fo/ec/pd/review/${reviewId}`, { method: "DELETE", headers: useAuthHeaders() }),
+  /** DELETE /fo/ec/pd/review/{id} — 리뷰 삭제 */
+  deleteReview: async (reviewId: string): Promise<WriteResult> => {
+    await axiosCsr.delete(`/fo/ec/pd/review/${encodeURIComponent(reviewId)}`, { headers: useAuthHeaders() });
+    return { success: true };
+  },
 
-  /** POST /api/fo/ec/pd/review-comment — 답글 등록 */
-  createReviewComment: (body: { reviewId: string; content: string }) =>
-    $fetch<WriteResult>("/api/fo/ec/pd/review-comment", { method: "POST", body, headers: useAuthHeaders() }),
+  /** POST /fo/ec/pd/review-comment — 리뷰 답글 작성 */
+  createReviewComment: async (body: { reviewId: string; content: string }): Promise<WriteResult> => {
+    const reviewReplyContent = String(body.content ?? "").trim();
+    if (!body.reviewId) badRequest("리뷰 ID가 필요합니다.");
+    if (!reviewReplyContent) badRequest("답글 내용을 입력해 주세요.");
+    const created = (await axiosCsr.post<{ reviewCommentId: string }>("/fo/ec/pd/review-comment", { reviewId: body.reviewId, reviewReplyContent }, { headers: useAuthHeaders() })).data;
+    return { success: true, message: "답글이 등록되었습니다.", id: created.reviewCommentId };
+  },
 
-  /** DELETE /api/fo/ec/pd/review-comment/{id} — 본인 답글 삭제 */
-  deleteReviewComment: (reviewCommentId: string) =>
-    $fetch<WriteResult>(`/api/fo/ec/pd/review-comment/${reviewCommentId}`, { method: "DELETE", headers: useAuthHeaders() }),
+  /** DELETE /fo/ec/pd/review-comment/{id} — 리뷰 답글 삭제 */
+  deleteReviewComment: async (reviewCommentId: string): Promise<WriteResult> => {
+    await axiosCsr.delete(`/fo/ec/pd/review-comment/${encodeURIComponent(reviewCommentId)}`, { headers: useAuthHeaders() });
+    return { success: true };
+  },
 };

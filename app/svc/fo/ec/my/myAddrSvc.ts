@@ -1,8 +1,8 @@
 /**
- * myAddrSvc.ts — FO 마이페이지 배송지 API 호출 객체.
- * 2026-09-15(요청사항: "로그인사용자의 기본주소 있으면 넣어주면되") — 체크아웃 기본 배송지
- * 프리필용으로 추가.
+ * myAddrSvc.ts — 내 배송지 API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoMyController(GET /api/fo/ec/my/addr, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
  */
+import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 
 export interface MbMemberAddrItem {
@@ -17,6 +17,6 @@ export interface MbMemberAddrItem {
 }
 
 export const myAddrSvc = {
-  /** GET /api/fo/ec/my/addr — 내 배송지 목록 (로그인 필요) */
-  getMyAddrs: () => $fetch<MbMemberAddrItem[]>("/api/fo/ec/my/addr", { headers: useAuthHeaders() }),
+  /** GET /fo/ec/my/addr — 내 배송지 목록 */
+  getMyAddrs: async (): Promise<MbMemberAddrItem[]> => (await axiosCsr.get<MbMemberAddrItem[]>("/fo/ec/my/addr", { headers: useAuthHeaders() })).data ?? [],
 };

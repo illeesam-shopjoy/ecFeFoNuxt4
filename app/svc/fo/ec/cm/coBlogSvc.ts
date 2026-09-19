@@ -1,15 +1,13 @@
 /**
- * coBlogSvc.ts — 블로그 API 호출 객체.
- * 2026-09-12(요청사항: "api url 을 직접호출하지말고 api url 호출 객체를 만들고 연결시켜줘" +
- * "svc/fo/~~~~ 이런식으로 경로에 맞게 구조폴더로 정리해줘") —
- * useBlogs.ts/BlogDetailsArea.vue/blog-dtl/index.vue/blog-dtl/[id].vue가 각자
- * "/api/fo/ec/cm/bltn/..." 문자열을 그대로 axiosSsr에 박아 호출하던 걸 한 곳으로 모음.
- * 폴더 위치(svc/fo/ec/cm/)는 실제 라우트 경로(server/api/fo/ec/cm/*)를 그대로 따른다.
+ * coBlogSvc.ts — 블로그(게시판) API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoCmBlogController(/api/fo/ec/cm/bltn) 를 직접 부른다. 블로그 상세 SEO 서버 렌더링(blog-dtl)만 server/api 를 거친다.
  */
-import { axiosSsr } from "~/utils/axiosSsr";
+import { axiosCsr } from "~/utils/axiosCsr";
+import { mapBlog, type BeBlogItem } from "~/utils/mapBlog";
+import { beConfig } from "~/utils/beConfig";
 import { type CoBlogType } from "~/types/coBlogType";
 
-/** GET /api/fo/ec/cm/bltn/page?pageNo=... 응답(페이징 모드) — server/api/fo/ec/cm/bltn/page.get.ts 참조 */
+/** 목록 응답(페이징) — server/api/fo/ec/cm/bltn 와 같은 모양 */
 export interface CoBlogPagedResult {
   items: CoBlogType[];
   pageNo: number;
@@ -19,17 +17,37 @@ export interface CoBlogPagedResult {
   hasMore: boolean;
 }
 
+interface BePage<T> {
+  pageList: T[];
+  pageTotalCount: number;
+  pageTotalPage: number;
+  pageNo: number;
+  pageSize: number;
+}
+
 export const coBlogSvc = {
-  /** GET /api/fo/ec/cm/bltn/page — 블로그 목록(전체, useBlogs() 등 기존 화면 전용 — 그대로 유지) */
-  getPage: () => axiosSsr.get<CoBlogType[]>("/api/fo/ec/cm/bltn/page").then((r) => r.data),
+  /** GET /fo/ec/cm/bltn/page — 블로그 전체 목록(최대 200건, 홈 최신글/사이드바용) */
+  getPage: async (): Promise<CoBlogType[]> => {
+    const page = (await axiosCsr.get<BePage<BeBlogItem>>("/fo/ec/cm/bltn/page", { params: { pageSize: 200, useYn: "Y" } })).data;
+    return page.pageList.map((b) => mapBlog(b, beConfig.cdnBase));
+  },
 
-  /**
-   * 2026-09-17(요청사항: "블로그 목록 20개씩 스크롤 내려가면 20개조회하는 방식으로") — 진짜 서버
-   * 페이징 모드(같은 라우트, pageNo 쿼리 유무로 서버가 분기). 무한스크롤 화면 전용.
-   */
-  getPaged: (pageNo: number, pageSize = 20) =>
-    axiosSsr.get<CoBlogPagedResult>("/api/fo/ec/cm/bltn/page", { params: { pageNo, pageSize } }).then((r) => r.data),
+  /** GET /fo/ec/cm/bltn/page?pageNo=… — 서버 페이징(블로그 목록 화면 "더 보기") */
+  getPaged: async (pageNo: number, pageSize = 20): Promise<CoBlogPagedResult> => {
+    const page = (await axiosCsr.get<BePage<BeBlogItem>>("/fo/ec/cm/bltn/page", { params: { pageNo, pageSize, useYn: "Y" } })).data;
+    return {
+      items: page.pageList.map((b) => mapBlog(b, beConfig.cdnBase)),
+      pageNo: page.pageNo,
+      pageSize: page.pageSize,
+      pageTotalCount: page.pageTotalCount,
+      pageTotalPage: page.pageTotalPage,
+      hasMore: page.pageNo < page.pageTotalPage,
+    };
+  },
 
-  /** GET /api/fo/ec/cm/bltn/{id} — 블로그 단건 */
-  getById: (id: string) => axiosSsr.get<CoBlogType>(`/api/fo/ec/cm/bltn/${id}`).then((r) => r.data),
+  /** GET /fo/ec/cm/bltn/{id} — 블로그 단건 */
+  getById: async (id: string): Promise<CoBlogType> => {
+    const row = (await axiosCsr.get<BeBlogItem>(`/fo/ec/cm/bltn/${encodeURIComponent(id)}`)).data;
+    return mapBlog(row, beConfig.cdnBase);
+  },
 };

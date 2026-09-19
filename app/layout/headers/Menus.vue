@@ -25,24 +25,10 @@
 
 <script setup lang="ts">
 import { CDN_URL } from "~/conts/baseConst";
-import { type SyMenuTreeType } from "~/types/syMenuTreeType";
-import { foMenuSvc } from "~/svc/fo/foMenuSvc";
+import { STATIC_MENUS } from "~/conts/foMenus";
 
 const BG = `${CDN_URL}/cdn/prod/img/bg/mega-menu-bg.jpg`;
 
-// 이미 있으면 재호출 안 함 (화면 오픈마다 /api/fo/menu 호출 방지)
-const menusCache = useState<SyMenuTreeType[] | null>("menus-cache", () => null);
-
-const { data: menus } = useAsyncData<SyMenuTreeType[]>(
-  "menus",
-  async () => {
-    const list = await foMenuSvc.getMenus();
-    menusCache.value = list;
-    return list;
-  },
-  {
-    default: () => [] as SyMenuTreeType[],
-    getCachedData: () => (menusCache.value && menusCache.value.length > 0 ? menusCache.value : undefined),
-  }
-);
+// 2026-09-20: 메뉴는 정적 데이터라 API(/api/fo/menu) 없이 상수(conts/foMenus.ts)를 그대로 쓴다.
+const menus = STATIC_MENUS;
 </script>

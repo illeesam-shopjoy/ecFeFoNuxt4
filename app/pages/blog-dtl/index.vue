@@ -236,7 +236,7 @@ usePageTitle("블로그 상세");
 const { data: allBlogs, pending: relatedPending } = useAsyncData<CoBlogType[]>(
   "blog-related",
   () => coBlogSvc.getPage(),
-  { lazy: true }
+  { lazy: true, server: false } // 보조 콘텐츠 — 서버 렌더 제외
 );
 
 const relatedBlogs = computed(() =>

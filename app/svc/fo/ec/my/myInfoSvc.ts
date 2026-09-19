@@ -1,17 +1,57 @@
 /**
- * myInfoSvc.ts — 내 회원정보(프로필) · 비밀번호 API 호출 객체 (로그인 필요). 2026-09-19.
- * 폴더 위치(svc/fo/ec/my/)는 BFF 라우트(server/api/fo/ec/my/*)를 그대로 따른다 — 배송지는 myAddrSvc.ts 참조.
- *   getProfile     → GET  /api/fo/ec/my/info      (ecBeBo /fo/ec/my/info)
- *   updateProfile  → PUT  /api/fo/ec/my/info      (이름·휴대폰·성별·생년월일·주소 7개 필드만 반영)
- *   changePassword → POST /api/fo/ec/my/password  (ecBeBo /fo/ec/my/password, body { currentPassword, newPassword })
+ * myInfoSvc.ts — 내 정보/비밀번호 API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
+ * ecBeBo FoMyController(/api/fo/ec/my/info, /password, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
  */
+import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
 import type { MyProfile } from "~/types/foMyType";
 
-const h = () => ({ headers: useAuthHeaders() });
+/** 백엔드 호출 전 검증 실패를 소비처(e.data.statusMessage)가 읽는 모양으로 던진다 */
+function badRequest(message: string): never {
+  throw Object.assign(new Error(message), { statusCode: 400, statusMessage: message, data: { message, statusMessage: message } });
+}
 
 export const myInfoSvc = {
-  getProfile: () => $fetch<MyProfile>("/api/fo/ec/my/info", h()),
-  updateProfile: (body: Partial<MyProfile>) => $fetch<{ memberNm: string; memberPhone: string }>("/api/fo/ec/my/info", { ...h(), method: "PUT", body }),
-  changePassword: (currentPassword: string, newPassword: string) => $fetch<{ ok: boolean }>("/api/fo/ec/my/password", { ...h(), method: "POST", body: { currentPassword, newPassword } }),
+  /** GET /fo/ec/my/info — 내 프로필 */
+  getProfile: async (): Promise<MyProfile> => {
+    const m = (await axiosCsr.get<Record<string, unknown>>("/fo/ec/my/info", { headers: useAuthHeaders() })).data;
+    return {
+      memberId: m.memberId,
+      loginId: m.loginId,
+      memberNm: m.memberNm ?? "",
+      memberEmail: m.memberEmail ?? "",
+      memberPhone: m.memberPhone ?? "",
+      memberGender: m.memberGender ?? "",
+      birthDate: m.birthDate ? String(m.birthDate).slice(0, 10) : "",
+      memberZipCode: m.memberZipCode ?? "",
+      memberAddr: m.memberAddr ?? "",
+      memberAddrDetail: m.memberAddrDetail ?? "",
+    } as unknown as MyProfile;
+  },
+
+  /** PUT /fo/ec/my/info — 내 프로필 수정 (이름 필수, 성별은 M/F 만) */
+  updateProfile: async (body: Partial<MyProfile>): Promise<{ memberNm: string; memberPhone: string }> => {
+    const b = (body ?? {}) as Record<string, unknown>;
+    const memberNm = String(b.memberNm ?? "").trim();
+    if (!memberNm) badRequest("이름을 입력해 주세요.");
+    const payload = {
+      memberNm,
+      memberPhone: String(b.memberPhone ?? "").trim(),
+      memberGender: ["M", "F"].includes(String(b.memberGender)) ? String(b.memberGender) : "",
+      birthDate: b.birthDate ? String(b.birthDate).slice(0, 10) : null,
+      memberZipCode: String(b.memberZipCode ?? "").trim(),
+      memberAddr: String(b.memberAddr ?? "").trim(),
+      memberAddrDetail: String(b.memberAddrDetail ?? "").trim(),
+    };
+    const saved = (await axiosCsr.put<Record<string, unknown>>("/fo/ec/my/info", payload, { headers: useAuthHeaders() })).data;
+    return { memberNm: String(saved?.memberNm ?? payload.memberNm), memberPhone: String(saved?.memberPhone ?? payload.memberPhone) };
+  },
+
+  /** POST /fo/ec/my/password — 비밀번호 변경 (새 비밀번호 6자 이상) */
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ ok: boolean }> => {
+    if (!currentPassword) badRequest("현재 비밀번호를 입력해 주세요.");
+    if (String(newPassword ?? "").length < 6) badRequest("새 비밀번호는 6자 이상이어야 합니다.");
+    await axiosCsr.post("/fo/ec/my/password", { currentPassword, newPassword }, { headers: useAuthHeaders() });
+    return { ok: true };
+  },
 };

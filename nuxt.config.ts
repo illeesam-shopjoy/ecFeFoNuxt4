@@ -64,6 +64,9 @@ export default defineNuxtConfig({
     "/shop": { ssr: true }, // 상품 목록: SSR + SEO
     "/prod-dtl/**": { ssr: true }, // 상품 상세 (/:id): SSR + SEO
     "/blog-dtl/**": { ssr: true }, // 블로그 상세 (/:id): SSR + SEO
+    // id 없는 /prod-dtl, /blog-dtl 은 "목록 첫 건" 미리보기(SEO 대상 아님) — CSR(svc 직접 호출). 더 구체적인 규칙이 위 와일드카드보다 우선한다.
+    "/prod-dtl": { ssr: false },
+    "/blog-dtl": { ssr: false },
     // 옛 템플릿 쇼핑 변형 페이지(전체 상품을 받아 클라이언트 필터링) — 서버 페이징 /shop 으로 통합
     "/shop-right": { redirect: { to: "/shop", statusCode: 301 } },
     "/shop-3-col": { redirect: { to: "/shop", statusCode: 301 } },
@@ -123,6 +126,9 @@ export default defineNuxtConfig({
       // 필요할 때 직접 붙인다(app/conts/baseConst.ts의 CDN_URL과 동일 값, 그대로 재사용).
       prodCdnBase: CDN_URL,
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? "",
+      // 2026-09-20: 브라우저(CSR)가 ecBeBo 를 직접 호출하는 origin — app/utils/axiosCsr.ts 가 이 값 + "/api" 를 baseURL 로 쓴다.
+      // (SEO 단위화면의 SSR 만 server/api 를 거친다.) 비밀값 아님 — ecBeBo 는 CORS 로 브라우저 호출을 허용한다.
+      beBaseUrl: API_URL,
       // 2026-09-13 추가: 헤더 로고 아래 "현재 접속 중인 환경(prod/dev/local) + api/cdn 대상"
       // 표시용(EnvModeBadge.vue). 실제 서버 호출은 여전히 server/utils/beApi.ts(위 apiBaseUrl,
       // server-only)를 통해서만 이뤄지고, 이건 화면 표시 전용 미러 — 비밀값 아니라 노출 무해.
