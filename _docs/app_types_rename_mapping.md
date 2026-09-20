@@ -88,7 +88,7 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 | pd (상품) | pdProdType, pdProdSkuType, pdProdOptType, pdCategoryType, pdCategoryTreeType, pdReviewType |
 | od (주문) | odCartItemType, odOrderType, odOrderItemType, odDlivType, odClaimType |
 | mb (회원) | mbLikeItemType, mbMemberType, mbRegisterFormType |
-| sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syLoginFormType, syCheckoutLoginFormType |
+| sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syAlarmType(알람), syNotiType(알림함), syLoginFormType, syCheckoutLoginFormType |
 | cm (콘텐츠) | cmBlogType |
 | pm (프로모션) | pmCouponType, pmTimedealType, pmEventType, pmDiscntType, pmSaveType(적립금), pmVoucherType(상품권), pmGiftType(사은품) |
 | co (공통/전시 위젯) | coContactInfoItemType, coHeroSliderDataType(+Two/Three) |
@@ -96,6 +96,6 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 | (루트 유지) | chatTypes.ts, page.ts, image.d.ts, nuxt-app.d.ts — 접두사 규칙이 없거나 전역 선언 파일 |
 
 ### 백엔드 DTO에서 생성한 엔티티 타입 (2026-09-20)
-`od/odOrderType·odOrderItemType·odDlivType·odClaimType`, `pm/pmEventType·pmDiscntType·pmSaveType·pmVoucherType·pmGiftType` 는 ecBeBo `*Dto.Item` 의
+`od/odOrderType·odOrderItemType·odDlivType·odClaimType`, `pm/pmEventType·pmDiscntType·pmSaveType·pmVoucherType·pmGiftType`, `sy/syAlarmType·syNotiType` 는 ecBeBo `*Dto.Item` 의
 스칼라 필드(문자/숫자/일시)를 그대로 옮긴 타입이다(감사·조인 표시 필드 제외, 대부분 optional). 아직 화면에서 직접 쓰지 않고 이후 API 연동 시 `MyRow` 대신 쓰기 위한 정의다.
 - 쿠폰(pm_coupon)은 아직 API 가 없어 클라이언트 목업 `pmCouponType` 만 있다.
