@@ -79,9 +79,9 @@ export const useAuthStore = defineStore("auth", {
     },
 
     /** 회원가입 — ecBeBo FoAuthController.join() 직접 호출(authSvc) (가입만, 자동로그인은 안 함) */
-    async register(name: string, email: string, password: string): Promise<{ ok: boolean; message?: string }> {
+    async register(name: string, email: string, password: string, passVerifyId?: string): Promise<{ ok: boolean; message?: string }> {
       try {
-        await authSvc.join(name, email, password);
+        await authSvc.join(name, email, password, passVerifyId);
         return { ok: true };
       } catch (err: unknown) {
         const message = ((err as { response?: { data?: { message?: string } } })?.response?.data?.message

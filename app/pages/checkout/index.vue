@@ -197,6 +197,29 @@
                       </fo-grid>
                     </div>
 
+                    <!-- 비회원 결제: PASS 본인인증 (로그인 회원은 생략) -->
+                    <div v-if="!loggedIn" class="mb-4 rounded-lg border px-4 py-3 text-[0.88rem]" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
+                      <div class="flex items-center gap-2">
+                        <i class="fas" :class="idv ? 'fa-check-circle text-[#16a34a]' : 'fa-mobile-alt text-[#d97706]'"></i>
+                        <span class="font-semibold text-gray-800">비회원 결제 본인인증 (PASS)</span>
+                        <button
+                          v-if="!idv"
+                          type="button"
+                          class="ml-auto cursor-pointer rounded-md border-0 bg-[#111] px-3 py-1.5 text-[0.8rem] font-bold text-white disabled:opacity-60"
+                          :disabled="idvBusy"
+                          @click="startIdentity"
+                        >
+                          {{ idvBusy ? "인증 중..." : "PASS 본인인증" }}
+                        </button>
+                        <button v-else type="button" class="ml-auto cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="resetIdentity">다시 인증</button>
+                      </div>
+                      <p v-if="!idv" class="m-0 mt-1 text-[0.78rem] text-gray-500">비회원은 주문 전에 PASS 로 본인 확인을 해야 합니다. 인증한 이름·휴대폰이 주문 정보에 채워집니다.</p>
+                      <p v-else class="m-0 mt-1 text-[0.8rem] text-gray-700">
+                        인증 완료 · {{ maskName(idv.name) }} · {{ maskPhone(idv.phoneNumber) }}
+                      </p>
+                      <p v-if="idvError" class="m-0 mt-1 whitespace-pre-line text-[0.78rem] text-red-500">{{ idvError }}</p>
+                    </div>
+
                     <!-- 캐시(적립금): 보유 캐시를 최대로 쓸지 선택 -->
                     <div v-if="loggedIn" class="mb-4 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-4 py-3 text-[0.88rem]">
                       <label class="m-0 flex cursor-pointer items-center gap-2" :class="cashBalance <= 0 ? 'cursor-not-allowed opacity-60' : ''">
@@ -264,6 +287,9 @@ import type { SyCheckoutLoginFormType } from "~/types/sy/syCheckoutLoginFormType
 import type { AppliedCoupons, CouponCategory, PmCouponApplyType } from "~/types/pm/pmCouponApplyType";
 import { COUPON_CATEGORIES, COUPON_CATEGORY_LABEL, calcCheckout, couponBases, couponBlockReason, pickBestCoupon, toApplyCoupon, todayYmd } from "~/utils/mapCoupon";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
+import { identitySvc } from "~/svc/co/identity/identitySvc";
+import type { MbIdentityVerifyType } from "~/types/mb/mbIdentityVerifyType";
+import { maskName, maskPhone, usePassIdentity } from "~/composables/usePassIdentity";
 import type { OdTossPaymentsFactoryType, OdTossWidgetsType } from "~/types/od/odTossType";
 
 const state = useCartStore();
@@ -443,6 +469,48 @@ function removeCoupon(category: CouponCategory) {
   appliedCoupons[category] = null;
 }
 
+// ── 비회원 본인인증(PASS, 포트원 V2) — 공용 composable(usePassIdentity) ───────────
+const pass = usePassIdentity();
+const idvBusy = pass.busy;
+const idvError = pass.error;
+const idv = ref<MbIdentityVerifyType | null>(null);
+
+function applyIdentity(v: MbIdentityVerifyType) {
+  idv.value = v;
+  // 인증된 실명/휴대폰을 주문 정보에 채운다(한글 3~4자는 성/이름 분리)
+  const koreanFull = /^[가-힣]{3,4}$/.test(v.name);
+  billingForm.lastName = koreanFull ? v.name.slice(0, 1) : billingForm.lastName || "-";
+  billingForm.name = koreanFull ? v.name.slice(1) : v.name;
+  billingForm.phone = v.phoneNumber;
+  try {
+    sessionStorage.setItem("checkout_idv", JSON.stringify(v));
+  } catch {
+    /* 저장소를 못 써도 진행 */
+  }
+}
+function resetIdentity() {
+  idv.value = null;
+  idvError.value = "";
+  try {
+    sessionStorage.removeItem("checkout_idv");
+  } catch {
+    /* 무시 */
+  }
+}
+async function startIdentity() {
+  const v = await pass.start();
+  if (v) applyIdentity(v);
+}
+onMounted(() => {
+  // 새로고침해도 인증 결과 유지(같은 탭 동안)
+  try {
+    const raw = sessionStorage.getItem("checkout_idv");
+    if (raw && !useAuthStore().isStLoggedIn) applyIdentity(JSON.parse(raw));
+  } catch {
+    /* 무시 */
+  }
+});
+
 // 로그인 회원이면 내 쿠폰과 보유 캐시를 불러온다
 onMounted(async () => {
   const authStore = useAuthStore();
@@ -583,6 +651,12 @@ watch(orderTotalRef, initTossWidgets);
 // 결제 제출(옛 CheckoutArea) — 위젯에서 고른 결제수단으로 결제창을 연다. 성공/실패는 successUrl/failUrl(/checkout/success, /checkout/fail)로 돌아온다
 async function handleFormSubmit() {
   if (import.meta.server) return;
+  // 비회원은 PASS 본인인증을 마쳐야 주문할 수 있다
+  if (!loggedIn.value && !idv.value) {
+    await useAlert().openAlert({ title: "본인인증 필요", variant: "warning", message: "비회원 결제는 PASS 본인인증 후 진행할 수 있습니다.\n'PASS 본인인증' 버튼을 눌러 인증해 주세요." });
+    document.querySelector(".your-order")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
   const total = orderTotalRef.value;
   if (total < TOSS_MIN_AMOUNT) {
     await useAlert().openAlert({ title: "주문 금액 확인", variant: "warning", message: `결제 금액이 ${TOSS_MIN_AMOUNT}원 이상이어야 주문할 수 있습니다.
@@ -596,7 +670,7 @@ async function handleFormSubmit() {
   }
   // 결제 성공 페이지가 주문 생성에 쓸 값(적용 쿠폰/상품합계/캐시) — 주문은 쿠폰 1개만 받으므로 주문 → 상품 → 배송비 순으로 첫 번째를 보낸다
   try {
-    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? appliedCoupons.product ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value }));
+    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? appliedCoupons.product ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value, idvId: idv.value?.identityVerificationId }));
   } catch {
     /* 저장소를 못 써도 결제는 진행 */
   }

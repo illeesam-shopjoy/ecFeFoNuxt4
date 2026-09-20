@@ -23,6 +23,8 @@ export interface MbMemberType {
   memberAddrDetail?: string; // 상세주소
   memberMemo?: string; // 메모
   siteId?: string; // 사이트ID
+  passVerifiedYn?: string; // PASS 본인인증 여부 Y/N
+  passVerifiedDate?: string; // PASS 본인인증 일시
   addrs?: MbMemberAddrType[]; // 배송지 목록
   // ── 공통(감사) 컬럼 ──
   regBy?: string; // 등록자 (reg_by)

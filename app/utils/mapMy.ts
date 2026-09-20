@@ -22,12 +22,12 @@ export const mapLoginRes = (r: SyLoginResType): SyLoginSessionType => ({
   user: { memberId: r.memberId, userNm: r.userNm, userEmail: r.userEmail, userPhone: r.userPhone, siteId: r.siteId },
 });
 /** 회원가입 본문 — loginPwdHash 필드에 평문을 담는다(ecBeBo 가 그 자리에서 encode) */
-export function buildJoinPayload(name: string, email: string, password: string): { memberNm: string; loginId: string; loginPwdHash: string } {
+export function buildJoinPayload(name: string, email: string, password: string, passVerifyId?: string): { memberNm: string; loginId: string; loginPwdHash: string; passVerifyId?: string } {
   const memberNm = String(name ?? "").trim();
   const loginId = String(email ?? "").trim();
   const loginPwdHash = String(password ?? "");
   if (!memberNm || !loginId || !loginPwdHash) badRequest("이름, 이메일, 비밀번호를 모두 입력해 주세요.");
-  return { memberNm, loginId, loginPwdHash };
+  return { memberNm, loginId, loginPwdHash, ...(passVerifyId ? { passVerifyId } : {}) };
 }
 
 // ── 내 정보 ──
@@ -42,6 +42,8 @@ export const mapProfile = (m: MbMemberType): MbMemberProfileType => ({
   memberZipCode: m.memberZipCode ?? "",
   memberAddr: m.memberAddr ?? "",
   memberAddrDetail: m.memberAddrDetail ?? "",
+  passVerifiedYn: m.passVerifiedYn ?? "N",
+  passVerifiedDate: m.passVerifiedDate,
 });
 /** PUT /fo/ec/my/info 본문 — 이름 필수, 성별은 M/F 만 */
 export function buildProfileUpdatePayload(body: Partial<MbMemberProfileType>) {

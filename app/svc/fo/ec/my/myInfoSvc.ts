@@ -23,6 +23,10 @@ export const myInfoSvc = {
     return csrPut<MbMemberType>(INFO, payload, authCfg()).then((saved) => mapProfileSaved(saved, payload));
   },
 
+  /** POST /fo/ec/my/info/pass-verify — PASS 본인인증 완료 반영(서버가 포트원에서 재확인) */
+  passVerify: (identityVerificationId: string): Promise<MbMemberProfileType> =>
+    csrPost<MbMemberType>(`${INFO}/pass-verify`, { identityVerificationId }, authCfg()).then(mapProfile),
+
   /** POST /fo/ec/my/password — 비밀번호 변경 (새 비밀번호 6자 이상) */
   changePassword: (currentPassword: string, newPassword: string): Promise<CoOkResType> =>
     csrPost("/fo/ec/my/password", buildPasswordPayload(currentPassword, newPassword), authCfg()).then(okRes),

@@ -82,6 +82,10 @@
                         <h4>{{ authStore.user?.userPhone ?? '-' }}</h4>
                       </div>
                       <div class="profile__info-item">
+                        <p>PASS 본인인증</p>
+                        <pass-verify-row :verified="pass.yn === 'Y'" :verified-date="pass.date" @verified="onPassVerified" />
+                      </div>
+                      <div class="profile__info-item">
                         <!-- ecBeBo 로그인 응답에 주소가 없음(mb_member.member_addr는 별도 회원상세 조회가 있어야 채워짐,
                              이번 전환 범위 밖) — 항상 '-' 표시. 회원 상세 프로필 조회 API가 생기면 그때 채울 것. -->
                         <p>주소</p>
@@ -142,6 +146,9 @@ import { useCartStore } from "~/store/useCartStore";
 import { useAuthStore } from "~/store/useAuthStore";
 import AppImage from "~/components/ui/AppImage.vue";
 import ProfileEditModal from "~/components/modals/ProfileEditModal.vue";
+import PassVerifyRow from "~/components/my/PassVerifyRow.vue";
+import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
+import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
 import FoGrid from "~/components/fo/FoGrid.vue";
 import FoForm from "~/components/fo/FoForm.vue";
 import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
@@ -178,6 +185,21 @@ const pwCols: FoFormColumn[] = [
   { key: "next", label: "새 비밀번호", type: "password", placeholder: "새 비밀번호" },
   { key: "next2", label: "비밀번호 확인", type: "password", placeholder: "비밀번호 확인" },
 ];
+// PASS 본인인증 여부 — 내 정보 조회로 채운다(로그인 응답에는 없음)
+const pass = reactive({ yn: "N", date: "" });
+function onPassVerified(profile: MbMemberProfileType) {
+  pass.yn = profile.passVerifiedYn ?? "Y";
+  pass.date = String(profile.passVerifiedDate ?? "");
+}
+onMounted(async () => {
+  authStore.loadStToken();
+  if (!authStore.isStLoggedIn) return;
+  try {
+    onPassVerified(await myInfoSvc.getProfile());
+  } catch {
+    /* 조회 실패 시 미인증으로 표시 */
+  }
+});
 const profileEditModalRef = ref<InstanceType<typeof ProfileEditModal> & { show(): void } | null>(null);
 const router = useRouter();
 

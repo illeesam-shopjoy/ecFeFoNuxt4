@@ -106,6 +106,10 @@ export default defineNuxtConfig({
     apiBaseUrl: API_URL,
     /** 토스페이먼츠 시크릿 키 (서버 전용, 결제 승인 API용) */
     tossPaymentsSecretKey: process.env.TOSSPAYMENTS_SECRET_KEY ?? "",
+    /** 본인인증(PASS) — 포트원(PortOne) V2 본인인증 API 시크릿 (서버 전용). 비회원 결제 전 PASS 인증 결과를 서버에서 검증한다. */
+    portoneApiSecret: process.env.PORTONE_API_SECRET ?? "",
+    /** 포트원 API 주소 (테스트용으로 바꿀 수 있음) */
+    portoneApiBase: process.env.PORTONE_API_BASE ?? "https://api.portone.io",
     /** 소셜 로그인 (서버 전용) */
     googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
@@ -139,6 +143,9 @@ export default defineNuxtConfig({
       appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */
       tossPaymentClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY ?? "",
+      /** 포트원 스토어 ID / 본인인증(PASS) 채널 키 — 인증창 호출용(공개 값) */
+      portoneStoreId: process.env.NUXT_PUBLIC_PORTONE_STORE_ID ?? "",
+      portoneIdvChannelKey: process.env.NUXT_PUBLIC_PORTONE_IDV_CHANNEL_KEY ?? "",
       /** Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비어 있으면 스크립트 미로드 */
       gaMeasurementId: process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID ?? "",
       // 2026-09-14(요청사항: "env 값 수정하며 ... 맵연결 등 확인하려는거야") — 지도 위젯은

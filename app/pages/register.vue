@@ -11,6 +11,17 @@
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
               <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="handleBtnAction('form-submit')">
                 <template #actions>
+                <!-- PASS 본인인증 여부 — 가입 전에 인증하면 가입 회원정보에 "인증 완료"로 저장된다(선택). 서버가 가입 시 한 번 더 확인한다. -->
+                <div class="mb-10 rounded-lg border px-3 py-2.5 text-[0.85rem]" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
+                  <div class="flex items-center gap-2">
+                    <i class="fas" :class="idv ? 'fa-check-circle text-[#16a34a]' : 'fa-mobile-alt text-[#d97706]'"></i>
+                    <span class="font-semibold text-gray-800">PASS 본인인증</span>
+                    <span v-if="idv" class="text-[#15803d]">인증 완료 · {{ maskName(idv.name) }} · {{ maskPhone(idv.phoneNumber) }}</span>
+                    <span v-else class="text-gray-500">미인증 (선택)</span>
+                    <button v-if="!idv" type="button" class="ml-auto cursor-pointer rounded-md border-0 bg-[#111] px-3 py-1.5 text-[0.8rem] font-bold text-white disabled:opacity-60" :disabled="passBusy" @click="handleBtnAction('pass-verify')">{{ passBusy ? "인증 중..." : "PASS 인증하기" }}</button>
+                    <button v-else type="button" class="ml-auto cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="idv = null">다시 인증</button>
+                  </div>
+                </div>
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
                 <div class="mt-10"></div>
@@ -71,6 +82,8 @@ import * as yup from "yup";
 import type { MbRegisterFormType } from "~/types/mb/mbRegisterFormType";
 import { useAuthStore } from "~/store/useAuthStore";
 import { useRouter } from "vue-router";
+import { maskName, maskPhone, usePassIdentity } from "~/composables/usePassIdentity";
+import type { MbIdentityVerifyType } from "~/types/mb/mbIdentityVerifyType";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -82,6 +95,17 @@ const authStore = useAuthStore();
 const router = useRouter();
 const errorMsg = ref("");
 const loading = ref(false);
+
+// PASS 본인인증(선택) — 인증하면 이름을 인증된 실명으로 채우고, 가입 요청에 인증 건 ID 를 함께 보낸다(서버가 재확인해 "인증 완료"로 저장)
+const pass = usePassIdentity();
+const passBusy = pass.busy;
+const idv = ref<MbIdentityVerifyType | null>(null);
+async function runPass() {
+  const v = await pass.start();
+  if (!v) return;
+  idv.value = v;
+  form.name = v.name;
+}
 
 const schema = yup.object({
   name: yup.string().required("이름을 입력해 주세요").label("이름"),
@@ -102,10 +126,11 @@ async function onSubmit() {
   const { name, email, password } = form as unknown as MbRegisterFormType;
   loading.value = true;
   errorMsg.value = "";
-  const result = await authStore.register(name, email, password);
+  const result = await authStore.register(name, email, password, idv.value?.identityVerificationId);
   loading.value = false;
   if (result.ok) {
     Object.assign(form, { name: "", email: "", password: "" });
+    idv.value = null;
     await useAlert().openAlert("가입이 완료되었습니다. 로그인해 주세요.");
     router.push("/login");
   } else {
@@ -119,6 +144,8 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
   // 회원가입 (검증 → authStore.register)
   if (cmd === "form-submit") {
     return onSubmit();
+  } else if (cmd === "pass-verify") {
+    return runPass();
   } else {
     console.warn("[handleBtnAction] unknown cmd:", cmd);
   }

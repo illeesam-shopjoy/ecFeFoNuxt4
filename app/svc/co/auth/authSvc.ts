@@ -17,7 +17,8 @@ export const authSvc = {
   login: (email: string, password: string): Promise<SyLoginSessionType> => csrPost<SyLoginResType>("/co/fo-auth/login", buildLoginPayload(email, password)).then(mapLoginRes),
 
   /** POST /co/fo-auth/join — 회원가입(자동 로그인 안 함) */
-  join: (name: string, email: string, password: string): Promise<SyJoinResType> => csrPost<SyJoinResType>("/co/fo-auth/join", buildJoinPayload(name, email, password)),
+  join: (name: string, email: string, password: string, passVerifyId?: string): Promise<SyJoinResType> =>
+    csrPost<SyJoinResType>("/co/fo-auth/join", buildJoinPayload(name, email, password, passVerifyId)),
 
   /** POST /co/fo-auth/token-refresh — 만료된 accessToken 으로 새 토큰 발급 */
   refresh: (accessToken: string): Promise<SyTokenPairType> => csrPost<SyTokenPairType>("/co/fo-auth/token-refresh", undefined, bearer(accessToken)),

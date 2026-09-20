@@ -11,6 +11,7 @@
           <div class="text-[0.8rem] text-gray-400 mt-1">회원 정보를 수정하세요</div>
         </div>
 
+        <pass-verify-row v-if="!loading" class="mb-4" :verified="f.passVerifiedYn === 'Y'" :verified-date="f.passVerifiedDate" @verified="onPassVerified" />
         <div v-if="loading" class="py-10 text-center text-gray-400 text-[0.9rem]">불러오는 중...</div>
         <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체(주소/성별은 슬롯) -->
         <fo-form v-else :columns="formCols" :form="f" :cols="2" :gap="12" min-col-width="140px" @submit="handleBtnAction('form-save')">
@@ -71,6 +72,8 @@ import AddrSearchModal from "~/components/modals/AddrSearchModal.vue";
 import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 import FoForm from "~/components/fo/FoForm.vue";
 import type { FoFormColumn } from "~/types/fo/foCompType";
+import PassVerifyRow from "~/components/my/PassVerifyRow.vue";
+import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import { useAuthStore } from "~/store/useAuthStore";
 
@@ -96,6 +99,8 @@ const f = reactive({
   memberPhone: "",
   memberGender: "",
   birthDate: "",
+  passVerifiedYn: "N",
+  passVerifiedDate: "",
   memberZipCode: "",
   memberAddr: "",
   memberAddrDetail: "",
@@ -109,6 +114,12 @@ const formCols: FoFormColumn[] = [
   { key: "birthDate", label: "생년월일", type: "date" },
   { key: "gender", type: "slot" },
 ];
+
+function onPassVerified(profile: MbMemberProfileType) {
+  f.passVerifiedYn = profile.passVerifiedYn ?? "Y";
+  f.passVerifiedDate = String(profile.passVerifiedDate ?? "");
+  emit("saved");
+}
 
 function errMsg(e: unknown, fallback: string): string {
   const x = e as { data?: { statusMessage?: string; message?: string }; statusMessage?: string; message?: string };
