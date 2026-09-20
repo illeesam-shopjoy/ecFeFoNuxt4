@@ -4,16 +4,10 @@
  * 업로드는 항상 "미연계" 상태로 이뤄지고, 실제 연계(sy_attach ref)는 부모 저장 요청의 attachFiles({attachId,rowStatus:'I'}) 로 반영된다.
  */
 import { axiosCsr } from "~/utils/axiosCsr";
+import type { SyAttachType } from "~/types/sy/syAttachType";
 
-export interface UploadedFile {
-  attachId: string;
-  originalName: string;
-  fileSize: number;
-  fileExt: string;
-  filePath?: string;
-  cdnImgUrl?: string;
-  thumbCdnUrl?: string;
-}
+/** 업로드 응답의 파일 1건 — sy_attach 컬럼(SyAttachType) 일부 + 응답 전용 originalName/filePath */
+export type UploadedFile = Pick<SyAttachType, "attachId" | "fileExt" | "fileSize" | "cdnImgUrl" | "thumbCdnUrl" | "storagePath" | "thumbGeneratedYn"> & { originalName: string; filePath?: string };
 export interface UploadMultiResult {
   attachIds?: string[];
   files?: UploadedFile[];

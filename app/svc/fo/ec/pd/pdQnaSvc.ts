@@ -5,7 +5,7 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
-import type { AttachChange } from "~/svc/fo/ec/pd/pdReviewSvc";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 
 /** 백엔드 검증 실패 메시지를 소비처(e.data.message / e.message)가 그대로 읽도록 던진다 */
 function badRequest(message: string): never {
@@ -14,7 +14,7 @@ function badRequest(message: string): never {
 
 export const pdQnaSvc = {
   /** POST /fo/ec/pd/qna — Q&A 등록. 제목은 내용 앞부분으로 서버가 만든다 */
-  create: async (body: { prodId: string; content: string; writerNm?: string; writerPwd?: string; scrtYn?: "Y" | "N"; attachFiles?: AttachChange[] }): Promise<{ id: string }> => {
+  create: async (body: { prodId: string; content: string; writerNm?: string; writerPwd?: string; scrtYn?: "Y" | "N"; attachFiles?: SyAttachChangeType[] }): Promise<{ id: string }> => {
     const prodQnaContent = String(body.content ?? "").trim();
     if (!body.prodId) badRequest("상품 ID가 필요합니다.");
     if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
@@ -28,7 +28,7 @@ export const pdQnaSvc = {
   },
 
   /** PUT /fo/ec/pd/qna/{id} — Q&A 수정(작성자만) */
-  update: async (qnaId: string, body: { content: string; writerPwd?: string; attachFiles?: AttachChange[] }): Promise<void> => {
+  update: async (qnaId: string, body: { content: string; writerPwd?: string; attachFiles?: SyAttachChangeType[] }): Promise<void> => {
     const prodQnaContent = String(body.content ?? "").trim();
     if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
     const payload: Record<string, unknown> = { prodQnaContent };

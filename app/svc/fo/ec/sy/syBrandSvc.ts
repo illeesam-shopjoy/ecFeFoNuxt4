@@ -6,16 +6,10 @@
 import { axiosCsr } from "~/utils/axiosCsr";
 import type { SyBrandType } from "~/types/sy/syBrandType";
 
-interface BeBrand {
-  brandId: string;
-  brandCode?: string | null;
-  brandNm: string;
-}
-
 export const syBrandSvc = {
   /** GET /fo/ec/sy/brand — 사용 중 브랜드 목록. 상품 필터(brandIds)가 brandId 를 받으므로 brandCode 에도 brandId 를 담는다(기존 동작 유지) */
   getBrands: async (): Promise<SyBrandType[]> => {
-    const rows = (await axiosCsr.get<BeBrand[]>("/fo/ec/sy/brand")).data ?? [];
+    const rows = (await axiosCsr.get<SyBrandType[]>("/fo/ec/sy/brand")).data ?? [];
     return rows.map((b) => ({ brandId: b.brandId, brandCode: b.brandId, brandNm: b.brandNm }));
   },
 };

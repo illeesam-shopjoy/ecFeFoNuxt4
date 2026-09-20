@@ -4,19 +4,9 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
-
-export interface MbMemberAddrItem {
-  memberAddrId: string;
-  addrNm?: string;
-  recvNm?: string;
-  recvPhone?: string;
-  zipCode?: string;
-  addr?: string;
-  addrDetail?: string;
-  defaultYn?: "Y" | "N" | string;
-}
+import type { MbMemberAddrType } from "~/types/mb/mbMemberAddrType";
 
 export const myAddrSvc = {
   /** GET /fo/ec/my/addr — 내 배송지 목록 */
-  getMyAddrs: async (): Promise<MbMemberAddrItem[]> => (await axiosCsr.get<MbMemberAddrItem[]>("/fo/ec/my/addr", { headers: useAuthHeaders() })).data ?? [],
+  getMyAddrs: async (): Promise<MbMemberAddrType[]> => (await axiosCsr.get<MbMemberAddrType[]>("/fo/ec/my/addr", { headers: useAuthHeaders() })).data ?? [],
 };

@@ -49,13 +49,13 @@ import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
 import { isImageExt, isVideoExt } from "~/utils/mapProduct";
 import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
 import type { SyAttachType } from "~/types/sy/syAttachType";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 
-export interface AttachChange { attachId: string; rowStatus: "I" | "D" }
 interface AttachRow { attachId: string; name: string; size: number; thumb?: string; isVideo: boolean; existing: boolean }
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: AttachChange[];
+    modelValue?: SyAttachChangeType[];
     grpCode?: string;
     title?: string;
     showGrp?: boolean;
@@ -82,7 +82,7 @@ const props = withDefaults(
     etcMaxMb: 10,
   }
 );
-const emit = defineEmits<{ (e: "update:modelValue", v: AttachChange[]): void }>();
+const emit = defineEmits<{ (e: "update:modelValue", v: SyAttachChangeType[]): void }>();
 
 const cdnBase = useRuntimeConfig().public.prodCdnBase as string;
 const picker = ref<HTMLInputElement | null>(null);

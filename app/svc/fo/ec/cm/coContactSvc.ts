@@ -4,6 +4,7 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 
 export interface ContactSubmitBody {
   inquiryType?: string;
@@ -15,7 +16,7 @@ export interface ContactSubmitBody {
   message: string;
   blogAuthor?: string;
   /** 첨부 변경 목록: 이번에 올린 파일은 { attachId, rowStatus: 'I' } */
-  attachFiles?: { attachId: string; rowStatus: "I" | "D" }[];
+  attachFiles?: SyAttachChangeType[];
 }
 
 export const coContactSvc = {

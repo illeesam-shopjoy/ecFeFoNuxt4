@@ -25,7 +25,7 @@
               <template v-else>{{ q.prodQnaContent || q.prodQnaTitle }}</template>
             </div>
             <!-- 첨부: 이미지·동영상은 썸네일(누르면 뷰어), 그 외 파일은 링크 -->
-            <div v-if="q.scrtYn !== 'Y' && (q.files?.length ?? 0) > 0" class="mt-3 flex flex-col gap-2">
+            <div v-if="q.scrtYn !== 'Y' && (q.attachFiles?.length ?? 0) > 0" class="mt-3 flex flex-col gap-2">
               <div v-if="mediaOf(q).length" class="flex flex-wrap gap-1.5">
                 <button v-for="(m, i) in mediaOf(q)" :key="m.attachId" type="button" class="h-16 w-16 shrink-0 cursor-pointer overflow-hidden rounded border border-gray-200 bg-gray-100 p-0 hover:opacity-90" :title="m.fileNm" @click="openViewer(mediaOf(q), i)">
                   <img v-if="isImageExt(m.fileExt)" :src="m.thumbCdnUrl || m.cdnImgUrl" :alt="m.fileNm" class="h-full w-full object-cover" />
@@ -82,12 +82,14 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
-import { pdProductSvc, type PdQnaItem } from "~/svc/fo/ec/pd/pdProductSvc";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
+import type { PdProdQnaType } from "~/types/pd/pdProdQnaType";
 import { pdQnaSvc } from "~/svc/fo/ec/pd/pdQnaSvc";
 import { useAuthStore } from "~/store/useAuthStore";
 import { isImageExt, isVideoExt } from "~/utils/mapProduct";
 import type { SyAttachType } from "~/types/sy/syAttachType";
-import AttachUploader, { type AttachChange } from "~/components/ui/AttachUploader.vue";
+import AttachUploader from "~/components/ui/AttachUploader.vue";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
 
@@ -103,7 +105,7 @@ const myMemberId = computed(() => authStore.user?.memberId ?? "");
 const { $toast } = useNuxtApp();
 
 // SEO 대상이 아니라 서버 렌더에서는 뺀다 — 브라우저가 ecBeBo 를 직접 호출
-const { data, status, refresh } = useAsyncData<PdQnaItem[]>(`prod-qna-${props.prodId}`, () => pdProductSvc.getQna(props.prodId).catch(() => []), { default: () => [], lazy: true, server: false });
+const { data, status, refresh } = useAsyncData<PdProdQnaType[]>(`prod-qna-${props.prodId}`, () => pdProductSvc.getQna(props.prodId).catch(() => []), { default: () => [], lazy: true, server: false });
 const list = computed(() => data.value ?? []);
 // "불러오는 중"은 서버 렌더와 하이드레이션 시점의 상태(idle/pending)가 달라 pending 으로 판단하면 하이드레이션 불일치가 난다 —
 // 조회가 끝났는지(success/error)만 기준으로 삼으면 서버·브라우저 첫 렌더가 항상 같다(둘 다 "불러오는 중").
@@ -112,11 +114,11 @@ watch(list, (l) => emit("count", l.length), { immediate: true });
 
 const ymdDot = (v?: string | null) => (v ? String(v).slice(0, 10).replace(/-/g, ".") : "");
 const fmtSize = (n: number) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(n / 1024))}KB`);
-const writerLabel = (q: PdQnaItem) => q.writerNm || (q.memberId ? q.memberId.slice(0, 1) + "**" : "비회원");
+const writerLabel = (q: PdProdQnaType) => q.writerNm || (q.memberId ? q.memberId.slice(0, 1) + "**" : "비회원");
 // 회원 글은 본인만, 비회원 글(memberId 없음)은 누구에게나 버튼을 보이고 글 비밀번호로 서버가 판정한다
-const canModify = (q: PdQnaItem) => !q.memberId || (isLoggedIn.value && q.memberId === myMemberId.value);
-const mediaOf = (q: PdQnaItem) => (q.files ?? []).filter((f) => f.cdnImgUrl && (isImageExt(f.fileExt) || isVideoExt(f.fileExt)));
-const otherFilesOf = (q: PdQnaItem) => (q.files ?? []).filter((f) => f.cdnImgUrl && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
+const canModify = (q: PdProdQnaType) => !q.memberId || (isLoggedIn.value && q.memberId === myMemberId.value);
+const mediaOf = (q: PdProdQnaType) => (q.attachFiles ?? []).filter((f) => f.cdnImgUrl && (isImageExt(f.fileExt) || isVideoExt(f.fileExt)));
+const otherFilesOf = (q: PdProdQnaType) => (q.attachFiles ?? []).filter((f) => f.cdnImgUrl && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
 
 // ── 미디어 뷰어 ──
 const viewerOpen = ref(false);
@@ -134,7 +136,7 @@ const pwdModal = ref<InstanceType<typeof WriterPwdModal> | null>(null);
 const writerNm = ref("");
 const writerPwd = ref("");
 const content = ref("");
-const attachChanges = ref<AttachChange[]>([]);
+const attachChanges = ref<SyAttachChangeType[]>([]);
 const editingId = ref<string | null>(null);
 const editingFiles = ref<SyAttachType[]>([]);
 const saving = ref(false);
@@ -155,10 +157,10 @@ function resetForm() {
   editingFiles.value = [];
   formError.value = "";
 }
-function startEdit(q: PdQnaItem) {
+function startEdit(q: PdProdQnaType) {
   editingId.value = q.prodQnaId;
   content.value = q.prodQnaContent ?? "";
-  editingFiles.value = q.files ?? [];
+  editingFiles.value = q.attachFiles ?? [];
   attachChanges.value = [];
   formError.value = "";
   nextTick(() => formEl.value?.scrollIntoView({ behavior: "smooth", block: "center" }));
@@ -201,7 +203,7 @@ async function submit() {
   }
 }
 
-async function remove(q: PdQnaItem) {
+async function remove(q: PdProdQnaType) {
   const ok = await useConfirm().openConfirm({ title: "삭제 확인", message: "이 Q&A를 삭제할까요?", confirmText: "삭제", cancelText: "취소", variant: "danger" });
   if (!ok) return;
   let pwd: string | undefined;

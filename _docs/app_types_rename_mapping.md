@@ -85,14 +85,14 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 
 | 폴더 | 파일 |
 |---|---|
-| pd (상품) | pdProdType, pdProdSkuType, pdProdOptType, pdCategoryType, pdCategoryTreeType, pdCategoryProdType(카테고리-상품 연결), pdReviewType |
+| pd (상품) | pdProdType, pdProdSkuType, pdProdOptType, pdCategoryType, pdCategoryTreeType, pdCategoryProdType(카테고리-상품 연결), pdProdQnaType(상품 Q&A), pdReviewType |
 | od (주문) | odCartItemType, odOrderType, odOrderItemType, odDlivType, odClaimType, odPayType(결제, `OdOrderType.orderPays`) |
-| mb (회원) | mbLikeItemType, mbMemberType, mbRegisterFormType |
-| sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syBbmType(게시판 마스터·`bbss`), syBbsType(게시글), syAlarmType(알람), syNotiType(알림함), syNoticeType(공지), syI18nType(다국어), syVendorType(업체), sySiteType(사이트), syLoginFormType, syCheckoutLoginFormType |
+| mb (회원) | mbLikeItemType, mbMemberAddrType(배송지), mbMemberType, mbRegisterFormType |
+| sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syAttachChangeType(첨부 저장 변경 I/D), syPathType(표시경로), syBbmType(게시판 마스터·`bbss`), syBbsType(게시글), syAlarmType(알람), syNotiType(알림함), syNoticeType(공지), syI18nType(다국어), syVendorType(업체), sySiteType(사이트), syLoginFormType, syCheckoutLoginFormType |
 | cm (콘텐츠/채팅) | cmBlogType, cmFaqType(FAQ), cmChattType(채팅방), cmChattMemberType(참여자), cmChattMsgType(메시지) — `chattMembers/chattMsgs` 로 참조 |
-| pm (프로모션) | pmCouponType, pmTimedealType, pmEventType, pmDiscntType, pmSaveType(적립금), pmVoucherType(상품권), pmGiftType(사은품) |
+| pm (프로모션) | pmCouponType, pmTimedealType, pmEventType(+pmEventBenefitType/pmEventItemType), pmDiscntType, pmSaveType(적립금), pmVoucherType(상품권), pmGiftType(사은품) |
 | dp (전시) | dpUiType(dp_ui) → dpAreaType(dp_area) → dpPanelType(dp_panel) → dpPanelItemType(dp_panel_item) → dpWidgetLibType(dp_widget_lib) → dpWidgetType(dp_widget) — FK 로 서로 참조(`areas/panels/panelItems/widgetLib/widgets`) |
-| co (공통/전시 위젯 JSON) | coContactInfoItemType, coHeroSliderDataType(+Two/Three) |
+| co (공통/전시 위젯 JSON) | coBasePageType(페이징 응답 공통),  coContactInfoItemType, coHeroSliderDataType(+Two/Three) |
 | fo (FO 화면 공통) | foCompType, foMyType |
 | (루트 유지) | chatTypes.ts, page.ts, image.d.ts, nuxt-app.d.ts — 접두사 규칙이 없거나 전역 선언 파일 |
 
@@ -119,3 +119,10 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 ### svc 통합 (2026-09-20)
 `app/svcServer/` 를 `app/svc/co/` 로 합쳤다: `svc/co/payments/paymentSvc.ts`(토스 결제 승인, server/api 경유), `svc/co/dev/envSvc.ts`(개발용 env 편집, server/api 경유).
 이 둘만 axiosCsr 가 아니라 `$fetch(/api/...)` 를 쓰는 예외다(서버 시크릿/파일시스템 접근 필요).
+
+### svc 로컬 타입 → types 재사용 (2026-09-20)
+`app/svc/**` 안에서 따로 정의하던 응답 타입을 `app/types` 의 테이블 타입으로 바꿨다: BePage<T>/MyPageResult<T> → `CoBasePageType<T>`,
+BeCategory → PdCategoryType, BeBrand → SyBrandType, MbMemberAddrItem → MbMemberAddrType, PdQnaItem → PdProdQnaType(`attachFiles` = URL 보정된 SyAttachType[]),
+DpUiRow/DpAreaRow/DpPanelRow/DpAreaWidgetItem → DpUiType/DpAreaType/DpPanelType/DpPanelItemType, BeEventItem/BeEventDetail → PmEventType(+benefits/eventItems),
+BePathRow → SyPathType, BeFaqRow → Pick<CmFaqType>, AttachChange(중복 3곳) → SyAttachChangeType, UploadedFile → Pick<SyAttachType>.
+남긴 것(테이블이 아닌 요청 본문/화면 전용): MapKeys, DevEnv*, FoOrderCreate*, ContactSubmitBody, FaqTree*, PmEventCard/Detail(화면용 요약), *PagedResult, PdProductPageParams, WriteResult, BeLoginRes/BeTokenPair.

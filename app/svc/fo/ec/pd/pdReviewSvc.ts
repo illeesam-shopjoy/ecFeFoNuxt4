@@ -6,9 +6,7 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
-
-/** 첨부 변경 목록 — 이번에 올린 파일은 rowStatus:'I', 수정 시 지운 기존 파일은 'D' */
-export interface AttachChange { attachId: string; rowStatus: "I" | "D" }
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 
 interface WriteResult {
   success?: boolean;
@@ -27,7 +25,7 @@ export const pdReviewSvc = {
    * 백엔드가 reviewTitle 을 필수로 검증하는데("리뷰 제목을 입력해주세요") 작성 폼에는 제목 입력란이 없어서
    * 그동안 항상 400 으로 실패했다 — 제목을 안 주면 내용 앞부분(최대 30자)으로 자동 생성한다.
    */
-  createReview: async (body: { prodId: string; content: string; rating: number; reviewTitle?: string; writerNm?: string; writerPwd?: string; attachFiles?: AttachChange[] }): Promise<WriteResult> => {
+  createReview: async (body: { prodId: string; content: string; rating: number; reviewTitle?: string; writerNm?: string; writerPwd?: string; attachFiles?: SyAttachChangeType[] }): Promise<WriteResult> => {
     const reviewContent = String(body.content ?? "").trim();
     const rating = Number(body.rating);
     if (!body.prodId) badRequest("상품 ID가 필요합니다.");
@@ -43,7 +41,7 @@ export const pdReviewSvc = {
   },
 
   /** PUT /fo/ec/pd/review/{id} — 리뷰 수정(작성자만: 회원 본인 또는 비회원은 writerPwd 일치) */
-  updateReview: async (reviewId: string, body: { content: string; rating: number; writerPwd?: string; attachFiles?: AttachChange[] }): Promise<WriteResult> => {
+  updateReview: async (reviewId: string, body: { content: string; rating: number; writerPwd?: string; attachFiles?: SyAttachChangeType[] }): Promise<WriteResult> => {
     const reviewContent = String(body.content ?? "").trim();
     const rating = Number(body.rating);
     if (!reviewContent) badRequest("리뷰 내용을 입력해 주세요.");

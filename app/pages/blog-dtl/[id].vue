@@ -2,7 +2,7 @@
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <!-- 2026-09-20(요청사항: "블로그 상세 배너 있어야 하지 않어?") — 다른 상세 화면처럼 상단 배너 + 홈 / 블로그 목록 / 블로그 상세 -->
-    <breadcrumb-area title="블로그 상세" subtitle="블로그 상세" parent-title="블로그 목록" parent-link="/blog" />
+    <breadcrumb-area title="블로그 상세" subtitle="블로그 상세" parent-title="블로그 목록" parent-link="/blog" heading-tag="div" />
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
     <skeleton-blog-detail v-if="pending" />
 

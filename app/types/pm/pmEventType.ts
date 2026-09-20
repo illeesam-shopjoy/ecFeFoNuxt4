@@ -1,3 +1,6 @@
+import type { PmEventBenefitType } from "~/types/pm/pmEventBenefitType";
+import type { PmEventItemType } from "~/types/pm/pmEventItemType";
+
 /** 프로모션 이벤트. 필드명은 ecBeBo(JPA) PmEventDto.Item(pm_event) 기준 — 서버가 내려주는 값을 그대로 담는다(대부분 optional). */
 export interface PmEventType {
   eventId: string; // 이벤트ID (YYMMDDhhmmss+rand4)
@@ -23,6 +26,8 @@ export interface PmEventType {
   regDate?: string; // 등록일
   siteId?: string; // 사이트ID
   updDate?: string; // 수정일
+  benefits?: PmEventBenefitType[]; // 이벤트 혜택 (pm_event_benefit)
+  eventItems?: PmEventItemType[]; // 이벤트 대상 항목 (pm_event_item)
   // ── 공통(감사) 컬럼 ──
   regBy?: string; // 등록자 (reg_by)
   regByNm?: string; // 등록자명 (reg_by_nm)

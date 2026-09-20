@@ -4,22 +4,12 @@
  * 히어로슬라이더/브랜드로고/푸터 링크 등 하드코딩이던 것들이 이 API 로 내려온다([[ecfefonuxt4-dp-widget-migration]]).
  */
 import { axiosCsr } from "~/utils/axiosCsr";
-
-export interface DpAreaWidgetItem {
-  panelItemId: string;
-  panelId: string;
-  widgetTypeCd?: string | null;
-  widgetTitle?: string | null;
-  widgetContent?: string | null;
-  /** 위젯 설정 JSON 문자열(화면별 스키마) — getFirstWidgetConfig 로 파싱해서 쓴다 */
-  widgetConfigJson?: string | null;
-  sortOrd?: number | null;
-}
+import type { DpPanelItemType } from "~/types/dp/dpPanelItemType";
 
 export const dpAreaSvc = {
   /** GET /fo/ec/dp/area/{areaCd} — 영역의 활성 위젯 아이템 목록 */
-  getActiveItems: async (areaCd: string): Promise<DpAreaWidgetItem[]> =>
-    (await axiosCsr.get<DpAreaWidgetItem[]>(`/fo/ec/dp/area/${encodeURIComponent(areaCd)}`)).data ?? [],
+  getActiveItems: async (areaCd: string): Promise<DpPanelItemType[]> =>
+    (await axiosCsr.get<DpPanelItemType[]>(`/fo/ec/dp/area/${encodeURIComponent(areaCd)}`)).data ?? [],
 
   /** 영역의 첫 위젯 config(JSON)를 파싱해서 반환. 미등록/조회실패/파싱실패는 null → 호출부가 기본값 폴백 */
   async getFirstWidgetConfig<T>(areaCd: string): Promise<T | null> {

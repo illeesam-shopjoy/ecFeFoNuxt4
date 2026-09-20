@@ -7,7 +7,8 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { mapAttachFiles, mapProduct, mapReview, type BeAttachFileItem, type BeProdItem, type BeReviewItem } from "~/utils/mapProduct";
-import type { SyAttachType } from "~/types/sy/syAttachType";
+import type { PdProdQnaType } from "~/types/pd/pdProdQnaType";
+import type { CoBasePageType } from "~/types/co/coBasePageType";
 import { beConfig } from "~/utils/beConfig";
 import { type PdProdType } from "~/types/pd/pdProdType";
 
@@ -36,28 +37,9 @@ export interface PdProductPageParams {
   keyword?: string;
 }
 
-interface BePage<T> {
-  pageList: T[];
-  pageTotalCount: number;
-  pageTotalPage: number;
-  pageNo: number;
-  pageSize: number;
-}
 
-/** 상품 Q&A 1건 (ecBeBo PdProdQnaDto.Item 중 화면에 쓰는 필드) */
-export interface PdQnaItem {
-  prodQnaId: string;
-  memberId?: string | null;
-  prodQnaTitle?: string | null;
-  prodQnaContent?: string | null;
-  scrtYn?: string | null; // 비밀글 Y/N
-  answYn?: string | null; // 답변여부 Y/N
-  answContent?: string | null;
-  regDate?: string | null;
-  writerNm?: string | null; // 비회원 작성자명
-  attachFiles?: BeAttachFileItem[] | null;
-  files?: SyAttachType[]; // attachFiles 를 화면용(CDN URL 보정)으로 변환한 값 — getQna 가 채운다
-}
+/** 서버 원본 Q&A — 첨부(attachFiles)가 아직 URL 보정 전인 AttachFile 형태 */
+type PdProdQnaRaw = Omit<PdProdQnaType, "attachFiles"> & { attachFiles?: BeAttachFileItem[] | null };
 
 interface BeReviewsResponse {
   summary: { avgRating?: number; reviewCount?: number };
@@ -78,7 +60,7 @@ export const pdProductSvc = {
       q.searchType = "prodNm";
       q.searchValue = params.keyword;
     }
-    const page = (await axiosCsr.get<BePage<BeProdItem>>("/fo/ec/pd/prod/page", { params: q })).data;
+    const page = (await axiosCsr.get<CoBasePageType<BeProdItem>>("/fo/ec/pd/prod/page", { params: q })).data;
     const base = beConfig.cdnBase;
     return {
       items: page.pageList.map((p) => mapProduct(p, base) as unknown as PdProdType),
@@ -91,9 +73,9 @@ export const pdProductSvc = {
   },
 
   /** GET /fo/ec/pd/prod/{id}/qna — 상품 Q&A 목록(조회 전용, 공개). 응답은 { qnaPage: { pageList } } */
-  getQna: async (id: string, pageSize = 20): Promise<PdQnaItem[]> => {
-    const r = (await axiosCsr.get<{ qnaPage?: { pageList?: PdQnaItem[] } }>(`/fo/ec/pd/prod/${encodeURIComponent(id)}/qna`, { params: { pageNo: 1, pageSize } })).data;
-    return (r?.qnaPage?.pageList ?? []).map((q) => ({ ...q, files: mapAttachFiles(q.attachFiles, beConfig.cdnBase) }));
+  getQna: async (id: string, pageSize = 20): Promise<PdProdQnaType[]> => {
+    const r = (await axiosCsr.get<{ qnaPage?: { pageList?: PdProdQnaRaw[] } }>(`/fo/ec/pd/prod/${encodeURIComponent(id)}/qna`, { params: { pageNo: 1, pageSize } })).data;
+    return (r?.qnaPage?.pageList ?? []).map((q) => ({ ...q, attachFiles: mapAttachFiles(q.attachFiles as unknown as BeAttachFileItem[] | null, beConfig.cdnBase) }));
   },
 
   /** GET /fo/ec/pd/prod/{id} + /{id}/reviews — 상품 단건(리뷰·평점 병합). 리뷰 조회 실패는 빈 리뷰로 대체 */

@@ -31,23 +31,13 @@ export interface CategoryTreeResponse {
   categoryIdToDescendants: Record<string, string[]>;
 }
 
-interface BeCategory {
-  categoryId: string;
-  parentCategoryId?: string | null;
-  categoryNm: string;
-  categoryDepth?: number | null;
-  sortOrd?: number | null;
-  imgUrl?: string | null;
-  categoryDesc?: string | null;
-}
-
 // 카테고리 마스터에 배너 이미지가 없을 때 쓰는 CDN 배너(실존 파일 banner-sm-1~5) — 앞 카테고리부터 순서대로 배정.
 const BANNER_IMG_FILES = ["banner-sm-1.jpg", "banner-sm-2.jpg", "banner-sm-3.jpg", "banner-sm-4.jpg", "banner-sm-5.jpg"];
 
 export const pdCategorySvc = {
   /** GET /fo/ec/pd/category → 최상위 카테고리 최대 6개 + 각 하위 카테고리로 트리 조립 */
   getCategoryTree: async (): Promise<CategoryTreeResponse> => {
-    const rows = (await axiosCsr.get<BeCategory[]>("/fo/ec/pd/category")).data ?? [];
+    const rows = (await axiosCsr.get<PdCategoryType[]>("/fo/ec/pd/category")).data ?? [];
 
     const nameById: Record<string, string> = Object.fromEntries(rows.map((c) => [c.categoryId, c.categoryNm]));
     const childrenByParent = new Map<string, { id: string; name: string }[]>();

@@ -140,8 +140,11 @@
 import { reactive, ref, computed, onMounted } from "vue";
 import { CDN_URL } from "~/conts/baseConst";
 import { usePageTitle } from "~/composables/usePageTitle";
-import { dpAdminSvc, type DpUiRow, type DpAreaRow, type DpPanelRow } from "~/svc/fo/ec/dp/dpAdminSvc";
-import type { DpAreaWidgetItem } from "~/svc/fo/ec/dp/dpAreaSvc";
+import { dpAdminSvc } from "~/svc/fo/ec/dp/dpAdminSvc";
+import type { DpUiType } from "~/types/dp/dpUiType";
+import type { DpAreaType } from "~/types/dp/dpAreaType";
+import type { DpPanelType } from "~/types/dp/dpPanelType";
+import type { DpPanelItemType } from "~/types/dp/dpPanelItemType";
 import { useAuthStore } from "~/store/useAuthStore";
 
 definePageMeta({ layout: "admin" });
@@ -342,9 +345,9 @@ const slots: SlotDef[] = [
 const authStore = useAuthStore();
 const siteId = computed(() => authStore.user?.siteId ?? "");
 
-const uis = reactive<DpUiRow[]>([]);
-const areas = reactive<DpAreaRow[]>([]);
-const panels = reactive<DpPanelRow[]>([]);
+const uis = reactive<DpUiType[]>([]);
+const areas = reactive<DpAreaType[]>([]);
+const panels = reactive<DpPanelType[]>([]);
 const creatingUi = ref(false);
 const busy = ref(false);
 const expandedSlot = ref<string | null>(null);
@@ -354,15 +357,15 @@ const draftTitle = reactive<Record<string, string>>({});
 const draftActive = reactive<Record<string, boolean>>({});
 const draftDisp = reactive<Record<string, boolean>>({});
 
-function areaOf(areaCd: string): DpAreaRow | undefined {
+function areaOf(areaCd: string): DpAreaType | undefined {
   return areas.find((a) => a.areaCd === areaCd);
 }
-function panelOf(areaCd: string): DpPanelRow | undefined {
+function panelOf(areaCd: string): DpPanelType | undefined {
   const area = areaOf(areaCd);
   if (!area) return undefined;
   return panels.find((p) => p.areaId === area.areaId);
 }
-function itemOf(areaCd: string): DpAreaWidgetItem | undefined {
+function itemOf(areaCd: string): DpPanelItemType | undefined {
   return panelOf(areaCd)?.panelItems?.[0];
 }
 

@@ -5,53 +5,28 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
-import type { DpAreaWidgetItem } from "./dpAreaSvc";
-
-export interface DpUiRow {
-  uiId: string;
-  siteId: string;
-  uiCd: string;
-  uiNm: string;
-  useYn?: string | null;
-}
-
-export interface DpAreaRow {
-  areaId: string;
-  uiId: string;
-  areaCd: string;
-  areaNm: string;
-  areaTypeCd?: string | null;
-  areaDesc?: string | null;
-  useYn?: string | null;
-}
-
-export interface DpPanelRow {
-  panelId: string;
-  areaId: string;
-  panelNm: string;
-  panelTypeCd?: string | null;
-  dispPanelStatusCd?: string | null;
-  useYn?: string | null;
-  panelItems?: DpAreaWidgetItem[];
-}
+import type { DpUiType } from "~/types/dp/dpUiType";
+import type { DpAreaType } from "~/types/dp/dpAreaType";
+import type { DpPanelType } from "~/types/dp/dpPanelType";
+import type { DpPanelItemType } from "~/types/dp/dpPanelItemType";
 
 const auth = () => ({ headers: useAuthHeaders() });
 const BASE = "/fo/ec/dp/admin";
 
 export const dpAdminSvc = {
-  listUis: async (): Promise<DpUiRow[]> => (await axiosCsr.get<DpUiRow[]>(`${BASE}/ui`, auth())).data ?? [],
-  createUi: async (body: { siteId: string; uiCd: string; uiNm: string; useYn?: string }): Promise<DpUiRow> => (await axiosCsr.post<DpUiRow>(`${BASE}/ui`, body, auth())).data,
+  listUis: async (): Promise<DpUiType[]> => (await axiosCsr.get<DpUiType[]>(`${BASE}/ui`, auth())).data ?? [],
+  createUi: async (body: { siteId: string; uiCd: string; uiNm: string; useYn?: string }): Promise<DpUiType> => (await axiosCsr.post<DpUiType>(`${BASE}/ui`, body, auth())).data,
 
-  listAreas: async (): Promise<DpAreaRow[]> => (await axiosCsr.get<DpAreaRow[]>(`${BASE}/area`, auth())).data ?? [],
-  createArea: async (body: { uiId: string; siteId: string; areaCd: string; areaNm: string; useYn?: string }): Promise<DpAreaRow> =>
-    (await axiosCsr.post<DpAreaRow>(`${BASE}/area`, body, auth())).data,
+  listAreas: async (): Promise<DpAreaType[]> => (await axiosCsr.get<DpAreaType[]>(`${BASE}/area`, auth())).data ?? [],
+  createArea: async (body: { uiId: string; siteId: string; areaCd: string; areaNm: string; useYn?: string }): Promise<DpAreaType> =>
+    (await axiosCsr.post<DpAreaType>(`${BASE}/area`, body, auth())).data,
 
-  listPanels: async (areaId?: string): Promise<DpPanelRow[]> => (await axiosCsr.get<DpPanelRow[]>(`${BASE}/panel`, { ...auth(), params: { areaId: areaId || undefined } })).data ?? [],
-  createPanel: async (body: { areaId: string; siteId: string; panelNm: string; panelTypeCd?: string; useYn?: string; dispPanelStatusCd?: string }): Promise<DpPanelRow> =>
-    (await axiosCsr.post<DpPanelRow>(`${BASE}/panel`, body, auth())).data,
+  listPanels: async (areaId?: string): Promise<DpPanelType[]> => (await axiosCsr.get<DpPanelType[]>(`${BASE}/panel`, { ...auth(), params: { areaId: areaId || undefined } })).data ?? [],
+  createPanel: async (body: { areaId: string; siteId: string; panelNm: string; panelTypeCd?: string; useYn?: string; dispPanelStatusCd?: string }): Promise<DpPanelType> =>
+    (await axiosCsr.post<DpPanelType>(`${BASE}/panel`, body, auth())).data,
 
-  listPanelItems: async (panelId: string): Promise<DpAreaWidgetItem[]> =>
-    (await axiosCsr.get<DpAreaWidgetItem[]>(`${BASE}/panel-item`, { ...auth(), params: { panelId: panelId || undefined } })).data ?? [],
+  listPanelItems: async (panelId: string): Promise<DpPanelItemType[]> =>
+    (await axiosCsr.get<DpPanelItemType[]>(`${BASE}/panel-item`, { ...auth(), params: { panelId: panelId || undefined } })).data ?? [],
   createPanelItem: async (body: {
     panelId: string;
     siteId: string;
@@ -62,9 +37,9 @@ export const dpAdminSvc = {
     sortOrd?: number;
     useYn?: string;
     dispYn?: string;
-  }): Promise<DpAreaWidgetItem> => (await axiosCsr.post<DpAreaWidgetItem>(`${BASE}/panel-item`, body, auth())).data,
-  updatePanelItem: async (id: string, body: Partial<DpAreaWidgetItem> & { useYn?: string; dispYn?: string }): Promise<DpAreaWidgetItem> =>
-    (await axiosCsr.put<DpAreaWidgetItem>(`${BASE}/panel-item/${encodeURIComponent(id)}`, body, auth())).data,
+  }): Promise<DpPanelItemType> => (await axiosCsr.post<DpPanelItemType>(`${BASE}/panel-item`, body, auth())).data,
+  updatePanelItem: async (id: string, body: Partial<DpPanelItemType> & { useYn?: string; dispYn?: string }): Promise<DpPanelItemType> =>
+    (await axiosCsr.put<DpPanelItemType>(`${BASE}/panel-item/${encodeURIComponent(id)}`, body, auth())).data,
   deletePanelItem: async (id: string): Promise<{ success: boolean }> => {
     await axiosCsr.delete(`${BASE}/panel-item/${encodeURIComponent(id)}`, auth());
     return { success: true };

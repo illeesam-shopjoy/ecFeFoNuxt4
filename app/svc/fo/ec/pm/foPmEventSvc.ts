@@ -4,6 +4,8 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import type { PmTimedealItemType } from "~/types/pm/pmTimedealType";
+import type { PmEventType } from "~/types/pm/pmEventType";
+import type { CoBasePageType } from "~/types/co/coBasePageType";
 
 /** 이벤트 목록 카드 1건 */
 export interface PmEventCardType {
@@ -38,36 +40,6 @@ export interface PmEventDetailType {
   eventItems: { id: string; targetType: string; targetId: string }[];
 }
 
-interface BePage<T> {
-  pageList: T[];
-  pageTotalCount: number;
-  pageTotalPage: number;
-  pageNo: number;
-  pageSize: number;
-}
-interface BeEventItem {
-  eventId: string;
-  eventNm?: string | null;
-  eventTitle?: string | null;
-  eventTypeCd?: string | null;
-  eventStatusCd?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  imgUrl?: string | null;
-}
-interface BeEventDetail {
-  eventId: string;
-  eventNm?: string | null;
-  eventTitle?: string | null;
-  eventTypeCd?: string | null;
-  eventDesc?: string | null;
-  eventContent?: string | null;
-  eventStatusCd?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  benefits?: { benefitNm?: string | null; benefitTypeCd?: string | null; benefitValue?: string | null; conditionDesc?: string | null }[] | null;
-  eventItems?: { eventItemId: string; targetTypeCd?: string | null; targetId?: string | null }[] | null;
-}
 
 const ymd = (v: string | null | undefined) => (v ?? "").toString().slice(0, 10);
 
@@ -84,7 +56,7 @@ export const foPmEventSvc = {
       q.searchValue = params.searchValue;
       q.searchType = "eventId,eventTitle";
     }
-    const page = (await axiosCsr.get<BePage<BeEventItem>>("/fo/ec/pm/event/page", { params: q })).data;
+    const page = (await axiosCsr.get<CoBasePageType<PmEventType>>("/fo/ec/pm/event/page", { params: q })).data;
     return {
       items: (page.pageList ?? []).map((e) => ({
         eventId: e.eventId,
@@ -104,7 +76,7 @@ export const foPmEventSvc = {
 
   /** GET /fo/ec/pm/event/{id} — 이벤트 상세 */
   getById: async (id: string): Promise<PmEventDetailType> => {
-    const d = (await axiosCsr.get<BeEventDetail>(`/fo/ec/pm/event/${encodeURIComponent(id)}`)).data;
+    const d = (await axiosCsr.get<PmEventType>(`/fo/ec/pm/event/${encodeURIComponent(id)}`)).data;
     return {
       eventId: d.eventId,
       title: d.eventTitle || d.eventNm || "",

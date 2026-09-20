@@ -4,6 +4,8 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import type { CmFaqType } from "~/types/cm/cmFaqType";
+import type { SyPathType } from "~/types/sy/syPathType";
+import type { CoBasePageType } from "~/types/co/coBasePageType";
 
 export interface FaqTreeNodeType {
   id: string;
@@ -25,35 +27,18 @@ export interface FaqPagedResult {
   pageTotalPage: number;
 }
 
-interface BePage<T> {
-  pageList: T[];
-  pageTotalCount: number;
-  pageTotalPage: number;
-  pageNo: number;
-  pageSize: number;
-}
-interface BePathRow {
-  pathId: string | number;
-  parentPathId: string | number | null;
-  pathLabel: string;
-  sortOrd?: number | null;
-}
-interface BeFaqRow {
-  faqId: string;
-  pathId: string | number | null;
-}
 
 export const coFaqSvc = {
   /** GET /co/sy/path/page(bizCd=cm_faq) + /fo/faq/list — 카테고리 경로 트리 + 경로별 FAQ 개수(하위 포함) */
   getTree: async (): Promise<FaqTreeType> => {
     const [pathPage, faqs] = await Promise.all([
-      axiosCsr.get<BePage<BePathRow>>("/co/sy/path/page", { params: { bizCd: "cm_faq", pageNo: 1, pageSize: 500 } }).then((r) => r.data),
-      axiosCsr.get<BeFaqRow[]>("/fo/faq/list").then((r) => r.data),
+      axiosCsr.get<CoBasePageType<SyPathType>>("/co/sy/path/page", { params: { bizCd: "cm_faq", pageNo: 1, pageSize: 500 } }).then((r) => r.data),
+      axiosCsr.get<Pick<CmFaqType, "faqId" | "pathId">[]>("/fo/faq/list").then((r) => r.data),
     ]);
     const rows = (pathPage.pageList ?? []).map((r) => ({
       id: String(r.pathId),
       parentId: r.parentPathId != null ? String(r.parentPathId) : null,
-      label: r.pathLabel,
+      label: r.pathLabel ?? "",
       sortOrd: r.sortOrd ?? 0,
     }));
     const faqPathIds = (faqs ?? []).map((f) => (f.pathId != null ? String(f.pathId) : ""));
@@ -104,7 +89,7 @@ export const coFaqSvc = {
   getPage: async (params: { pageNo: number; pageSize: number; pathId?: string | null }): Promise<FaqPagedResult> => {
     const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize };
     if (params.pathId) q.pathId = params.pathId;
-    const page = (await axiosCsr.get<BePage<CmFaqType>>("/fo/faq/page", { params: q })).data;
+    const page = (await axiosCsr.get<CoBasePageType<CmFaqType>>("/fo/faq/page", { params: q })).data;
     return {
       items: (page.pageList ?? []).map((f) => ({ ...f, viewCount: f.viewCount ?? 0, pathId: f.pathId != null ? String(f.pathId) : "", pathLabel: f.pathLabel ?? "" })),
       pageNo: page.pageNo,

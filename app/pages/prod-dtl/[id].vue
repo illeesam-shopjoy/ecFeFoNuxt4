@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="상품 상세" subtitle="상품 상세" parent-title="상품 목록" parent-link="/shop" />
+    <breadcrumb-area title="상품 상세" subtitle="상품 상세" parent-title="상품 목록" parent-link="/shop" heading-tag="div" />
 
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
     <skeleton-product-detail v-if="pending" />
@@ -318,7 +318,8 @@ import ProdQna from "~/components/prod-detail/ProdQna.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
-import { pdReviewSvc, type AttachChange } from "~/svc/fo/ec/pd/pdReviewSvc";
+import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import { useAuthStore } from "~/store/useAuthStore";
 import AttachUploader from "~/components/ui/AttachUploader.vue";
 import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
@@ -577,7 +578,7 @@ const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.
 const REVIEW_ATTACH_ACCEPT = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"];
 const guestNm = ref("");
 const guestPwd = ref("");
-const reviewAttachChanges = ref<AttachChange[]>([]);
+const reviewAttachChanges = ref<SyAttachChangeType[]>([]);
 const editingReviewId = ref<string | null>(null);
 const editingReviewFiles = ref<SyAttachType[]>([]);
 const reviewFormError = ref("");

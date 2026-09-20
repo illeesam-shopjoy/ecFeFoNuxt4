@@ -24,7 +24,8 @@
       <div class="row">
         <div class="col-xl-12">
           <div class="page__title-inner text-center">
-            <h1>{{ title }}</h1>
+            <!-- headingTag="div": 상세 화면은 글/상품 제목이 페이지의 유일한 <h1> 이어야 해서(SEO) 배너 제목은 h1 을 쓰지 않는다. 모양은 h1 과 동일하게 유지 -->
+            <component :is="headingTag" :class="headingTag === 'h1' ? '' : 'text-[36px] font-medium leading-[1.2] text-[#323232] mb-[25px] capitalize'">{{ title }}</component>
             <div class="page__title-breadcrumb">
               <nav aria-label="브레드크럼">
                 <ol class="breadcrumb justify-center">
@@ -57,8 +58,9 @@ withDefaults(
     /** 2026-09-20: 중간 단계(예: 홈 / 상품 목록 / 상품 상세) — 상세 화면에서 목록으로 돌아가는 링크 */
     parentTitle?: string;
     parentLink?: string;
+    headingTag?: "h1" | "div";
   }>(),
-  { compact: false }
+  { compact: false, headingTag: "h1" }
 );
 </script>
 

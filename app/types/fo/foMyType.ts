@@ -1,3 +1,4 @@
+import type { CoBasePageType } from "~/types/co/coBasePageType";
 /**
  * foMyType.ts — FO 마이페이지(주문/클레임/쿠폰/캐쉬/문의/채팅/알림) API 공통 타입 (2026-09-19).
  * app/svc/fo/my/*Svc.ts 가 공유한다. 행(row) 데이터는 ecBeBo DTO 원본 필드를 그대로 통과시키므로 MyRow 로 느슨하게 둔다 —
@@ -5,13 +6,7 @@
  */
 
 /** ecBeBo 페이지 응답 공통 형태(BFF 가 그대로 통과) */
-export interface MyPageResult<T> {
-  pageList: T[];
-  pageTotalCount: number;
-  pageTotalPage: number;
-  pageNo: number;
-  pageSize: number;
-}
+export type MyPageResult<T> = CoBasePageType<T>;
 
 /** 목록 공통 조회 조건 — 기간(등록일 등) + 종류별 상태 필터. 값이 비어 있으면 서버로 보내지 않는다 */
 export interface MyListParams {
