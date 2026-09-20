@@ -91,7 +91,8 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 | sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syAlarmType(알람), syNotiType(알림함), syNoticeType(공지), syI18nType(다국어), syVendorType(업체), sySiteType(사이트), syLoginFormType, syCheckoutLoginFormType |
 | cm (콘텐츠) | cmBlogType |
 | pm (프로모션) | pmCouponType, pmTimedealType, pmEventType, pmDiscntType, pmSaveType(적립금), pmVoucherType(상품권), pmGiftType(사은품) |
-| co (공통/전시 위젯) | coContactInfoItemType, coHeroSliderDataType(+Two/Three) |
+| dp (전시) | dpUiType(dp_ui) → dpAreaType(dp_area) → dpPanelType(dp_panel) → dpPanelItemType(dp_panel_item) → dpWidgetLibType(dp_widget_lib) → dpWidgetType(dp_widget) — FK 로 서로 참조(`areas/panels/panelItems/widgetLib/widgets`) |
+| co (공통/전시 위젯 JSON) | coContactInfoItemType, coHeroSliderDataType(+Two/Three) |
 | fo (FO 화면 공통) | foCompType, foMyType |
 | (루트 유지) | chatTypes.ts, page.ts, image.d.ts, nuxt-app.d.ts — 접두사 규칙이 없거나 전역 선언 파일 |
 
