@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="쇼핑" subtitle="쇼핑" />
+    <breadcrumb-area title="상품목록" subtitle="상품목록" />
 
     <!-- 스켈레톤 그리드 — 2026-09-13 버그수정: "브랜드 클릭하니 화면이 백지현상" — 필터
          클릭으로 재조회될 때도 pending이 true가 되는데, 그때마다 사이드바까지 통째로

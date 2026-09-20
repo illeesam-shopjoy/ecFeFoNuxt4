@@ -37,6 +37,10 @@
              사이즈는 SIZE_VISIBLE(6)개까지만 한 줄에 보이고 나머지는 "…" 버튼을 누르면 뜨는 팝오버에 전체 목록이 나온다.
              선택한 옵션이 접힌 쪽에 있어도 줄 안에 보이도록(마지막 칸과 교체) 처리하고, 바깥 클릭/Esc 로 팝오버가 닫힌다.
              색상표는 옵션코드가 VAL_COLOR_* 인데 매핑이 color01.. 형식뿐이라 전부 회색으로 보이던 것도 함께 수정(colorMap). -->
+        <!-- 2026-09-20(요청사항: "상품유형이 옵션상품인경우만 옵션선택 : 색상, 사이즈 란 표시해줘") — 상품유형이 OPTION(옵션상품)일 때만 옵션 영역을 보인다.
+             단품/묶음/세트/사은품은 고를 옵션이 없어 영역 자체를 숨기고, 담기 검증에서도 사이즈 필수를 요구하지 않는다. -->
+        <div v-if="isOptionProd" class="mb-5">
+        <div class="mb-3 border-b border-[#e5e7eb] pb-2 text-[0.9rem] font-bold text-gray-800">옵션선택 : <span class="font-medium text-gray-600">색상, 사이즈</span></div>
         <div class="product__modal-input color mb-20 relative">
           <label>색상 선택</label>
           <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
@@ -145,6 +149,7 @@
         <div class="product__modal-required mb-5">
           <span>필수 입력 항목 *</span>
         </div>
+        </div>
         <!-- 2026-09-13(요청사항: "모바일로 보기에서 [장바구니추가] 버튼이 커서 우측에 숨겨진거 같아") —
              기존 flex-nowrap이 좁은 화면에서도 한 줄을 강제해 버튼이 화면 밖으로 밀려나갔다.
              좁은 화면(max-sm)에서는 줄바꿈을 허용하고 버튼은 다음 줄에서 꽉 채워 보이게 한다. -->
@@ -219,6 +224,7 @@ import { useCartStore } from "~/store/useCartStore";
 
 import { useWishlistStore } from "~/store/useWishlistStore";
 import { prodTypeLabel } from "~/conts/pdConst";
+import { prodOptSwatchColor } from "~/utils/prodOptColor";
 
 const props = defineProps<{
   item: PdProdType;
@@ -232,6 +238,7 @@ const wishlist = useWishlistStore();
 const shareTools = useShareTools();
 const isWished = computed(() => wishlist.wishlists.some((p) => p.prodId === props.item.prodId));
 const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
+const isOptionProd = computed(() => props.item.prodTypeCd === "OPTION"); // 옵션상품만 색상/사이즈 선택 영역 표시
 const reviewCount = computed(() => props.item.reviews?.length ?? 0);
 const filledStars = computed(() => Math.max(0, Math.min(5, Math.round(Number(props.item.rating) || 0))));
 const buyEl = ref<HTMLElement | null>(null); // 구매 버튼 영역 — 하단 구매바가 "본문 버튼이 화면 밖으로 나갔는지" 판단하는 기준
@@ -309,7 +316,7 @@ function findMatchedSku() {
 
 /** 옵션(사이즈)·SKU·재고를 검증하고 담을 SKU 를 돌려준다. 실패하면 토스트를 띄우고 null. (장바구니 담기/바로구매 공통) */
 function resolveSelection(): { prodSkuId?: string } | null {
-  if (props.item.prodOpt1List?.length && !selectedSize.value) {
+  if (isOptionProd.value && props.item.prodOpt1List?.length && !selectedSize.value) {
     useNuxtApp().$toast.error("사이즈를 선택해주세요.");
     return null;
   }
@@ -350,34 +357,5 @@ async function handleBuyNow() {
 // 페이지(하단 구매바 등)가 같은 검증·동작을 그대로 쓰도록 노출
 defineExpose({ addToCart: handleAddToCart, buyNow: handleBuyNow, getBuyEl: () => buyEl.value });
 
-const colorMap: Record<string, string> = {
-  color01: "#E74C3C", // 빨강
-  color02: "#3498DB", // 파랑
-  color03: "#2ECC71", // 초록
-  color04: "#F1C40F", // 노랑
-  color05: "#9B59B6", // 보라
-  color06: "#1A1A1A", // 검정
-  color07: "#95A5A6", // 회색
-  color08: "#F8F9FA", // 흰색
-  color09: "#8B6347", // 갈색
-  color10: "#000000", // 블랙
-  // 2026-09-19: 실제 옵션코드는 VAL_COLOR_* (pd_prod_opt_val) — 위 color01..10 매핑만으로는 전부 회색(#ccc)으로 나왔다
-  VAL_COLOR_BLACK: "#1A1A1A", // 블랙
-  VAL_COLOR_WHITE: "#FFFFFF", // 화이트
-  VAL_COLOR_IVORY: "#F5EFDC", // 아이보리
-  VAL_COLOR_GRAY: "#9E9E9E", // 그레이
-  VAL_COLOR_CHARCOAL: "#36454F", // 차콜
-  VAL_COLOR_NAVY: "#1F2A44", // 네이비
-  VAL_COLOR_BLUE: "#2F6FDE", // 블루
-  VAL_COLOR_KHAKI: "#8B8A55", // 카키
-  VAL_COLOR_BEIGE: "#D9C3A0", // 베이지
-  VAL_COLOR_BROWN: "#7B4B2A", // 브라운
-  VAL_COLOR_RED: "#D32F2F", // 레드
-  VAL_COLOR_BURGUNDY: "#7B1E3A", // 버건디
-  VAL_COLOR_PINK: "#F4A6C0", // 핑크
-  VAL_COLOR_PURPLE: "#7E57C2", // 퍼플
-  VAL_COLOR_MUSTARD: "#D4A017", // 머스타드
-  VAL_COLOR_ORANGE: "#F57C00", // 오렌지
-};
-const swatchColor = (opt: OptionItem) => colorMap[opt.prodOptStdCd ?? ""] ?? "#ccc";
+const swatchColor = (opt: OptionItem) => prodOptSwatchColor(opt.prodOptStdCd);
 </script>

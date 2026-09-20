@@ -14,6 +14,7 @@
             <span v-if="item.isNew || item.saleDiscntRate" class="new">신상품</span>
             <span v-if="item.saleDiscntRate" class="percent">-{{ item.saleDiscntRate }}%</span>
           </div>
+          <prod-opt-chips :item="item" />
         </div>
       </div>
       <div class="col-xl-8 col-lg-8">
@@ -32,10 +33,6 @@
             </div>
             <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
             <div v-if="item.brand?.brandNm" class="text-[13px] text-[#a3a3a3] mb-1">{{ item.brand.brandNm }}</div>
-            <div v-if="item.prodOpt1List?.length || item.prodOpt2List?.length" class="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#c2c2c2] mb-1">
-              <span v-if="item.prodOpt1List?.length">사이즈 {{ item.prodOpt1List.map((o) => o.prodOptNm).join('/') }}</span>
-              <span v-if="item.prodOpt2List?.length">색상 {{ item.prodOpt2List.map((o) => o.prodOptNm).join('/') }}</span>
-            </div>
             <div class="product__price-2 mb-10">
               <span>{{ formatPrice(item.salePrice) }}</span>
               <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
@@ -80,6 +77,7 @@ import { ref, computed } from "vue";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
+import ProdOptChips from "~/components/products/ProdOptChips.vue";
 import { prodTypeLabel } from "~/conts/pdConst";
 import { useCartStore } from "~/store/useCartStore";
 import { useCompareStore } from "~/store/useCompareStore";

@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="상품 상세" subtitle="상품 상세" parent-title="상품 목록" parent-link="/shop" heading-tag="div" />
+    <breadcrumb-area title="상품 상세" subtitle="상품 상세" parent-title="상품목록" parent-link="/shop" heading-tag="div" />
 
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
     <skeleton-product-detail v-if="pending" />
