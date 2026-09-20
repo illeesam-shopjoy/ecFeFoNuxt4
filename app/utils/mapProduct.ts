@@ -49,6 +49,7 @@ export interface BeProdItem {
   brandId?: string | null;
   prodNm: string;
   prodCode?: string | null;
+  prodTypeCd?: string | null; // 상품유형 SINGLE/OPTION/GROUP/SET/GIFT
   stdPrice?: number | null; // 정가
   salePrice?: number | null; // 판매가
   saleDiscntRate?: number | null;
@@ -169,6 +170,7 @@ export function mapProduct(p: BeProdItem, cdnBase: string): Record<string, unkno
 
   return {
     prodId: p.prodId,
+    prodTypeCd: p.prodTypeCd ?? undefined,
     img,
     thumbImg,
     bigImg: fullImg || undefined,

@@ -1879,3 +1879,25 @@ p.checkout-coupon input[type="text"] {
     }
   }
 }
+
+// 2026-09-20: 상품 카드 아이콘란(좋아요·비교·상세) — 흰 배경 상자 대신 배경 없이 우측 가장자리에 붙인다.
+// 사진 위에서도 보이도록 아이콘 주변에 흰색 글로우(drop-shadow)를 준다. (.product__action 본체 규칙보다 우선하도록 클래스 2개로 지정)
+.product__action.product__action--bare {
+  right: 4px;
+  bottom: 10px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  & a {
+    width: 30px;
+    height: 34px;
+    line-height: 34px;
+    font-size: 16px;
+    border-bottom: none;
+    color: #1a1a1a;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 5px rgba(255, 255, 255, 0.85));
+    &:hover {
+      color: $theme-color;
+    }
+  }
+}

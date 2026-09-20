@@ -13,11 +13,8 @@
             </div>
             <div class="col-xl-3 col-lg-2 col-md-4 col-sm-4">
               <div class="logo">
-                <nuxt-link href="/">
-                  <img src="/logo/shopjoy-logo.svg" alt="shopjoy" />
-                </nuxt-link>
+                <header-logo />
               </div>
-              <env-mode-badge />
             </div>
             <div class="col-xl-3 col-lg-4 col-md-8 col-sm-8">
               <div class="header__right relative flex justify-between sm:justify-end items-center">
@@ -46,7 +43,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import Menus from "./Menus.vue";
 import HeaderTopActions from "./header-com/HeaderTopActions.vue";
-import EnvModeBadge from "./header-com/EnvModeBadge.vue";
+import HeaderLogo from "./header-com/HeaderLogo.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 

@@ -12,11 +12,8 @@
               </div>
               <div class="col-xl-4 col-lg-4 col-md-3 col-sm-5">
                 <div class="logo logo__6 text-md-center">
-                  <nuxt-link href="/">
-                    <img src="/logo/shopjoy-logo.svg" alt="shopjoy" />
-                  </nuxt-link>
+                  <header-logo />
                 </div>
-                <env-mode-badge />
               </div>
               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-7">
                 <div class="header__right relative flex justify-between sm:justify-end items-center">
@@ -57,7 +54,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import Menus from "./Menus.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
 import HeaderTopActions from "./header-com/HeaderTopActions.vue";
-import EnvModeBadge from "./header-com/EnvModeBadge.vue";
+import HeaderLogo from "./header-com/HeaderLogo.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 
 const isSticky = ref(false);

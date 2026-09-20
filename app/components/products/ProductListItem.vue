@@ -24,12 +24,14 @@
                 <span v-html="item.prodNm"></span>
               </nuxt-link>
             </h4>
-            <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
-            <div v-if="item.brand?.brandNm || item.category?.categoryNm" class="text-[13px] text-[#a3a3a3] mb-1">
-              <span v-if="item.brand?.brandNm">{{ item.brand.brandNm }}</span>
-              <span v-if="item.brand?.brandNm && item.category?.categoryNm"> · </span>
-              <span v-if="item.category?.categoryNm">{{ item.category.categoryNm }}</span>
+            <!-- 2026-09-20(요청사항: "상품항목에 상품번호, 상품유형(단품, 옵션상품..), 상품카테고리 표시" — 카테고리는 번호가 아니라 이름) -->
+            <div class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] mb-2">
+              <span class="text-[#a3a3a3]">#{{ item.prodId }}</span>
+              <span v-if="prodTypeNm" class="px-2 py-px rounded-full border border-[#d4d4d4] text-[#737373] leading-tight">{{ prodTypeNm }}</span>
+              <span v-if="item.category?.categoryNm" class="px-2 py-px rounded-full bg-[#f1f1f1] text-[#525252] leading-tight">{{ item.category.categoryNm }}</span>
             </div>
+            <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
+            <div v-if="item.brand?.brandNm" class="text-[13px] text-[#a3a3a3] mb-1">{{ item.brand.brandNm }}</div>
             <div v-if="item.optionSizes?.length || item.optionColors?.length" class="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#c2c2c2] mb-1">
               <span v-if="item.optionSizes?.length">사이즈 {{ item.optionSizes.map((o) => o.optionNm).join('/') }}</span>
               <span v-if="item.optionColors?.length">색상 {{ item.optionColors.map((o) => o.optionNm).join('/') }}</span>
@@ -78,6 +80,7 @@ import { ref, computed } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
 import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
+import { prodTypeLabel } from "~/conts/pdConst";
 import { useCartStore } from "~/store/useCartStore";
 import { useCompareStore } from "~/store/useCompareStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
@@ -85,6 +88,7 @@ import { useWishlistStore } from "~/store/useWishlistStore";
 const props = defineProps<{
   item: PdProductType;
 }>();
+const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
 const store = useCartStore();
 const compareState = useCompareStore();
 const wishlistState = useWishlistStore();

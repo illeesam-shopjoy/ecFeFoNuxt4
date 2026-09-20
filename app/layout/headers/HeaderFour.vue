@@ -6,11 +6,8 @@
           <div class="row items-center">
             <div class="col-xl-2 col-lg-2 col-md-4 col-sm-3">
               <div class="logo">
-                <nuxt-link href="/">
-                  <img src="/logo/shopjoy-logo-olive.svg" alt="shopjoy" />
-                </nuxt-link>
+                <header-logo />
               </div>
-              <env-mode-badge />
             </div>
             <div class="col-xl-7 col-lg-6 col-md-1 col-sm-1">
               <div class="main-menu main-menu-3 hidden lg:block relative">
@@ -46,7 +43,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import Menus from "./Menus.vue";
 import HeaderTopActions from "./header-com/HeaderTopActions.vue";
-import EnvModeBadge from "./header-com/EnvModeBadge.vue";
+import HeaderLogo from "./header-com/HeaderLogo.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 

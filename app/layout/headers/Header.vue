@@ -28,12 +28,9 @@
               </div>
             </div>
             <div :class="`${header_big ? 'w-full md:w-1/3 lg:w-3/12' : 'header__logo-col'}`" style="order: 1;">
-              <div :class="`logo flex ${header_big ? 'justify-start' : 'justify-center'}`">
-                <nuxt-link href="/">
-                  <img src="/logo/shopjoy-logo.svg" alt="shopjoy" />
-                </nuxt-link>
+              <div class="logo">
+                <header-logo :align="header_big ? 'start' : 'center'" />
               </div>
-              <env-mode-badge />
             </div>
             <div v-if="!header_big" class="header__action-col" style="order: 3;">
               <div><header-top-actions @search="handleOpenSearchBar" /></div>
@@ -61,7 +58,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import Menus from "./Menus.vue";
 import SearchModal from "~/components/modals/SearchModal.vue";
 import HeaderTopActions from "./header-com/HeaderTopActions.vue";
-import EnvModeBadge from "./header-com/EnvModeBadge.vue";
+import HeaderLogo from "./header-com/HeaderLogo.vue";
 import OffCanvas from "~/components/common/sidebar/OffCanvas.vue";
 import ShareToolsButtons from "~/components/common/ShareToolsButtons.vue";
 

@@ -23,7 +23,9 @@
            .product__action)가 opacity:0·visibility:hidden·scaleX(0)로 기본 숨김 처리하는 걸
            덮어쓰는 부분이라(요청사항: "default 다 보였으면 좋겠어"), 순서 상관없이 이기도록
            !important 변형 사용. -->
-      <div class="product__action transition-3 !visible !opacity-100 !scale-x-100">
+      <!-- 2026-09-20(요청사항: "좋아요, 상품비교, 상품상세 아이콘란 우측면에 더 배치하고 바탕색은 가급적 없으면") — product__action--bare:
+             흰 배경·패딩·구분선을 없애고 오른쪽 가장자리로 붙였다(_shop.scss). 배경이 없어도 사진 위에서 보이도록 아이콘에 흰색 글로우. -->
+      <div class="product__action product__action--bare transition-3 !visible !opacity-100 !scale-x-100">
         <!-- 2026-09-14(요청사항: "좋아요 클릭했는데 하드 좀더 분홍색으로 변경해줘") — 클릭해도
              하트 아이콘이 그대로라 담겼는지 눈으로 구분이 안 됐다. 위시리스트에 담긴 상태면
              채워진 하트(fas)로 바꾸고 분홍색을 입혀 클릭 결과가 바로 보이게 한다. -->
@@ -51,12 +53,14 @@
             <span v-html="item.prodNm"></span>
           </nuxt-link>
         </h4>
-        <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
-        <div v-if="item.brand?.brandNm || item.category?.categoryNm" class="text-[12px] text-[#a3a3a3] mb-2">
-          <span v-if="item.brand?.brandNm">{{ item.brand.brandNm }}</span>
-          <span v-if="item.brand?.brandNm && item.category?.categoryNm"> · </span>
-          <span v-if="item.category?.categoryNm">{{ item.category.categoryNm }}</span>
+        <!-- 2026-09-20(요청사항: "상품항목에 상품번호, 상품유형(단품, 옵션상품..), 상품카테고리 표시" — 카테고리는 번호가 아니라 이름) -->
+        <div class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] mb-2">
+          <span class="text-[#a3a3a3]">#{{ item.prodId }}</span>
+          <span v-if="prodTypeNm" class="px-2 py-px rounded-full border border-[#d4d4d4] text-[#737373] leading-tight">{{ prodTypeNm }}</span>
+          <span v-if="item.category?.categoryNm" class="px-2 py-px rounded-full bg-[#f1f1f1] text-[#525252] leading-tight">{{ item.category.categoryNm }}</span>
         </div>
+        <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
+        <div v-if="item.brand?.brandNm" class="text-[12px] text-[#a3a3a3] mb-2">{{ item.brand.brandNm }}</div>
         <div v-if="item.optionSizes?.length || item.optionColors?.length" class="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-[#c2c2c2] mb-2">
           <span v-if="item.optionSizes?.length">{{ item.optionSizes.map((o) => o.optionNm).join('/') }}</span>
           <span v-if="item.optionSizes?.length && item.optionColors?.length">|</span>
@@ -88,10 +92,12 @@ import { useWishlistStore } from "~/store/useWishlistStore";
 import { useCompareStore } from "~/store/useCompareStore";
 import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
+import { prodTypeLabel } from "~/conts/pdConst";
 
 const props = defineProps<{
   item: PdProductType;
 }>();
+const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
 const store = useCartStore();
 const wishlistState = useWishlistStore();
 const compareState = useCompareStore();

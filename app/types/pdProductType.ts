@@ -23,6 +23,7 @@ export interface PdSkuType {
  */
 export interface PdProductType {
   prodId: string; // 상품ID (ecBeBo prodId, 예: "PR2607070656371295")
+  prodTypeCd?: string; // 상품유형 코드 (ecBeBo prodTypeCd: SINGLE/OPTION/GROUP/SET/GIFT) — 표시명은 conts/pdConst.ts prodTypeLabel
   img: string; // 대표 이미지 (prodImgs 중 대표 1장, cdnImgUrl)
   trending?: boolean; // 트렌딩 여부 — ecBeBo에 대응 컬럼 없음, 항상 false
   topRated?: boolean; // 베스트 평점 여부 — ecBeBo에 대응 컬럼 없음, 항상 false
