@@ -39,12 +39,13 @@
           <i class="fal fa-search"></i>
         </a>
       </div>
+      <span v-if="prodTypeNm" class="pointer-events-none absolute left-2 top-2 z-[2] rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium leading-none text-white backdrop-blur-[2px]">{{ prodTypeNm }}</span>
+      <prod-opt-chips :item="item" />
       <div v-if="item.saleDiscntRate || item.isNew" class="product__sale">
         <span v-if="item.isNew || item.saleDiscntRate" class="new">신상품</span>
         <span v-if="item.saleDiscntRate" class="percent">-{{ item.saleDiscntRate }}%</span>
       </div>
     </div>
-    <prod-opt-chips :item="item" />
     <div class="product__content relative">
       <div class="product__content-inner">
         <!-- 2026-09-13(요청사항: "상품항목정보가 작아보여 크게 보여줘") — 테마 기본값(h4/가격 14px)이
@@ -57,7 +58,6 @@
         <!-- 2026-09-20(요청사항: "상품항목에 상품번호, 상품유형(단품, 옵션상품..), 상품카테고리 표시" — 카테고리는 번호가 아니라 이름) -->
         <div class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] mb-2">
           <span class="text-[#a3a3a3]">#{{ item.prodId }}</span>
-          <span v-if="prodTypeNm" class="px-2 py-px rounded-full border border-[#d4d4d4] text-[#737373] leading-tight">{{ prodTypeNm }}</span>
           <span v-if="item.category?.categoryNm" class="px-2 py-px rounded-full bg-[#f1f1f1] text-[#525252] leading-tight">{{ item.category.categoryNm }}</span>
         </div>
         <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->

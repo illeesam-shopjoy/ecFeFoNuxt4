@@ -90,8 +90,36 @@
                 </div>
               </client-only>
 
-              <!-- 상품 사이즈 (2026-09-13: 멀티선택 토글, ecBeBo sizeInfoCd 실 값 기준) -->
+              <!-- 상품 색상 (2026-09-20: 사이즈 위로 이동 · 멀티선택 · 실제 옵션 색상 스와치 · 선택 시 링+체크로 뚜렷하게) -->
               <div class="sidebar__widget mb-55">
+                <div class="sidebar__widget-title mb-30 flex items-center justify-between">
+                  <h3>색상 선택</h3>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetColor">초기화</button>
+                </div>
+                <div class="sidebar__widget-content">
+                  <div class="flex flex-wrap gap-3">
+                    <button
+                      v-for="color in allColor"
+                      :key="color"
+                      type="button"
+                      :title="colorNameOf(color)"
+                      :aria-label="colorNameOf(color)"
+                      :aria-pressed="colorCds.includes(color)"
+                      class="relative flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-full border-2 bg-[var(--swatch-color)] p-0 transition-transform duration-150 hover:scale-105"
+                      :class="colorCds.includes(color) ? 'scale-105 border-white shadow-[0_0_0_3px_#bc8246,0_3px_8px_rgba(0,0,0,0.25)]' : 'border-black/10 shadow-[0_1px_3px_rgba(0,0,0,0.15)]'"
+                      :style="{ '--swatch-color': prodOptSwatchColor(color) }"
+                      @click.prevent="toggleColor(color)"
+                    >
+                      <i v-if="colorCds.includes(color)" class="fas fa-check text-[14px] drop-shadow-[0_0_2px_rgba(0,0,0,0.6)]" :class="isLightColor(color) ? 'text-[#333]' : 'text-white'"></i>
+                    </button>
+                    <span v-if="!allColor.length" class="text-[0.85rem] text-[#aaa]">표시할 색상이 없습니다</span>
+                  </div>
+                  <div v-if="colorCds.length" class="mt-3 text-[0.8rem] text-[#777]">선택: {{ colorCds.map(colorNameOf).join(", ") }}</div>
+                </div>
+              </div>
+
+              <!-- 상품 사이즈 (2026-09-13: 멀티선택 토글, ecBeBo sizeInfoCd 실 값 기준) -->
+              <div class="sidebar__widget mb-60">
                 <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                   <h3>사이즈</h3>
                   <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetSize">초기화</button>
@@ -103,25 +131,6 @@
                         <a @click.prevent="toggleSize(size)" href="#">{{ size }}</a>
                       </li>
                     </ul>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 상품 색상 -->
-              <div class="sidebar__widget mb-60">
-                <div class="sidebar__widget-title mb-20 flex items-center justify-between">
-                  <h3>색상 선택</h3>
-                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetColor">초기화</button>
-                </div>
-                <div class="sidebar__widget-content">
-                  <div class="color__pick">
-                    <form>
-                      <ul>
-                        <li v-for="(color, i) in allColor?.slice(0, 8)" :key="color">
-                          <button @click.prevent="setColor(color)" type="button" :class="`color color-${Number(i) + 1} ${colorFilter === color ? `active-${Number(i) + 1}` : ''}`"></button>
-                        </li>
-                      </ul>
-                    </form>
                   </div>
                 </div>
               </div>
@@ -269,6 +278,7 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import ProductListItem from "~/components/products/ProductListItem.vue";
+import { prodOptSwatchColor } from "~/utils/prodOptColor";
 import AppImage from "~/components/ui/AppImage.vue";
 import Slider from "@vueform/slider";
 import "@vueform/slider/themes/default.css";
@@ -327,7 +337,7 @@ const sizeCds = ref<string[]>([]);
 const sort = ref(""); // "" = 기본(등록일 최신순)
 const keyword = ref(initialQuery);
 const priceRange = ref<[number, number]>([0, 500000]);
-const colorFilter = ref(""); // 색상만 서버 필터가 없어 클라이언트 보조필터로 남김
+const colorCds = ref<string[]>([]); // 색상만 서버 필터가 없어 클라이언트 보조필터로 남김(멀티선택, 하나라도 일치하면 노출)
 
 const viewMode = ref<"grid" | "list">("grid");
 
@@ -440,20 +450,27 @@ const allColor = computed(() => {
 
 // 색상만 클라이언트 보조필터 적용 — 나머지는 전부 서버에서 이미 걸러져 온 결과.
 const displayItems = computed(() => {
-  if (!colorFilter.value) return items.value;
-  return items.value.filter((p) => p.prodOpt2List?.some((o) => (o.prodOptStdCd ?? String(o.prodOptId)) === colorFilter.value));
+  if (!colorCds.value.length) return items.value;
+  return items.value.filter((p) => p.prodOpt2List?.some((o) => colorCds.value.includes(o.prodOptStdCd ?? String(o.prodOptId))));
 });
 
 const toggleCategory = (id: string) => (categoryIds.value = toggleIn(categoryIds.value, id));
 const toggleBrand = (id: string) => (brandIds.value = toggleIn(brandIds.value, id));
 const toggleSize = (code: string) => (sizeCds.value = toggleIn(sizeCds.value, code));
-const setColor = (code: string) => (colorFilter.value = colorFilter.value === code ? "" : code);
+const toggleColor = (code: string) => (colorCds.value = toggleIn(colorCds.value, code));
+const colorNameOf = (code: string) => items.value.flatMap((p) => p.prodOpt2List ?? []).find((o) => (o.prodOptStdCd ?? String(o.prodOptId)) === code)?.prodOptNm ?? code;
+const isLightColor = (code: string) => {
+  const hex = prodOptSwatchColor(code).replace("#", "");
+  if (hex.length !== 6) return true;
+  const [r = 0, g = 0, b = 0] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  return r * 0.299 + g * 0.587 + b * 0.114 > 186; // 밝은 색이면 체크를 어둡게
+};
 const setSort = (v: string) => (sort.value = v);
 const resetCategory = () => (categoryIds.value = []);
 const resetBrand = () => (brandIds.value = []);
 const resetSize = () => (sizeCds.value = []);
 const resetPrice = () => (priceRange.value = [0, 500000]);
-const resetColor = () => (colorFilter.value = "");
+const resetColor = () => (colorCds.value = []);
 function resetAll() {
   categoryIds.value = [];
   brandIds.value = [];
@@ -461,7 +478,7 @@ function resetAll() {
   sort.value = "";
   keyword.value = "";
   priceRange.value = [0, 500000];
-  colorFilter.value = "";
+  colorCds.value = [];
 }
 
 const parentCategories = computed(() => {
