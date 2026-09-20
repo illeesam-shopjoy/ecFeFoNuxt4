@@ -7,20 +7,9 @@
          탭 바 + 등록기간 조회 + 총건수/페이지크기 + 로딩/오류/빈 상태 + 페이지네이션. 각 화면은 목록 내용(default 슬롯)과
          탭별 필터(top 슬롯)만 채운다. 조회/초기화/기간/페이징 이벤트는 btn-action / select-action 으로 올라간다. 조회 상태는 useMyList(composables/useMyList.ts)가 관리한다. -->
     <section class="pt-14 pb-24 bg-white">
-      <div class="max-w-7xl mx-auto px-4">
-        <!-- 탭 -->
-        <nav class="flex flex-wrap gap-1 p-1.5 mb-5 bg-white border border-[#e5e7eb] rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]" aria-label="마이페이지 메뉴">
-          <nuxt-link
-            v-for="t in MY_TABS"
-            :key="t.key"
-            :to="`/my/${t.key}`"
-            class="flex-1 min-w-[110px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-[0.9rem] font-semibold no-underline transition-colors"
-            :class="tab === t.key ? 'bg-gray-900 text-white shadow-md' : 'text-gray-600 hover:bg-[#f5f5f5]'"
-          >
-            <span>{{ t.icon }}</span>{{ t.label }}
-          </nuxt-link>
-        </nav>
-
+      <div class="max-w-7xl mx-auto px-4 md:grid md:grid-cols-[240px_minmax(0,1fr)] md:gap-6">
+        <my-menu :active="tab" />
+        <div class="min-w-0">
         <!-- 기간 조회 -->
         <div class="flex flex-wrap items-center gap-2 px-4 py-3 mb-4 bg-white border border-[#e5e7eb] rounded-lg">
           <span class="text-[0.85rem] text-gray-500 mr-1">등록기간</span>
@@ -61,6 +50,7 @@
         <div v-if="my.pageTotalPage > 1" class="mt-8">
           <fo-pager :pager="my" :show-size="false" :on-set-page="(n) => emit('select-action', 'pager-page', n)" />
         </div>
+        </div>
       </div>
     </section>
 
@@ -73,7 +63,8 @@
 import Layout from "~/layout/Layout.vue";
 import FoPager from "~/components/fo/FoPager.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import { MY_PRESETS, MY_TABS, type MyTabKey } from "~/composables/useMyList";
+import { MY_PRESETS, type MyTabKey } from "~/composables/useMyList";
+import MyMenu from "~/components/my/MyMenu.vue";
 import type { FoMyListStateType } from "~/types/fo/foMyListType";
 
 // 버튼/선택 이벤트는 ecFeBo 규칙대로 (cmd, param) 로 올려 보내고, 각 화면의 handleBtnAction / handleSelectAction 이 처리한다

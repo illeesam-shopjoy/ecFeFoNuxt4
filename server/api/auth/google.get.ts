@@ -1,11 +1,14 @@
 /**
  * Google OAuth 2.0 로그인 시작: 사용자를 Google 인증 페이지로 리다이렉트합니다.
  */
+import { linkErrorUrl, markLinkMode } from "~~/server/utils/oauthLink";
+
 export default defineEventHandler((event) => {
+  const link = markLinkMode(event); // ?link=1 이면 프로필의 "연동" 흐름
   const config = useRuntimeConfig();
   const clientId = config.googleClientId as string;
   if (!clientId) {
-    return sendRedirect(event, "/login?error=" + encodeURIComponent("Google 로그인이 설정되지 않았습니다."), 302);
+    return sendRedirect(event, link ? linkErrorUrl("Google 로그인이 설정되지 않았습니다.") : "/login?error=" + encodeURIComponent("Google 로그인이 설정되지 않았습니다."), 302);
   }
   // 2026-09-14 버그수정(요청사항: "sy_prop 정보 확인하여 ... 적용해줘"로 소셜로그인 값을
   // 채우다 발견 — config.apiBaseUrl은 ecBeBo(백엔드 API) 주소라, 이 redirect_uri(=이 Nuxt

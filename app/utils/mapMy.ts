@@ -22,12 +22,14 @@ export const mapLoginRes = (r: SyLoginResType): SyLoginSessionType => ({
   user: { memberId: r.memberId, userNm: r.userNm, userEmail: r.userEmail, userPhone: r.userPhone, siteId: r.siteId },
 });
 /** 회원가입 본문 — loginPwdHash 필드에 평문을 담는다(ecBeBo 가 그 자리에서 encode) */
-export function buildJoinPayload(name: string, email: string, password: string, passVerifyId?: string): { memberNm: string; loginId: string; loginPwdHash: string; passVerifyId?: string } {
+export function buildJoinPayload(name: string, email: string, password: string, passVerifyId?: string, extra: Record<string, string> = {}): Record<string, string> {
   const memberNm = String(name ?? "").trim();
   const loginId = String(email ?? "").trim();
   const loginPwdHash = String(password ?? "");
   if (!memberNm || !loginId || !loginPwdHash) badRequest("이름, 이메일, 비밀번호를 모두 입력해 주세요.");
-  return { memberNm, loginId, loginPwdHash, ...(passVerifyId ? { passVerifyId } : {}) };
+  // extra: 프로필 이미지 URL · 수신 동의(recv*Yn) 등 가입 화면이 함께 보내는 선택 항목(Y/N·URL 만 허용)
+  const safe = Object.fromEntries(Object.entries(extra).filter(([k, v]) => (k === "profileImgUrl" && typeof v === "string") || (/^recv(Phone|Kakao|Sms|Email|Ad)Yn$/.test(k) && (v === "Y" || v === "N"))));
+  return { memberNm, loginId, loginPwdHash, ...(passVerifyId ? { passVerifyId } : {}), ...safe };
 }
 
 // ── 내 정보 ──
@@ -44,6 +46,12 @@ export const mapProfile = (m: MbMemberType): MbMemberProfileType => ({
   memberAddrDetail: m.memberAddrDetail ?? "",
   passVerifiedYn: m.passVerifiedYn ?? "N",
   passVerifiedDate: m.passVerifiedDate,
+  profileImgUrl: m.profileImgUrl ?? "",
+  recvPhoneYn: m.recvPhoneYn ?? "N",
+  recvKakaoYn: m.recvKakaoYn ?? "N",
+  recvSmsYn: m.recvSmsYn ?? "N",
+  recvEmailYn: m.recvEmailYn ?? "N",
+  recvAdYn: m.recvAdYn ?? "N",
 });
 /** PUT /fo/ec/my/info 본문 — 이름 필수, 성별은 M/F 만 */
 export function buildProfileUpdatePayload(body: Partial<MbMemberProfileType>) {
@@ -56,6 +64,12 @@ export function buildProfileUpdatePayload(body: Partial<MbMemberProfileType>) {
     memberZipCode: String(body.memberZipCode ?? "").trim(),
     memberAddr: String(body.memberAddr ?? "").trim(),
     memberAddrDetail: String(body.memberAddrDetail ?? "").trim(),
+    profileImgUrl: String(body.profileImgUrl ?? "").trim(),
+    recvPhoneYn: body.recvPhoneYn === "Y" ? "Y" : "N",
+    recvKakaoYn: body.recvKakaoYn === "Y" ? "Y" : "N",
+    recvSmsYn: body.recvSmsYn === "Y" ? "Y" : "N",
+    recvEmailYn: body.recvEmailYn === "Y" ? "Y" : "N",
+    recvAdYn: body.recvAdYn === "Y" ? "Y" : "N",
   };
 }
 /** 저장 응답 → 헤더/드롭다운에 즉시 반영할 이름·연락처 (응답이 비면 보낸 값) */

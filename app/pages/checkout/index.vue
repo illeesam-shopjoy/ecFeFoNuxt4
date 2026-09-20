@@ -198,7 +198,7 @@
                     </div>
 
                     <!-- 비회원 결제: PASS 본인인증 (로그인 회원은 생략) -->
-                    <div v-if="!loggedIn" class="mb-4 rounded-lg border px-4 py-3 text-[0.88rem]" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
+                    <div v-if="!loggedIn || isPassGuest" class="mb-4 rounded-lg border px-4 py-3 text-[0.88rem]" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
                       <div class="flex items-center gap-2">
                         <i class="fas" :class="idv ? 'fa-check-circle text-[#16a34a]' : 'fa-mobile-alt text-[#d97706]'"></i>
                         <span class="font-semibold text-gray-800">비회원 결제 본인인증 (PASS)</span>
@@ -457,6 +457,7 @@ const cashBalance = ref(0); // 보유 캐시
 const useMaxCash = ref(false); // 보유 캐시 최대 사용
 const touched = reactive<Record<CouponCategory, boolean>>({ order: false, product: false, shipping: false }); // 직접 고른 종류는 자동 적용이 덮어쓰지 않는다
 const loggedIn = computed(() => useAuthStore().isStLoggedIn);
+const isPassGuest = computed(() => useAuthStore().isPassGuest);
 function handleApplyCoupons(coupons: AppliedCoupons) {
   COUPON_CATEGORIES.forEach((cat) => {
     // 모달에서 자동 적용과 다른 선택을 하면 "직접 선택"으로 본다
@@ -499,13 +500,21 @@ function resetIdentity() {
 }
 async function startIdentity() {
   const v = await pass.start();
-  if (v) applyIdentity(v);
+  if (!v) return;
+  // 인증 결과로 "PASS 임시회원" 로그인 — 주문 생성 등 로그인 회원 API 를 쓸 수 있게 한다
+  const r = await useAuthStore().passGuestLogin(v.identityVerificationId);
+  if (!r.ok) {
+    idvError.value = r.message ?? "본인인증 로그인에 실패했습니다.";
+    await useAlert().openAlert({ title: "본인인증 실패", variant: "error", message: idvError.value });
+    return;
+  }
+  applyIdentity(v);
 }
 onMounted(() => {
   // 새로고침해도 인증 결과 유지(같은 탭 동안)
   try {
     const raw = sessionStorage.getItem("checkout_idv");
-    if (raw && !useAuthStore().isStLoggedIn) applyIdentity(JSON.parse(raw));
+    if (raw && (!useAuthStore().isStLoggedIn || useAuthStore().isPassGuest)) applyIdentity(JSON.parse(raw));
   } catch {
     /* 무시 */
   }
@@ -652,7 +661,7 @@ watch(orderTotalRef, initTossWidgets);
 async function handleFormSubmit() {
   if (import.meta.server) return;
   // 비회원은 PASS 본인인증을 마쳐야 주문할 수 있다
-  if (!loggedIn.value && !idv.value) {
+  if ((!loggedIn.value || isPassGuest.value) && !idv.value) {
     await useAlert().openAlert({ title: "본인인증 필요", variant: "warning", message: "비회원 결제는 PASS 본인인증 후 진행할 수 있습니다.\n'PASS 본인인증' 버튼을 눌러 인증해 주세요." });
     document.querySelector(".your-order")?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;

@@ -2,22 +2,25 @@
  * Google OAuth 2.0 콜백: code를 액세스 토큰으로 교환 후 사용자 정보 조회, 앱 토큰 발급하여 리다이렉트.
  */
 import { createOAuthToken } from "~~/server/utils/oauthToken";
+import { consumeLinkMode, linkErrorUrl, linkSuccessUrl } from "~~/server/utils/oauthLink";
 
 export default defineEventHandler(async (event) => {
+  const link = consumeLinkMode(event); // 내 계정에 연동하려는 흐름인지(프로필 수정 화면)
+  const fail = (code: string) => sendRedirect(event, link ? linkErrorUrl(code) : `/login?error=${encodeURIComponent(code)}`, 302);
   const config = useRuntimeConfig();
   const query = getQuery(event);
   const code = query.code as string;
   const error = query.error as string;
   if (error) {
-    return sendRedirect(event, `/login?error=${encodeURIComponent(error)}`, 302);
+    return fail(error);
   }
   if (!code) {
-    return sendRedirect(event, "/login?error=no_code", 302);
+    return fail("no_code");
   }
   const clientId = config.googleClientId as string;
   const clientSecret = config.googleClientSecret as string;
   if (!clientId || !clientSecret) {
-    return sendRedirect(event, "/login?error=config", 302);
+    return fail("config");
   }
   // 2026-09-14 버그수정 — google.get.ts와 동일 사유(config.apiBaseUrl은 ecBeBo 주소).
   // 여기서 만든 redirectUri는 위 authorize 요청 때 보낸 값과 토큰 교환 시 반드시 일치해야
@@ -38,7 +41,7 @@ export default defineEventHandler(async (event) => {
   }).catch(() => null);
 
   if (!tokenRes?.access_token) {
-    return sendRedirect(event, "/login?error=token_exchange", 302);
+    return fail("token_exchange");
   }
 
   const userRes = await $fetch<{ id?: string; email?: string; name?: string; picture?: string }>(
@@ -47,9 +50,10 @@ export default defineEventHandler(async (event) => {
   ).catch(() => null);
 
   if (!userRes?.id) {
-    return sendRedirect(event, "/login?error=user_info", 302);
+    return fail("user_info");
   }
 
+  if (link) return sendRedirect(event, linkSuccessUrl("google", tokenRes.access_token), 302);
   const token = createOAuthToken({
     provider: "google",
     id: userRes.id,

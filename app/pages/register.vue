@@ -11,6 +11,9 @@
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
               <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="handleBtnAction('form-submit')">
                 <template #actions>
+                <!-- 프로필 이미지 · 수신 동의(휴대폰/카카오/SMS/이메일/광고) — 모두 선택 -->
+                <profile-img-upload v-model="profileImgUrl" class="mb-15" />
+                <recv-consent-row v-model="consent" class="mb-15" />
                 <!-- PASS 본인인증 여부 — 가입 전에 인증하면 가입 회원정보에 "인증 완료"로 저장된다(선택). 서버가 가입 시 한 번 더 확인한다. -->
                 <div class="mb-10 rounded-lg border px-3 py-2.5 text-[0.85rem]" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
                   <div class="flex items-center gap-2">
@@ -82,6 +85,9 @@ import * as yup from "yup";
 import type { MbRegisterFormType } from "~/types/mb/mbRegisterFormType";
 import { useAuthStore } from "~/store/useAuthStore";
 import { useRouter } from "vue-router";
+import ProfileImgUpload from "~/components/my/ProfileImgUpload.vue";
+import RecvConsentRow from "~/components/my/RecvConsentRow.vue";
+import type { MbRecvConsentType } from "~/types/mb/mbRecvConsentType";
 import { maskName, maskPhone, usePassIdentity } from "~/composables/usePassIdentity";
 import type { MbIdentityVerifyType } from "~/types/mb/mbIdentityVerifyType";
 
@@ -95,6 +101,8 @@ const authStore = useAuthStore();
 const router = useRouter();
 const errorMsg = ref("");
 const loading = ref(false);
+const profileImgUrl = ref("");
+const consent = ref<MbRecvConsentType>({ recvPhoneYn: "N", recvKakaoYn: "N", recvSmsYn: "N", recvEmailYn: "N", recvAdYn: "N" });
 
 // PASS 본인인증(선택) — 인증하면 이름을 인증된 실명으로 채우고, 가입 요청에 인증 건 ID 를 함께 보낸다(서버가 재확인해 "인증 완료"로 저장)
 const pass = usePassIdentity();
@@ -126,11 +134,13 @@ async function onSubmit() {
   const { name, email, password } = form as unknown as MbRegisterFormType;
   loading.value = true;
   errorMsg.value = "";
-  const result = await authStore.register(name, email, password, idv.value?.identityVerificationId);
+  const result = await authStore.register(name, email, password, idv.value?.identityVerificationId, { profileImgUrl: profileImgUrl.value, ...consent.value });
   loading.value = false;
   if (result.ok) {
     Object.assign(form, { name: "", email: "", password: "" });
     idv.value = null;
+    profileImgUrl.value = "";
+    consent.value = { recvPhoneYn: "N", recvKakaoYn: "N", recvSmsYn: "N", recvEmailYn: "N", recvAdYn: "N" };
     await useAlert().openAlert("가입이 완료되었습니다. 로그인해 주세요.");
     router.push("/login");
   } else {

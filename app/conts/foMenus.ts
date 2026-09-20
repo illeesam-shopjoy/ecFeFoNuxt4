@@ -114,7 +114,7 @@ export const STATIC_MENUS: SyMenuTreeType[] = [
       { link: "/contact", title: "문의하기" },
       { link: "/register", title: "회원가입" },
       { link: "/login", title: "로그인" },
-      { link: "/account", title: "마이페이지" },
+      { link: "/my/profile", title: "마이페이지" },
     ],
   },
 ];

@@ -71,7 +71,16 @@
       <!-- needAuth: 로그인 유도 화면 -->
       <div v-if="chatState.needAuth" class="flex-1 flex flex-col items-center justify-center px-6 py-7 gap-4 bg-gray-50 text-center">
         <div class="text-4xl leading-none">🔐</div>
-        <div class="text-sm font-bold text-gray-800 leading-relaxed">채팅 상담은 로그인 후 이용 가능합니다.</div>
+        <div class="text-sm font-bold text-gray-800 leading-relaxed">채팅 상담은 로그인 또는<br />PASS 본인인증 후 이용할 수 있습니다.</div>
+        <button
+          type="button"
+          class="w-full max-w-[220px] py-2.5 rounded-lg bg-gray-900 text-white text-[13px] font-bold transition hover:opacity-85 disabled:opacity-60"
+          :disabled="passBusy"
+          @click="startPassChat"
+        >
+          {{ passBusy ? "인증 중..." : "📱 PASS 본인인증으로 채팅" }}
+        </button>
+        <p v-if="passErr" class="m-0 text-[11px] leading-snug text-red-500">{{ passErr }}</p>
         <button
           type="button"
           class="w-full max-w-[200px] py-2.5 rounded-lg text-white text-[13px] font-bold transition hover:opacity-85"
@@ -168,6 +177,7 @@
 import { reactive, ref, computed, onUnmounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/store/useAuthStore";
+import { usePassIdentity } from "~/composables/usePassIdentity";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
 import type { CmChattMsgViewType } from "~/types/cm/cmChattMsgViewType";
 import type { CmChattParticipantType } from "~/types/cm/cmChattParticipantType";
@@ -284,6 +294,22 @@ async function toggleChat() {
 function closeChat() {
   chatState.open = false;
   fnStopChatPoll();
+}
+
+// 비로그인: PASS 본인인증 → PASS 임시회원으로 로그인한 뒤 바로 채팅을 연다
+const pass = usePassIdentity();
+const passBusy = pass.busy;
+const passErr = ref("");
+async function startPassChat() {
+  passErr.value = "";
+  const v = await pass.start();
+  if (!v) return;
+  const r = await authStore.passGuestLogin(v.identityVerificationId);
+  if (!r.ok) return void (passErr.value = r.message ?? "본인인증 로그인에 실패했습니다.");
+  chatState.needAuth = false;
+  if (!chatState.roomId) await fnLoadOrCreateRoom();
+  if (chatState.roomId && chatState.roomId !== "_local") fnStartChatPoll();
+  nextTick(() => chatInputRef.value?.focus());
 }
 
 function goLogin() {

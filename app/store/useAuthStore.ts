@@ -78,10 +78,21 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    /** 회원가입 — ecBeBo FoAuthController.join() 직접 호출(authSvc) (가입만, 자동로그인은 안 함) */
-    async register(name: string, email: string, password: string, passVerifyId?: string): Promise<{ ok: boolean; message?: string }> {
+    /** PASS 본인인증을 마친 비회원을 임시회원으로 로그인시킨다(같은 이름·휴대폰·생년월일이면 같은 임시회원) */
+    async passGuestLogin(identityVerificationId: string): Promise<{ ok: boolean; message?: string }> {
       try {
-        await authSvc.join(name, email, password, passVerifyId);
+        const res = await authSvc.passGuestLogin(identityVerificationId);
+        this.setSession(res.token, res.user);
+        return { ok: true };
+      } catch (err: unknown) {
+        return { ok: false, message: String((err as { data?: { message?: string } })?.data?.message ?? "본인인증 로그인에 실패했습니다.").split("::")[0]! };
+      }
+    },
+
+    /** 회원가입 — ecBeBo FoAuthController.join() 직접 호출(authSvc) (가입만, 자동로그인은 안 함) */
+    async register(name: string, email: string, password: string, passVerifyId?: string, extra?: Record<string, string>): Promise<{ ok: boolean; message?: string }> {
+      try {
+        await authSvc.join(name, email, password, passVerifyId, extra);
         return { ok: true };
       } catch (err: unknown) {
         const message = ((err as { response?: { data?: { message?: string } } })?.response?.data?.message
@@ -160,5 +171,7 @@ export const useAuthStore = defineStore("auth", {
 
   getters: {
     isStLoggedIn: (state) => !!state.token && !!state.user,
+    /** PASS 본인인증으로 들어온 임시회원(비회원 결제·채팅) 여부 */
+    isPassGuest: (state) => !!state.user?.userEmail?.endsWith("@guest.shopjoy"),
   },
 });

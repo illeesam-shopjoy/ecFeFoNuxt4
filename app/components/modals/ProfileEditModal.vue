@@ -12,6 +12,8 @@
         </div>
 
         <pass-verify-row v-if="!loading" class="mb-4" :verified="f.passVerifiedYn === 'Y'" :verified-date="f.passVerifiedDate" @verified="onPassVerified" />
+        <profile-img-upload v-if="!loading" v-model="f.profileImgUrl" class="mb-4" />
+        <sns-link-row v-if="!loading" class="mb-4" />
         <div v-if="loading" class="py-10 text-center text-gray-400 text-[0.9rem]">불러오는 중...</div>
         <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체(주소/성별은 슬롯) -->
         <fo-form v-else :columns="formCols" :form="f" :cols="2" :gap="12" min-col-width="140px" @submit="handleBtnAction('form-save')">
@@ -54,6 +56,7 @@
             </div>
           </template>
         </fo-form>
+        <recv-consent-row v-if="!loading" v-model="consent" class="mt-4" />
       </div>
     </div>
   </Teleport>
@@ -73,7 +76,11 @@ import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 import FoForm from "~/components/fo/FoForm.vue";
 import type { FoFormColumn } from "~/types/fo/foCompType";
 import PassVerifyRow from "~/components/my/PassVerifyRow.vue";
+import SnsLinkRow from "~/components/my/SnsLinkRow.vue";
+import ProfileImgUpload from "~/components/my/ProfileImgUpload.vue";
+import RecvConsentRow from "~/components/my/RecvConsentRow.vue";
 import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
+import type { MbRecvConsentType } from "~/types/mb/mbRecvConsentType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import { useAuthStore } from "~/store/useAuthStore";
 
@@ -101,9 +108,21 @@ const f = reactive({
   birthDate: "",
   passVerifiedYn: "N",
   passVerifiedDate: "",
+  profileImgUrl: "",
+  recvPhoneYn: "N",
+  recvKakaoYn: "N",
+  recvSmsYn: "N",
+  recvEmailYn: "N",
+  recvAdYn: "N",
   memberZipCode: "",
   memberAddr: "",
   memberAddrDetail: "",
+});
+
+// 수신 동의(체크박스 묶음) — f 의 recv*Yn 과 양방향으로 맞춘다
+const consent = computed<MbRecvConsentType>({
+  get: () => ({ recvPhoneYn: f.recvPhoneYn, recvKakaoYn: f.recvKakaoYn, recvSmsYn: f.recvSmsYn, recvEmailYn: f.recvEmailYn, recvAdYn: f.recvAdYn }),
+  set: (v) => Object.assign(f, v),
 });
 
 const formCols: FoFormColumn[] = [
@@ -168,6 +187,12 @@ async function save() {
       memberZipCode: f.memberZipCode,
       memberAddr: f.memberAddr,
       memberAddrDetail: f.memberAddrDetail,
+      profileImgUrl: f.profileImgUrl,
+      recvPhoneYn: f.recvPhoneYn,
+      recvKakaoYn: f.recvKakaoYn,
+      recvSmsYn: f.recvSmsYn,
+      recvEmailYn: f.recvEmailYn,
+      recvAdYn: f.recvAdYn,
     });
     // 헤더/드롭다운에 보이는 이름·휴대폰을 즉시 반영(localStorage 캐시 프로필도 함께 갱신)
     if (authStore.token && authStore.user) authStore.setSession(authStore.token, { ...authStore.user, userNm: saved.memberNm, userPhone: saved.memberPhone });

@@ -74,6 +74,7 @@ export default defineNuxtConfig({
     "/shop-right": { redirect: { to: "/shop", statusCode: 301 } },
     "/shop-3-col": { redirect: { to: "/shop", statusCode: 301 } },
     "/shop-4-col": { redirect: { to: "/shop", statusCode: 301 } },
+    "/account": { redirect: { to: "/my/profile", statusCode: 302 } }, // 옛 마이페이지 주소
   },
   // CDN: app/assets 폴더 전체(prod/{css,fonts,img,scss})를 /cdn 경로로 정적 서빙 (절대경로로 해석 보장)
   // 예: app/assets/prod/img/logo.png → /cdn/prod/img/logo.png
@@ -143,6 +144,8 @@ export default defineNuxtConfig({
       appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */
       tossPaymentClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY ?? "",
+      /** 토스 카드 등록(빌링) 클라이언트 키 — 'API 개별 연동' 키(결제위젯 키와 다름). 마이페이지 결제카드 등록용 */
+      tossBillingClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_BILLING_CLIENT_KEY ?? "",
       /** 포트원 스토어 ID / 본인인증(PASS) 채널 키 — 인증창 호출용(공개 값) */
       portoneStoreId: process.env.NUXT_PUBLIC_PORTONE_STORE_ID ?? "",
       portoneIdvChannelKey: process.env.NUXT_PUBLIC_PORTONE_IDV_CHANNEL_KEY ?? "",

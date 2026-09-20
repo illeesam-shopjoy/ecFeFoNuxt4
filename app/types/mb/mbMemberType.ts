@@ -24,6 +24,13 @@ export interface MbMemberType {
   memberMemo?: string; // 메모
   siteId?: string; // 사이트ID
   passVerifiedYn?: string; // PASS 본인인증 여부 Y/N
+  profileImgUrl?: string; // 프로필 이미지 URL
+  recvPhoneYn?: string; // 휴대폰 수신 동의 Y/N
+  recvKakaoYn?: string; // 카카오 수신 동의 Y/N
+  recvSmsYn?: string; // SMS 수신 동의 Y/N
+  recvEmailYn?: string; // 이메일 수신 동의 Y/N
+  recvAdYn?: string; // 광고 수신 동의 Y/N
+  recvAgreeDate?: string; // 수신 동의 변경 일시
   passVerifiedDate?: string; // PASS 본인인증 일시
   addrs?: MbMemberAddrType[]; // 배송지 목록
   // ── 공통(감사) 컬럼 ──

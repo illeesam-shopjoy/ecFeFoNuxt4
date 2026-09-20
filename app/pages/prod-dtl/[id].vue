@@ -48,7 +48,7 @@
                     activeTab === tab.id ? 'text-theme font-semibold bg-[#fbf6ee] after:bg-current' : 'font-medium bg-transparent text-gray-500 hover:text-gray-700 after:bg-transparent',
                   ]"
                   @click="scrollToSection(tab.id)"
-                >{{ tab.label }}</button>
+                >{{ tab.label }}<span v-if="tab.count != null" class="ml-1.5 inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-px text-[0.72rem] font-bold leading-[1.3]" :class="activeTab === tab.id ? 'bg-theme text-white' : tab.count > 0 ? 'bg-[#e8587a] text-white' : 'bg-[#e5e7eb] text-gray-500'">{{ tab.count }}</span></button>
               </div>
             </div>
           </div>
@@ -89,7 +89,7 @@
                 <div class="postbox__comments">
                   <!-- 제목: 리뷰(N)만 한 줄에 배치 -->
                   <div class="block mb-20">
-                    <h3 class="m-0 text-[1.35rem] font-bold text-gray-900 pb-3 border-b-2 border-[#e5e7eb]">상품평 ({{ totalReviewCount }})</h3>
+                    <h3 class="m-0 text-[1.35rem] font-bold text-gray-900 pb-3 border-b-2 border-[#e5e7eb]">상품평 <span class="ml-2 inline-flex min-w-[24px] items-center justify-center rounded-full px-2 py-px align-middle text-[0.8rem] font-bold leading-[1.4]" :class="totalReviewCount > 0 ? 'bg-[#e8587a] text-white' : 'bg-[#e5e7eb] text-gray-500'">{{ totalReviewCount }}</span></h3>
                   </div>
                   <!-- 첨부·모아보기는 그 아래 줄 -->
                   <div v-if="totalAttachmentCount > 0" class="flex flex-nowrap items-center gap-2 mb-20">
@@ -265,7 +265,7 @@
 
             <!-- Q&A 섹션 (2026-09-20) -->
             <div ref="secQna" id="sec-qna" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px]">
-              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">Q&amp;A <span class="ml-2 text-[0.85rem] font-normal text-[#9ca3af]">({{ qnaCount }})</span></h2>
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">Q&amp;A <span class="ml-2 inline-flex min-w-[24px] items-center justify-center rounded-full px-2 py-px align-middle text-[0.8rem] font-bold leading-[1.4]" :class="qnaCount > 0 ? 'bg-[#e8587a] text-white' : 'bg-[#e5e7eb] text-gray-500'">{{ qnaCount }}</span></h2>
               <prod-qna :prod-id="item.prodId" @count="qnaCount = $event" />
             </div>
 
@@ -420,11 +420,11 @@ watch(
 type TabId = "detail" | "size" | "review" | "qna" | "style";
 const qnaCount = ref(0);
 const tabs = computed(() => [
-  { id: "detail" as TabId, label: "상세정보" },
-  { id: "size" as TabId, label: "사이즈" },
-  { id: "review" as TabId, label: `상품평 (${totalReviewCount.value})` },
-  { id: "qna" as TabId, label: qnaCount.value ? `Q&A (${qnaCount.value})` : "Q&A" },
-  { id: "style" as TabId, label: "스타일" },
+  { id: "detail" as TabId, label: "상세정보", count: null as number | null },
+  { id: "size" as TabId, label: "사이즈", count: null as number | null },
+  { id: "review" as TabId, label: "상품평", count: totalReviewCount.value },
+  { id: "qna" as TabId, label: "Q&A", count: qnaCount.value },
+  { id: "style" as TabId, label: "스타일", count: null as number | null },
 ]);
 
 // 세탁 및 관리 — 백엔드에 상품별 데이터가 없어 ecFeBo 와 같은 공통 안내문(고정값)

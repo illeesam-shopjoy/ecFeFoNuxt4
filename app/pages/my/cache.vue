@@ -97,7 +97,10 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
     return my.resetSearch();
     // 캐쉬 충전 — ecBeBo FO 쪽 충전 API 가 없어 안내만 (ecFeBo 도 입력칸만 있음)
   } else if (cmd === "cash-charge") {
-    useNuxtApp().$toast.info("캐쉬 충전 기능은 준비 중입니다.");
+    const amt = Math.floor(Number(String(chargeForm.amount).replace(/[^0-9]/g, "")));
+    if (!amt || amt < 1000) return void useNuxtApp().$toast.error("충전 금액은 1,000원 이상 입력해 주세요.");
+    if (amt > 1000000) return void useNuxtApp().$toast.error("1회 충전은 1,000,000원까지 가능합니다.");
+    return navigateTo({ path: "/my/charge", query: { amount: String(amt) } });
     // 충전 금액 빠른 추가 (param: 더할 금액)
   } else if (cmd === "cash-chargeAdd") {
     chargeForm.amount = String(Number(chargeForm.amount || 0) + (param as number));

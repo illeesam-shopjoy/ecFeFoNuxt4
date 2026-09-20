@@ -3,7 +3,8 @@
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <!-- 2026-09-14(요청사항: "로그인 화면에서 큰베너 말고 작은배너로 보여도 될거 같아") —
          404/오류 페이지와 같은 compact(얇은 브레드크럼) 배너로 변경. -->
-    <breadcrumb-area title="로그인" subtitle="로그인" :compact="true" />
+    <!-- 2026-09-21(요청사항: "로그인도 배너 넣어줘") — 다른 화면처럼 큰 배너(제목 + 경로)를 다시 보여준다. -->
+    <breadcrumb-area title="로그인" subtitle="로그인" />
     <section class="login-area pt-100 pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row flex justify-center">
@@ -21,7 +22,9 @@
                     <label for="remember">로그인 상태 유지</label>
                   </span>
                   <span class="forgot-login ml-auto">
-                    <a href="#">비밀번호를 잊으셨나요?</a>
+                    <nuxt-link href="/find-account">아이디 찾기</nuxt-link>
+                    <span class="mx-1 text-gray-300">|</span>
+                    <nuxt-link href="/find-account?tab=pw">비밀번호 찾기</nuxt-link>
                   </span>
                 </div>
 
