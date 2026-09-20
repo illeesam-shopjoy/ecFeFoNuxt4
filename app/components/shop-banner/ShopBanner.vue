@@ -42,7 +42,7 @@ useComponentTitle('쇼핑 배너');
 import AppImage from "~/components/ui/AppImage.vue";
 
 defineProps<{ style_2?: boolean; style_3?: boolean }>();
-const products = useLatestProducts();
+const products = useCacheProducts();
 const { formatPrice } = usePrice();
 
 // 2026-09-13(요청사항: "할인 위에 Bottle With Wooden Cork / Hauteville Plywood Chair 가 있어야 해") —

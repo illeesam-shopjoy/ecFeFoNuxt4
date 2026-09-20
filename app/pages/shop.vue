@@ -499,7 +499,7 @@ const { data: brandList } = useAsyncData(
 // ── 사이드바: 상품 색상 — 지금까지 불러온 상품의 옵션값(색상은 ecBeBo 서버 필터가 아직 없음) ──
 
 // ── 사이드바: 추천 상품 — 최신 상품 24개 중 베스트 2개, 없으면 최신 2개(백엔드에 isBest 서버 필터 없음) ──
-const latestProducts = useLatestProducts();
+const latestProducts = useCacheProducts();
 const featuredProducts = computed(() => {
   const best = latestProducts.value.filter((p) => p.isBest);
   return (best.length ? best : latestProducts.value).slice(0, 2);

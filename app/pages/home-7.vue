@@ -346,7 +346,7 @@ import AppImage from "~/components/ui/AppImage.vue";
 import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
 import ProductItemTwo from "~/components/products/ProductItemTwo.vue";
 import VideoModal from "~/components/modals/VideoModal.vue";
-import { useBlogs } from "~/composables/useBlogs";
+import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -406,7 +406,7 @@ const { data: catData } = useAsyncData<CategoryTreeResponse>(
 const categoryItems = computed(() => (catData.value?.categoryTree ?? []).slice(3, 6));
 
 // 베스트 상품 + 추천 상품 — 최신 상품 24개 중 isBest, 없으면 최신순으로 대체(백엔드 목록 API에 isBest 필터가 없어 전체 카탈로그 없이는 서버에서 못 거름)
-const latestProducts = useLatestProducts();
+const latestProducts = useCacheProducts();
 const bestSaleProducts = computed(() => {
   const best = latestProducts.value.filter((p) => p.isBest);
   return best.length ? best : latestProducts.value;
@@ -466,7 +466,7 @@ const { data: fetchedTestimonials } = useAsyncData<TestimonialDataType[] | null>
 const testimonialData = computed<TestimonialDataType[]>(() => fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS);
 
 // 블로그 영역 2
-const { blogs } = useBlogs();
+const { blogs } = useCacheBlogs();
 // 2026-09-13 버그수정: blogContent는 실제 블로그 본문 HTML이라 예전 목업 데이터 시절의
 // "홈-7" 같은 태그 문자열과 절대 일치하지 않아 목록이 항상 비어 있었다 — 필터 제거,
 // 전체 블로그 중 최근 3건만 사용.

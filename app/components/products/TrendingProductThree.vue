@@ -70,7 +70,7 @@ import ProductItem from "./ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 
 // trending 플래그는 실 스키마에 없어 항상 false(mapProduct.ts) — 최신 상품 기준으로 노출한다.
-const products = useLatestProducts();
+const products = useCacheProducts();
 const big_item_1 = computed(() => products.value.filter((p) => p.bigImg)[0]);
 const big_item_2 = computed(() => products.value.filter((p) => p.bigImg)[1]);
 const trending_products = computed(() => products.value.slice(0, 4));

@@ -122,7 +122,7 @@ const slider_1 = ref<{ next(): void; prev(): void } | null>(null);
 const slider_2 = ref<{ next(): void; prev(): void } | null>(null);
 const slider_3 = ref<{ next(): void; prev(): void } | null>(null);
 // trending/topRated 플래그는 실 스키마에 없어 항상 false(mapProduct.ts) — 최신 상품 24개 기준으로 노출한다.
-const products = useLatestProducts();
+const products = useCacheProducts();
 const trending_products = computed(() => [
   { id: 1, items: products.value.slice(0, 3) },
   { id: 2, items: products.value.slice(3, 6) },

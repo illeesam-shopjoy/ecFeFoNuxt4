@@ -36,7 +36,7 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('블로그');
 import { ref, reactive, computed } from "vue";
-import { useBlogs } from "~/composables/useBlogs";
+import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import BlogSidebar from "../common/sidebar/BlogSidebar.vue";
 import FoPager from "~/components/fo/FoPager.vue";
 import { useClientPager } from "~/composables/useClientPager";
@@ -48,7 +48,7 @@ defineProps({
   left_side: { type: Boolean, default: false },
 });
 
-const { blogs, pending } = useBlogs();
+const { blogs, pending } = useCacheBlogs();
 // 2026-09-13 버그수정: blogContent는 실제 블로그 본문 HTML이라 예전 목업 데이터 시절의
 // "블로그-스탠다드" 같은 태그 문자열과 절대 일치하지 않아 목록이 항상 비어 있었다 —
 // 필터 제거, 전체 블로그 사용.

@@ -111,7 +111,7 @@ useHead({
 usePageTitle("홈 2");
 
 // 최신 상품 24개만 조회(전체 카탈로그 X) — trending 플래그는 실 스키마에 없어 항상 false(mapProduct.ts)라 최신순으로 노출.
-const products = useLatestProducts();
+const products = useCacheProducts();
 const trendingBigItem = computed(() => products.value.find((p) => p.bigImg));
 const trendingProducts = computed(() => products.value.slice(0, 6));
 const saleProducts = computed(() => products.value.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));

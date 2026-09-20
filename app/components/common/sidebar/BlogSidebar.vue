@@ -161,13 +161,13 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('블로그 사이드바');
 import { ref, computed } from "vue";
-import { useBlogs } from "~/composables/useBlogs";
+import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import AppImage from "~/components/ui/AppImage.vue";
 import { CDN_URL } from "~/conts/baseConst";
 import { type CoCategoryTreeType } from "~/types/coCategoryTreeType";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
-const { blogs, pending } = useBlogs();
+const { blogs, pending } = useCacheBlogs();
 
 const recentBlogs = computed(() => (blogs.value ?? []).slice(3, 6));
 
