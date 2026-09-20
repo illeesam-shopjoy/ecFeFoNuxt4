@@ -80,17 +80,11 @@
           </div>
         </div>
 
-        <!-- 오시는 길 -->
+        <!-- 오시는 길 — 카카오맵/네이버지도/구글지도 버튼으로 지도 교체(MapSwitch) -->
         <div class="bg-white border border-[#e5e7eb] rounded-lg overflow-hidden">
-          <div class="px-5 pt-4 pb-3 text-base font-extrabold text-gray-900 flex flex-wrap items-center gap-2">
+          <map-switch :addr="ADDR" :lat="LAT" :lng="LNG" toolbar-position="top" bar-class="px-5 pt-4 pb-3 text-base font-extrabold text-gray-900 flex flex-wrap items-center gap-2" height-css="clamp(240px, 36vw, 340px)">
             <span><i class="fas fa-map-marked-alt text-blue-500 mr-2"></i>오시는 길</span>
-            <span class="ml-auto flex gap-1.5">
-              <a :href="kakaoLink" target="_blank" rel="noopener" class="map-link" style="background: #fee500; color: #3c1e1e">카카오맵</a>
-              <a :href="naverLink" target="_blank" rel="noopener" class="map-link" style="background: #03c75a; color: #fff">네이버지도</a>
-              <a :href="googleLink" target="_blank" rel="noopener" class="map-link" style="background: #4285f4; color: #fff">구글지도</a>
-            </span>
-          </div>
-          <iframe :src="mapSrc" title="ShopJoy 위치 지도" width="100%" class="block border-0 h-[clamp(200px,32vw,280px)]" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </map-switch>
         </div>
       </div>
     </section>
@@ -102,6 +96,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
+import MapSwitch from "~/components/common/map/MapSwitch.vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 
 useHead({ title: "회사소개" });
@@ -142,24 +137,9 @@ const bizInfo = [
 ];
 
 // 오시는 길 — Location 화면과 동일 좌표/주소
-const LAT = 37.4407;
-const LNG = 127.1468;
-const ADDR_ENC = encodeURIComponent("경기도 성남시 중원구 성남대로 997번길 49-14");
-const mapSrc = `https://maps.google.com/maps?q=${ADDR_ENC}&output=embed&hl=ko&z=17`;
-const kakaoLink = `https://map.kakao.com/link/map/ShopJoy,${LAT},${LNG}`;
-const naverLink = `https://map.naver.com/v5/search/${ADDR_ENC}`;
-const googleLink = `https://maps.google.com/maps?q=${ADDR_ENC}`;
+// 성남대로 997번길 49-14 실제 좌표(OSM 지오코딩) — 이전 값(37.4407,127.1468)은 신흥역 부근이라 어긋났음
+const LAT = 37.41746;
+const LNG = 127.12611;
+const ADDR = "경기도 성남시 중원구 성남대로 997번길 49-14";
 </script>
 
-<style scoped>
-.map-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-</style>
