@@ -441,11 +441,58 @@ watch(
   { immediate: true }
 );
 
+// ── 토스페이먼츠 결제창 SDK v2 (클라이언트 전용) — 2026-09-20: 이 화면에서만 쓰는 useTossPayments 컴포저블을 이 파일로 병합 ──
+// @see https://docs.tosspayments.com/sdk/v2/js
+const TOSSPAYMENTS_SCRIPT = "https://js.tosspayments.com/v2/standard";
+type TossPaymentsFactory = (clientKey: string) => {
+  payment: (params: { customerKey: string }) => {
+    requestPayment: (options: {
+      method: string;
+      amount: { currency: string; value: number };
+      orderId: string;
+      orderName: string;
+      successUrl: string;
+      failUrl: string;
+      customerName?: string;
+    }) => Promise<void>;
+  };
+};
+const tossClientKey = (useRuntimeConfig().public as { tossPaymentClientKey?: string }).tossPaymentClientKey;
+
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+// 카드 결제창 호출 — 결제 성공/실패는 successUrl/failUrl(/checkout/success, /checkout/fail)로 돌아온다
+async function requestCardPayment(params: { amount: number; orderId: string; orderName: string; successUrl: string; failUrl: string; customerName?: string }) {
+  if (!tossClientKey) throw new Error("토스페이먼츠 클라이언트 키가 설정되지 않았습니다.");
+  await loadScript(TOSSPAYMENTS_SCRIPT);
+  const TossPayments = (window as unknown as { TossPayments?: TossPaymentsFactory }).TossPayments;
+  if (!TossPayments) throw new Error("토스페이먼츠 스크립트를 불러오지 못했습니다.");
+  const customerKey = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+  await TossPayments(tossClientKey).payment({ customerKey }).requestPayment({
+    method: "CARD",
+    amount: { currency: "KRW", value: params.amount },
+    orderId: params.orderId,
+    orderName: params.orderName,
+    successUrl: params.successUrl,
+    failUrl: params.failUrl,
+    ...(params.customerName && { customerName: params.customerName }),
+  });
+}
+
 // 결제 제출(옛 CheckoutArea)
 async function handleFormSubmit() {
   if (import.meta.server) return;
-  const { requestCardPayment, clientKey } = useTossPayments();
-  if (!clientKey) {
+  if (!tossClientKey) {
     await useAlert().openAlert("결제 설정이 없습니다. .env에 NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY를 설정해 주세요.");
     return;
   }

@@ -24,7 +24,7 @@ export interface CategoryTreeResponse {
   /**
    * 카테고리 id → 자기 자신 + 모든 하위 카테고리 id.
    * 상품은 보통 최하위(3단계) 카테고리에 속하는데 백엔드 categoryIds 필터는 정확히 일치만 지원하므로,
-   * 사이드바에서 상위/중간 카테고리를 고르면 이 목록으로 확장해서 조회한다(useShopProducts).
+   * 사이드바에서 상위/중간 카테고리를 고르면 이 목록으로 확장해서 조회한다(pages/shop.vue).
    */
   categoryIdToDescendants: Record<string, string[]>;
 }

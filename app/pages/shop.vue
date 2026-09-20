@@ -44,8 +44,8 @@
                           <h5 class="mb-0">
                             <button
                               type="button"
-                              @click="toggleAccordion(i); shopProducts.toggleCategory(item.categoryId)"
-                              :class="['shop-accordion-btn', expandedCategory[i] ? '' : 'collapsed', shopProducts.categoryIds.value.includes(item.categoryId) ? 'active' : '']"
+                              @click="toggleAccordion(i); toggleCategory(item.categoryId)"
+                              :class="['shop-accordion-btn', expandedCategory[i] ? '' : 'collapsed', categoryIds.includes(item.categoryId) ? 'active' : '']"
                               :aria-expanded="!!expandedCategory[i]"
                             >
                               {{ item.parentTitle }}
@@ -57,7 +57,7 @@
                             <div class="categories__list">
                               <ul>
                                 <li v-for="child in item.children" :key="child.id">
-                                  <a @click.prevent="shopProducts.toggleCategory(child.id)" href="#" :class="[shopProducts.categoryIds.value.includes(child.id) ? 'active' : '']">
+                                  <a @click.prevent="toggleCategory(child.id)" href="#" :class="[categoryIds.includes(child.id) ? 'active' : '']">
                                     {{ child.name }}
                                   </a>
                                 </li>
@@ -76,14 +76,14 @@
                 <div class="sidebar__widget mb-55">
                   <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                     <h3>가격별 필터</h3>
-                    <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetPrice">초기화</button>
+                    <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetPrice">초기화</button>
                   </div>
                   <div class="sidebar__widget-content">
                     <div class="price__slider">
                       <div id="slider-range"></div>
                       <div>
-                        <Slider v-model="shopProducts.priceRange.value" :tooltips="false" :max="500000" />
-                        <label for="amount">가격: {{ formatPrice(shopProducts.priceRange.value[0]) }} - {{ formatPrice(shopProducts.priceRange.value[1]) }}</label>
+                        <Slider v-model="priceRange" :tooltips="false" :max="500000" />
+                        <label for="amount">가격: {{ formatPrice(priceRange[0]) }} - {{ formatPrice(priceRange[1]) }}</label>
                       </div>
                     </div>
                   </div>
@@ -94,13 +94,13 @@
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-30 flex items-center justify-between">
                   <h3>사이즈</h3>
-                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetSize">초기화</button>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetSize">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="size">
                     <ul>
-                      <li v-for="size in SIZE_OPTIONS" :key="size" :class="`${shopProducts.sizeCds.value.includes(size) ? 'active' : ''}`">
-                        <a @click.prevent="shopProducts.toggleSize(size)" href="#">{{ size }}</a>
+                      <li v-for="size in SIZE_OPTIONS" :key="size" :class="`${sizeCds.includes(size) ? 'active' : ''}`">
+                        <a @click.prevent="toggleSize(size)" href="#">{{ size }}</a>
                       </li>
                     </ul>
                   </div>
@@ -111,14 +111,14 @@
               <div class="sidebar__widget mb-60">
                 <div class="sidebar__widget-title mb-20 flex items-center justify-between">
                   <h3>색상 선택</h3>
-                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetColor">초기화</button>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetColor">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="color__pick">
                     <form>
                       <ul>
                         <li v-for="(color, i) in allColor?.slice(0, 8)" :key="color">
-                          <button @click.prevent="shopProducts.setColor(color)" type="button" :class="`color color-${Number(i) + 1} ${shopProducts.colorFilter.value === color ? `active-${Number(i) + 1}` : ''}`"></button>
+                          <button @click.prevent="setColor(color)" type="button" :class="`color color-${Number(i) + 1} ${colorFilter === color ? `active-${Number(i) + 1}` : ''}`"></button>
                         </li>
                       </ul>
                     </form>
@@ -130,13 +130,13 @@
               <div class="sidebar__widget mb-50">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>브랜드</h3>
-                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="shopProducts.resetBrand">초기화</button>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetBrand">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
                   <div class="brand">
                     <ul>
                       <li v-for="b in brandList" :key="b.brandId">
-                        <a :class="`${shopProducts.brandIds.value.includes(b.brandId ?? '') ? 'active' : ''}`" @click.prevent="shopProducts.toggleBrand(b.brandId ?? '')" href="#">
+                        <a :class="`${brandIds.includes(b.brandId ?? '') ? 'active' : ''}`" @click.prevent="toggleBrand(b.brandId ?? '')" href="#">
                           {{ b.brandNm }}
                         </a>
                       </li>
@@ -191,13 +191,13 @@
               <div class="shop__header flex flex-wrap justify-between items-center mb-40">
                 <div class="shop__header-left">
                   <div class="show-text">
-                    <span>전체 {{ shopProducts.totalCount.value }}개 중 {{ shopProducts.rawCount.value }}개 표시</span>
+                    <span>전체 {{ totalCount }}개 중 {{ rawCount }}개 표시</span>
                   </div>
                 </div>
                 <div class="shop__header-right flex items-center justify-between sm:justify-end">
                   <!-- 2026-09-13: 정렬은 ecBeBo가 지원하는 컬럼(prodNm/regDate/salePrice)만 -->
                   <div class="sort-wrapper mr-30 pr-25 relative">
-                    <select :value="shopProducts.sort.value" @change="shopProducts.setSort(($event.target as HTMLSelectElement).value)">
+                    <select :value="sort" @change="setSort(($event.target as HTMLSelectElement).value)">
                       <option value="">기본 정렬(최신순)</option>
                       <option value="prodNm asc">이름순</option>
                       <option value="salePrice asc">가격 낮은순</option>
@@ -227,13 +227,13 @@
               <div id="pills-tabContent">
                 <Transition name="view-fade" mode="out-in">
                   <TransitionGroup v-if="viewMode === 'grid'" key="grid" tag="div" id="pills-grid" role="tabpanel" name="product-fade">
-                    <product-item v-for="item in shopProducts.items.value" :key="item.prodId" :item="item" />
+                    <product-item v-for="item in displayItems" :key="item.prodId" :item="item" />
                   </TransitionGroup>
                   <TransitionGroup v-else key="list" tag="div" id="pills-list" role="tabpanel" name="product-fade">
-                    <product-list-item v-for="item in shopProducts.items.value" :key="item.prodId" :item="item" />
+                    <product-list-item v-for="item in displayItems" :key="item.prodId" :item="item" />
                   </TransitionGroup>
                 </Transition>
-                <p v-if="!shopProducts.pending.value && !shopProducts.items.value.length" class="text-center py-40 text-gray-400">조건에 맞는 상품이 없습니다.</p>
+                <p v-if="!pending && !displayItems.length" class="text-center py-40 text-gray-400">조건에 맞는 상품이 없습니다.</p>
               </div>
 
               <!-- 2026-09-13(요청사항: "하단은 페이징을두지말고 더보기 자동 스크롤로 해줘") —
@@ -242,16 +242,16 @@
                    그대로 두되, 스크롤이 아직 센티넬까지 닿지 않았거나 자동 로딩을 못 미더워하는
                    사용자를 위해 눌러서도 다음 페이지를 부를 수 있는 버튼을 추가. -->
               <div ref="loadMoreSentinel" class="shop__load-more-area mt-40 text-center">
-                <span v-if="shopProducts.loadingMore.value" class="text-gray-400">불러오는 중…</span>
+                <span v-if="loadingMore" class="text-gray-400">불러오는 중…</span>
                 <button
-                  v-else-if="shopProducts.hasMore.value && shopProducts.items.value.length"
+                  v-else-if="hasMore && displayItems.length"
                   type="button"
                   class="os-btn os-btn-black"
-                  @click="shopProducts.loadMore"
+                  @click="loadMore"
                 >
                   더보기
                 </button>
-                <span v-else-if="shopProducts.items.value.length" class="text-gray-300 text-sm">마지막 상품입니다.</span>
+                <span v-else-if="displayItems.length" class="text-gray-300 text-sm">마지막 상품입니다.</span>
               </div>
             </div>
           </div>
@@ -274,8 +274,10 @@ import Slider from "@vueform/slider";
 import "@vueform/slider/themes/default.css";
 import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
 import { syBrandSvc } from "~/svc/fo/ec/sy/syBrandSvc";
-import { useShopProducts } from "~/composables/useShopProducts";
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
+import { pdProductSvc, type PdProductPageParams, type PdProductPagedResult } from "~/svc/fo/ec/pd/pdProductSvc";
+import { axiosSsr } from "~/utils/axiosSsr";
+import { type PdProductType } from "~/types/pdProductType";
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from "vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useSeoMeta({
@@ -290,16 +292,46 @@ const route = useRoute();
 const initialQuery = typeof route.query.q === "string" ? route.query.q : "";
 
 // ── 쇼핑 영역 — 2026-09-13(요청사항: "10000개가 될수도 있기에 페이징 api 조회 해야해") ──
-// /shop 전용 서버 페이징/멀티선택 필터 컴포저블(전체 상품 클라이언트 필터링 X).
-const shopProducts = useShopProducts(initialQuery);
+// 서버 페이징/멀티선택 필터(전체 상품 클라이언트 필터링 X). 2026-09-20: 이 화면에서만 쓰는 useShopProducts 컴포저블을 이 파일로 병합했다.
+// 카테고리/브랜드/사이즈는 전부 배열(멀티선택, 토글)로 ecBeBo(categoryIds/brandIds/sizeInfoCds IN 조건)에 넘겨 서버에서 필터링하고,
+// 가격범위도 서버(priceMin/priceMax)로 넘긴다. 색상(optionColors)만 옵션 테이블 조인 필터가 없어 "지금까지 불러온 페이지 안에서만" 보조로 거른다.
+const PAGE_SIZE = 12;
 const { formatPrice } = usePrice();
+
+/**
+ * 상품 목록 조회. /shop 은 SEO 단위화면이라 **서버 렌더링(SSR)의 첫 페이지만** server/api(같은 Lambda 안 내부 호출, axiosSsr)를 거쳐
+ * 검색엔진이 상품 링크·이름을 HTML 로 읽게 하고, 브라우저(필터 변경·더보기·클라이언트 내비게이션)는 svc 로 ecBeBo 를 직접 호출한다.
+ * server/api 는 배열 파라미터를 콤마 문자열로 받는다(server/api/fo/ec/pd/prod/page.get.ts).
+ */
+function fetchProducts(params: PdProductPageParams): Promise<PdProductPagedResult> {
+  if (!import.meta.server) return pdProductSvc.getPaged(params);
+  const q: Record<string, string | number> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12 };
+  if (params.categoryIds?.length) q.categoryIds = params.categoryIds.join(",");
+  if (params.brandIds?.length) q.brandIds = params.brandIds.join(",");
+  if (params.sizeCds?.length) q.sizeCds = params.sizeCds.join(",");
+  if (params.priceMin != null) q.priceMin = params.priceMin;
+  if (params.priceMax != null) q.priceMax = params.priceMax;
+  if (params.sort) q.sort = params.sort;
+  if (params.keyword) q.keyword = params.keyword;
+  return axiosSsr.get<PdProductPagedResult>("/api/fo/ec/pd/prod/page", { params: q }).then((r) => r.data);
+}
+const toggleIn = (arr: string[], value: string): string[] => (arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]);
+
+// 필터 상태(전부 배열=멀티선택, 토글)
+const categoryIds = ref<string[]>([]);
+const brandIds = ref<string[]>([]);
+const sizeCds = ref<string[]>([]);
+const sort = ref(""); // "" = 기본(등록일 최신순)
+const keyword = ref(initialQuery);
+const priceRange = ref<[number, number]>([0, 500000]);
+const colorFilter = ref(""); // 색상만 서버 필터가 없어 클라이언트 보조필터로 남김
 
 const viewMode = ref<"grid" | "list">("grid");
 
 // 2026-09-13(요청사항: "브랜드 클릭하니 화면이 백지현상" → "깜빡임 효과 안나오게 해줘") —
 // 필터 재조회 중(pending)에도 이미 보여주고 있던 목록은 그대로 유지하고(useAsyncData가
 // 알아서 유지해줌), 스켈레톤 전체화면 전환은 "정말 처음이라 아직 아무 상품도 없을 때"만.
-const isInitialLoading = computed(() => shopProducts.pending.value && shopProducts.items.value.length === 0);
+const isInitialLoading = computed(() => pending.value && displayItems.value.length === 0);
 
 // 2026-09-13: ecBeBo sizeInfoCd 실 enum 값(자유 텍스트가 아니라 고정 코드) — 상품 옵션(SKU)
 // 스캔이 아니라 상품 자체 필드라 서버에서 바로 IN 필터링된다.
@@ -313,6 +345,121 @@ const { data: catData } = useAsyncData<CategoryTreeResponse>(
   //   브라우저에서 불러오며 응답은 CDN 캐시(server/utils/cdnCache.ts)를 탄다.
   { default: () => ({ categoryTree: [], categoryIdToName: {}, categoryIdToDescendants: {} }), lazy: true, server: false }
 );
+
+// 사이드바에서 고른 카테고리를 하위 카테고리까지 확장해서 조회한다 — 백엔드 categoryIds 필터는 정확히 일치만 지원하고 상품은 최하위 카테고리에 속하기 때문.
+const expandCategoryIds = (ids: string[]): string[] => {
+  const map = catData.value?.categoryIdToDescendants ?? {};
+  return [...new Set(ids.flatMap((id) => map[id] ?? [id]))];
+};
+
+function buildParams(pageNo: number) {
+  const params: PdProductPageParams = { pageNo, pageSize: PAGE_SIZE };
+  if (categoryIds.value.length) params.categoryIds = expandCategoryIds(categoryIds.value);
+  if (brandIds.value.length) params.brandIds = brandIds.value;
+  if (sizeCds.value.length) params.sizeCds = sizeCds.value;
+  if (priceRange.value[0] > 0) params.priceMin = priceRange.value[0];
+  if (priceRange.value[1] < 500000) params.priceMax = priceRange.value[1];
+  if (sort.value) params.sort = sort.value;
+  if (keyword.value) params.keyword = keyword.value;
+  return params;
+}
+
+// 페이지 1(=필터 변경 시 리셋)은 useAsyncData로 — SSR도 이 결과를 그대로 받아 SEO 유지.
+// 2026-09-13 버그수정: "사이즈 XS만 여러번 클릭하니 화면 깜빡임" — useAsyncData 의 watch 옵션은 값이 바뀔 때마다 즉시 재조회해서
+// 토글 연타 시 매번 다른 결과가 화면에 반영돼 깜빡였다. watch 는 빼고 아래에서 300ms 디바운스로 직접 refresh() 를 호출해,
+// 클릭을 멈춘 뒤의 "최종 상태" 한 번만 서버에 물어본다.
+const { data: firstPage, pending, refresh } = useAsyncData<PdProductPagedResult>("shop-products-paged", () => fetchProducts(buildParams(1)));
+
+// 서버 렌더의 첫 페이지 조회가 일시적으로 실패하면(Ohio→NAS 콜드 지연 등) firstPage 가 비어 하이드레이션되고 클라이언트는 다시 조회하지 않는다
+// — 화면이 뜬 뒤 비어 있으면 브라우저가 ecBeBo 에서 1페이지를 직접 다시 가져온다.
+onMounted(() => {
+  if (!firstPage.value) refresh();
+});
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+watch(
+  [categoryIds, brandIds, sizeCds, sort, keyword, priceRange],
+  () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      refresh();
+    }, 300);
+  },
+  { deep: true }
+);
+onBeforeUnmount(() => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+});
+
+// 무한스크롤로 이어붙일 2페이지 이후 항목만 별도 보관 — 1페이지는 useAsyncData 의 data ref(firstPage)를 computed 로 그대로 합쳐 쓴다.
+// 2026-09-14 버그수정: 예전엔 watch(firstPage) 로 별도 items ref 에 옮겨 담았는데 SSR 단일 렌더 패스에선 그 watch 가 다시 실행된다는
+// 보장이 없어 /shop 최초 SSR HTML 에 상품이 0개로 나갔다(SEO 무의미). computed 는 읽는 시점의 firstPage.value 를 그대로 읽어 이 문제가 없다.
+const extraItems = ref<PdProductType[]>([]);
+const pageNo = ref(1);
+const loadingMore = ref(false);
+const extraHasMore = ref<boolean | null>(null); // loadMore 로 알아낸 마지막 페이지 기준 hasMore
+
+// 필터가 바뀌어 firstPage 자체가 새로 오면(=1페이지 재조회), 이어붙여뒀던 다음 페이지들은 버린다.
+watch(firstPage, () => {
+  extraItems.value = [];
+  pageNo.value = 1;
+  extraHasMore.value = null;
+});
+
+const items = computed<PdProductType[]>(() => [...(firstPage.value?.items ?? []), ...extraItems.value]);
+const totalCount = computed(() => firstPage.value?.pageTotalCount ?? 0);
+const rawCount = computed(() => items.value.length);
+const hasMore = computed(() => extraHasMore.value ?? firstPage.value?.hasMore ?? true);
+
+async function loadMore() {
+  if (loadingMore.value || pending.value || !firstPage.value || !hasMore.value) return; // 1페이지가 아직 없으면 2페이지부터 붙이지 않는다
+  loadingMore.value = true;
+  try {
+    const next = pageNo.value + 1;
+    const res = await pdProductSvc.getPaged(buildParams(next));
+    extraItems.value = [...extraItems.value, ...res.items];
+    pageNo.value = next;
+    extraHasMore.value = res.hasMore;
+  } catch (err) {
+    console.error("[shop] 더보기 로드 실패:", err);
+  } finally {
+    loadingMore.value = false;
+  }
+}
+
+// 사이드바 색상 스와치 — 지금까지 불러온 상품의 옵션 색상(색상 필터 적용 전 기준이라 선택해도 목록이 줄지 않는다).
+const allColor = computed(() => {
+  const codes = new Set<string>();
+  items.value.forEach((p) => p.optionColors?.forEach((o) => codes.add(o.optionCode ?? String(o.optionId))));
+  return Array.from(codes);
+});
+
+// 색상만 클라이언트 보조필터 적용 — 나머지는 전부 서버에서 이미 걸러져 온 결과.
+const displayItems = computed(() => {
+  if (!colorFilter.value) return items.value;
+  return items.value.filter((p) => p.optionColors?.some((o) => (o.optionCode ?? String(o.optionId)) === colorFilter.value));
+});
+
+const toggleCategory = (id: string) => (categoryIds.value = toggleIn(categoryIds.value, id));
+const toggleBrand = (id: string) => (brandIds.value = toggleIn(brandIds.value, id));
+const toggleSize = (code: string) => (sizeCds.value = toggleIn(sizeCds.value, code));
+const setColor = (code: string) => (colorFilter.value = colorFilter.value === code ? "" : code);
+const setSort = (v: string) => (sort.value = v);
+const resetCategory = () => (categoryIds.value = []);
+const resetBrand = () => (brandIds.value = []);
+const resetSize = () => (sizeCds.value = []);
+const resetPrice = () => (priceRange.value = [0, 500000]);
+const resetColor = () => (colorFilter.value = "");
+function resetAll() {
+  categoryIds.value = [];
+  brandIds.value = [];
+  sizeCds.value = [];
+  sort.value = "";
+  keyword.value = "";
+  priceRange.value = [0, 500000];
+  colorFilter.value = "";
+}
 
 const parentCategories = computed(() => {
   const seen = new Set<string>();
@@ -333,11 +480,11 @@ function toggleAccordion(i: number) {
 // 초기화를 눌러도 펼쳐진 아코디언은 그대로 남아있어서, 실제로는 아무 카테고리도 선택 안 됐는데
 // 펼쳐져 있던 부모들만 주황색으로 남아 "선택된 것처럼" 보였다 — 초기화 시 아코디언도 다 접는다.
 function resetCategoryFilter() {
-  shopProducts.resetCategory();
+  resetCategory();
   Object.keys(expandedCategory).forEach((k) => delete expandedCategory[Number(k)]);
 }
 function resetAllFilters() {
-  shopProducts.resetAll();
+  resetAll();
   Object.keys(expandedCategory).forEach((k) => delete expandedCategory[Number(k)]);
 }
 
@@ -350,7 +497,6 @@ const { data: brandList } = useAsyncData(
 );
 
 // ── 사이드바: 상품 색상 — 지금까지 불러온 상품의 옵션값(색상은 ecBeBo 서버 필터가 아직 없음) ──
-const allColor = shopProducts.allColors;
 
 // ── 사이드바: 추천 상품 — 최신 상품 24개 중 베스트 2개, 없으면 최신 2개(백엔드에 isBest 서버 필터 없음) ──
 const latestProducts = useLatestProducts();
@@ -366,7 +512,7 @@ onMounted(() => {
   if (typeof IntersectionObserver === "undefined" || !loadMoreSentinel.value) return;
   observer = new IntersectionObserver(
     (entries) => {
-      if (entries[0]?.isIntersecting) shopProducts.loadMore();
+      if (entries[0]?.isIntersecting) loadMore();
     },
     { rootMargin: "200px" }
   );
