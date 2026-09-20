@@ -39,22 +39,52 @@
       </template>
     </div>
 
-    <!-- 썸네일 가로 목록 (메인 이미지 하단). 첫 번째(기본이미지)에 뱃지 -->
-    <div v-if="images.length" class="flex flex-row gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist">
-      <button
-        v-for="(src, i) in images"
-        :key="src"
-        type="button"
-        role="tab"
-        :aria-selected="i === index"
-        :title="i === 0 ? '기본이미지' : `이미지 ${i + 1}`"
-        :class="['relative m-0 h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg border-2 bg-[#f4f5f5] p-0 cursor-pointer transition-colors', i === index ? 'border-[#666]' : 'border-[#e5e7eb] hover:border-[#bbb]']"
-        @click="index = i"
+    <!-- 썸네일 가로 목록 (메인 이미지 하단). 첫 번째(기본이미지)에 뱃지, 지금 보고 있는 이미지는 진한 테두리+그림자로 강조하고 나머지는 흐리게.
+         2026-09-20(요청사항: "선택된 이미지의 썸네일 강조표시 / 썸네일이 너무 많으면 좌우 화살표") — 넘치면 좌/우 화살표가 나타난다. -->
+    <div v-if="images.length" class="relative">
+      <div
+        ref="stripRef"
+        class="flex flex-row gap-2 overflow-x-auto py-1 px-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="tablist"
+        @scroll.passive="updateArrows"
       >
-        <img :src="src" :alt="`${item.prodNm} 썸네일 ${i + 1}`" class="block h-full w-full object-cover" loading="lazy" />
-        <span v-if="i === 0" class="absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#e8587a] shadow-[0_1px_3px_rgba(0,0,0,0.25)]" aria-label="기본이미지">
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.7 7.1-.6z" /></svg>
-        </span>
+        <button
+          v-for="(src, i) in images"
+          :key="src"
+          ref="thumbRefs"
+          type="button"
+          role="tab"
+          :aria-selected="i === index"
+          :title="i === 0 ? '기본이미지' : `이미지 ${i + 1}`"
+          :class="[
+            'relative m-0 h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg border-2 bg-[#f4f5f5] p-0 cursor-pointer transition-all duration-150',
+            i === index ? 'border-[#222] opacity-100 shadow-[0_2px_8px_rgba(0,0,0,0.3)] scale-[1.04]' : 'border-[#e5e7eb] opacity-55 hover:opacity-100 hover:border-[#bbb]',
+          ]"
+          @click="index = i"
+        >
+          <img :src="src" :alt="`${item.prodNm} 썸네일 ${i + 1}`" class="block h-full w-full object-cover" loading="lazy" />
+          <span v-if="i === 0" class="absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#e8587a] shadow-[0_1px_3px_rgba(0,0,0,0.25)]" aria-label="기본이미지">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.7 7.1-.6z" /></svg>
+          </span>
+        </button>
+      </div>
+      <button
+        v-if="canLeft"
+        type="button"
+        aria-label="이전 썸네일"
+        class="absolute left-0 top-0 z-10 flex h-full w-9 items-center justify-start border-0 bg-gradient-to-r from-white via-white/90 to-transparent pl-1 text-[#444] cursor-pointer"
+        @click="scrollStrip(-1)"
+      >
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-[0_1px_5px_rgba(0,0,0,0.25)]"><i class="fas fa-chevron-left text-[0.7rem]"></i></span>
+      </button>
+      <button
+        v-if="canRight"
+        type="button"
+        aria-label="다음 썸네일"
+        class="absolute right-0 top-0 z-10 flex h-full w-9 items-center justify-end border-0 bg-gradient-to-l from-white via-white/90 to-transparent pr-1 text-[#444] cursor-pointer"
+        @click="scrollStrip(1)"
+      >
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-[0_1px_5px_rgba(0,0,0,0.25)]"><i class="fas fa-chevron-right text-[0.7rem]"></i></span>
       </button>
     </div>
 
@@ -81,7 +111,7 @@
  * 이미지 목록 = 기본이미지(bigImg) → 보조(thumbImg) → 나머지(relatedImages), 중복 제거. 서버 렌더(SEO 최소 정보)에는 relatedImages 가 비어 있어
  * 기본/보조 이미지만 보이다가 브라우저가 전체 정보를 받으면 나머지 썸네일이 채워진다(useSeoDetail).
  */
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import type { PdProductType } from "~/types/pdProductType";
 
@@ -102,6 +132,43 @@ function move(step: number) {
   if (n < 2) return;
   index.value = (index.value + step + n) % n;
 }
+
+// ── 썸네일 스트립: 좌/우 화살표 + 선택 썸네일 자동 노출 ─────────────────────
+const stripRef = ref<HTMLElement | null>(null);
+const thumbRefs = ref<HTMLElement[]>([]);
+const canLeft = ref(false);
+const canRight = ref(false);
+function updateArrows() {
+  const el = stripRef.value;
+  if (!el) return;
+  canLeft.value = el.scrollLeft > 2;
+  canRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+}
+function scrollStrip(dir: -1 | 1) {
+  const el = stripRef.value;
+  if (!el) return;
+  el.scrollBy({ left: dir * Math.max(el.clientWidth * 0.8, 80), behavior: "smooth" });
+}
+let stripObserver: ResizeObserver | null = null;
+onMounted(() => {
+  updateArrows();
+  if (stripRef.value && typeof ResizeObserver !== "undefined") {
+    stripObserver = new ResizeObserver(updateArrows);
+    stripObserver.observe(stripRef.value);
+  }
+});
+onBeforeUnmount(() => stripObserver?.disconnect());
+watch(images, () => nextTick(updateArrows));
+// 화살표(메인 이미지·라이트박스)나 클릭으로 선택이 바뀌면 그 썸네일이 스트립 안에 보이도록 스크롤한다 — 스트립만 움직이고 페이지는 움직이지 않는다
+watch(index, () => {
+  nextTick(() => {
+    const strip = stripRef.value;
+    const el = thumbRefs.value?.[index.value];
+    if (!strip || !el) return;
+    const left = el.offsetLeft - (strip.clientWidth - el.clientWidth) / 2;
+    strip.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  });
+});
 
 const zoomOpen = ref(false);
 function onKey(e: KeyboardEvent) {

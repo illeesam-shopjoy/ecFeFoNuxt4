@@ -1,7 +1,7 @@
 <template>
   <!-- 2026-09-20(요청사항: 상품상세 "그 밖의 정보들") — ecFeBo Q&A 목록. 백엔드 GET /fo/ec/pd/prod/{id}/qna 를 브라우저가 직접 조회한다(작성은 아직 없음, 조회 전용). -->
   <div>
-    <div v-if="pending" class="rounded-xl border border-[#e5e7eb] bg-white p-10 text-center text-[#9ca3af]">불러오는 중...</div>
+    <div v-if="!loaded" class="rounded-xl border border-[#e5e7eb] bg-white p-10 text-center text-[#9ca3af]">불러오는 중...</div>
     <div v-else-if="!list.length" class="rounded-xl border border-[#e5e7eb] bg-white p-10 text-center text-[#9ca3af]">등록된 Q&amp;A가 없습니다.</div>
     <div v-else class="flex flex-col gap-3">
       <div v-for="q in list" :key="q.prodQnaId" class="rounded-xl border border-[#e5e7eb] bg-white p-5">
@@ -37,8 +37,11 @@ const props = defineProps<{ prodId: string }>();
 const emit = defineEmits<{ (e: "count", n: number): void }>();
 
 // SEO 대상이 아니라 서버 렌더에서는 뺀다 — 브라우저가 ecBeBo 를 직접 호출
-const { data, pending } = useAsyncData<PdQnaItem[]>(`prod-qna-${props.prodId}`, () => pdProductSvc.getQna(props.prodId).catch(() => []), { default: () => [], lazy: true, server: false });
+const { data, status } = useAsyncData<PdQnaItem[]>(`prod-qna-${props.prodId}`, () => pdProductSvc.getQna(props.prodId).catch(() => []), { default: () => [], lazy: true, server: false });
 const list = computed(() => data.value ?? []);
+// "불러오는 중"은 서버 렌더와 하이드레이션 시점의 상태(idle/pending)가 달라 pending 으로 판단하면 하이드레이션 불일치가 난다 —
+// 조회가 끝났는지(success/error)만 기준으로 삼으면 서버·브라우저 첫 렌더가 항상 같다(둘 다 "불러오는 중").
+const loaded = computed(() => status.value === "success" || status.value === "error");
 watch(list, (l) => emit("count", l.length), { immediate: true });
 
 const ymdDot = (v?: string | null) => (v ? String(v).slice(0, 10).replace(/-/g, ".") : "");

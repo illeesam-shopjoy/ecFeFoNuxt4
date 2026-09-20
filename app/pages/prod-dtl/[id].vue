@@ -37,13 +37,15 @@
           <div class="[position:sticky] z-40 bg-white border-b-2 border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.06)] min-h-[52px]" ref="tabNavRef" :style="{ top: headerH + 'px' }">
             <div class="max-w-7xl mx-auto px-4">
               <div class="flex justify-start sm:justify-center gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <!-- 2026-09-20(요청사항: 탭 강조) — 지금 보고 있는 섹션의 탭은 굵은 글씨 + 아래 밑줄 + 옅은 배경 -->
                 <button
                   v-for="tab in tabs"
                   :key="tab.id"
                   type="button"
+                  :aria-current="activeTab === tab.id ? 'true' : undefined"
                   :class="[
-                    'px-5 sm:px-7 py-4 text-base font-medium bg-transparent border-0 border-b-[3px] -mb-0.5 cursor-pointer transition-colors tracking-wide whitespace-nowrap',
-                    activeTab === tab.id ? 'text-theme border-theme font-bold' : 'text-gray-500 border-transparent hover:text-gray-700',
+                    'relative px-5 sm:px-7 py-4 text-base border-0 cursor-pointer transition-colors tracking-wide whitespace-nowrap after:absolute after:inset-x-3 after:bottom-0 after:h-[3px] after:rounded-t after:transition-colors',
+                    activeTab === tab.id ? 'text-theme font-semibold bg-[#fbf6ee] after:bg-current' : 'font-medium bg-transparent text-gray-500 hover:text-gray-700 after:bg-transparent',
                   ]"
                   @click="scrollToSection(tab.id)"
                 >{{ tab.label }}</button>
@@ -416,12 +418,28 @@ function scrollToSection(id: TabId) {
   window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
 }
 
+// 활성 탭 — 스크롤 위치 기준: 고정 탭바 바로 아래(기준선)를 지나간 마지막 섹션이 "지금 보고 있는 섹션"이다.
+// (예전 IntersectionObserver 는 화면 20~35% 띠를 지나는 섹션만 잡아 짧은 섹션(Q&A/스타일)을 건너뛰거나 못 잡았다.)
+const TAB_ORDER: TabId[] = ["detail", "size", "review", "qna", "style"];
+function updateActiveTab() {
+  const anchor = headerH.value + (tabNavRef.value?.offsetHeight ?? 52) + 24;
+  let current: TabId = "detail";
+  for (const id of TAB_ORDER) {
+    const el = sectionEl(id);
+    if (el && el.getBoundingClientRect().top <= anchor) current = id;
+  }
+  // 페이지 맨 아래까지 내려가면(뒤에 관련 상품만 남음) 마지막 섹션을 활성으로
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) current = "style";
+  activeTab.value = current;
+}
+
 // 하단 고정 구매바 — 본문 구매 버튼 영역이 헤더 아래로 완전히 지나가면 나타난다
 const detailRef = ref<InstanceType<typeof ProductDetailsContent> | null>(null);
 const showBuyBar = ref(false);
 let scrollRaf = 0;
 function updateBuyBar() {
   scrollRaf = 0;
+  updateActiveTab();
   const buyEl = detailRef.value?.getBuyEl?.();
   showBuyBar.value = buyEl ? buyEl.getBoundingClientRect().bottom < headerH.value : false;
 }
@@ -429,8 +447,6 @@ function onScroll() {
   if (!scrollRaf) scrollRaf = requestAnimationFrame(updateBuyBar);
 }
 
-// IntersectionObserver: 스크롤 중 활성 탭 자동 변경
-let observer: IntersectionObserver | null = null;
 let headerObserver: ResizeObserver | null = null;
 onMounted(() => {
   // 고정 헤더 높이 추적
@@ -443,27 +459,10 @@ onMounted(() => {
     headerObserver.observe(headerEl);
   }
 
-  observer = new IntersectionObserver(
-    (records) => {
-      for (const record of records) {
-        if (record.isIntersecting) {
-          const id = record.target.id.replace("sec-", "") as TabId;
-          activeTab.value = id;
-        }
-      }
-    },
-    { rootMargin: "-20% 0px -65% 0px", threshold: 0 }
-  );
-  (["detail", "size", "review", "qna", "style"] as TabId[]).forEach((id) => {
-    const el = sectionEl(id);
-    if (el) observer!.observe(el);
-  });
-
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 });
 onUnmounted(() => {
-  observer?.disconnect();
   headerObserver?.disconnect();
   window.removeEventListener("scroll", onScroll);
   if (scrollRaf) cancelAnimationFrame(scrollRaf);
