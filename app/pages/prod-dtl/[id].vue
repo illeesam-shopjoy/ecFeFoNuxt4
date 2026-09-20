@@ -147,7 +147,7 @@
                               <p>{{ review.reviewContent || '내용 없음' }}</p>
                               <ul v-if="otherFilesOf(review).length" class="m-0 mt-2 flex list-none flex-col gap-1 p-0">
                                 <li v-for="f in otherFilesOf(review)" :key="f.attachId" class="text-[0.8rem]">
-                                  <a :href="f.url" target="_blank" rel="noopener" :download="f.fileNm" class="text-[#2563eb] hover:underline"><i class="far fa-file mr-1"></i>{{ f.fileNm }}</a>
+                                  <a :href="f.cdnImgUrl" target="_blank" rel="noopener" :download="f.fileNm" class="text-[#2563eb] hover:underline"><i class="far fa-file mr-1"></i>{{ f.fileNm }}</a>
                                 </li>
                               </ul>
                             </div>
@@ -572,7 +572,7 @@ const isLoggedIn = computed(() => authStore.isStLoggedIn);
 const myMemberId = computed(() => authStore.user?.memberId ?? "");
 // 회원 글은 본인만, 비회원 글(memberId 없음)은 누구에게나 버튼을 보이고 글 비밀번호로 서버가 판정한다
 const canModifyReview = (r: PdReviewType) => !r.memberId || (isLoggedIn.value && r.memberId === myMemberId.value);
-const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.url && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
+const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.cdnImgUrl && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
 // 서버 허용 확장자(FileUploadUtil) 중 이미지·문서·압축·동영상 — 동영상은 파일당 100MB(AttachUploader 기본)
 const REVIEW_ATTACH_ACCEPT = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"];
 const guestNm = ref("");

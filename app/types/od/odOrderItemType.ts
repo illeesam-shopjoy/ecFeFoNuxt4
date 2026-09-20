@@ -25,6 +25,7 @@ export interface OdOrderItemType {
   saveUseAmt?: number; // 사용 적립금 (주문상품별 안분금액)
   saveSchdAmt?: number; // 적립 예정금액 (구매확정 전=예상, 확정 후=실적립)
   orderItemStatusCd?: string; // 품목 주문 상태 — ORDER_ITEM_STATUS_CD {ORDERED:주문완료, PAID:결제완료, PREPARING:준비…
+  orderItemStatusCdNm?: string; // 품목상태 코드 라벨
   orderItemStatusCdBefore?: string; // 변경 전 품목상태 — ORDER_ITEM_STATUS_CD
   claimYn?: string; // 클레임 진행 중 여부 Y/N
   buyConfirmYn?: string; // 구매확정여부 Y/N
@@ -39,6 +40,7 @@ export interface OdOrderItemType {
   giftId?: string; // 발급 사은품ID (pm_gift.gift_id)
   outboundShippingFee?: number; // 해당 항목의 배송료 (부분배송 시)
   dlivCourierCd?: string; // 해당 항목의 배송 택배사 — COURIER {CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배 외}
+  dlivCourierCdNm?: string; // 배송택배사 코드 라벨
   dlivTrackingNo?: string; // 해당 항목의 배송 송장번호
   dlivShipDate?: string; // 해당 항목의 출고일시
   regDate?: string; // 등록일
@@ -50,8 +52,6 @@ export interface OdOrderItemType {
   skuCode?: string; // SKU 코드 (pd_prod_sku 조인, 2026-09-14: prodSkuCode → skuCode)
   prodOptNm1?: string; // 옵션1명 (조인 표시용)
   prodOptNm2?: string; // 옵션2명 (조인 표시용)
-  orderItemStatusCdNm?: string; // 품목상태 코드 라벨
-  dlivCourierCdNm?: string; // 배송택배사 코드 라벨
   memberNm?: string; // 주문자명 (od_order 스냅샷)
   vendorNm?: string; // 판매업체명 (pd_prod → sy_vendor)
   mdUserNm?: string; // 담당MD명 (pd_prod → sy_user)
@@ -76,4 +76,10 @@ export interface OdOrderItemType {
   claimTypeCdNm?: string; // 클레임유형 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimStatusCd?: string; // 클레임상세상태 — 최신 클레임항목 1건 대표 표시, CLAIM_ITEM_STATUS_CD {REQUESTED:신청, APPRO…
   claimStatusCdNm?: string; // 클레임상세상태 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
+  // ── 공통(감사) 컬럼 ──
+  regBy?: string; // 등록자 (reg_by)
+  regByNm?: string; // 등록자명 (reg_by_nm)
+  updBy?: string; // 수정자 (upd_by)
+  updByNm?: string; // 수정자명 (upd_by_nm)
+  regSiteId?: string; // 등록 사이트ID (reg_site_id)
 }

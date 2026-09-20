@@ -5,8 +5,10 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { beConfig } from "~/utils/beConfig";
+import type { PdCategoryType } from "~/types/pd/pdCategoryType";
 
-export interface CategoryTreeItem {
+/** 컬럼명은 pd_category 그대로(PdCategoryType 상속) + 트리/화면용 파생값 */
+export interface CategoryTreeItem extends Partial<Omit<PdCategoryType, "categoryId">> {
   categoryId: string;
   /** 카테고리 배너 이미지 */
   img: string;
@@ -61,6 +63,12 @@ export const pdCategorySvc = {
       .slice(0, 6)
       .map((c, idx) => ({
         categoryId: c.categoryId,
+        categoryNm: c.categoryNm,
+        parentCategoryId: c.parentCategoryId ?? undefined,
+        categoryDepth: c.categoryDepth ?? 1,
+        sortOrd: c.sortOrd ?? undefined,
+        imgUrl: c.imgUrl ?? undefined,
+        categoryDesc: c.categoryDesc ?? undefined,
         parentTitle: c.categoryNm,
         value: c.categoryId,
         children: childrenByParent.get(c.categoryId) ?? [],

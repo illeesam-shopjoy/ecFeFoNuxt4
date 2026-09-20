@@ -92,6 +92,10 @@ export interface BeAttachFileItem {
   cdnImgUrl?: string | null;
   thumbCdnUrl?: string | null;
   thumbUrl?: string | null;
+  refTableNm?: string | null;
+  refId?: string | null;
+  storagePath?: string | null;
+  sortOrd?: number | null;
 }
 
 export interface BeReviewItem {
@@ -237,9 +241,21 @@ export const isVideoExt = (ext?: string | null) => VIDEO_EXT.has((ext ?? "").toL
  */
 export function mapAttachFiles(list: BeAttachFileItem[] | null | undefined, cdnBase: string): SyAttachType[] {
   return (list ?? []).map((f) => {
-    const url = fixInternalCdnUrl(resolveCdnUrl(f.cdnImgUrl || f.attachUrl, cdnBase), cdnBase) ?? "";
-    const thumb = fixInternalCdnUrl(resolveCdnUrl(f.thumbCdnUrl || f.thumbUrl, cdnBase), cdnBase);
-    return { attachId: f.attachId, fileNm: f.fileNm ?? "", fileExt: (f.fileExt ?? "").toLowerCase(), fileSize: Number(f.fileSize ?? 0), url, thumbUrl: thumb || undefined };
+    const fix = (u?: string | null) => fixInternalCdnUrl(resolveCdnUrl(u, cdnBase), cdnBase) || undefined;
+    return {
+      attachId: f.attachId,
+      refTableNm: f.refTableNm ?? undefined,
+      refId: f.refId ?? undefined,
+      fileNm: f.fileNm ?? "",
+      fileExt: (f.fileExt ?? "").toLowerCase(),
+      fileSize: Number(f.fileSize ?? 0),
+      storagePath: f.storagePath ?? undefined,
+      attachUrl: f.attachUrl ?? undefined,
+      cdnImgUrl: fix(f.cdnImgUrl || f.attachUrl), // 열기/재생용(호스트 보정)
+      thumbUrl: f.thumbUrl ?? undefined,
+      thumbCdnUrl: fix(f.thumbCdnUrl || f.thumbUrl),
+      sortOrd: f.sortOrd ?? undefined,
+    };
   });
 }
 
@@ -266,7 +282,7 @@ export function mapReview(r: BeReviewItem, cdnBase: string): PdReviewType {
   const files = mapAttachFiles(r.attachFiles, cdnBase);
   if (files.length) {
     base.attachFiles = files;
-    base.attachments = files.filter((f) => f.url && (isImageExt(f.fileExt) || isVideoExt(f.fileExt))).map((f) => f.url);
+    base.attachments = files.filter((f) => f.cdnImgUrl && (isImageExt(f.fileExt) || isVideoExt(f.fileExt))).map((f) => f.cdnImgUrl as string);
   }
   if (r.reviewTitle) base.reviewTitle = r.reviewTitle;
   if (replies.length) base.replies = replies;

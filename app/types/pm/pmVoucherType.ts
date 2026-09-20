@@ -13,7 +13,13 @@ export interface PmVoucherType {
   voucherStatusCdBefore?: string;
   voucherDesc?: string;
   useYn?: string;
-  regDate?: string;
+  regDate?: string; // 등록일시 (reg_date)
   siteId?: string; // 사이트ID
   updDate?: string;
+  // ── 공통(감사) 컬럼 ──
+  regBy?: string; // 등록자 (reg_by)
+  regByNm?: string; // 등록자명 (reg_by_nm)
+  updBy?: string; // 수정자 (upd_by)
+  updByNm?: string; // 수정자명 (upd_by_nm)
+  regSiteId?: string; // 등록 사이트ID (reg_site_id)
 }

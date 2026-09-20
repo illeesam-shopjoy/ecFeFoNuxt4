@@ -28,13 +28,13 @@
             <div v-if="q.scrtYn !== 'Y' && (q.files?.length ?? 0) > 0" class="mt-3 flex flex-col gap-2">
               <div v-if="mediaOf(q).length" class="flex flex-wrap gap-1.5">
                 <button v-for="(m, i) in mediaOf(q)" :key="m.attachId" type="button" class="h-16 w-16 shrink-0 cursor-pointer overflow-hidden rounded border border-gray-200 bg-gray-100 p-0 hover:opacity-90" :title="m.fileNm" @click="openViewer(mediaOf(q), i)">
-                  <img v-if="isImageExt(m.fileExt)" :src="m.thumbUrl || m.url" :alt="m.fileNm" class="h-full w-full object-cover" />
+                  <img v-if="isImageExt(m.fileExt)" :src="m.thumbCdnUrl || m.cdnImgUrl" :alt="m.fileNm" class="h-full w-full object-cover" />
                   <span v-else class="flex h-full w-full items-center justify-center bg-gray-500"><i class="fa fa-play text-white"></i></span>
                 </button>
               </div>
               <ul v-if="otherFilesOf(q).length" class="m-0 flex list-none flex-col gap-1 p-0">
                 <li v-for="f in otherFilesOf(q)" :key="f.attachId" class="text-[0.8rem]">
-                  <a :href="f.url" target="_blank" rel="noopener" :download="f.fileNm" class="text-[#2563eb] hover:underline"><i class="far fa-file mr-1"></i>{{ f.fileNm }}</a>
+                  <a :href="f.cdnImgUrl" target="_blank" rel="noopener" :download="f.fileNm" class="text-[#2563eb] hover:underline"><i class="far fa-file mr-1"></i>{{ f.fileNm }}</a>
                   <span class="ml-1 text-gray-400">{{ fmtSize(f.fileSize) }}</span>
                 </li>
               </ul>
@@ -115,15 +115,15 @@ const fmtSize = (n: number) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)}MB` :
 const writerLabel = (q: PdQnaItem) => q.writerNm || (q.memberId ? q.memberId.slice(0, 1) + "**" : "비회원");
 // 회원 글은 본인만, 비회원 글(memberId 없음)은 누구에게나 버튼을 보이고 글 비밀번호로 서버가 판정한다
 const canModify = (q: PdQnaItem) => !q.memberId || (isLoggedIn.value && q.memberId === myMemberId.value);
-const mediaOf = (q: PdQnaItem) => (q.files ?? []).filter((f) => f.url && (isImageExt(f.fileExt) || isVideoExt(f.fileExt)));
-const otherFilesOf = (q: PdQnaItem) => (q.files ?? []).filter((f) => f.url && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
+const mediaOf = (q: PdQnaItem) => (q.files ?? []).filter((f) => f.cdnImgUrl && (isImageExt(f.fileExt) || isVideoExt(f.fileExt)));
+const otherFilesOf = (q: PdQnaItem) => (q.files ?? []).filter((f) => f.cdnImgUrl && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
 
 // ── 미디어 뷰어 ──
 const viewerOpen = ref(false);
 const viewerItems = ref<string[]>([]);
 const viewerIndex = ref(0);
 function openViewer(files: SyAttachType[], i: number) {
-  viewerItems.value = files.map((f) => f.url);
+  viewerItems.value = files.map((f) => f.cdnImgUrl ?? "");
   viewerIndex.value = i;
   viewerOpen.value = true;
 }

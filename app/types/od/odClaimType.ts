@@ -5,7 +5,9 @@ export interface OdClaimType {
   memberId?: string; // 회원ID
   memberNm?: string; // 회원명
   claimTypeCd?: string; // 클레임유형 — CLAIM_TYPE_CD {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
+  claimTypeCdNm?: string; // 클레임유형 코드 라벨
   claimStatusCd?: string; // 클레임상태 — CLAIM_STATUS_CD {REQUESTED:요청, ACCEPTED:승인, APPROVED:승인, IN_PI…
+  claimStatusCdNm?: string; // 클레임상태 코드 라벨
   claimStatusCdBefore?: string; // 변경 전 클레임상태 — CLAIM_STATUS_CD
   reasonCd?: string; // 사유코드 — REASON_CD {MIND_CHANGE:단순변심, WRONG_OPTION:옵션선택오류, CHEAPER_ELSEW…
   reasonCdNm?: string; // 사유코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
@@ -18,11 +20,13 @@ export interface OdClaimType {
   claimCancelReasonCdNm?: string; // 클레임 철회사유코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimCancelReasonDetail?: string; // 클레임 철회사유상세
   refundMethodCd?: string; // 환불수단 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스, KAKAO:카카오…
+  refundMethodCdNm?: string; // 환불수단 코드 라벨
   refundAmt?: number; // 환불 합계금액 (상품금액+배송비-추가배송비-적립금복원)
   refundProdAmt?: number; // 환불 상품금액
   refundShippingAmt?: number; // 환불 배송비
   refundSaveAmt?: number; // 환불 적립금 합계 (사용 적립금 복원액)
   refundBankCd?: string; // 환불 은행코드 — BANK_CODE (계좌이체 환불 시)
+  refundBankCdNm?: string; // 환불은행 코드 라벨
   refundAccountNo?: string; // 환불 계좌번호
   refundAccountNm?: string; // 환불 예금주명
   requestDate?: string; // 클레임 요청일시
@@ -42,11 +46,14 @@ export interface OdClaimType {
   collectSchdDate?: string; // 수거 예정일시
   returnShippingFee?: number; // 수거배송료
   returnCourierCd?: string; // 수거 택배사 — COURIER {CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배 외}
+  returnCourierCdNm?: string; // 수거택배사 코드 라벨
   returnTrackingNo?: string; // 수거 송장번호
   returnStatusCd?: string; // 수거 상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERE…
+  returnStatusCdNm?: string; // 수거상태 코드 라벨
   returnStatusCdBefore?: string; // 변경 전 수거상태 — DLIV_STATUS
   inboundShippingFee?: number; // 반입배송료
   inboundCourierCd?: string; // 반입 택배사 — COURIER
+  inboundCourierCdNm?: string; // 반입택배사 코드 라벨
   inboundTrackingNo?: string; // 반입 송장번호
   inboundDlivId?: string; // 반입 배송ID (od_dliv.)
   exchRecvNm?: string; // 교환 수령자명 (원 주문 배송지와 다를 경우)
@@ -57,6 +64,7 @@ export interface OdClaimType {
   exchRecvReqMemo?: string; // 교환 배송 요청사항
   exchangeShippingFee?: number; // 교환상품 발송배송료
   exchangeCourierCd?: string; // 교환상품 발송 택배사 — COURIER
+  exchangeCourierCdNm?: string; // 교환발송택배사 코드 라벨
   exchangeTrackingNo?: string; // 교환상품 발송 송장번호
   outboundDlivId?: string; // 교환상품 발송 배송ID (od_dliv.)
   totalShippingFee?: number; // 총 배송료 (수거+반입+발송)
@@ -64,9 +72,11 @@ export interface OdClaimType {
   shippingFeePaidDate?: string; // 배송료 정산일시
   shippingFeeMemo?: string; // 배송료 비고
   apprStatusCd?: string; // 결재상태 — APPR_STATUS_CD {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:완료}
+  apprStatusCdNm?: string; // 결재상태 코드 라벨
   apprStatusCdBefore?: string; // 변경 전 결재상태 — APPR_STATUS_CD
   apprAmt?: number; // 결재 요청금액
   apprTargetCd?: string; // 결재대상 구분 — APPR_TARGET_CD {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+  apprTargetCdNm?: string; // 결재대상 코드 라벨
   apprTargetNm?: string; // 결재 대상명
   apprReason?: string; // 사유/메모
   apprReqUserId?: string; // 결재 요청자 (sy_user.user_id)
@@ -86,15 +96,11 @@ export interface OdClaimType {
   recvAddr?: string; // 수령자주소 (od_order 조인)
   memberEmail?: string; // 회원 이메일 (mb_member 조인)
   memberPhoneOrigin?: string; // 회원 연락처 (mb_member 조인)
-  claimTypeCdNm?: string; // 클레임유형 코드 라벨
-  claimStatusCdNm?: string; // 클레임상태 코드 라벨
-  refundMethodCdNm?: string; // 환불수단 코드 라벨
-  refundBankCdNm?: string; // 환불은행 코드 라벨
-  returnCourierCdNm?: string; // 수거택배사 코드 라벨
-  returnStatusCdNm?: string; // 수거상태 코드 라벨
-  inboundCourierCdNm?: string; // 반입택배사 코드 라벨
-  exchangeCourierCdNm?: string; // 교환발송택배사 코드 라벨
-  apprStatusCdNm?: string; // 결재상태 코드 라벨
-  apprTargetCdNm?: string; // 결재대상 코드 라벨
   claimItemCnt?: number; // 클레임항목 수 (상관 서브쿼리 집계)
+  // ── 공통(감사) 컬럼 ──
+  regBy?: string; // 등록자 (reg_by)
+  regByNm?: string; // 등록자명 (reg_by_nm)
+  updBy?: string; // 수정자 (upd_by)
+  updByNm?: string; // 수정자명 (upd_by_nm)
+  regSiteId?: string; // 등록 사이트ID (reg_site_id)
 }

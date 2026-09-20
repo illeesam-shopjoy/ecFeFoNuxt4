@@ -114,7 +114,7 @@ const toRow = (a: SyAttachType): AttachRow => ({
   attachId: a.attachId,
   name: a.fileNm,
   size: a.fileSize,
-  thumb: isImageExt(a.fileExt) || isVideoExt(a.fileExt) ? a.thumbUrl || (isImageExt(a.fileExt) ? a.url : undefined) : undefined,
+  thumb: isImageExt(a.fileExt) || isVideoExt(a.fileExt) ? a.thumbCdnUrl || (isImageExt(a.fileExt) ? a.cdnImgUrl : undefined) : undefined,
   isVideo: isVideoExt(a.fileExt),
   existing: true,
 });

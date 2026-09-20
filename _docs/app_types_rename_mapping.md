@@ -85,10 +85,10 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 
 | 폴더 | 파일 |
 |---|---|
-| pd (상품) | pdProdType, pdProdSkuType, pdProdOptType, pdCategoryType, pdCategoryTreeType, pdReviewType |
+| pd (상품) | pdProdType, pdProdSkuType, pdProdOptType, pdCategoryType, pdCategoryTreeType, pdCategoryProdType(카테고리-상품 연결), pdReviewType |
 | od (주문) | odCartItemType, odOrderType, odOrderItemType, odDlivType, odClaimType |
 | mb (회원) | mbLikeItemType, mbMemberType, mbRegisterFormType |
-| sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syAlarmType(알람), syNotiType(알림함), syLoginFormType, syCheckoutLoginFormType |
+| sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syAlarmType(알람), syNotiType(알림함), syNoticeType(공지), syI18nType(다국어), syVendorType(업체), sySiteType(사이트), syLoginFormType, syCheckoutLoginFormType |
 | cm (콘텐츠) | cmBlogType |
 | pm (프로모션) | pmCouponType, pmTimedealType, pmEventType, pmDiscntType, pmSaveType(적립금), pmVoucherType(상품권), pmGiftType(사은품) |
 | co (공통/전시 위젯) | coContactInfoItemType, coHeroSliderDataType(+Two/Three) |
@@ -104,3 +104,13 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 모든 타입에서 코드 필드 `xxxCd` 옆에는 라벨 필드 `xxxCdNm` 을 둔다. 서버(QueryDSL 조인)가 `xxxCdNm` 을 내려주는 화면은 그 값을 그대로 쓰고,
 내려주지 않는 경우(예: pm_event)는 공통코드 스토어(`useCodeStore().getStLabel["그룹-값"]` / `sgGetGrpCodes`)로 화면에서 채운다.
 `SyCodeType` 은 sy_code 한 행(codeGrp/codeValue/codeLabel) 자체의 타입이라 다른 타입 안에 넣지 않는다.
+
+### 테이블 컬럼 정렬 (2026-09-20)
+타입 필드명은 가급적 백엔드 테이블 컬럼(camelCase)·`*Dto.Item` 과 같게 한다. 손으로 만든 타입(PdProdType/PdProdSkuType/PdProdOptType/PdCategoryType/SyBrandType/CmBlogType/PdReviewType/SyCodeType)에는
+화면용 파생 필드(img·rating·smDesc·children 등) 아래에 `── 테이블 컬럼 ──` 구역으로 나머지 컬럼을 옵셔널로 추가했다(원가·마진·수수료·내부 담당자 등 고객에게 의미 없는 컬럼은 제외).
+`SyAttachType` 은 sy_attach 컬럼 전체(+ref_table_nm/ref_id/cdn_host/cdn_img_url/attach_url …)를 갖고, cdnImgUrl/thumbCdnUrl 은 호스트 보정된 브라우저용 URL 이다.
+
+### 공통(감사) 컬럼 · 라벨 위치 (2026-09-20)
+- 테이블에 대응하는 모든 엔티티 타입 끝에 `── 공통(감사) 컬럼 ──` 구역: `regBy/regByNm/regDate/updBy/updByNm/updDate/regSiteId`. (※ 현재 백엔드 DTO 는 등록자명을 `regUserNm` 조인 값으로 내려주므로 `regByNm/updByNm` 은 서버 확장 또는 화면 채움이 필요하다.)
+- `xxxCd` 바로 아래 줄에 `xxxCdNm` 이 오도록 정렬한다.
+- `PdCategoryType.categoryProds` / `PdProdType.categoryProds` 는 pd_category_prod(카테고리-상품 연결) 목록이다.
