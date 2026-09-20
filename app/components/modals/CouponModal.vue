@@ -13,13 +13,14 @@
           <button type="button" class="absolute top-4 right-4 p-2 rounded hover:bg-gray-100" @click="cancel" aria-label="닫기">
             <i class="fal fa-times"></i>
           </button>
-          <div class="-mx-6 -mt-6 mb-6 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] px-6 pb-4 pt-5">
+          <div class="-mx-6 -mt-6 mb-6 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] py-4 pl-6 pr-14 pt-5">
             <h3 id="coupon-modal-title" class="text-lg font-semibold text-gray-900 mb-1">쿠폰 적용</h3>
-            <p class="text-sm text-gray-500 mb-0">종류별로 하나씩 선택해서 적용할 수 있습니다.</p>
+            <p class="text-sm text-gray-500 mb-0">종류별로 최대 1개씩 적용됩니다. 기본은 혜택이 가장 큰 쿠폰(같으면 종료가 빠른 쿠폰)이 자동 적용되며, 여기서 바꿀 수 있습니다.</p>
           </div>
 
+          <p v-if="!coupons.length" class="mb-6 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">사용할 수 있는 쿠폰이 없습니다. (로그인 후 보유 쿠폰이 표시됩니다)</p>
           <fieldset v-for="section in sections" :key="section.category" class="mb-6 last:mb-0">
-            <legend class="text-sm font-semibold text-gray-800 mb-2">{{ section.label }}</legend>
+            <legend class="text-sm font-semibold text-gray-800 mb-2">{{ section.label }} <span class="font-normal text-gray-400">· 최대 1개</span></legend>
             <div class="flex flex-col gap-2">
               <label
                 class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition"
@@ -31,19 +32,33 @@
               <label
                 v-for="coupon in section.coupons"
                 :key="coupon.couponId"
-                class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition"
-                :class="selected[section.category]?.couponId === coupon.couponId ? 'border-theme bg-theme/5' : 'border-gray-200 hover:border-gray-300'"
+                class="flex items-start gap-3 p-3 rounded-lg border transition"
+                :class="[
+                  blockOf(coupon) ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60' : 'cursor-pointer',
+                  selected[section.category]?.couponId === coupon.couponId ? 'border-theme bg-theme/5' : blockOf(coupon) ? '' : 'border-gray-200 hover:border-gray-300',
+                ]"
               >
                 <input
                   type="radio"
                   class="mt-1"
                   :name="`coupon-${section.category}`"
+                  :disabled="!!blockOf(coupon)"
                   :checked="selected[section.category]?.couponId === coupon.couponId"
                   @change="selected[section.category] = coupon"
                 />
-                <span>
-                  <span class="block text-sm font-medium text-gray-900">{{ coupon.name }}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-900">{{ coupon.name }}</span>
+                    <span v-if="bestId[section.category] === coupon.couponId" class="rounded-full bg-[#faf3ea] px-2 py-px text-[11px] font-semibold text-theme">최대 혜택</span>
+                  </span>
                   <span v-if="coupon.desc" class="block text-xs text-gray-500 mt-0.5">{{ coupon.desc }}</span>
+                  <span class="block text-xs mt-0.5" :class="blockOf(coupon) ? 'text-red-500' : 'text-gray-500'">
+                    <template v-if="blockOf(coupon)">{{ blockOf(coupon) }}</template>
+                    <template v-else>
+                      <b class="text-[#c0392b]">-{{ formatPrice(couponDiscount(coupon, bases[section.category])) }}</b>
+                      <template v-if="coupon.validTo"> · ~{{ coupon.validTo }} 까지</template>
+                    </template>
+                  </span>
                 </span>
               </label>
             </div>
@@ -65,31 +80,35 @@
  * 모달연결해주고") — checkout.vue의 "쿠폰이 있으신가요?" 링크가 열던 단순 텍스트 입력
  * 대신, 종류별(주문/상품/배송비) 쿠폰을 목록에서 골라 적용하는 모달.
  */
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { type PmCouponApplyType, type CouponCategory, type AppliedCoupons } from "~/types/pm/pmCouponApplyType";
-
-// ecBeBo에 쿠폰 API가 아직 없어(syCouponType.ts 주석 참조) 하드코딩된 목업 목록.
-const COUPONS: PmCouponApplyType[] = [
-  { couponId: "order-5000", category: "order", name: "주문 5,000원 할인", desc: "3만원 이상 구매 시 사용 가능", discountType: "amount", discountValue: 5000 },
-  { couponId: "order-10pct", category: "order", name: "주문 금액 10% 할인", desc: "전체 주문 금액 기준", discountType: "percent", discountValue: 10 },
-  { couponId: "product-3000", category: "product", name: "상품 3,000원 할인", desc: "상품 금액에서 즉시 할인", discountType: "amount", discountValue: 3000 },
-  { couponId: "product-15pct", category: "product", name: "상품 금액 15% 할인", desc: "상품 금액 기준(배송비 제외)", discountType: "percent", discountValue: 15 },
-  { couponId: "ship-free", category: "shipping", name: "무료 배송 쿠폰", desc: "배송비 전액 할인", discountType: "free-shipping", discountValue: 0 },
-  { couponId: "ship-3000", category: "shipping", name: "배송비 3,000원 할인", desc: "배송비 일부 할인", discountType: "amount", discountValue: 3000 },
-];
-
-const sections: { category: CouponCategory; label: string; coupons: PmCouponApplyType[] }[] = [
-  { category: "order", label: "주문할인쿠폰", coupons: COUPONS.filter((c) => c.category === "order") },
-  { category: "product", label: "상품할인쿠폰", coupons: COUPONS.filter((c) => c.category === "product") },
-  { category: "shipping", label: "배송비할인쿠폰", coupons: COUPONS.filter((c) => c.category === "shipping") },
-];
+import { COUPON_CATEGORY_LABEL, couponBlockReason, couponDiscount, pickBestCoupon, todayYmd } from "~/utils/mapCoupon";
 
 const props = defineProps<{
+  /** 내 쿠폰(전체) */
+  coupons: PmCouponApplyType[];
+  /** 지금 적용 중인 쿠폰 */
   appliedCoupons: AppliedCoupons;
+  /** 상품합계 — 최소 주문금액 판단 기준 */
+  subtotal: number;
+  /** 종류별 할인 대상 금액(미리보기 계산용) */
+  bases: Record<CouponCategory, number>;
 }>();
 const emit = defineEmits<{
   (e: "apply", coupons: AppliedCoupons): void;
 }>();
+const { formatPrice } = usePrice();
+
+const sections = computed(() =>
+  (["order", "product", "shipping"] as CouponCategory[]).map((category) => ({ category, label: COUPON_CATEGORY_LABEL[category], coupons: props.coupons.filter((c) => c.category === category) }))
+);
+const blockOf = (c: PmCouponApplyType) => couponBlockReason(c, props.subtotal, todayYmd());
+/** 종류별 "최대 혜택" 쿠폰 ID — 배지 표시용 */
+const bestId = computed<Record<CouponCategory, string | null>>(() => ({
+  order: pickBestCoupon(props.coupons.filter((c) => c.category === "order"), props.bases.order, props.subtotal, todayYmd())?.couponId ?? null,
+  product: pickBestCoupon(props.coupons.filter((c) => c.category === "product"), props.bases.product, props.subtotal, todayYmd())?.couponId ?? null,
+  shipping: pickBestCoupon(props.coupons.filter((c) => c.category === "shipping"), props.bases.shipping, props.subtotal, todayYmd())?.couponId ?? null,
+}));
 
 const visible = ref(false);
 const selected = reactive<AppliedCoupons>({ order: null, product: null, shipping: null });

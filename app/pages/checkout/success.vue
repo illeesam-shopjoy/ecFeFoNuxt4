@@ -87,10 +87,22 @@ onMounted(async () => {
       return;
     }
 
-    await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: amount.value, items });
+    // 결제 화면에서 저장해 둔 적용 쿠폰/상품합계
+    let ctx: { couponId?: string; totalAmt?: number } = {};
+    try {
+      ctx = JSON.parse(sessionStorage.getItem("checkout_ctx") ?? "{}");
+    } catch {
+      /* 무시 */
+    }
+    await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: ctx.totalAmt ?? amount.value, couponId: ctx.couponId, items });
 
     pay.value = await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value });
     status.value = "success";
+    try {
+      sessionStorage.removeItem("checkout_ctx");
+    } catch {
+      /* 무시 */
+    }
     cartStore.cartProducts = [];
     if (process.client) localStorage.setItem("cart_products", JSON.stringify([]));
   } catch (e: unknown) {

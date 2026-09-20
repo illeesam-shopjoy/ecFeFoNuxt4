@@ -13,6 +13,7 @@ export function buildOrderCreatePayload(body: OdOrderCreateType): Record<string,
     ordererEmail: body.ordererEmail,
     accessChannelCd: body.accessChannelCd ?? "WEB_PC",
     items: body.items,
+    ...(body.couponId ? { couponId: body.couponId } : {}),
   };
 }
 

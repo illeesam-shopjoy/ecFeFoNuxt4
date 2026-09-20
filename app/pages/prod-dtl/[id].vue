@@ -144,6 +144,7 @@
                                   </li>
                                 </ul>
                               </div>
+                              <div v-if="!isAutoTitle(review.reviewTitle, review.reviewContent)" class="mb-1 text-[0.95rem] font-bold text-gray-900">{{ review.reviewTitle }}</div>
                               <p>{{ review.reviewContent || '내용 없음' }}</p>
                               <ul v-if="otherFilesOf(review).length" class="m-0 mt-2 flex list-none flex-col gap-1 p-0">
                                 <li v-for="f in otherFilesOf(review)" :key="f.attachId" class="text-[0.8rem]">
@@ -221,6 +222,13 @@
                             <span v-if="guestPwdError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ guestPwdError }}</span>
                           </label>
                         </div>
+                      </div>
+                      <!-- 제목(선택) — 비우면 내용 앞부분이 제목이 된다 -->
+                      <div v-if="!replyingToReviewId" class="col-xl-12 mb-3">
+                        <label class="block">
+                          <span class="mb-1 block text-[0.78rem] text-gray-500">제목</span>
+                          <input v-model="reviewTitleInput" type="text" maxlength="100" placeholder="제목 (선택 · 비우면 내용 앞부분)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" />
+                        </label>
                       </div>
                       <div class="col-xl-12">
                         <div class="contact-icon relative contacts-message">
@@ -581,6 +589,7 @@ const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.
 const REVIEW_ATTACH_ACCEPT = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"];
 const guestNm = ref("");
 const guestPwd = ref("");
+const reviewTitleInput = ref(""); // 리뷰 제목(선택)
 const reviewAttachChanges = ref<SyAttachChangeType[]>([]);
 const editingReviewId = ref<string | null>(null);
 const editingReviewFiles = ref<SyAttachType[]>([]);
@@ -597,6 +606,7 @@ function startEditReview(r: PdReviewType) {
   editingReviewFiles.value = r.attachFiles ?? [];
   reviewAttachChanges.value = [];
   reviewFormError.value = "";
+  reviewTitleInput.value = isAutoTitle(r.reviewTitle, r.reviewContent) ? "" : (r.reviewTitle ?? "");
   reviewFormRef.value?.setFieldValue("comments", r.reviewContent ?? "");
   nextTick(() => document.getElementById("contacts-form")?.scrollIntoView({ behavior: "smooth", block: "center" }));
 }
@@ -606,8 +616,15 @@ function cancelReviewForm() {
   editingReviewFiles.value = [];
   reviewAttachChanges.value = [];
   reviewFormError.value = "";
+  reviewTitleInput.value = "";
   reviewFormRef.value?.resetForm();
 }
+
+/** 제목이 내용 앞부분으로 자동 생성된 것이면 목록에 따로 보여주지 않는다 */
+const isAutoTitle = (title: string | undefined, content: string | undefined) => {
+  const tt = (title ?? "").replace(/…$/, "").trim();
+  return !tt || (content ?? "").replace(/\s+/g, " ").trim().startsWith(tt);
+};
 
 function setReviewRating(n: number) {
   reviewRating.value = n;
@@ -695,7 +712,7 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         if (asked === null || asked === undefined) return;
         writerPwd = asked;
       }
-      const res = await pdReviewSvc.updateReview(editingReviewId.value, { content: contentTrim, rating: reviewRating.value, writerPwd, attachFiles: reviewAttachChanges.value });
+      const res = await pdReviewSvc.updateReview(editingReviewId.value, { content: contentTrim, rating: reviewRating.value, reviewTitle: reviewTitleInput.value, writerPwd, attachFiles: reviewAttachChanges.value });
       if (res?.success) {
         $toast?.success?.(res.message ?? "수정되었습니다.");
         cancelReviewForm();
@@ -706,6 +723,7 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         prodId: item.value.prodId,
         content: contentTrim,
         rating: reviewRating.value,
+        reviewTitle: reviewTitleInput.value,
         writerNm: isGuestWrite ? guestNm.value : undefined,
         writerPwd: isGuestWrite ? guestPwd.value : undefined,
         attachFiles: reviewAttachChanges.value,
@@ -714,6 +732,7 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         $toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");
         resetForm();
         guestPwd.value = "";
+        reviewTitleInput.value = "";
         reviewAttachChanges.value = [];
         reviewRating.value = 0;
         await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)

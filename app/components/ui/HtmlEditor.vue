@@ -74,6 +74,23 @@ onMounted(() => {
   editor.value = new Editor({
     content: props.modelValue,
     extensions: [StarterKit.configure({ heading: { levels: [2, 3, 4] }, link: { openOnClick: false, autolink: true } }), Image.configure({ inline: false }), Placeholder.configure({ placeholder: props.placeholder })],
+    // 클립보드 붙여넣기(스크린샷·복사한 이미지)와 끌어다 놓기로 이미지를 넣을 수 있게 한다 — 파일을 업로드한 뒤 CDN 주소로 삽입
+    editorProps: {
+      handlePaste: (_view, event) => {
+        const files = imageFilesOf(event.clipboardData?.files);
+        if (!files.length) return false; // 이미지가 없으면 기본 붙여넣기(텍스트/HTML)
+        event.preventDefault();
+        void insertImages(files);
+        return true;
+      },
+      handleDrop: (_view, event) => {
+        const files = imageFilesOf((event as DragEvent).dataTransfer?.files);
+        if (!files.length) return false;
+        event.preventDefault();
+        void insertImages(files);
+        return true;
+      },
+    },
     onUpdate: ({ editor: e }) => {
       const html = normalize(e.getHTML());
       htmlText.value = html;
@@ -116,24 +133,37 @@ function setLink() {
   ed.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
 }
 
-async function onPickImage(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  input.value = "";
-  if (!file) return;
-  if (file.size > 10 * 1024 * 1024) return void window.alert("이미지는 10MB 이하만 올릴 수 있습니다.");
+const MAX_IMG_BYTES = 10 * 1024 * 1024;
+const imageFilesOf = (list?: FileList | null): File[] => Array.from(list ?? []).filter((f) => f.type.startsWith("image/"));
+
+/** 이미지 파일들을 올려 에디터에 차례로 삽입 (붙여넣은 스크린샷은 이름이 image.png 라 시각으로 바꿔 준다) */
+async function insertImages(files: File[]) {
   imgUploading.value = true;
   try {
-    const res = await coUploadSvc.uploadMulti([file], props.uploadCode);
-    const f = res.files?.[0];
-    const src = fixInternalCdnUrl(resolveCdnUrl(f?.cdnImgUrl || f?.filePath, cdnBase), cdnBase);
-    if (!src) throw new Error("업로드 응답에 이미지 주소가 없습니다.");
-    editor.value?.chain().focus().setImage({ src, alt: file.name }).run();
+    for (const file of files) {
+      if (file.size > MAX_IMG_BYTES) {
+        window.alert(`이미지는 10MB 이하만 올릴 수 있습니다. (${file.name})`);
+        continue;
+      }
+      const nm = file.name && file.name !== "image.png" ? file.name : `paste-${Date.now()}.${(file.type.split("/")[1] || "png").replace("jpeg", "jpg")}`;
+      const res = await coUploadSvc.uploadMulti([new File([file], nm, { type: file.type })], props.uploadCode);
+      const f = res.files?.[0];
+      const src = fixInternalCdnUrl(resolveCdnUrl(f?.cdnImgUrl || f?.filePath, cdnBase), cdnBase);
+      if (!src) throw new Error("업로드 응답에 이미지 주소가 없습니다.");
+      editor.value?.chain().focus().setImage({ src, alt: nm }).run();
+    }
   } catch {
     window.alert("이미지 업로드에 실패했습니다.");
   } finally {
     imgUploading.value = false;
   }
+}
+
+async function onPickImage(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+  if (file) await insertImages([file]);
 }
 
 // 미리보기 — 사용자가 HTML 탭에 직접 넣을 수 있으므로 스크립트/이벤트 속성/javascript: 를 제거해서 그린다

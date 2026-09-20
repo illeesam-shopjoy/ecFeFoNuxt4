@@ -15,4 +15,5 @@ export interface OdOrderCreateType {
   items: OdOrderCreateItemType[];
   ordererEmail?: string;
   accessChannelCd?: string;
+  couponId?: string; // 적용한 할인쿠폰 (백엔드는 주문당 1개 — 주문/상품/배송비 순으로 첫 번째)
 }

@@ -49,11 +49,14 @@
                   <h3>
                     쿠폰이 있으신가요?
                     <span @click="handleBtnAction('coupon-modalOpen')" id="showcoupon">쿠폰 선택하기</span>
+                    <span v-if="myCoupons.length" class="ml-2 text-[12px] font-normal text-[#999]">보유 {{ myCoupons.length }}장</span>
                   </h3>
                   <div v-if="appliedCouponList.length" class="coupon-checkout-content">
                     <ul class="mt-10">
                       <li v-for="c in appliedCouponList" :key="c.couponId" class="text-[14px] text-[#606060] mb-5">
-                        {{ c.name }}
+                        <span class="mr-1 text-[12px] text-[#999]">[{{ COUPON_CATEGORY_LABEL[c.category] }}]</span>{{ c.name }}
+                        <b class="ml-1 text-[#c0392b]">-{{ formatPrice(discountOfCategory(c.category)) }}</b>
+                        <span class="ml-1 text-[11px] text-[#999]">({{ touched[c.category] ? "직접 선택" : "자동 적용" }})</span>
                         <a href="#" class="ml-10 text-[12px] text-[#999] hover:text-danger" @click.prevent="handleBtnAction('coupon-remove', c.category)">제거</a>
                       </li>
                     </ul>
@@ -158,7 +161,7 @@
                                 <li>
                                   <input v-model="ship_cost" :value="7000" id="flat-rate" name="ship-cost" type="radio" />
                                   <label for="flat-rate">
-                                    고정 배송비: <span class="amount">{{ formatPrice(7000) }}</span>
+                                    배송비: <span class="amount">{{ formatPrice(7000) }}</span>
                                   </label>
                                 </li>
                                 <li>
@@ -176,6 +179,12 @@
                               <span class="amount text-danger">-{{ formatPrice(couponDiscountTotal) }}</span>
                             </td>
                           </tr>
+                          <tr v-if="cashUse > 0" class="order-total">
+                            <th>캐시 사용</th>
+                            <td>
+                              <span class="amount text-danger">-{{ formatPrice(cashUse) }}</span>
+                            </td>
+                          </tr>
                           <tr class="order-total">
                             <th>주문 합계</th>
                             <td>
@@ -186,6 +195,17 @@
                           </tr>
                         </template>
                       </fo-grid>
+                    </div>
+
+                    <!-- 캐시(적립금): 보유 캐시를 최대로 쓸지 선택 -->
+                    <div v-if="loggedIn" class="mb-4 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-4 py-3 text-[0.88rem]">
+                      <label class="m-0 flex cursor-pointer items-center gap-2" :class="cashBalance <= 0 ? 'cursor-not-allowed opacity-60' : ''">
+                        <input v-model="useMaxCash" type="checkbox" :disabled="cashBalance <= 0" />
+                        <span class="font-semibold text-gray-800">보유 캐시 최대 사용</span>
+                        <span class="ml-auto text-gray-500">보유 <b class="text-gray-800">{{ formatPrice(cashBalance) }}</b></span>
+                      </label>
+                      <div v-if="useMaxCash && cashUse > 0" class="mt-1 text-[0.8rem] text-[#c0392b]">이번 주문에 {{ formatPrice(cashUse) }} 사용 · 결제 금액 {{ formatPrice(orderTotalRef) }}</div>
+                      <div v-else-if="cashBalance <= 0" class="mt-1 text-[0.78rem] text-gray-400">사용할 수 있는 캐시가 없습니다.</div>
                     </div>
 
                     <div class="payment-method">
@@ -218,7 +238,7 @@
         </section>
       </div>
     </client-only>
-    <coupon-modal ref="couponModalRef" :applied-coupons="appliedCoupons" @apply="handleApplyCoupons" />
+    <coupon-modal ref="couponModalRef" :coupons="myCoupons" :applied-coupons="appliedCoupons" :subtotal="subtotalRef" :bases="couponBaseAmts" @apply="handleApplyCoupons" />
     <addr-search-modal ref="addrSearchModalRef" @select="handleAddrSelected" />
   </layout>
 </template>
@@ -241,7 +261,9 @@ import { useAuthStore } from "~/store/useAuthStore";
 import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import type { SyCheckoutLoginFormType } from "~/types/sy/syCheckoutLoginFormType";
-import type { AppliedCoupons, CouponCategory } from "~/types/pm/pmCouponApplyType";
+import type { AppliedCoupons, CouponCategory, PmCouponApplyType } from "~/types/pm/pmCouponApplyType";
+import { COUPON_CATEGORIES, COUPON_CATEGORY_LABEL, calcCheckout, couponBases, couponBlockReason, pickBestCoupon, toApplyCoupon, todayYmd } from "~/utils/mapCoupon";
+import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
 import type { OdTossPaymentsFactoryType, OdTossWidgetsType } from "~/types/od/odTossType";
 
 const state = useCartStore();
@@ -403,15 +425,33 @@ function handleSubmit() {
 // 모달연결해주고") — 종류별로 하나씩 적용, CouponModal에서 선택.
 const couponModalRef = ref<InstanceType<typeof CouponModal> | null>(null);
 const appliedCoupons = reactive<AppliedCoupons>({ order: null, product: null, shipping: null });
-const appliedCouponList = computed(() => Object.values(appliedCoupons).filter((c): c is NonNullable<typeof c> => c !== null));
+const appliedCouponList = computed(() => COUPON_CATEGORIES.map((cat) => appliedCoupons[cat]).filter((c): c is NonNullable<typeof c> => c !== null));
+const myCoupons = ref<PmCouponApplyType[]>([]); // 내 쿠폰(로그인 시)
+const cashBalance = ref(0); // 보유 캐시
+const useMaxCash = ref(false); // 보유 캐시 최대 사용
+const touched = reactive<Record<CouponCategory, boolean>>({ order: false, product: false, shipping: false }); // 직접 고른 종류는 자동 적용이 덮어쓰지 않는다
+const loggedIn = computed(() => useAuthStore().isStLoggedIn);
 function handleApplyCoupons(coupons: AppliedCoupons) {
-  appliedCoupons.order = coupons.order;
-  appliedCoupons.product = coupons.product;
-  appliedCoupons.shipping = coupons.shipping;
+  COUPON_CATEGORIES.forEach((cat) => {
+    // 모달에서 자동 적용과 다른 선택을 하면 "직접 선택"으로 본다
+    touched[cat] = coupons[cat]?.couponId !== autoPick(cat)?.couponId;
+    appliedCoupons[cat] = coupons[cat];
+  });
 }
 function removeCoupon(category: CouponCategory) {
+  touched[category] = true;
   appliedCoupons[category] = null;
 }
+
+// 로그인 회원이면 내 쿠폰과 보유 캐시를 불러온다
+onMounted(async () => {
+  const authStore = useAuthStore();
+  authStore.loadStToken();
+  if (!authStore.isStLoggedIn) return;
+  const [coupons, balance] = await Promise.all([myCouponSvc.getList().catch(() => []), myInfoSvc.getCacheBalance().catch(() => 0)]);
+  myCoupons.value = coupons.map(toApplyCoupon);
+  cashBalance.value = balance;
+});
 
 // 청구 정보(옛 BillingDetails)
 const createAccount = ref(false);
@@ -426,48 +466,39 @@ function handleShipBox() {
 }
 
 // 주문 내역/합계(옛 OrderArea) — provide/inject 대신 이 페이지 안에서 바로 공유
-const ship_cost = ref<number | "free">(0);
-const orderTotalRef = ref(0);
-// 쿠폰 할인 총액(표시용) — orderTotalRef 계산과 같은 로직으로 별도 유지.
-const couponDiscountTotal = ref(0);
+const ship_cost = ref<number | "free">(7000); // 기본: 배송비(7,000원) 선택
+const baseShip = computed(() => (ship_cost.value === "free" || ship_cost.value === 0 ? 0 : 7000));
+const subtotalRef = computed(() => state.getStTotalPriceQuantity.total);
+
+/** 이 종류의 "기본 적용" 쿠폰(혜택 최대, 같으면 종료 빠른 순) — 상품할인 적용 후 금액이 주문할인 기준 */
+function autoPick(cat: CouponCategory): PmCouponApplyType | null {
+  const today = todayYmd();
+  const sub = subtotalRef.value;
+  const pool = myCoupons.value.filter((c) => c.category === cat);
+  const productBest = pickBestCoupon(myCoupons.value.filter((c) => c.category === "product"), sub, sub, today);
+  const productApplied = touched.product ? appliedCoupons.product : productBest;
+  const bases = couponBases(sub, baseShip.value, { order: null, product: productApplied, shipping: null });
+  return pickBestCoupon(pool, bases[cat], sub, today);
+}
+// 금액/쿠폰이 바뀌면 직접 고르지 않은 종류는 자동(최대 혜택)으로, 직접 고른 쿠폰이 쓸 수 없게 되면 해제
 watch(
-  [() => state.getStTotalPriceQuantity.total, ship_cost, () => appliedCoupons.order, () => appliedCoupons.product, () => appliedCoupons.shipping],
+  [subtotalRef, baseShip, myCoupons],
   () => {
-    const subtotal = state.getStTotalPriceQuantity.total;
-    const baseShip = ship_cost.value === "free" || (typeof ship_cost.value === "number" && ship_cost.value === 0) ? 0 : 7000;
-
-    // 상품할인 → 그 결과에 주문할인 순서로 적용(상품가 기준 쿠폰이 먼저 적용되는 게 자연스러움).
-    const productCoupon = appliedCoupons.product;
-    const productDiscount =
-      productCoupon?.discountType === "amount"
-        ? Math.min(productCoupon.discountValue, subtotal)
-        : productCoupon?.discountType === "percent"
-          ? Math.round((subtotal * productCoupon.discountValue) / 100)
-          : 0;
-    const afterProduct = subtotal - productDiscount;
-
-    const orderCoupon = appliedCoupons.order;
-    const orderDiscount =
-      orderCoupon?.discountType === "amount"
-        ? Math.min(orderCoupon.discountValue, afterProduct)
-        : orderCoupon?.discountType === "percent"
-          ? Math.round((afterProduct * orderCoupon.discountValue) / 100)
-          : 0;
-
-    const shippingCoupon = appliedCoupons.shipping;
-    const ship =
-      shippingCoupon?.discountType === "free-shipping"
-        ? 0
-        : shippingCoupon?.discountType === "amount"
-          ? Math.max(0, baseShip - shippingCoupon.discountValue)
-          : baseShip;
-    const shipDiscount = baseShip - ship;
-
-    couponDiscountTotal.value = productDiscount + orderDiscount + shipDiscount;
-    orderTotalRef.value = Math.max(0, subtotal - productDiscount - orderDiscount + ship);
+    COUPON_CATEGORIES.forEach((cat) => {
+      if (!touched[cat]) appliedCoupons[cat] = autoPick(cat);
+      else if (appliedCoupons[cat] && couponBlockReason(appliedCoupons[cat]!, subtotalRef.value, todayYmd())) appliedCoupons[cat] = null;
+    });
   },
   { immediate: true }
 );
+
+const calc = computed(() => calcCheckout(subtotalRef.value, baseShip.value, appliedCoupons, cashBalance.value, useMaxCash.value));
+const orderTotalRef = computed(() => calc.value.total); // 최종 결제 금액(토스 결제 금액)
+const couponDiscountTotal = computed(() => calc.value.couponTotal);
+const cashUse = computed(() => calc.value.cashUse);
+const couponBaseAmts = computed(() => couponBases(subtotalRef.value, baseShip.value, appliedCoupons)); // 쿠폰 모달 미리보기용
+const discountOfCategory = (cat: CouponCategory) => ({ product: calc.value.productDiscount, order: calc.value.orderDiscount, shipping: calc.value.shipDiscount })[cat];
+
 
 // ── 토스페이먼츠 결제위젯 SDK v2 (클라이언트 전용) — 2026-09-20: 이 화면에서만 쓰는 useTossPayments 컴포저블을 이 파일로 병합 ──
 // 설정된 키(test_gck_…)는 "결제위젯 연동 키"라 결제창(payment()) 방식이 아니라 widgets() 로 연동한다.
@@ -562,6 +593,12 @@ async function handleFormSubmit() {
   if (tossStatus.value !== "ready" || !tossWidgets) {
     await showTossFail(tossError.value || "결제수단을 불러오지 못했습니다.");
     return;
+  }
+  // 결제 성공 페이지가 주문 생성에 쓸 값(적용 쿠폰/상품합계/캐시) — 주문은 쿠폰 1개만 받으므로 주문 → 상품 → 배송비 순으로 첫 번째를 보낸다
+  try {
+    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? appliedCoupons.product ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value }));
+  } catch {
+    /* 저장소를 못 써도 결제는 진행 */
   }
   const orderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   const origin = window.location.origin;

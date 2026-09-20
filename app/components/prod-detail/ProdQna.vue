@@ -20,6 +20,7 @@
                 {{ ymdDot(q.regDate) }}
               </span>
             </div>
+            <div v-if="q.scrtYn !== 'Y' && !isAutoTitle(q)" class="mb-1 text-[0.95rem] font-bold text-gray-900">{{ q.prodQnaTitle }}</div>
             <div class="whitespace-pre-wrap text-[0.88rem] leading-relaxed text-gray-900">
               <template v-if="q.scrtYn === 'Y'"><i class="fas fa-lock mr-1 text-[#9ca3af]"></i>비밀글입니다.</template>
               <template v-else>{{ q.prodQnaContent || q.prodQnaTitle }}</template>
@@ -66,6 +67,10 @@
           <span v-if="pwdError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ pwdError }}</span>
         </label>
       </div>
+      <label class="mb-3 block">
+        <span class="mb-1 block text-[0.78rem] text-gray-500">제목</span>
+        <input v-model="titleInput" type="text" maxlength="100" placeholder="제목 (선택 · 비우면 내용 앞부분)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" />
+      </label>
       <textarea v-model="content" rows="5" maxlength="4000" placeholder="문의 내용을 입력해 주세요" class="w-full resize-y rounded-lg border-[1.5px] border-[#e5e7eb] px-[13px] py-[10px] text-[0.88rem] outline-none focus:border-[#bc8246]"></textarea>
       <div class="mt-3">
         <attach-uploader v-model="attachChanges" :initial-files="editingFiles" :title="'첨부파일'" :show-grp="false" grp-code="PROD_QNA" :max-count="10" :accept="ATTACH_ACCEPT" />
@@ -144,6 +149,7 @@ const editingFiles = ref<SyAttachType[]>([]);
 const saving = ref(false);
 const busyId = ref<string | null>(null);
 const formError = ref("");
+const titleInput = ref(""); // 제목(선택)
 const nmError = ref(""); // 이름/글 비밀번호 검증 오류는 각 입력란 아래에 보여준다
 const pwdError = ref("");
 
@@ -152,10 +158,17 @@ const errMsg = (e: unknown, fallback: string) => {
   return String(err?.data?.message ?? err?.message ?? fallback).split("::")[0] || fallback;
 };
 
+/** 제목이 내용 앞부분으로 자동 생성된 것이면 목록에 따로 보여주지 않는다 */
+const isAutoTitle = (q: PdProdQnaType) => {
+  const tt = (q.prodQnaTitle ?? "").replace(/…$/, "").trim();
+  return !tt || (q.prodQnaContent ?? "").replace(/\s+/g, " ").trim().startsWith(tt);
+};
+
 function resetForm() {
   writerNm.value = isLoggedIn.value ? "" : writerNm.value; // 이름은 이어서 쓰기 편하게 유지, 비밀번호·내용은 비운다
   writerPwd.value = "";
   content.value = "";
+  titleInput.value = "";
   attachChanges.value = [];
   editingId.value = null;
   editingFiles.value = [];
@@ -164,6 +177,7 @@ function resetForm() {
 function startEdit(q: PdProdQnaType) {
   editingId.value = q.prodQnaId;
   content.value = q.prodQnaContent ?? "";
+  titleInput.value = isAutoTitle(q) ? "" : (q.prodQnaTitle ?? "");
   editingFiles.value = q.attachFiles ?? [];
   attachChanges.value = [];
   formError.value = "";
@@ -193,10 +207,10 @@ async function submit() {
         if (asked === null || asked === undefined) return;
         pwd = asked;
       }
-      await pdQnaSvc.update(editingId.value, { content: text, writerPwd: pwd, attachFiles: attachChanges.value });
+      await pdQnaSvc.update(editingId.value, { title: titleInput.value, content: text, writerPwd: pwd, attachFiles: attachChanges.value });
       $toast?.success?.("수정되었습니다.");
     } else {
-      await pdQnaSvc.create({ prodId: props.prodId, content: text, writerNm: isLoggedIn.value ? undefined : writerNm.value, writerPwd: isLoggedIn.value ? undefined : writerPwd.value, attachFiles: attachChanges.value });
+      await pdQnaSvc.create({ prodId: props.prodId, title: titleInput.value, content: text, writerNm: isLoggedIn.value ? undefined : writerNm.value, writerPwd: isLoggedIn.value ? undefined : writerPwd.value, attachFiles: attachChanges.value });
       $toast?.success?.("Q&A가 등록되었습니다.");
     }
     resetForm();

@@ -33,7 +33,7 @@ export function buildReviewUpdatePayload(body: PdReviewUpdateType): Record<strin
   const reviewContent = String(body.content ?? "").trim();
   if (!reviewContent) badRequest("리뷰 내용을 입력해 주세요.");
   const rating = checkRating(body.rating);
-  const payload: Record<string, unknown> = { reviewTitle: firstLine(reviewContent), reviewContent, rating };
+  const payload: Record<string, unknown> = { reviewTitle: String(body.reviewTitle ?? "").trim() || firstLine(reviewContent), reviewContent, rating };
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.attachFiles?.length) payload.attachFiles = body.attachFiles;
   return payload;
@@ -53,6 +53,7 @@ export function buildQnaCreatePayload(body: PdProdQnaCreateType): Record<string,
   if (!body.prodId) badRequest("상품 ID가 필요합니다.");
   if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
   const payload: Record<string, unknown> = { prodId: body.prodId, prodQnaContent };
+  if (body.title?.trim()) payload.prodQnaTitle = body.title.trim();
   if (body.writerNm) payload.writerNm = body.writerNm.trim();
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.scrtYn) payload.scrtYn = body.scrtYn;
@@ -65,6 +66,7 @@ export function buildQnaUpdatePayload(body: PdProdQnaUpdateType): Record<string,
   const prodQnaContent = String(body.content ?? "").trim();
   if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
   const payload: Record<string, unknown> = { prodQnaContent };
+  if (body.title?.trim()) payload.prodQnaTitle = body.title.trim();
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.attachFiles?.length) payload.attachFiles = body.attachFiles;
   return payload;

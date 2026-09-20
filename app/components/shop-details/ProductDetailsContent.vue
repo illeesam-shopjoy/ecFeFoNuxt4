@@ -21,8 +21,10 @@
       <span class="rating-no ml-10">{{ Number(item.rating || 0).toFixed(1) }} ({{ reviewCount }})</span>
     </div>
     <div class="product__price-2 mb-25">
-      <span>{{ formatPrice(item.salePrice) }}</span>
+      <span>{{ formatPrice(item.salePrice + selectedAddPrice) }}</span>
       <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
+      <!-- 선택한 사이즈(옵션 조합)에 추가금액이 있으면 알려준다 -->
+      <span v-if="selectedAddPrice > 0" class="ml-2 rounded-full bg-[#fdecea] px-2.5 py-[3px] text-[0.75rem] font-semibold text-[#c0392b]">옵션 추가금액 +{{ formatPrice(selectedAddPrice) }}</span>
     </div>
     <!-- 짧은 설명이 없으면 이 박스(위/아래 테두리선)를 그리지 않는다 — 비어 있으면 빈 줄이 두 개 보였다 -->
     <div v-if="item.smDesc" class="product__modal-des mb-30">
@@ -52,10 +54,13 @@
               :title="opt.prodOptNm"
               :aria-label="opt.prodOptNm"
               class="relative w-[26px] h-[26px] rounded-full border-[1.5px] border-black/10 cursor-pointer bg-[var(--swatch-color)] shadow-[0_1px_3px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-150 hover:scale-110 hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
-              :class="{ 'scale-110 shadow-[0_0_0_2px_#fff,0_0_0_4px_#555,0_2px_6px_rgba(0,0,0,0.2)]': selectedColor === optKey(opt) }"
+              :class="{ 'scale-110 !border-white !shadow-[0_0_0_2px_#fff,0_0_0_5px_#bc8246,0_3px_8px_rgba(0,0,0,0.3)]': selectedColor === optKey(opt) }"
               :style="{ '--swatch-color': swatchColor(opt) }"
+              :aria-pressed="selectedColor === optKey(opt)"
               @click="selectedColor = optKey(opt)"
-            ></button>
+            >
+              <i v-if="selectedColor === optKey(opt)" class="fas fa-check absolute inset-0 flex items-center justify-center text-[11px] text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.85)]"></i>
+            </button>
             <button
               v-if="hasMoreColors"
               type="button"
@@ -89,7 +94,7 @@
               >
                 <span
                   class="inline-block w-[20px] h-[20px] shrink-0 rounded-full border-[1.5px] border-black/10 bg-[var(--swatch-color)]"
-                  :class="{ 'shadow-[0_0_0_2px_#fff,0_0_0_3.5px_#555]': selectedColor === optKey(opt) }"
+                  :class="{ '!shadow-[0_0_0_2px_#fff,0_0_0_4px_#bc8246]': selectedColor === optKey(opt) }"
                   :style="{ '--swatch-color': swatchColor(opt) }"
                 ></span>
                 <span class="truncate">{{ opt.prodOptNm }}</span>
@@ -110,7 +115,7 @@
               :class="{ '!border-[#222] !bg-[#222] !text-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]': selectedSize === optKey(opt) }"
               @click="selectedSize = optKey(opt)"
             >
-              {{ opt.prodOptNm }}
+              {{ opt.prodOptNm }}<span v-if="sizeAdd(opt) > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(sizeAdd(opt)) }}</span>
             </button>
             <button
               v-if="hasMoreSizes"
@@ -142,7 +147,7 @@
                 :class="{ '!border-[#222] !bg-[#222] !text-white': selectedSize === optKey(opt) }"
                 @click="pickSize(opt)"
               >
-                {{ opt.prodOptNm }}
+                {{ opt.prodOptNm }}<span v-if="sizeAdd(opt) > 0" class="ml-1 text-[11px] font-semibold text-[#c0392b]">+{{ formatPrice(sizeAdd(opt)) }}</span>
               </button>
             </div>
           </div>
@@ -301,6 +306,19 @@ onBeforeUnmount(() => {
 // 2026-09 추가 — 선택한 옵션조합(색상/사이즈)에 해당하는 SKU를 찾아 장바구니에 담는다.
 // prodOpt2List/prodOpt1List 의 prodOptTypeLevel(1|2)로 prodOpt1Id/prodOpt2Id 중 어느 자리와
 // 비교해야 하는지 판별한다(상품마다 어느 레벨이 색상/사이즈인지 다를 수 있음).
+/** 선택한 색상·사이즈 조합의 추가금액 (사이즈를 고른 뒤에만 — 없으면 0) */
+const selectedAddPrice = computed(() => (selectedSize.value ? Number(findMatchedSku()?.addPrice ?? 0) : 0));
+
+/** 사이즈 칩에 붙일 추가금액 — 그 사이즈의 SKU(색상을 골랐으면 그 색상 한정) 중 가장 낮은 추가금액 */
+function sizeAdd(opt: OptionItem): number {
+  const colorOpt = colors.value.find((o) => optKey(o) === selectedColor.value);
+  const skuOptOf = (level: number | undefined, s: { prodOpt1Id?: string | null; prodOpt2Id?: string | null }) => (level === 2 ? s.prodOpt2Id : s.prodOpt1Id);
+  const adds = (props.item.prodSkus ?? [])
+    .filter((s) => skuOptOf(opt.prodOptTypeLevel, s) === opt.prodOptId && (!colorOpt || skuOptOf(colorOpt.prodOptTypeLevel, s) === colorOpt.prodOptId))
+    .map((s) => Number(s.addPrice ?? 0));
+  return adds.length ? Math.min(...adds) : 0;
+}
+
 function findMatchedSku() {
   const skus = props.item.prodSkus ?? [];
   if (!skus.length) return undefined;

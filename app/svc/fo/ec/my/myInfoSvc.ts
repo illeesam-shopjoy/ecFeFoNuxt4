@@ -14,6 +14,9 @@ export const myInfoSvc = {
   /** GET /fo/ec/my/info — 내 프로필 */
   getProfile: (): Promise<MbMemberProfileType> => csrGet<MbMemberType>(INFO, authCfg()).then(mapProfile),
 
+  /** GET /fo/ec/my/info — 보유 캐시(적립금) 잔액 */
+  getCacheBalance: (): Promise<number> => csrGet<MbMemberType>(INFO, authCfg()).then((m) => Number(m.cacheBalanceAmt ?? 0)),
+
   /** PUT /fo/ec/my/info — 내 프로필 수정 (이름 필수, 성별은 M/F 만). 저장된 이름·연락처를 돌려준다 */
   updateProfile: (body: Partial<MbMemberProfileType>): Promise<Pick<MbMemberProfileType, "memberNm" | "memberPhone">> => {
     const payload = buildProfileUpdatePayload(body);

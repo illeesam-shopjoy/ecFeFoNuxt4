@@ -19,8 +19,11 @@ export const useCartStore = defineStore("cart", {
     addStCartProduct(payload: PdProdType, prodSkuId?: string) {
       const isExist = this.cartProducts.some((i) => i.prodId === payload.prodId && i.selectedProdSkuId === prodSkuId);
       if (!isExist) {
+        // 옵션 조합(SKU)에 추가금액이 있으면 단가에 더해 담는다
+        const addPrice = Number(payload.prodSkus?.find((s) => s.prodSkuId === prodSkuId)?.addPrice ?? 0);
         const newItem: OdCartItemType = {
           ...payload,
+          salePrice: payload.salePrice + addPrice,
           orderQuantity: 1,
           selectedProdSkuId: prodSkuId,
         };
