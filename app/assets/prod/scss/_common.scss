@@ -989,3 +989,36 @@ p {
 :root {
   --toastify-color-success: #8c1c3f;
 }
+
+/* 에디터(HtmlEditor)로 쓴 리뷰/Q&A 본문 표시 */
+.he-view {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #374151;
+  word-break: break-word;
+  & p { margin: 0 0 0.5em; }
+  & p:last-child { margin-bottom: 0; }
+  & img { max-width: 100%; height: auto; border-radius: 6px; margin: 4px 0; }
+  & ul, & ol { margin: 0.4em 0; padding-left: 1.4em; }
+  & ul { list-style: disc; }
+  & ol { list-style: decimal; }
+  & blockquote { margin: 0.5em 0; padding: 0.2em 0.9em; border-left: 3px solid #e5e7eb; color: #6b7280; }
+  & a { color: #2563eb; text-decoration: underline; }
+  & h2, & h3, & h4 { margin: 0.6em 0 0.3em; font-size: 1.05em; font-weight: 700; }
+}
+
+/* 상품목록 좌측: 선택된 카테고리 강조 (굵게 + 테마색 + 왼쪽 굵은 띠 + 옅은 배경) */
+.categories .shop-accordion-btn.cat-selected,
+.categories__list a.cat-selected {
+  font-weight: 700 !important;
+  color: #bc8246 !important;
+  background: #faf3ea;
+  box-shadow: inset 4px 0 0 #bc8246;
+  padding-left: 12px !important;
+  border-radius: 4px;
+}
+.categories__list a.cat-selected::before {
+  content: "✓";
+  margin-right: 6px;
+  font-weight: 800;
+}

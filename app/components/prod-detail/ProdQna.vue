@@ -23,7 +23,7 @@
             <div v-if="q.scrtYn !== 'Y' && !isAutoTitle(q)" class="mb-1 text-[0.95rem] font-bold text-gray-900">{{ q.prodQnaTitle }}</div>
             <div class="whitespace-pre-wrap text-[0.88rem] leading-relaxed text-gray-900">
               <template v-if="q.scrtYn === 'Y'"><i class="fas fa-lock mr-1 text-[#9ca3af]"></i>비밀글입니다.</template>
-              <template v-else>{{ q.prodQnaContent || q.prodQnaTitle }}</template>
+              <template v-else><client-only><div class="he-view" v-html="toSafeHtml(q.prodQnaContent || q.prodQnaTitle)"></div></client-only></template>
             </div>
             <!-- 첨부: 이미지·동영상은 썸네일(누르면 뷰어), 그 외 파일은 링크 -->
             <div v-if="q.scrtYn !== 'Y' && (q.attachFiles?.length ?? 0) > 0" class="mt-3 flex flex-col gap-2">
@@ -71,7 +71,7 @@
         <span class="mb-1 block text-[0.78rem] text-gray-500">제목</span>
         <input v-model="titleInput" type="text" maxlength="100" placeholder="제목 (선택 · 비우면 내용 앞부분)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" />
       </label>
-      <textarea v-model="content" rows="5" maxlength="4000" placeholder="문의 내용을 입력해 주세요" class="w-full resize-y rounded-lg border-[1.5px] border-[#e5e7eb] px-[13px] py-[10px] text-[0.88rem] outline-none focus:border-[#bc8246]"></textarea>
+      <html-editor v-model="content" height="170px" placeholder="문의 내용을 입력해 주세요 (이미지는 붙여넣기/삽입 가능)" upload-code="PROD_QNA_CONTENT_IMG" />
       <div class="mt-3">
         <attach-uploader v-model="attachChanges" :initial-files="editingFiles" :title="'첨부파일'" :show-grp="false" grp-code="PROD_QNA" :max-count="10" :accept="ATTACH_ACCEPT" />
       </div>
@@ -96,6 +96,8 @@ import { useAuthStore } from "~/store/useAuthStore";
 import { isImageExt, isVideoExt } from "~/utils/mapProduct";
 import type { SyAttachType } from "~/types/sy/syAttachType";
 import AttachUploader from "~/components/ui/AttachUploader.vue";
+import HtmlEditor from "~/components/ui/HtmlEditor.vue";
+import { htmlToText, isEmptyHtml, toSafeHtml } from "~/utils/htmlSafe";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
@@ -161,7 +163,7 @@ const errMsg = (e: unknown, fallback: string) => {
 /** 제목이 내용 앞부분으로 자동 생성된 것이면 목록에 따로 보여주지 않는다 */
 const isAutoTitle = (q: PdProdQnaType) => {
   const tt = (q.prodQnaTitle ?? "").replace(/…$/, "").trim();
-  return !tt || (q.prodQnaContent ?? "").replace(/\s+/g, " ").trim().startsWith(tt);
+  return !tt || htmlToText(q.prodQnaContent).startsWith(tt);
 };
 
 function resetForm() {
@@ -190,7 +192,7 @@ function cancelEdit() {
 async function submit() {
   formError.value = "";
   const text = content.value.trim();
-  if (text.length < 2) return void (formError.value = "문의 내용을 2자 이상 입력해 주세요.");
+  if (isEmptyHtml(text) || (htmlToText(text).length < 2 && !/<img\b/i.test(text))) return void (formError.value = "문의 내용을 2자 이상 입력해 주세요.");
   if (!editingId.value && !isLoggedIn.value) {
     const nm = writerNm.value.trim();
     nmError.value = nm.length < 2 || nm.length > 20 ? "이름을 2~20자로 입력해 주세요." : "";

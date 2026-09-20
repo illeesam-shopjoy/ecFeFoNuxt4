@@ -145,7 +145,7 @@
                                 </ul>
                               </div>
                               <div v-if="!isAutoTitle(review.reviewTitle, review.reviewContent)" class="mb-1 text-[0.95rem] font-bold text-gray-900">{{ review.reviewTitle }}</div>
-                              <p>{{ review.reviewContent || '내용 없음' }}</p>
+                              <client-only><div class="he-view" v-html="toSafeHtml(review.reviewContent) || '내용 없음'"></div></client-only>
                               <ul v-if="otherFilesOf(review).length" class="m-0 mt-2 flex list-none flex-col gap-1 p-0">
                                 <li v-for="f in otherFilesOf(review)" :key="f.attachId" class="text-[0.8rem]">
                                   <a :href="f.cdnImgUrl" target="_blank" rel="noopener" :download="f.fileNm" class="text-[#2563eb] hover:underline"><i class="far fa-file mr-1"></i>{{ f.fileNm }}</a>
@@ -182,7 +182,7 @@
                                 <h5>{{ reply.writerNm }}</h5>
                                 <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(reply.reviewId, true)">삭제</button>
                               </div>
-                              <p>{{ reply.reviewContent || '' }}</p>
+                              <client-only><div class="he-view" v-html="toSafeHtml(reply.reviewContent)"></div></client-only>
                             </div>
                           </div>
                         </li>
@@ -232,8 +232,8 @@
                       </div>
                       <div class="col-xl-12">
                         <div class="contact-icon relative contacts-message">
-                          <Field name="comments" v-slot="{ field }">
-                            <textarea v-bind="field" id="comments" cols="30" rows="10" placeholder="내용"></textarea>
+                          <Field name="comments" v-slot="{ value, handleChange }">
+                            <html-editor id="comments" :model-value="(value as string) ?? ''" height="170px" placeholder="내용을 입력하세요 (이미지는 붙여넣기/삽입 가능)" upload-code="REVIEW_CONTENT_IMG" @update:model-value="handleChange" />
                           </Field>
                           <ErrorMessage name="comments" class="text-danger" />
                         </div>
@@ -332,6 +332,8 @@ import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import { useAuthStore } from "~/store/useAuthStore";
 import AttachUploader from "~/components/ui/AttachUploader.vue";
+import HtmlEditor from "~/components/ui/HtmlEditor.vue";
+import { htmlToText, isEmptyHtml, toSafeHtml } from "~/utils/htmlSafe";
 import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
 import type { PdReviewType } from "~/types/pd/pdReviewType";
 import type { SyAttachType } from "~/types/sy/syAttachType";
@@ -623,7 +625,7 @@ function cancelReviewForm() {
 /** 제목이 내용 앞부분으로 자동 생성된 것이면 목록에 따로 보여주지 않는다 */
 const isAutoTitle = (title: string | undefined, content: string | undefined) => {
   const tt = (title ?? "").replace(/…$/, "").trim();
-  return !tt || (content ?? "").replace(/\s+/g, " ").trim().startsWith(tt);
+  return !tt || htmlToText(content).startsWith(tt);
 };
 
 function setReviewRating(n: number) {
@@ -673,7 +675,11 @@ async function deleteReview(reviewId: string, isReply: boolean, guest = false) {
 // ── 리뷰/답글 등록 폼 (옛 ReviewForm) ─────────────────────────────
 // 2026-09-14(요청사항: "리뷰작성 에도 yup 적용해줘") — login/register/contact와 동일한 스키마 방식.
 const reviewSchema = yup.object({
-  comments: yup.string().required("내용을 입력해 주세요").min(2, "내용은 2자 이상이어야 합니다").label("내용"),
+  comments: yup
+    .string()
+    .test("has-content", "내용을 입력해 주세요", (v) => !isEmptyHtml(v))
+    .test("min-text", "내용은 2자 이상이어야 합니다", (v) => isEmptyHtml(v) || htmlToText(v).length >= 2 || /<img\b/i.test(v ?? ""))
+    .label("내용"),
 });
 const reviewFormLoading = ref(false);
 

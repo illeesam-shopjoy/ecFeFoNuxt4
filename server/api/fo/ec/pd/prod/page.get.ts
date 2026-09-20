@@ -27,6 +27,10 @@ export default defineEventHandler(async (event) => {
   const sizeCds = splitCsv(query.sizeCds);
   if (categoryIds) beQuery.categoryIds = categoryIds;
   if (brandIds) beQuery.brandIds = brandIds;
+  const vendorIds = splitCsv(query.vendorIds);
+  const mdUserIds = splitCsv(query.mdUserIds);
+  if (vendorIds) beQuery.vendorIds = vendorIds;
+  if (mdUserIds) beQuery.mdUserIds = mdUserIds;
   if (sizeCds) beQuery.sizeInfoCds = sizeCds;
   if (query.priceMin !== undefined) beQuery.priceMin = query.priceMin;
   if (query.priceMax !== undefined) beQuery.priceMax = query.priceMax;

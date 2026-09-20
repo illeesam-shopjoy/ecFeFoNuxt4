@@ -4,6 +4,8 @@ export interface PdProdPageParamsType {
   pageSize?: number;
   categoryIds?: string[]; // 전부 다중선택 배열
   brandIds?: string[];
+  vendorIds?: string[]; // 판매업체(모달 선택)
+  mdUserIds?: string[]; // 담당MD(모달 선택)
   sizeCds?: string[];
   priceMin?: number;
   priceMax?: number;

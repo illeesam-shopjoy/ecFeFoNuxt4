@@ -44,6 +44,7 @@ import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
 import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
+import { sanitizeHtml } from "~/utils/htmlSafe";
 
 const props = withDefaults(defineProps<{ modelValue: string; height?: string; placeholder?: string; invalid?: boolean; uploadCode?: string }>(), {
   height: "220px",
@@ -167,19 +168,7 @@ async function onPickImage(e: Event) {
 }
 
 // 미리보기 — 사용자가 HTML 탭에 직접 넣을 수 있으므로 스크립트/이벤트 속성/javascript: 를 제거해서 그린다
-const previewHtml = computed(() => (mode.value === "preview" ? sanitize(props.modelValue) : ""));
-function sanitize(html: string): string {
-  if (!import.meta.client || !html) return "";
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  doc.querySelectorAll("script,iframe,object,embed,style,link,meta,form").forEach((n) => n.remove());
-  doc.querySelectorAll("*").forEach((el) => {
-    for (const a of [...el.attributes]) {
-      if (/^on/i.test(a.name) || (/^(href|src|xlink:href)$/i.test(a.name) && /^\s*javascript:/i.test(a.value))) el.removeAttribute(a.name);
-    }
-  });
-  return doc.body.innerHTML;
-}
-
+const previewHtml = computed(() => (mode.value === "preview" ? sanitizeHtml(props.modelValue) : ""));
 onBeforeUnmount(() => editor.value?.destroy());
 </script>
 

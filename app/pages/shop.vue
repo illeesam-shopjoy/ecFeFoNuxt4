@@ -45,7 +45,7 @@
                             <button
                               type="button"
                               @click="toggleAccordion(i); toggleCategory(item.categoryId)"
-                              :class="['shop-accordion-btn', expandedCategory[i] ? '' : 'collapsed', categoryIds.includes(item.categoryId) ? 'active' : '']"
+                              :class="['shop-accordion-btn', expandedCategory[i] ? '' : 'collapsed', categoryIds.includes(item.categoryId) ? 'active cat-selected' : '']"
                               :aria-expanded="!!expandedCategory[i]"
                             >
                               {{ item.parentTitle }}
@@ -57,7 +57,7 @@
                             <div class="categories__list">
                               <ul>
                                 <li v-for="child in item.children" :key="child.id">
-                                  <a @click.prevent="toggleCategory(child.id)" href="#" :class="[categoryIds.includes(child.id) ? 'active' : '']">
+                                  <a @click.prevent="toggleCategory(child.id)" href="#" :class="[categoryIds.includes(child.id) ? 'active cat-selected' : '']">
                                     {{ child.name }}
                                   </a>
                                 </li>
@@ -142,7 +142,7 @@
                   <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetBrand">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
-                  <div class="brand">
+                  <div class="brand max-h-[172px] overflow-y-auto pr-1 [scrollbar-width:thin]">
                     <ul>
                       <li v-for="b in brandList" :key="b.brandId">
                         <a :class="`${brandIds.includes(b.brandId ?? '') ? 'active' : ''}`" @click.prevent="toggleBrand(b.brandId ?? '')" href="#">
@@ -153,6 +153,47 @@
                   </div>
                 </div>
               </div>
+
+              <!-- 판매업체 (모달 선택, 멀티) -->
+              <div class="sidebar__widget mb-50">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
+                  <h3>판매업체</h3>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetVendor">초기화</button>
+                </div>
+                <div class="sidebar__widget-content">
+                  <button type="button" class="flex w-full cursor-pointer items-center justify-between rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-[0.85rem] text-gray-700 hover:border-[#bc8246]" @click="vendorModalRef?.show()">
+                    <span>판매업체 선택</span><i class="fas fa-search text-[0.75rem] text-gray-400"></i>
+                  </button>
+                  <div v-if="vendorIds.length" class="mt-2 flex flex-wrap gap-1.5">
+                    <span v-for="id in vendorIds" :key="id" class="inline-flex items-center gap-1 rounded-full bg-[#faf3ea] px-2.5 py-1 text-[0.75rem] font-semibold text-[#8a5a25]">
+                      {{ nameOfOpt(vendorList, id) }}
+                      <button type="button" class="cursor-pointer border-0 bg-transparent p-0 text-[#8a5a25]" :aria-label="`${nameOfOpt(vendorList, id)} 해제`" @click="vendorIds = vendorIds.filter((v) => v !== id)">×</button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 담당 MD (모달 선택, 멀티) -->
+              <div class="sidebar__widget mb-50">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
+                  <h3>MD</h3>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetMd">초기화</button>
+                </div>
+                <div class="sidebar__widget-content">
+                  <button type="button" class="flex w-full cursor-pointer items-center justify-between rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-[0.85rem] text-gray-700 hover:border-[#bc8246]" @click="mdModalRef?.show()">
+                    <span>MD 선택</span><i class="fas fa-search text-[0.75rem] text-gray-400"></i>
+                  </button>
+                  <div v-if="mdUserIds.length" class="mt-2 flex flex-wrap gap-1.5">
+                    <span v-for="id in mdUserIds" :key="id" class="inline-flex items-center gap-1 rounded-full bg-[#faf3ea] px-2.5 py-1 text-[0.75rem] font-semibold text-[#8a5a25]">
+                      {{ nameOfOpt(mdList, id) }}
+                      <button type="button" class="cursor-pointer border-0 bg-transparent p-0 text-[#8a5a25]" :aria-label="`${nameOfOpt(mdList, id)} 해제`" @click="mdUserIds = mdUserIds.filter((v) => v !== id)">×</button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <filter-pick-modal ref="vendorModalRef" v-model="vendorIds" title="판매업체" :options="vendorList" />
+              <filter-pick-modal ref="mdModalRef" v-model="mdUserIds" title="MD" :options="mdList" />
 
               <!-- 전체 초기화 버튼 -->
               <div class="reset-button mt-20 mb-30">
@@ -242,7 +283,7 @@
                     <product-list-item v-for="item in displayItems" :key="item.prodId" :item="item" />
                   </TransitionGroup>
                 </Transition>
-                <p v-if="!pending && !displayItems.length" class="text-center py-40 text-gray-400">조건에 맞는 상품이 없습니다.</p>
+                <p v-if="!pending && !awaitingCategory && !displayItems.length" class="text-center py-40 text-gray-400">조건에 맞는 상품이 없습니다.</p>
               </div>
 
               <!-- 2026-09-13(요청사항: "하단은 페이징을두지말고 더보기 자동 스크롤로 해줘") —
@@ -278,6 +319,9 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import ProductListItem from "~/components/products/ProductListItem.vue";
+import FilterPickModal from "~/components/modals/FilterPickModal.vue";
+import { syVendorMdSvc } from "~/svc/fo/ec/sy/syVendorMdSvc";
+import type { SyFilterOptType } from "~/types/sy/syFilterOptType";
 import { PROD_COLOR_OPTIONS, prodOptSwatchColor } from "~/utils/prodOptColor";
 import AppImage from "~/components/ui/AppImage.vue";
 import Slider from "@vueform/slider";
@@ -321,6 +365,8 @@ function fetchProducts(params: PdProdPageParamsType): Promise<CoPagedResultType<
   const q: Record<string, string | number> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12 };
   if (params.categoryIds?.length) q.categoryIds = params.categoryIds.join(",");
   if (params.brandIds?.length) q.brandIds = params.brandIds.join(",");
+  if (params.vendorIds?.length) q.vendorIds = params.vendorIds.join(",");
+  if (params.mdUserIds?.length) q.mdUserIds = params.mdUserIds.join(",");
   if (params.sizeCds?.length) q.sizeCds = params.sizeCds.join(",");
   if (params.priceMin != null) q.priceMin = params.priceMin;
   if (params.priceMax != null) q.priceMax = params.priceMax;
@@ -331,8 +377,12 @@ function fetchProducts(params: PdProdPageParamsType): Promise<CoPagedResultType<
 const toggleIn = (arr: string[], value: string): string[] => (arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]);
 
 // 필터 상태(전부 배열=멀티선택, 토글)
-const categoryIds = ref<string[]>([]);
+// 홈의 카테고리 배너 등에서 /shop?category=ID[,ID] 로 들어오면 그 카테고리가 선택된 상태로 시작한다
+const categoryFromQuery = (q: unknown): string[] => (typeof q === "string" ? q.split(",").map((s) => s.trim()).filter(Boolean) : []);
+const categoryIds = ref<string[]>(categoryFromQuery(route.query.category));
 const brandIds = ref<string[]>([]);
+const vendorIds = ref<string[]>([]); // 판매업체(모달 선택)
+const mdUserIds = ref<string[]>([]); // 담당MD(모달 선택)
 const sizeCds = ref<string[]>([]);
 const sort = ref(""); // "" = 기본(등록일 최신순)
 const keyword = ref(initialQuery);
@@ -369,6 +419,8 @@ function buildParams(pageNo: number) {
   const params: PdProdPageParamsType = { pageNo, pageSize: PAGE_SIZE };
   if (categoryIds.value.length) params.categoryIds = expandCategoryIds(categoryIds.value);
   if (brandIds.value.length) params.brandIds = brandIds.value;
+  if (vendorIds.value.length) params.vendorIds = vendorIds.value;
+  if (mdUserIds.value.length) params.mdUserIds = mdUserIds.value;
   if (sizeCds.value.length) params.sizeCds = sizeCds.value;
   if (priceRange.value[0] > 0) params.priceMin = priceRange.value[0];
   if (priceRange.value[1] < 500000) params.priceMax = priceRange.value[1];
@@ -389,9 +441,31 @@ onMounted(() => {
   if (!firstPage.value) refresh();
 });
 
+// 카테고리 트리는 브라우저에서 늦게 도착한다 — 선택된 카테고리가 있으면 하위 카테고리까지 확장해 다시 조회하고, 선택된 그룹은 펼쳐 보여준다
+const catLoaded = computed(() => (catData.value?.categoryTree?.length ?? 0) > 0);
+const awaitingCategory = computed(() => categoryIds.value.length > 0 && !catLoaded.value);
+function openSelectedGroups() {
+  parentCategories.value.forEach((p, i) => {
+    if (categoryIds.value.includes(p.categoryId) || p.children.some((ch) => categoryIds.value.includes(ch.id))) expandedCategory[i] = true;
+  });
+}
+watch(catLoaded, (ok) => {
+  if (!ok || !categoryIds.value.length) return;
+  openSelectedGroups();
+  refresh();
+});
+// 상품목록 화면 안에서 ?category= 가 바뀌면(헤더/배너 링크) 선택도 따라 바꾼다
+watch(
+  () => route.query.category,
+  (q) => {
+    categoryIds.value = categoryFromQuery(q);
+    if (categoryIds.value.length) openSelectedGroups();
+  }
+);
+
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 watch(
-  [categoryIds, brandIds, sizeCds, sort, keyword, priceRange],
+  [categoryIds, brandIds, vendorIds, mdUserIds, sizeCds, sort, keyword, priceRange],
   () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -484,6 +558,8 @@ const resetColor = () => (colorCds.value = []);
 function resetAll() {
   categoryIds.value = [];
   brandIds.value = [];
+  vendorIds.value = [];
+  mdUserIds.value = [];
   sizeCds.value = [];
   sort.value = "";
   keyword.value = "";
@@ -501,6 +577,18 @@ const parentCategories = computed(() => {
 });
 
 const expandedCategory = reactive<Record<number, boolean>>({});
+// 카테고리 트리가 이미 있으면(홈에서 넘어온 경우 등) 마운트 때, 나중에 도착하면 그때 선택된 그룹을 펼친다
+let openedOnce = false;
+watch(
+  () => parentCategories.value.length,
+  (n) => {
+    if (n && !openedOnce && categoryIds.value.length) {
+      openSelectedGroups();
+      openedOnce = true;
+    }
+  },
+  { immediate: true }
+);
 function toggleAccordion(i: number) {
   expandedCategory[i] = !expandedCategory[i];
 }
@@ -525,6 +613,15 @@ const { data: brandList } = useAsyncData(
   // 2026-09-19: server:false — 브랜드 목록은 상품 1000건을 받아 가공하는 무거운 호출이라(운영 SSR 11초의 주범) 서버 렌더에서 뺀다.
   { default: () => [], lazy: true, server: false }
 );
+
+// ── 사이드바: 판매업체 / 담당MD (모달 선택) ─────────────────────────────────────
+const vendorModalRef = ref<InstanceType<typeof FilterPickModal> | null>(null);
+const mdModalRef = ref<InstanceType<typeof FilterPickModal> | null>(null);
+const { data: vendorList } = useAsyncData("shop-vendor-list", () => syVendorMdSvc.getVendors(), { default: () => [], lazy: true, server: false });
+const { data: mdList } = useAsyncData("shop-md-list", () => syVendorMdSvc.getMds(), { default: () => [], lazy: true, server: false });
+const nameOfOpt = (list: SyFilterOptType[], id: string) => list.find((o) => o.id === id)?.name ?? id;
+const resetVendor = () => (vendorIds.value = []);
+const resetMd = () => (mdUserIds.value = []);
 
 // ── 사이드바: 상품 색상 — 지금까지 불러온 상품의 옵션값(색상은 ecBeBo 서버 필터가 아직 없음) ──
 

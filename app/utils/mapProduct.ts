@@ -208,6 +208,8 @@ export function buildProdPageQuery(params: PdProdPageParamsType): Record<string,
   const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12, useYn: "Y" };
   if (params.categoryIds?.length) q.categoryIds = params.categoryIds;
   if (params.brandIds?.length) q.brandIds = params.brandIds;
+  if (params.vendorIds?.length) q.vendorIds = params.vendorIds;
+  if (params.mdUserIds?.length) q.mdUserIds = params.mdUserIds;
   if (params.sizeCds?.length) q.sizeInfoCds = params.sizeCds;
   if (params.priceMin != null) q.priceMin = params.priceMin;
   if (params.priceMax != null) q.priceMax = params.priceMax;

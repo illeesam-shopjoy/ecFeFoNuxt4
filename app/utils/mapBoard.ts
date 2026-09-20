@@ -5,9 +5,11 @@
 import type { CoWriteResultType } from "~/types/co/coWriteResultType";
 import type { PdProdQnaCreateType, PdProdQnaUpdateType } from "~/types/pd/pdProdQnaWriteType";
 import type { PdReviewCommentCreateType, PdReviewCreateType, PdReviewUpdateType } from "~/types/pd/pdReviewWriteType";
+import { htmlToText } from "~/utils/htmlSafe";
 import { badRequest } from "~/utils/svcInput";
 
-const firstLine = (s: string, n = 30) => s.replace(/\s+/g, " ").slice(0, n);
+/** 제목 자동 생성용 — HTML 본문이면 태그를 걷어낸 글자의 앞부분 */
+const firstLine = (s: string, n = 30) => htmlToText(s).slice(0, n);
 const checkRating = (v: unknown): number => {
   const rating = Number(v);
   if (!Number.isFinite(rating) || rating < 0.5 || rating > 5) badRequest("별점을 선택해 주세요. (0.5 ~ 5)");
@@ -52,8 +54,7 @@ export function buildQnaCreatePayload(body: PdProdQnaCreateType): Record<string,
   const prodQnaContent = String(body.content ?? "").trim();
   if (!body.prodId) badRequest("상품 ID가 필요합니다.");
   if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
-  const payload: Record<string, unknown> = { prodId: body.prodId, prodQnaContent };
-  if (body.title?.trim()) payload.prodQnaTitle = body.title.trim();
+  const payload: Record<string, unknown> = { prodId: body.prodId, prodQnaContent, prodQnaTitle: body.title?.trim() || firstLine(prodQnaContent) || "이미지 문의" };
   if (body.writerNm) payload.writerNm = body.writerNm.trim();
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.scrtYn) payload.scrtYn = body.scrtYn;
@@ -65,8 +66,7 @@ export function buildQnaCreatePayload(body: PdProdQnaCreateType): Record<string,
 export function buildQnaUpdatePayload(body: PdProdQnaUpdateType): Record<string, unknown> {
   const prodQnaContent = String(body.content ?? "").trim();
   if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
-  const payload: Record<string, unknown> = { prodQnaContent };
-  if (body.title?.trim()) payload.prodQnaTitle = body.title.trim();
+  const payload: Record<string, unknown> = { prodQnaContent, prodQnaTitle: body.title?.trim() || firstLine(prodQnaContent) || "이미지 문의" };
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.attachFiles?.length) payload.attachFiles = body.attachFiles;
   return payload;

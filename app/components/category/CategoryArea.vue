@@ -7,7 +7,7 @@
           <div v-for="item in categoryItems" :key="item.categoryId" class="col-xl-4 col-lg-4 col-md-6">
             <div class="banner__item mb-30 relative">
               <div class="banner__thumb fix">
-                <nuxt-link href="/shop" class="w-img">
+                <nuxt-link :href="shopLink(item.categoryId)" class="w-img">
                   <!-- 2026-09-13(요청사항: "height 우측에 보이것만큼 줄여줘" → 이후 "좀더 늘려줘")
                        4/3→2/1로 낮췄더니 이번엔 너무 납작해져서 3/2로 절충. -->
                   <app-image
@@ -23,11 +23,11 @@
                    좌측 정렬로 설계돼 있어 그대로 사용. -->
               <div class="banner__content absolute transition-3">
                 <h5>
-                  <nuxt-link href="/shop">
+                  <nuxt-link :href="shopLink(item.categoryId)">
                     <span v-html="item.parentTitle"></span>
                   </nuxt-link>
                 </h5>
-                <nuxt-link href="/shop" class="link-btn">둘러보기</nuxt-link>
+                <nuxt-link :href="shopLink(item.categoryId)" class="link-btn">둘러보기</nuxt-link>
               </div>
             </div>
           </div>
@@ -38,6 +38,8 @@
 </template>
 
 <script setup lang="ts">
+/** 카테고리 배너 → 상품목록에서 그 카테고리가 선택된 상태로 열린다 (shop.vue 가 ?category= 를 읽는다) */
+const shopLink = (categoryId: string) => `/shop?category=${encodeURIComponent(categoryId)}`;
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
