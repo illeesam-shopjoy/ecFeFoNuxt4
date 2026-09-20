@@ -39,6 +39,7 @@ import { usePrice } from "~/composables/usePrice";
 import { paymentSvc } from "~/svc/co/payments/paymentSvc";
 import { foOrderSvc } from "~/svc/fo/ec/order/foOrderSvc";
 import { useCartStore } from "~/store/useCartStore";
+import { useAuthStore } from "~/store/useAuthStore";
 import type { OdPayConfirmResType } from "~/types/od/odPayConfirmResType";
 
 const cartStore = useCartStore();
@@ -57,6 +58,8 @@ const orderIdQuery = route.query.orderId as string;
 const amountQuery = route.query.amount as string;
 
 onMounted(async () => {
+  // 토스에서 돌아오면 전체 새로고침이라 스토어에 토큰이 없다 — app.vue 의 복원보다 이 화면 마운트가 먼저라 여기서 직접 복원한다(없으면 주문 생성이 401)
+  useAuthStore().loadStToken();
   if (!paymentKey || !orderIdQuery || !amountQuery) {
     status.value = "fail";
     errorMessage.value = "결제 정보가 없습니다.";

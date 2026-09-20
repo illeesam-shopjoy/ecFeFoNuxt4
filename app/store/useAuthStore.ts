@@ -131,7 +131,8 @@ export const useAuthStore = defineStore("auth", {
         this.setToken(res.accessToken);
         return true;
       } catch {
-        this.setStLogout();
+        // 갱신도 실패(refreshToken 만료/세션 없음)하면 로그인 상태를 정리한다 — 화면은 로그인 유도
+        await this.setStLogout();
         return false;
       }
     },
