@@ -19,14 +19,17 @@ export function fixRelativeCdnImgSrc(html: string | null | undefined, base: stri
 }
 
 /**
- * 업로드 응답(cdnImgUrl 등)의 호스트가 서버 내부 주소(host.docker.internal / localhost)로 오는 경우가 있어
- * 브라우저에서 열 수 없다 — 경로(/api/cdn/...)만 살려 실제 CDN origin 으로 바꾼다. 그 외 URL 은 그대로.
+ * 업로드 응답(cdnImgUrl 등)의 호스트가 서버 설정에 따라 내부 주소(host.docker.internal/localhost) 또는 http 포트 주소
+ * (예: http://illeesam.synology.me:22400 — HTTPS 페이지에서는 혼합 콘텐츠로 막힘)로 오는 경우가 있다.
+ * 경로가 CDN 파일 경로(/api/cdn/…)이면 경로만 살려 이 앱이 쓰는 CDN origin(runtimeConfig.public.prodCdnBase, https)으로 통일한다. 그 외 URL 은 그대로.
  */
 export function fixInternalCdnUrl(url: string | null | undefined, cdnBase: string): string | undefined {
   if (!url) return undefined;
   try {
     const u = new URL(url);
-    if (/^(host\.docker\.internal|localhost|127\.0\.0\.1)$/i.test(u.hostname)) return `${new URL(cdnBase).origin}${u.pathname}${u.search}`;
+    const cdnOrigin = new URL(cdnBase).origin;
+    const internal = /^(host\.docker\.internal|localhost|127\.0\.0\.1)$/i.test(u.hostname);
+    if (u.origin !== cdnOrigin && (internal || u.pathname.startsWith("/api/cdn/"))) return `${cdnOrigin}${u.pathname}${u.search}`;
   } catch { /* 상대경로 등 — 아래에서 그대로 반환 */ }
   return url;
 }
