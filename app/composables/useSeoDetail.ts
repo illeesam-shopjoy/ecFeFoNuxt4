@@ -15,6 +15,12 @@
  */
 import { axiosSsr } from "~/utils/axiosSsr";
 
+/** useAsyncData 가 감싼 오류(NuxtError → 원본 AxiosError)에서 HTTP 404 여부만 골라낸다. */
+function isNotFound(err: unknown): boolean {
+  const e = err as { statusCode?: number; status?: number; response?: { status?: number }; cause?: { response?: { status?: number }; statusCode?: number } } | null | undefined;
+  return [e?.statusCode, e?.status, e?.response?.status, e?.cause?.response?.status, e?.cause?.statusCode].includes(404);
+}
+
 export function useSeoDetail<T>(key: string, seoUrl: string | null, fetchFull: () => Promise<T | null>) {
   const seoAsync = useAsyncData<T | null>(
     `${key}:seo`,
@@ -31,8 +37,10 @@ export function useSeoDetail<T>(key: string, seoUrl: string | null, fetchFull: (
   const pending = computed(() => !item.value && fullStatus.value !== "success" && fullStatus.value !== "error");
 
   return seoAsync.then(() => {
-    // 존재하지 않는 리소스가 200 으로 색인되지 않게 서버 렌더에서는 404 로 응답한다.
-    if (event && seoAsync.error.value) setResponseStatus(event, 404);
+    // 백엔드가 "없음"(404)을 명확히 준 경우에만 서버 렌더에서 404 로 응답해 색인되지 않게 한다.
+    // Ohio→NAS 연결이 일시적으로 지연/실패한 경우(콜드스타트 등)는 상태를 건드리지 않는다 — 정상 상품이 404 로 색인되면 안 되고,
+    // 이 경우 SEO 정보가 없어 CDN 에 캐시되지도 않으며 브라우저가 전체 조회로 화면을 채운다.
+    if (event && isNotFound(seoAsync.error.value)) setResponseStatus(event, 404);
     return { item, pending, refresh, seo };
   });
 }

@@ -24,7 +24,8 @@ export default defineEventHandler(async (event) => {
 
   const detail = await beApi.get<BeProdItem>(`/fo/ec/pd/prod/${id}`).catch((e: unknown) => {
     const err = e as { statusCode?: number };
-    if (err?.statusCode === 404) throw createError({ statusCode: 404, statusMessage: "상품을 찾을 수 없습니다." });
+    // ecBeBo 는 없는 상품에 400("존재하지 않는 상품입니다")을 내려준다 — 404 로 정규화해 검색엔진이 색인하지 않게 한다
+    if (err?.statusCode === 404 || err?.statusCode === 400) throw createError({ statusCode: 404, statusMessage: "상품을 찾을 수 없습니다." });
     throw e;
   });
 
