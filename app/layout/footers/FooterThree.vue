@@ -1,5 +1,5 @@
 <template>
-  <section class="footer__area dark-soft-bg">
+  <section v-if="!hideFooter" class="footer__area dark-soft-bg">
     <div class="footer__top pt-100 pb-50">
       <div class="container custom-container-2 mx-auto">
         <div class="row flex justify-center">
@@ -104,6 +104,9 @@
 </template>
 
 <script setup lang="ts">
+// 2026-09-20(요청사항: "상세화면에서는 footer 가 안 보이면 된다") — 상품/블로그/이벤트 상세에서는 푸터를 렌더링하지 않는다
+const route = useRoute();
+const hideFooter = computed(() => /^\/(prod|blog|event)-dtl(\/|$)/.test(route.path));
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 import { CDN_URL } from "~/conts/baseConst";
 

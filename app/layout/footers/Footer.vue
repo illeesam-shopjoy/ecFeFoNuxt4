@@ -1,5 +1,5 @@
 <template>
-  <section :class="`footer__area footer-bg ${box_style ? 'box-m-15' : ''}`">
+  <section v-if="!hideFooter" :class="`footer__area footer-bg ${box_style ? 'box-m-15' : ''}`">
     <div class="footer__top pt-100 pb-60">
       <div class="max-w-7xl mx-auto px-4">
         <!-- 푸터 3열 레이아웃: Outstock(50%) | 안내(25%) | 고객센터(25%) -->
@@ -78,6 +78,9 @@
 </template>
 
 <script setup lang="ts">
+// 2026-09-20(요청사항: "상세화면에서는 footer 가 안 보이면 된다") — 상품/블로그/이벤트 상세에서는 푸터를 렌더링하지 않는다
+const route = useRoute();
+const hideFooter = computed(() => /^\/(prod|blog|event)-dtl(\/|$)/.test(route.path));
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 defineProps({

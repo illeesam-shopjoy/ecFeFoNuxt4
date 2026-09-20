@@ -8,7 +8,7 @@
 
     <!-- 상품 상세 -->
     <template v-else-if="item">
-      <section class="shop__area pb-65">
+      <section class="shop__area pb-[110px]">
         <div class="shop__top bg-white pt-60 pb-60">
           <div class="max-w-7xl mx-auto px-4">
             <div class="row">
@@ -441,11 +441,7 @@ function updateBuyBar() {
   scrollRaf = 0;
   updateActiveTab();
   const buyEl = detailRef.value?.getBuyEl?.();
-  const pastBuyButtons = buyEl ? buyEl.getBoundingClientRect().bottom < headerH.value : false;
-  // 2026-09-20(요청사항: "footer 영역에서는 하단바 안 보여도 돼") — 푸터가 화면에 들어오면 구매바를 숨긴다(푸터 위를 덮지 않게)
-  const footerEl = document.querySelector(".footer__area");
-  const footerVisible = footerEl ? footerEl.getBoundingClientRect().top < window.innerHeight : false;
-  showBuyBar.value = pastBuyButtons && !footerVisible;
+  showBuyBar.value = buyEl ? buyEl.getBoundingClientRect().bottom < headerH.value : false;
 }
 function onScroll() {
   if (!scrollRaf) scrollRaf = requestAnimationFrame(updateBuyBar);
