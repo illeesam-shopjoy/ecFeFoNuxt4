@@ -13,7 +13,7 @@
  * 옵션 테이블 조인 필터가 아직 없어 "지금까지 불러온 페이지 안에서만" 보조로 걸러준다
  * (전체 카탈로그 기준 아님 — 색상은 서버 필터 추가 전까지 이 한계를 안고 감).
  */
-import { ref, computed, watch, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { pdProductSvc, type PdProductPageParams, type PdProductPagedResult } from "~/svc/fo/ec/pd/pdProductSvc";
 import { axiosSsr } from "~/utils/axiosSsr";
 import { type PdProductType } from "~/types/pdProductType";
@@ -87,6 +87,12 @@ export function useShopProducts(initialKeyword = "") {
     refresh,
   } = useAsyncData<PdProductPagedResult>("shop-products-paged", () => fetchProducts(buildParams(1)));
 
+  // 서버 렌더의 첫 페이지 조회가 일시적으로 실패하면(Ohio→NAS 콜드 지연 등) firstPage 가 비어 하이드레이션되고 클라이언트는 다시 조회하지 않는다
+  // — 그러면 빈 목록이 그대로 보이므로, 화면이 뜬 뒤 비어 있으면 브라우저가 ecBeBo 에서 1페이지를 직접 다시 가져온다.
+  onMounted(() => {
+    if (!firstPage.value) refresh();
+  });
+
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   watch(
     [categoryIds, brandIds, sizeCds, sort, keyword, priceRange],
@@ -135,7 +141,7 @@ export function useShopProducts(initialKeyword = "") {
   const hasMore = computed(() => extraHasMore.value ?? firstPage.value?.hasMore ?? true);
 
   async function loadMore() {
-    if (loadingMore.value || pending.value || !hasMore.value) return;
+    if (loadingMore.value || pending.value || !firstPage.value || !hasMore.value) return; // 1페이지가 아직 없으면 2페이지부터 붙이지 않는다
     loadingMore.value = true;
     try {
       const next = pageNo.value + 1;
