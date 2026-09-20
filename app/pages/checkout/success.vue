@@ -26,7 +26,7 @@
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { usePrice } from "~/composables/usePrice";
-import { paymentSvc } from "~/svcServer/payments/paymentSvc";
+import { paymentSvc } from "~/svc/co/payments/paymentSvc";
 import { foOrderSvc } from "~/svc/fo/ec/order/foOrderSvc";
 import { useCartStore } from "~/store/useCartStore";
 

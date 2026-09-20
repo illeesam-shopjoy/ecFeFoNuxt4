@@ -12,6 +12,7 @@
       <nav aria-label="브레드크럼">
         <ol class="flex gap-2 list-none m-0 p-0 text-[0.85rem] text-[#888]">
           <li class="breadcrumb-item"><nuxt-link href="/">홈</nuxt-link></li>
+          <li v-if="parentTitle" class="breadcrumb-item before:content-['/'] before:mr-2 before:text-[#ccc]"><nuxt-link :href="parentLink || '#'">{{ parentTitle }}</nuxt-link></li>
           <li class="breadcrumb-item text-[#201f1f] before:content-['/'] before:mr-2 before:text-[#ccc]" aria-current="page">{{ subtitle }}</li>
         </ol>
       </nav>
@@ -28,6 +29,7 @@
               <nav aria-label="브레드크럼">
                 <ol class="breadcrumb justify-center">
                   <li class="breadcrumb-item"><nuxt-link href="/">홈</nuxt-link></li>
+                  <li v-if="parentTitle" class="breadcrumb-item"><nuxt-link :href="parentLink || '#'">{{ parentTitle }}</nuxt-link></li>
                   <li class="breadcrumb-item active" aria-current="page">{{ subtitle }}</li>
                 </ol>
               </nav>
@@ -52,6 +54,9 @@ withDefaults(
     title: string;
     subtitle: string;
     compact?: boolean;
+    /** 2026-09-20: 중간 단계(예: 홈 / 상품 목록 / 상품 상세) — 상세 화면에서 목록으로 돌아가는 링크 */
+    parentTitle?: string;
+    parentLink?: string;
   }>(),
   { compact: false }
 );

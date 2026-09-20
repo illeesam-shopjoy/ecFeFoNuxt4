@@ -1,5 +1,6 @@
 import type { OdOrderItemType } from "~/types/od/odOrderItemType";
 import type { OdDlivType } from "~/types/od/odDlivType";
+import type { OdPayType } from "~/types/od/odPayType";
 
 /** 주문. 필드명은 ecBeBo(JPA) OdOrderDto.Item(od_order) 기준 — 서버가 내려주는 값을 그대로 담는다(대부분 optional). */
 export interface OdOrderType {
@@ -61,6 +62,7 @@ export interface OdOrderType {
   orderItemCnt?: number;
   orderItems?: OdOrderItemType[]; // 주문상품 목록 (FO 마이페이지 주문 조회 응답에 포함)
   orderDlivs?: OdDlivType[]; // 배송 목록 (FO 마이페이지 주문 조회 응답에 포함)
+  orderPays?: OdPayType[]; // 결제 목록 (od_pay — FO 마이페이지 주문 조회 응답에 포함)
   // ── 공통(감사) 컬럼 ──
   regBy?: string; // 등록자 (reg_by)
   regByNm?: string; // 등록자명 (reg_by_nm)

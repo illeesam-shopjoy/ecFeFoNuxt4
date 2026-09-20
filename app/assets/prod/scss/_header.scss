@@ -96,7 +96,8 @@
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 1;
+    // 2026-09-20: 1 → 100. 본문 히어로(relative z-[1] 등)가 DOM 뒤라 z-index 가 같으면 드롭다운 메뉴를 덮었다(이벤트 상세 등). sticky(999)보다는 낮게.
+    z-index: 100;
     background: transparent;
     &.transparent-sticky {
       position: static;

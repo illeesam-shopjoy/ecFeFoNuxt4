@@ -3,6 +3,7 @@
  * ecBeBo FoCmFaqController(/api/fo/faq, 공개) + 경로 트리(/api/co/sy/path)를 직접 부른다.
  */
 import { axiosCsr } from "~/utils/axiosCsr";
+import type { CmFaqType } from "~/types/cm/cmFaqType";
 
 export interface FaqTreeNodeType {
   id: string;
@@ -14,14 +15,8 @@ export interface FaqTreeType {
   total: number;
   tree: FaqTreeNodeType[];
 }
-export interface FaqItemType {
-  faqId: string;
-  q: string;
-  a: string;
-  viewCount: number;
-  pathId: string;
-  cate: string;
-}
+/** FAQ 1건 — 필드명은 cm_faq 컬럼(CmFaqType) 그대로 (화면용 축약 q/a/cate 는 폐기) */
+export type FaqItemType = CmFaqType;
 export interface FaqPagedResult {
   items: FaqItemType[];
   pageNo: number;
@@ -46,14 +41,6 @@ interface BePathRow {
 interface BeFaqRow {
   faqId: string;
   pathId: string | number | null;
-}
-interface BeFaqItem {
-  faqId: string;
-  faqQuestion: string;
-  faqAnswer?: string | null;
-  viewCount?: number | null;
-  pathId?: string | number | null;
-  pathLabel?: string | null;
 }
 
 export const coFaqSvc = {
@@ -117,16 +104,9 @@ export const coFaqSvc = {
   getPage: async (params: { pageNo: number; pageSize: number; pathId?: string | null }): Promise<FaqPagedResult> => {
     const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize };
     if (params.pathId) q.pathId = params.pathId;
-    const page = (await axiosCsr.get<BePage<BeFaqItem>>("/fo/faq/page", { params: q })).data;
+    const page = (await axiosCsr.get<BePage<CmFaqType>>("/fo/faq/page", { params: q })).data;
     return {
-      items: (page.pageList ?? []).map((f) => ({
-        faqId: f.faqId,
-        q: f.faqQuestion,
-        a: f.faqAnswer ?? "",
-        viewCount: f.viewCount ?? 0,
-        pathId: f.pathId != null ? String(f.pathId) : "",
-        cate: f.pathLabel ?? "",
-      })),
+      items: (page.pageList ?? []).map((f) => ({ ...f, viewCount: f.viewCount ?? 0, pathId: f.pathId != null ? String(f.pathId) : "", pathLabel: f.pathLabel ?? "" })),
       pageNo: page.pageNo,
       pageSize: page.pageSize,
       pageTotalCount: page.pageTotalCount,

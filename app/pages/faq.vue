@@ -60,7 +60,7 @@
                   @click="toggleFaq(faq)"
                 >
                   <span class="shrink-0 mr-3 min-w-[24px] text-right text-[0.85rem] font-bold text-gray-400">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</span>
-                  <span class="flex-1 pr-3">{{ faq.q }}</span>
+                  <span class="flex-1 pr-3">{{ faq.faqQuestion }}</span>
                   <span class="shrink-0 mr-2.5 text-[0.72rem] text-gray-400 font-medium whitespace-nowrap" title="읽음 수">
                     <i class="far fa-eye mr-1"></i>{{ (faq.viewCount || 0).toLocaleString() }}
                   </span>
@@ -68,7 +68,7 @@
                 </button>
                 <div v-show="openFaqId === faq.faqId" class="pb-5 pl-9 pr-2 text-[0.9rem] text-gray-600 leading-[1.8]">
                   <!-- 답변은 관리자가 작성한 HTML(이미지 포함) — 화면 폭을 넘지 않게 이미지 폭만 제한 -->
-                  <div v-if="faq.a" class="[&_img]:max-w-full [&_img]:h-auto [&_p]:mb-2" v-html="faq.a"></div>
+                  <div v-if="faq.faqAnswer" class="[&_img]:max-w-full [&_img]:h-auto [&_p]:mb-2" v-html="faq.faqAnswer"></div>
                   <div v-else class="text-gray-400">등록된 답변이 없습니다.</div>
                 </div>
               </div>

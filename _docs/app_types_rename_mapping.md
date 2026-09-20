@@ -86,7 +86,7 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 | 폴더 | 파일 |
 |---|---|
 | pd (상품) | pdProdType, pdProdSkuType, pdProdOptType, pdCategoryType, pdCategoryTreeType, pdCategoryProdType(카테고리-상품 연결), pdReviewType |
-| od (주문) | odCartItemType, odOrderType, odOrderItemType, odDlivType, odClaimType |
+| od (주문) | odCartItemType, odOrderType, odOrderItemType, odDlivType, odClaimType, odPayType(결제, `OdOrderType.orderPays`) |
 | mb (회원) | mbLikeItemType, mbMemberType, mbRegisterFormType |
 | sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syBbmType(게시판 마스터·`bbss`), syBbsType(게시글), syAlarmType(알람), syNotiType(알림함), syNoticeType(공지), syI18nType(다국어), syVendorType(업체), sySiteType(사이트), syLoginFormType, syCheckoutLoginFormType |
 | cm (콘텐츠/채팅) | cmBlogType, cmFaqType(FAQ), cmChattType(채팅방), cmChattMemberType(참여자), cmChattMsgType(메시지) — `chattMembers/chattMsgs` 로 참조 |
@@ -115,3 +115,7 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 - 테이블에 대응하는 모든 엔티티 타입 끝에 `── 공통(감사) 컬럼 ──` 구역: `regBy/regByNm/regDate/updBy/updByNm/updDate/regSiteId`. (※ 현재 백엔드 DTO 는 등록자명을 `regUserNm` 조인 값으로 내려주므로 `regByNm/updByNm` 은 서버 확장 또는 화면 채움이 필요하다.)
 - `xxxCd` 바로 아래 줄에 `xxxCdNm` 이 오도록 정렬한다.
 - `PdCategoryType.categoryProds` / `PdProdType.categoryProds` 는 pd_category_prod(카테고리-상품 연결) 목록이다.
+
+### svc 통합 (2026-09-20)
+`app/svcServer/` 를 `app/svc/co/` 로 합쳤다: `svc/co/payments/paymentSvc.ts`(토스 결제 승인, server/api 경유), `svc/co/dev/envSvc.ts`(개발용 env 편집, server/api 경유).
+이 둘만 axiosCsr 가 아니라 `$fetch(/api/...)` 를 쓰는 예외다(서버 시크릿/파일시스템 접근 필요).

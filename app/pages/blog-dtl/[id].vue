@@ -1,11 +1,13 @@
 <template>
-  <layout :white_bg="true">
+  <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
+    <!-- 2026-09-20(요청사항: "블로그 상세 배너 있어야 하지 않어?") — 다른 상세 화면처럼 상단 배너 + 홈 / 블로그 목록 / 블로그 상세 -->
+    <breadcrumb-area title="블로그 상세" subtitle="블로그 상세" parent-title="블로그 목록" parent-link="/blog" />
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
     <skeleton-blog-detail v-if="pending" />
 
     <!-- 블로그 상세 -->
-    <section v-else-if="item" class="blog__area pt-55">
+    <section v-else-if="item" class="blog__area pt-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-9 col-lg-8">
@@ -209,6 +211,7 @@
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
+import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
 import { type CmBlogType } from "~/types/cm/cmBlogType";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
