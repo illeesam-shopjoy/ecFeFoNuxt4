@@ -820,7 +820,8 @@ p {
 #scroll a {
   position: fixed;
   right: 30px;
-  bottom: 106px;
+  bottom: calc(106px + var(--fab-lift, 0px)); /* 상품상세 하단 구매바가 나오면 그만큼 위로(ProdBuyBar.vue) */
+  transition: bottom 0.2s ease;
   width: 40px;
   height: 40px;
   line-height: 40px;

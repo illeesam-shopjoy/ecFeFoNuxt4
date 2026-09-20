@@ -441,7 +441,11 @@ function updateBuyBar() {
   scrollRaf = 0;
   updateActiveTab();
   const buyEl = detailRef.value?.getBuyEl?.();
-  showBuyBar.value = buyEl ? buyEl.getBoundingClientRect().bottom < headerH.value : false;
+  const pastBuyButtons = buyEl ? buyEl.getBoundingClientRect().bottom < headerH.value : false;
+  // 2026-09-20(요청사항: "footer 영역에서는 하단바 안 보여도 돼") — 푸터가 화면에 들어오면 구매바를 숨긴다(푸터 위를 덮지 않게)
+  const footerEl = document.querySelector(".footer__area");
+  const footerVisible = footerEl ? footerEl.getBoundingClientRect().top < window.innerHeight : false;
+  showBuyBar.value = pastBuyButtons && !footerVisible;
 }
 function onScroll() {
   if (!scrollRaf) scrollRaf = requestAnimationFrame(updateBuyBar);
