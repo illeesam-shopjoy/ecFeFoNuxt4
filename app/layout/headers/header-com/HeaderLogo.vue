@@ -11,7 +11,7 @@
           쇼핑의 즐거움
           <span class="px-[5px] rounded-[3px] border font-mono text-[9px] font-bold" :class="chipClass">{{ modeLabel }}</span>
         </span>
-        <span class="text-[0.58rem] text-[#a3a3a3] opacity-75 whitespace-nowrap overflow-hidden text-ellipsis max-w-[45vw]">api {{ apiHost }} · cdn {{ cdnHost }}</span>
+        <span class="hidden lg:block text-[0.58rem] text-[#a3a3a3] opacity-75 whitespace-nowrap overflow-hidden text-ellipsis max-w-[45vw]">api {{ apiHost }} · cdn {{ cdnHost }}</span>
       </span>
     </nuxt-link>
   </div>

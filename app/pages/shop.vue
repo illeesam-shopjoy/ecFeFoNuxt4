@@ -71,6 +71,21 @@
                 </div>
               </div>
 
+              <!-- 상품명 검색 -->
+              <div class="sidebar__widget mb-50">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
+                  <h3>상품명 검색</h3>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetName">초기화</button>
+                </div>
+                <div class="sidebar__widget-content">
+                  <form class="flex gap-1.5" @submit.prevent="applyName">
+                    <input v-model="nameInput" type="text" placeholder="상품명을 입력하세요" class="min-w-0 flex-1 rounded-md border border-[#e5e7eb] px-3 py-2 text-[0.85rem] outline-none focus:border-[#bc8246]" />
+                    <button type="submit" class="cursor-pointer rounded-md border-0 bg-gray-900 px-3 text-[0.8rem] font-semibold text-white">검색</button>
+                  </form>
+                  <div v-if="keyword" class="mt-2 text-[0.78rem] text-[#8a5a25]">"{{ keyword }}" 검색 중</div>
+                </div>
+              </div>
+
               <!-- 가격 필터 (2026-09-13: 서버 priceMin/priceMax로 실제 전체 카탈로그 기준 필터링) -->
               <client-only>
                 <div class="sidebar__widget mb-55">
@@ -135,6 +150,29 @@
                 </div>
               </div>
 
+              <!-- 평가 별점 범위 -->
+              <div class="sidebar__widget mb-50">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
+                  <h3>평가 별점</h3>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetRating">초기화</button>
+                </div>
+                <div class="sidebar__widget-content">
+                  <div class="flex items-center gap-2 text-[0.85rem] text-gray-700">
+                    <select :value="ratingRange[0]" class="min-w-0 flex-1 rounded-md border border-[#e5e7eb] px-2 py-2 outline-none focus:border-[#bc8246]" aria-label="최소 별점" @change="setRatingMin(Number(($event.target as HTMLSelectElement).value))">
+                      <option v-for="n in RATING_STEPS.slice(0, 5)" :key="n" :value="n">{{ n === 0 ? "전체" : `★ ${n}점` }} 이상</option>
+                    </select>
+                    <span>~</span>
+                    <select :value="ratingRange[1]" class="min-w-0 flex-1 rounded-md border border-[#e5e7eb] px-2 py-2 outline-none focus:border-[#bc8246]" aria-label="최대 별점" @change="setRatingMax(Number(($event.target as HTMLSelectElement).value))">
+                      <option v-for="n in RATING_STEPS.slice(1)" :key="n" :value="n">{{ n === 5 ? "전체" : `★ ${n}점` }} 이하</option>
+                    </select>
+                  </div>
+                  <div class="mt-2 text-[1rem] text-[#f5a623]">
+                    <i v-for="n in 5" :key="n" :class="n >= Math.max(ratingRange[0], 1) && n <= ratingRange[1] ? 'fas fa-star' : 'fal fa-star'"></i>
+                    <span class="ml-2 text-[0.78rem] text-[#999]">{{ ratingRange[0] === 0 && ratingRange[1] === 5 ? "전체" : `${ratingRange[0]}~${ratingRange[1]}점 (리뷰 있는 상품)` }}</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- 상품 브랜드 (2026-09-13: 멀티선택 토글 + 전용 브랜드 API) -->
               <div class="sidebar__widget mb-50">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
@@ -170,6 +208,20 @@
                       <button type="button" class="cursor-pointer border-0 bg-transparent p-0 text-[#8a5a25]" :aria-label="`${nameOfOpt(vendorList, id)} 해제`" @click="vendorIds = vendorIds.filter((v) => v !== id)">×</button>
                     </span>
                   </div>
+                </div>
+              </div>
+
+              <!-- 사이트 (select) -->
+              <div class="sidebar__widget mb-50">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
+                  <h3>사이트</h3>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="siteId = ''">초기화</button>
+                </div>
+                <div class="sidebar__widget-content">
+                  <select v-model="siteId" class="w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-[0.85rem] outline-none focus:border-[#bc8246]" aria-label="사이트">
+                    <option value="">전체 사이트</option>
+                    <option v-for="s in siteList" :key="s.id" :value="s.id">{{ s.name }} ({{ s.prodCount }})</option>
+                  </select>
                 </div>
               </div>
 
@@ -365,6 +417,9 @@ function fetchProducts(params: PdProdPageParamsType): Promise<CoPagedResultType<
   const q: Record<string, string | number> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12 };
   if (params.categoryIds?.length) q.categoryIds = params.categoryIds.join(",");
   if (params.brandIds?.length) q.brandIds = params.brandIds.join(",");
+  if (params.siteId) q.siteId = params.siteId;
+  if (params.ratingMin) q.ratingMin = params.ratingMin;
+  if (params.ratingMax != null && params.ratingMax < 5) q.ratingMax = params.ratingMax;
   if (params.vendorIds?.length) q.vendorIds = params.vendorIds.join(",");
   if (params.mdUserIds?.length) q.mdUserIds = params.mdUserIds.join(",");
   if (params.sizeCds?.length) q.sizeCds = params.sizeCds.join(",");
@@ -381,6 +436,9 @@ const toggleIn = (arr: string[], value: string): string[] => (arr.includes(value
 const categoryFromQuery = (q: unknown): string[] => (typeof q === "string" ? q.split(",").map((s) => s.trim()).filter(Boolean) : []);
 const categoryIds = ref<string[]>(categoryFromQuery(route.query.category));
 const brandIds = ref<string[]>([]);
+const siteId = ref(""); // 사이트(select)
+const ratingRange = ref<[number, number]>([0, 5]); // 평가 별점 범위
+const nameInput = ref(initialQuery); // 상품명 검색 입력(Enter/검색 버튼으로 keyword 반영)
 const vendorIds = ref<string[]>([]); // 판매업체(모달 선택)
 const mdUserIds = ref<string[]>([]); // 담당MD(모달 선택)
 const sizeCds = ref<string[]>([]);
@@ -420,6 +478,9 @@ function buildParams(pageNo: number) {
   if (categoryIds.value.length) params.categoryIds = expandCategoryIds(categoryIds.value);
   if (brandIds.value.length) params.brandIds = brandIds.value;
   if (vendorIds.value.length) params.vendorIds = vendorIds.value;
+  if (siteId.value) params.siteId = siteId.value;
+  if (ratingRange.value[0] > 0) params.ratingMin = ratingRange.value[0];
+  if (ratingRange.value[1] < 5) params.ratingMax = ratingRange.value[1];
   if (mdUserIds.value.length) params.mdUserIds = mdUserIds.value;
   if (sizeCds.value.length) params.sizeCds = sizeCds.value;
   if (priceRange.value[0] > 0) params.priceMin = priceRange.value[0];
@@ -465,7 +526,7 @@ watch(
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 watch(
-  [categoryIds, brandIds, vendorIds, mdUserIds, sizeCds, sort, keyword, priceRange],
+  [categoryIds, brandIds, vendorIds, mdUserIds, siteId, ratingRange, sizeCds, sort, keyword, priceRange],
   () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -560,6 +621,9 @@ function resetAll() {
   brandIds.value = [];
   vendorIds.value = [];
   mdUserIds.value = [];
+  siteId.value = "";
+  ratingRange.value = [0, 5];
+  nameInput.value = "";
   sizeCds.value = [];
   sort.value = "";
   keyword.value = "";
@@ -619,6 +683,17 @@ const vendorModalRef = ref<InstanceType<typeof FilterPickModal> | null>(null);
 const mdModalRef = ref<InstanceType<typeof FilterPickModal> | null>(null);
 const { data: vendorList } = useAsyncData("shop-vendor-list", () => syVendorMdSvc.getVendors(), { default: () => [], lazy: true, server: false });
 const { data: mdList } = useAsyncData("shop-md-list", () => syVendorMdSvc.getMds(), { default: () => [], lazy: true, server: false });
+const { data: siteList } = useAsyncData("shop-site-list", () => syVendorMdSvc.getSites(), { default: () => [], lazy: true, server: false });
+const applyName = () => (keyword.value = nameInput.value.trim());
+const resetName = () => {
+  nameInput.value = "";
+  keyword.value = "";
+};
+const resetRating = () => (ratingRange.value = [0, 5]);
+/** 별점 범위 선택지 — 이상(min) / 이하(max) */
+const RATING_STEPS = [0, 1, 2, 3, 4, 5];
+const setRatingMin = (v: number) => (ratingRange.value = [v, Math.max(v, ratingRange.value[1])]);
+const setRatingMax = (v: number) => (ratingRange.value = [Math.min(v, ratingRange.value[0]), v]);
 const nameOfOpt = (list: SyFilterOptType[], id: string) => list.find((o) => o.id === id)?.name ?? id;
 const resetVendor = () => (vendorIds.value = []);
 const resetMd = () => (mdUserIds.value = []);

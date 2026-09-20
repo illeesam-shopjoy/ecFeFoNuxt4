@@ -34,6 +34,7 @@ export interface PdProdType {
   prodNm: string; // 상품명 (ecBeBo prodNm)
   salePrice: number; // 판매가 (ecBeBo salePrice, 프로모션 할인가가 있으면 그 값)
   stdPrice?: number; // 정가 (ecBeBo stdPrice)
+  reviewCnt?: number; // 리뷰 수 (목록/상세)
   rating: number; // 평점 — ecBeBo 상품 자체엔 없고 리뷰 요약(getReviews summary.avgRating)에서만 나옴, 목록에서는 0
   prodStock: number; // 재고 수량 (ecBeBo prodStock, SKU 재고 합산값)
   orderQuantity?: number; // 주문 수량 (장바구니 등에서 쓰는 UI 상태, ecBeBo 필드 아님)

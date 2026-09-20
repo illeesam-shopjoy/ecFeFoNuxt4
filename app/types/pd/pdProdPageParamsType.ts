@@ -4,6 +4,9 @@ export interface PdProdPageParamsType {
   pageSize?: number;
   categoryIds?: string[]; // 전부 다중선택 배열
   brandIds?: string[];
+  siteId?: string; // 사이트
+  ratingMin?: number; // 평균 평점 하한(0~5)
+  ratingMax?: number; // 평균 평점 상한(0~5)
   vendorIds?: string[]; // 판매업체(모달 선택)
   mdUserIds?: string[]; // 담당MD(모달 선택)
   sizeCds?: string[];

@@ -62,6 +62,11 @@
         </div>
         <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
         <div v-if="item.brand?.brandNm" class="text-[12px] text-[#a3a3a3] mb-2">{{ item.brand.brandNm }}</div>
+        <!-- 평가 별점 (평균 평점 + 리뷰 수) — 리뷰가 없으면 빈 별 -->
+        <div class="mb-2 flex items-center gap-1 text-[12px]" :title="`평점 ${Number(item.rating || 0).toFixed(1)} (${item.reviewCnt ?? 0}개 리뷰)`">
+          <span class="text-[#f5a623]"><i v-for="n in 5" :key="n" :class="n <= Math.round(item.rating || 0) ? 'fas fa-star' : 'fal fa-star'"></i></span>
+          <span class="text-[#999]">{{ Number(item.rating || 0).toFixed(1) }} ({{ item.reviewCnt ?? 0 }})</span>
+        </div>
         <div class="product__price transition-3">
           <span class="!text-base">{{ formatPrice(item.salePrice) }}</span>
           <span v-if="item.stdPrice" class="old-price !text-base">{{ formatPrice(item.stdPrice) }}</span>

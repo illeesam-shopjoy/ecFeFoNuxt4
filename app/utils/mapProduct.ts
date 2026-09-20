@@ -111,7 +111,8 @@ export function mapProduct(p: PdProdRawType, cdnBase: string): Record<string, un
     salePrice,
     stdPrice,
     // 실 스키마엔 상품 평균평점 필드가 없음(리뷰 요약 API 별도) — 목록에서는 0, 상세는 reviews 병합 시 채움(server/api/fo/ec/pd/prod/[id].get.ts 참조)
-    rating: 0,
+    rating: Number(p.avgRating) || 0, // 목록 응답의 평균 평점 (상세는 reviews 병합 시 다시 채움)
+    reviewCnt: Number(p.reviewCnt) || 0,
     prodStock: p.prodStock ?? 0,
     smDesc: toShortText(p.advrtStmt) ?? toShortText(p.contentHtml) ?? "",
     weight: p.weight ?? undefined,
@@ -208,6 +209,9 @@ export function buildProdPageQuery(params: PdProdPageParamsType): Record<string,
   const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12, useYn: "Y" };
   if (params.categoryIds?.length) q.categoryIds = params.categoryIds;
   if (params.brandIds?.length) q.brandIds = params.brandIds;
+  if (params.siteId) q.siteId = params.siteId;
+  if (params.ratingMin) q.ratingMin = params.ratingMin;
+  if (params.ratingMax != null && params.ratingMax < 5) q.ratingMax = params.ratingMax;
   if (params.vendorIds?.length) q.vendorIds = params.vendorIds;
   if (params.mdUserIds?.length) q.mdUserIds = params.mdUserIds;
   if (params.sizeCds?.length) q.sizeInfoCds = params.sizeCds;

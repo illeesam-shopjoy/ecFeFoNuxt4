@@ -55,6 +55,8 @@ export interface PdProdRawType {
   parentCategoryId?: string | null;
   brandNm?: string | null;
   prodStock?: number | null;
+  avgRating?: number | null; // 평균 평점 (목록 응답)
+  reviewCnt?: number | null; // 리뷰 수 (목록 응답)
   discntPrice?: number | null; // 프로모션 적용가 (있으면 salePrice보다 우선)
   prodOpt1TypeCd?: string | null;
   prodOpt2TypeCd?: string | null;

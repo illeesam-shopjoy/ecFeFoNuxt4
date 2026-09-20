@@ -9,6 +9,9 @@ export const syVendorMdSvc = {
   /** GET /fo/ec/sy/vendor — 상품이 있는 판매업체 */
   getVendors: (): Promise<SyFilterOptType[]> => csrList<SyFilterOptType>("/fo/ec/sy/vendor"),
 
+  /** GET /fo/ec/sy/site — 상품이 있는 사이트 */
+  getSites: (): Promise<SyFilterOptType[]> => csrList<SyFilterOptType>("/fo/ec/sy/site"),
+
   /** GET /fo/ec/sy/md — 상품의 담당MD */
   getMds: (): Promise<SyFilterOptType[]> => csrList<SyFilterOptType>("/fo/ec/sy/md"),
 };
