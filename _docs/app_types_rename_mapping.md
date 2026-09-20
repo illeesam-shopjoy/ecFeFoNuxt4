@@ -99,3 +99,8 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 `od/odOrderType·odOrderItemType·odDlivType·odClaimType`, `pm/pmEventType·pmDiscntType·pmSaveType·pmVoucherType·pmGiftType`, `sy/syAlarmType·syNotiType` 는 ecBeBo `*Dto.Item` 의
 스칼라 필드(문자/숫자/일시)를 그대로 옮긴 타입이다(감사·조인 표시 필드 제외, 대부분 optional). 아직 화면에서 직접 쓰지 않고 이후 API 연동 시 `MyRow` 대신 쓰기 위한 정의다.
 - 쿠폰(pm_coupon)은 아직 API 가 없어 클라이언트 목업 `pmCouponType` 만 있다.
+
+### 코드 라벨 규칙 (~Cd / ~CdNm)
+모든 타입에서 코드 필드 `xxxCd` 옆에는 라벨 필드 `xxxCdNm` 을 둔다. 서버(QueryDSL 조인)가 `xxxCdNm` 을 내려주는 화면은 그 값을 그대로 쓰고,
+내려주지 않는 경우(예: pm_event)는 공통코드 스토어(`useCodeStore().getStLabel["그룹-값"]` / `sgGetGrpCodes`)로 화면에서 채운다.
+`SyCodeType` 은 sy_code 한 행(codeGrp/codeValue/codeLabel) 자체의 타입이라 다른 타입 안에 넣지 않는다.

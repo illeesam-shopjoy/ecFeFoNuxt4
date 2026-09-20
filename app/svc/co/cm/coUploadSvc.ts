@@ -24,11 +24,21 @@ export interface UploadMultiResult {
 
 export const coUploadSvc = {
   /** POST /co/cm/upload/multi — 다중 업로드 (businessCode: 업로드 분류) */
-  uploadMulti: async (files: File[], businessCode: string): Promise<UploadMultiResult> => {
+  uploadMulti: async (files: File[], businessCode: string, onProgress?: (percent: number) => void): Promise<UploadMultiResult> => {
     const fd = new FormData();
     files.forEach((f) => fd.append("files", f));
     fd.append("businessCode", businessCode);
-    return (await axiosCsr.post<UploadMultiResult>("/co/cm/upload/multi", fd, { timeout: 60000 })).data ?? {};
+    // 동영상(최대 100MB)까지 올릴 수 있어 타임아웃을 넉넉히 둔다(서버 mp4 변환 시간 포함) — 진행률은 onProgress(0~100)
+    return (
+      (
+        await axiosCsr.post<UploadMultiResult>("/co/cm/upload/multi", fd, {
+          timeout: 600000,
+          onUploadProgress: (e) => {
+            if (onProgress && e.total) onProgress(Math.min(100, Math.round((e.loaded * 100) / e.total)));
+          },
+        })
+      ).data ?? {}
+    );
   },
   /** DELETE /co/cm/upload/attach/{attachId} — 미연계 업로드 파일 즉시 삭제 */
   deleteAttach: async (attachId: string): Promise<void> => {

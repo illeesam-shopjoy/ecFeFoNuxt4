@@ -71,6 +71,9 @@ export interface OdOrderItemType {
   saveUsageAmt?: number; // 적립금 사용금액 합계
   giftNm?: string; // 발급 사은품명 (pm_gift 조인)
   dlivMethodCd?: string; // 배송방법 override — DLIV_METHOD_CD, NULL이면 상품 기본값 사용(긴급 발송 등 개별 항목 단위 변경)
+  dlivMethodCdNm?: string; // 배송방법 override 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimTypeCd?: string; // 클레임유형 — 최신 클레임 1건 대표 표시, CLAIM_TYPE_CD {CANCEL:취소, RETURN:반품, EXCHANGE…
+  claimTypeCdNm?: string; // 클레임유형 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimStatusCd?: string; // 클레임상세상태 — 최신 클레임항목 1건 대표 표시, CLAIM_ITEM_STATUS_CD {REQUESTED:신청, APPRO…
+  claimStatusCdNm?: string; // 클레임상세상태 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
 }

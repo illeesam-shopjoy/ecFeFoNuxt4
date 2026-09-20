@@ -132,8 +132,9 @@
                               <div class="avatar-name">
                                 <h5>{{ review.writerNm }}</h5>
                                 <span class="inline-flex gap-2 ml-1">
-                                  <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
-                                  <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(review.reviewId, false)">삭제</button>
+                                  <button v-if="isLoggedIn" type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
+                                  <button v-if="canModifyReview(review)" type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startEditReview(review)">수정</button>
+                                  <button v-if="canModifyReview(review)" type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(review.reviewId, false, !review.memberId)">삭제</button>
                                 </span>
                               </div>
                               <div class="user-rating">
@@ -144,6 +145,11 @@
                                 </ul>
                               </div>
                               <p>{{ review.reviewContent || '내용 없음' }}</p>
+                              <ul v-if="otherFilesOf(review).length" class="m-0 mt-2 flex list-none flex-col gap-1 p-0">
+                                <li v-for="f in otherFilesOf(review)" :key="f.attachId" class="text-[0.8rem]">
+                                  <a :href="f.url" target="_blank" rel="noopener" :download="f.fileNm" class="text-[#2563eb] hover:underline"><i class="far fa-file mr-1"></i>{{ f.fileNm }}</a>
+                                </li>
+                              </ul>
                             </div>
                             <div v-if="(review.attachments?.length ?? 0) > 0" class="shrink-0 flex flex-col items-end">
                               <div class="flex flex-wrap gap-1.5 justify-end">
@@ -185,7 +191,7 @@
                 </div>
                 <div class="post-comments-form mb-100">
                   <div class="post-comments-title mb-30">
-                    <h3>{{ replyingToReviewId ? '답글 쓰기' : '리뷰 쓰기' }}</h3>
+                    <h3>{{ replyingToReviewId ? '답글 쓰기' : editingReviewId ? '리뷰 수정' : '리뷰 쓰기' }}</h3>
                     <div v-if="!replyingToReviewId" class="post-rating">
                       <ul>
                         <li v-for="n in 5" :key="n">
@@ -199,8 +205,21 @@
                   <!-- 2026-09-14(요청사항: "리뷰작성 에도 yup 적용해줘") — login/register/contact와
                        동일하게 vee-validate Form/Field/yup 스키마로 전환. 별점은 커스텀 UI라 yup
                        Field로 못 묶어 기존 방식(handleReviewSubmit 안의 수동 체크) 그대로 유지. -->
-                  <Form id="contacts-form" class="conatct-post-form" :validation-schema="reviewSchema" @submit="handleReviewSubmit">
+                  <Form id="contacts-form" ref="reviewFormRef" class="conatct-post-form" :validation-schema="reviewSchema" @submit="handleReviewSubmit">
                     <div class="row">
+                      <!-- 2026-09-20: 로그인 안 한 사용자는 이름 + 글 비밀번호(수정·삭제용)를 입력해 작성한다 -->
+                      <div v-if="!isLoggedIn && !replyingToReviewId && !editingReviewId" class="col-xl-12">
+                        <div class="mb-3 grid gap-3 sm:grid-cols-2">
+                          <label class="block">
+                            <span class="mb-1 block text-[0.78rem] text-gray-500">이름<span class="ml-0.5 text-theme">*</span></span>
+                            <input v-model="guestNm" type="text" maxlength="20" placeholder="이름 (2~20자)" class="w-full rounded-lg border-[1.5px] border-[#e5e7eb] px-[13px] py-[10px] text-[0.88rem] outline-none focus:border-[#bc8246]" />
+                          </label>
+                          <label class="block">
+                            <span class="mb-1 block text-[0.78rem] text-gray-500">글 비밀번호<span class="ml-0.5 text-theme">*</span> <span class="text-gray-400">(수정·삭제할 때 필요)</span></span>
+                            <input v-model="guestPwd" type="password" maxlength="20" autocomplete="new-password" placeholder="4~20자" class="w-full rounded-lg border-[1.5px] border-[#e5e7eb] px-[13px] py-[10px] text-[0.88rem] outline-none focus:border-[#bc8246]" />
+                          </label>
+                        </div>
+                      </div>
                       <div class="col-xl-12">
                         <div class="contact-icon relative contacts-message">
                           <Field name="comments" v-slot="{ field }">
@@ -209,15 +228,22 @@
                           <ErrorMessage name="comments" class="text-danger" />
                         </div>
                       </div>
+                      <!-- 첨부: 이미지·동영상(파일당 100MB)·문서 등 여러 파일 한 번에 (답글은 첨부 없음) -->
+                      <div v-if="!replyingToReviewId" class="col-xl-12 mb-3">
+                        <attach-uploader v-model="reviewAttachChanges" :initial-files="editingReviewFiles" title="첨부파일" :show-grp="false" grp-code="REVIEW" :max-count="10" :accept="REVIEW_ATTACH_ACCEPT" />
+                      </div>
+                      <div v-if="reviewFormError" class="col-xl-12 mb-3 text-[0.82rem] leading-snug text-red-500">{{ reviewFormError }}</div>
                       <!-- 2026-09-14(요청사항: "리뷰등록 가운데 정렬해줘") -->
                       <div class="col-xl-12 text-center">
+                        <button v-if="editingReviewId || replyingToReviewId" class="os-btn mr-2" type="button" @click="cancelReviewForm">취소</button>
                         <button class="os-btn os-btn-black" type="submit" :disabled="reviewFormLoading">
-                          {{ reviewFormLoading ? "등록 중..." : (replyingToReviewId ? "답글 등록" : "리뷰 등록") }}
+                          {{ reviewFormLoading ? "저장 중..." : (replyingToReviewId ? "답글 등록" : editingReviewId ? "수정 저장" : "리뷰 등록") }}
                         </button>
                       </div>
                     </div>
                   </Form>
                 </div>
+                <writer-pwd-modal ref="pwdModal" />
                 <media-viewer-modal
                   :open="mediaViewerOpen"
                   :items="mediaViewerItems"
@@ -292,7 +318,13 @@ import ProdQna from "~/components/prod-detail/ProdQna.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
-import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
+import { pdReviewSvc, type AttachChange } from "~/svc/fo/ec/pd/pdReviewSvc";
+import { useAuthStore } from "~/store/useAuthStore";
+import AttachUploader from "~/components/ui/AttachUploader.vue";
+import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
+import type { PdReviewType } from "~/types/pd/pdReviewType";
+import type { SyAttachType } from "~/types/sy/syAttachType";
+import { isImageExt, isVideoExt } from "~/utils/mapProduct";
 import { Field, Form, ErrorMessage, type GenericObject } from "vee-validate";
 import * as yup from "yup";
 
@@ -534,6 +566,43 @@ function openAllMedia() {
 const reviewRating = ref(0);
 const replyingToReviewId = ref<string | null>(null);
 
+// ── 작성자 판정 / 비회원 작성·수정 (2026-09-20: "상품평/Q&A 에 아무나 등록, 비로그인은 글 비밀번호로 수정·삭제") ──
+const authStore = useAuthStore();
+const isLoggedIn = computed(() => authStore.isStLoggedIn);
+const myMemberId = computed(() => authStore.user?.memberId ?? "");
+// 회원 글은 본인만, 비회원 글(memberId 없음)은 누구에게나 버튼을 보이고 글 비밀번호로 서버가 판정한다
+const canModifyReview = (r: PdReviewType) => !r.memberId || (isLoggedIn.value && r.memberId === myMemberId.value);
+const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.url && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
+// 서버 허용 확장자(FileUploadUtil) 중 이미지·문서·압축·동영상 — 동영상은 파일당 100MB(AttachUploader 기본)
+const REVIEW_ATTACH_ACCEPT = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"];
+const guestNm = ref("");
+const guestPwd = ref("");
+const reviewAttachChanges = ref<AttachChange[]>([]);
+const editingReviewId = ref<string | null>(null);
+const editingReviewFiles = ref<SyAttachType[]>([]);
+const reviewFormError = ref("");
+const reviewFormRef = ref<{ setFieldValue: (name: string, v: string) => void; resetForm: () => void } | null>(null);
+const pwdModal = ref<InstanceType<typeof WriterPwdModal> | null>(null);
+
+function startEditReview(r: PdReviewType) {
+  editingReviewId.value = r.reviewId;
+  replyingToReviewId.value = null;
+  reviewRating.value = r.rating;
+  editingReviewFiles.value = r.attachFiles ?? [];
+  reviewAttachChanges.value = [];
+  reviewFormError.value = "";
+  reviewFormRef.value?.setFieldValue("comments", r.reviewContent ?? "");
+  nextTick(() => document.getElementById("contacts-form")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+}
+function cancelReviewForm() {
+  editingReviewId.value = null;
+  replyingToReviewId.value = null;
+  editingReviewFiles.value = [];
+  reviewAttachChanges.value = [];
+  reviewFormError.value = "";
+  reviewFormRef.value?.resetForm();
+}
+
 function setReviewRating(n: number) {
   reviewRating.value = n;
 }
@@ -548,7 +617,7 @@ const deletingId = ref<string | null>(null);
 
 // 리뷰(review)는 /api/fo/ec/pd/review/{id}, 답글(reply)은 /api/fo/ec/pd/review-comment/{id} —
 // ecBeBo에서 둘이 서로 다른 컨트롤러라(PdReviewController vs PdReviewCommentController) 경로도 분리했다.
-async function deleteReview(reviewId: string, isReply: boolean) {
+async function deleteReview(reviewId: string, isReply: boolean, guest = false) {
   const ok = await useConfirm().openConfirm({
     title: "삭제 확인",
     message: isReply ? "이 답글을 삭제할까요?" : "이 리뷰를 삭제할까요? 달린 답글도 함께 삭제됩니다.",
@@ -557,15 +626,21 @@ async function deleteReview(reviewId: string, isReply: boolean) {
     variant: "danger",
   });
   if (!ok || deletingId.value !== null) return;
+  let writerPwd: string | undefined;
+  if (guest && !isReply) {
+    const asked = await pwdModal.value?.ask("삭제하려면 글 비밀번호를 입력해 주세요.");
+    if (asked === null || asked === undefined) return;
+    writerPwd = asked;
+  }
   deletingId.value = reviewId;
   try {
-    const res = isReply ? await pdReviewSvc.deleteReviewComment(reviewId) : await pdReviewSvc.deleteReview(reviewId);
+    const res = isReply ? await pdReviewSvc.deleteReviewComment(reviewId) : await pdReviewSvc.deleteReview(reviewId, writerPwd);
     if (res?.success) {
       $toast?.success?.(res.message ?? "삭제되었습니다.");
       await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
     }
   } catch (e: any) {
-    const msg = e?.data?.message ?? e?.message ?? "삭제에 실패했습니다.";
+    const msg = String(e?.data?.message ?? e?.message ?? "삭제에 실패했습니다.").split("::")[0] ?? "";
     $toast?.error?.(msg);
   } finally {
     deletingId.value = null;
@@ -582,9 +657,16 @@ const reviewFormLoading = ref(false);
 async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { resetForm: () => void }) {
   const values = rawValues as { comments: string }; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
   const contentTrim = values.comments.trim();
+  reviewFormError.value = "";
   if (!replyingToReviewId.value && (reviewRating.value < 0.5 || !item.value?.prodId)) {
     $toast?.error?.("별점을 선택해 주세요.");
     return;
+  }
+  const isGuestWrite = !isLoggedIn.value && !replyingToReviewId.value && !editingReviewId.value;
+  if (isGuestWrite) {
+    const nm = guestNm.value.trim();
+    if (nm.length < 2 || nm.length > 20) return void (reviewFormError.value = "이름을 2~20자로 입력해 주세요.");
+    if (guestPwd.value.length < 4 || guestPwd.value.length > 20) return void (reviewFormError.value = "글 비밀번호를 4~20자로 입력해 주세요.");
   }
   reviewFormLoading.value = true;
   try {
@@ -596,16 +678,41 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         replyingToReviewId.value = null;
         await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
+    } else if (editingReviewId.value) {
+      const target = (item.value?.reviews ?? []).find((r) => r.reviewId === editingReviewId.value);
+      let writerPwd: string | undefined;
+      if (target && !target.memberId) {
+        const asked = await pwdModal.value?.ask("수정하려면 글 비밀번호를 입력해 주세요.");
+        if (asked === null || asked === undefined) return;
+        writerPwd = asked;
+      }
+      const res = await pdReviewSvc.updateReview(editingReviewId.value, { content: contentTrim, rating: reviewRating.value, writerPwd, attachFiles: reviewAttachChanges.value });
+      if (res?.success) {
+        $toast?.success?.(res.message ?? "수정되었습니다.");
+        cancelReviewForm();
+        await refreshItem();
+      }
     } else if (item.value) {
-      const res = await pdReviewSvc.createReview({ prodId: item.value.prodId, content: contentTrim, rating: reviewRating.value });
+      const res = await pdReviewSvc.createReview({
+        prodId: item.value.prodId,
+        content: contentTrim,
+        rating: reviewRating.value,
+        writerNm: isGuestWrite ? guestNm.value : undefined,
+        writerPwd: isGuestWrite ? guestPwd.value : undefined,
+        attachFiles: reviewAttachChanges.value,
+      });
       if (res?.success) {
         $toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");
         resetForm();
+        guestPwd.value = "";
+        reviewAttachChanges.value = [];
+        reviewRating.value = 0;
         await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     }
   } catch (e: any) {
-    const msg = e?.data?.message ?? e?.message ?? (replyingToReviewId.value ? "답글 등록에 실패했습니다." : "리뷰 등록에 실패했습니다.");
+    const msg = String(e?.data?.message ?? e?.message ?? (replyingToReviewId.value ? "답글 등록에 실패했습니다." : "저장에 실패했습니다.")).split("::")[0] ?? "";
+    reviewFormError.value = msg;
     $toast?.error?.(msg);
   } finally {
     reviewFormLoading.value = false;

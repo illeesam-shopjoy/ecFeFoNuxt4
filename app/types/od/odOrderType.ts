@@ -46,9 +46,11 @@ export interface OdOrderType {
   memberEmail?: string; // 회원 이메일 (mb_member 조인)
   memberPhoneOrigin?: string; // 회원 연락처 (mb_member 조인)
   gradeCd?: string; // 회원등급 (표시용) — MEMBER_GRADE {BASIC:일반, GOLD:우수, NORMAL:일반, VIP:VIP, BRON…
+  gradeCdNm?: string; // 회원등급 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   totalPurchaseAmt?: number; // 회원 누적 구매금액 (조인/집계 표시용)
   couponNm?: string; // 사용쿠폰명 (pm_coupon 조인)
   couponTypeCd?: string; // 사용쿠폰 유형 (pm_coupon 조인) — COUPON_TYPE_CD {RATE:정률 할인, FIXED:정액 할인, PROD…
+  couponTypeCdNm?: string; // 사용쿠폰 유형 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   orderStatusCdNm?: string; // 주문상태 코드 라벨
   payMethodCdNm?: string; // 결제수단 코드 라벨
   dlivStatusCdNm?: string; // 배송상태 코드 라벨

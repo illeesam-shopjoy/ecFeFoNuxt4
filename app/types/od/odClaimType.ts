@@ -8,12 +8,14 @@ export interface OdClaimType {
   claimStatusCd?: string; // 클레임상태 — CLAIM_STATUS_CD {REQUESTED:요청, ACCEPTED:승인, APPROVED:승인, IN_PI…
   claimStatusCdBefore?: string; // 변경 전 클레임상태 — CLAIM_STATUS_CD
   reasonCd?: string; // 사유코드 — REASON_CD {MIND_CHANGE:단순변심, WRONG_OPTION:옵션선택오류, CHEAPER_ELSEW…
+  reasonCdNm?: string; // 사유코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   reasonDetail?: string; // 사유 상세
   prodNm?: string; // 대표 상품명
   customerFaultYn?: string; // 고객귀책여부 (Y=고객귀책, N=판매자귀책)
   claimCancelYn?: string; // 클레임 철회여부 Y/N (신청 자체를 취소한 경우)
   claimCancelDate?: string; // 클레임 철회일시
   claimCancelReasonCd?: string; // 클레임 철회사유코드
+  claimCancelReasonCdNm?: string; // 클레임 철회사유코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimCancelReasonDetail?: string; // 클레임 철회사유상세
   refundMethodCd?: string; // 환불수단 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스, KAKAO:카카오…
   refundAmt?: number; // 환불 합계금액 (상품금액+배송비-추가배송비-적립금복원)
@@ -29,6 +31,7 @@ export interface OdClaimType {
   memo?: string; // 관리메모
   addShippingFee?: number; // 추가배송비 (교환=출고배송비, 반품/취소=무료배송 조건 파괴 시 추가)
   addShippingFeeChargeCd?: string; // 추가배송비 청구방법코드
+  addShippingFeeChargeCdNm?: string; // 추가배송비 청구방법코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   addShippingFeeReason?: string; // 추가배송비 면제사유
   collectNm?: string; // 수거지 성명 (반품·교환 수거 주소)
   collectPhone?: string; // 수거지 연락처
@@ -75,7 +78,9 @@ export interface OdClaimType {
   updDate?: string; // 수정일
   orderDate?: string; // 주문일시 (od_order 조인)
   orderStatusCd?: string; // 주문상태 (od_order 조인) — ORDER_STATUS_CD {PENDING:입금대기, PAID:결제완료, PREPARI…
+  orderStatusCdNm?: string; // 주문상태 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   payMethodCd?: string; // 결제수단 (od_order 조인) — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS…
+  payMethodCdNm?: string; // 결제수단 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   recvNm?: string; // 수령자명 (od_order 조인)
   recvPhone?: string; // 수령자연락처 (od_order 조인)
   recvAddr?: string; // 수령자주소 (od_order 조인)

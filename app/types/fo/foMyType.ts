@@ -21,11 +21,16 @@ export interface MyListParams {
   dateRangeStart?: string;
   dateRangeEnd?: string;
   orderStatusCd?: string;
+  orderStatusCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimStatusCd?: string;
+  claimStatusCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimTypeCd?: string;
+  claimTypeCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   couponStatusCd?: string;
+  couponStatusCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   status?: string;
   cacheTypeCd?: string;
+  cacheTypeCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   sort?: string;
 }
 
@@ -43,6 +48,7 @@ export interface MyCashResult {
 export interface MyNotiItem {
   notiId: string;
   notiTypeCd?: string;
+  notiTypeCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   notiTitle?: string;
   notiContent?: string;
   linkPage?: string;

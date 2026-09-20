@@ -2,10 +2,13 @@
 export interface SyNotiType {
   notiId: string;
   recvTypeCd?: string;
+  recvTypeCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   recvId?: string;
   recvNm?: string;
   notiTypeCd?: string;
+  notiTypeCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   channelCd?: string;
+  channelCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   notiTitle?: string;
   notiContent?: string;
   linkPage?: string;

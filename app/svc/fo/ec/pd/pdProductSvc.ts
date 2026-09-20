@@ -6,7 +6,8 @@
  * SEO 단위화면(/shop, /prod-dtl/[id])의 **서버 렌더링**만 server/api 를 거친다 — 그쪽은 화면 코드에서 axiosSsr 로 부른다.
  */
 import { axiosCsr } from "~/utils/axiosCsr";
-import { mapProduct, mapReview, type BeProdItem, type BeReviewItem } from "~/utils/mapProduct";
+import { mapAttachFiles, mapProduct, mapReview, type BeAttachFileItem, type BeProdItem, type BeReviewItem } from "~/utils/mapProduct";
+import type { SyAttachType } from "~/types/sy/syAttachType";
 import { beConfig } from "~/utils/beConfig";
 import { type PdProdType } from "~/types/pd/pdProdType";
 
@@ -53,6 +54,9 @@ export interface PdQnaItem {
   answYn?: string | null; // 답변여부 Y/N
   answContent?: string | null;
   regDate?: string | null;
+  writerNm?: string | null; // 비회원 작성자명
+  attachFiles?: BeAttachFileItem[] | null;
+  files?: SyAttachType[]; // attachFiles 를 화면용(CDN URL 보정)으로 변환한 값 — getQna 가 채운다
 }
 
 interface BeReviewsResponse {
@@ -89,7 +93,7 @@ export const pdProductSvc = {
   /** GET /fo/ec/pd/prod/{id}/qna — 상품 Q&A 목록(조회 전용, 공개). 응답은 { qnaPage: { pageList } } */
   getQna: async (id: string, pageSize = 20): Promise<PdQnaItem[]> => {
     const r = (await axiosCsr.get<{ qnaPage?: { pageList?: PdQnaItem[] } }>(`/fo/ec/pd/prod/${encodeURIComponent(id)}/qna`, { params: { pageNo: 1, pageSize } })).data;
-    return r?.qnaPage?.pageList ?? [];
+    return (r?.qnaPage?.pageList ?? []).map((q) => ({ ...q, files: mapAttachFiles(q.attachFiles, beConfig.cdnBase) }));
   },
 
   /** GET /fo/ec/pd/prod/{id} + /{id}/reviews — 상품 단건(리뷰·평점 병합). 리뷰 조회 실패는 빈 리뷰로 대체 */
@@ -102,7 +106,7 @@ export const pdProductSvc = {
         .catch(() => ({ summary: {}, reviewPage: { pageList: [], pageTotalCount: 0 } }) as BeReviewsResponse),
     ]);
     const out = mapProduct(detail, beConfig.cdnBase);
-    out.reviews = reviewsRes.reviewPage.pageList.map(mapReview);
+    out.reviews = reviewsRes.reviewPage.pageList.map((r) => mapReview(r, beConfig.cdnBase));
     if (typeof reviewsRes.summary?.avgRating === "number") out.rating = reviewsRes.summary.avgRating;
     return out as unknown as PdProdType;
   },

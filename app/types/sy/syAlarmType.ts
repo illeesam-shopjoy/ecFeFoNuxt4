@@ -10,6 +10,7 @@ export interface SyAlarmType {
   alarmMsg?: string; // 발송내용
   alarmSendDate?: string; // 발송예정일시
   alarmStatusCd?: string; // 발송상태 — ALARM_STATUS {PENDING:대기, SENT:발송완료, FAILED:실패, CANCELLED:취소}
+  alarmStatusCdNm?: string; // 발송상태 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   alarmSendCount?: number; // 발송성공수
   alarmFailCount?: number; // 발송실패수
   regDate?: string; // 등록일

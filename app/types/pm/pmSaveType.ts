@@ -7,6 +7,7 @@ export interface PmSaveType {
   saveAmt?: number;
   balanceAmt?: number;
   refTypeCd?: string;
+  refTypeCdNm?: string; // 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   refId?: string;
   expireDate?: string;
   saveMemo?: string;

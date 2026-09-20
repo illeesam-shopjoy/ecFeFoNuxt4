@@ -3,8 +3,11 @@ export interface PmDiscntType {
   discntId: string; // 할인ID (YYMMDDhhmmss+rand4)
   discntNm?: string; // 할인명
   discntTypeCd?: string; // 할인유형 — DISCNT_TYPE {PROD:상품할인, ORDER:주문할인, SHIP:배송비할인, SHIP_FREE:무료배송,…
+  discntTypeCdNm?: string; // 할인유형 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   discntValTypeCd?: string; // 할인방식 — DISCNT_VAL_TYPE {RATE:정률, AMOUNT:정액, SHIP_FREE:해당없음}
+  discntValTypeCdNm?: string; // 할인방식 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   discntTargetCd?: string; // 할인대상 — DISCNT_TARGET_CD {ALL:전체, CATEGORY:카테고리, PRODUCT:상품, MEMBER_GRA…
+  discntTargetCdNm?: string; // 할인대상 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   discntValue?: number; // 할인값 (정률이면 %, 정액이면 원)
   minOrderAmt?: number; // 최소주문금액
   minOrderQty?: number; // 최소주문수량 (NULL=제한없음)
@@ -12,9 +15,11 @@ export interface PmDiscntType {
   startDate?: string; // 할인 시작일시
   endDate?: string; // 할인 종료일시
   discntStatusCd?: string; // 상태 — DISCNT_STATUS_CD {ACTIVE:진행중, INACTIVE:비활성, EXPIRED:종료}
+  discntStatusCdNm?: string; // 상태 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   discntStatusCdBefore?: string; // 변경 전 상태
   discntDesc?: string; // 할인 설명
   memGradeCd?: string; // 적용 회원등급 코드 (NULL=전체) — MEMBER_GRADE {BASIC:일반, GOLD:우수, NORMAL:일반, VIP…
+  memGradeCdNm?: string; // 적용 회원등급 코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   selfCdivRate?: number; // 자사(사이트) 분담율 (%) — 기본 100%
   sellerCdivRate?: number; // 판매자(업체) 분담율 (%) — 기본 0%
   dvcPcYn?: string; // PC 채널 적용여부 Y/N

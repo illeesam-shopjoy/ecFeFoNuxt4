@@ -4,15 +4,19 @@
  * 필드가 다르지만(writerNm/reviewReplyContent 등) BFF(server/utils/mapProduct.ts)가
  * 이 타입 하나로 통일해서 내려준다.
  */
+import type { SyAttachType } from "~/types/sy/syAttachType";
+
 export interface PdReviewType {
   reviewId: string; // 리뷰ID (ecBeBo reviewId, 답글이면 reviewCommentId)
+  memberId?: string; // 작성 회원ID — 없으면 비회원 작성(글 비밀번호로 수정·삭제)
   img: string; // 이미지 — ecBeBo는 첨부를 pd_review_attach로 따로 관리, 지금은 미연동(빈 문자열)
   writerNm: string; // 작성자명 (리뷰는 ecBeBo regUserNm, 답글은 writerNm)
   reviewDate: string; // 작성일시 (리뷰는 ecBeBo reviewDate, 답글은 regDate)
   rating: number; // 평점 (답글은 0)
   reviewTitle?: string; // 리뷰 제목 (ecBeBo reviewTitle, 답글엔 없음)
   reviewContent?: string; // 리뷰/답글 내용 (ecBeBo reviewContent/reviewReplyContent)
-  attachments?: string[]; // 첨부 이미지·동영상 URL 목록 — 미연동, 항상 빈 배열
+  attachments?: string[]; // 첨부 이미지·동영상 URL 목록(미디어 뷰어용) — attachFiles 에서 파생
+  attachFiles?: SyAttachType[]; // 첨부파일 전체(이미지·동영상·기타 파일) — 수정 시 기존 첨부 표시에도 사용
   children?: boolean; // 답글 여부
   replies?: PdReviewType[]; // 답글 목록
 }

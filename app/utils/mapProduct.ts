@@ -2,7 +2,8 @@ import type { PdCategoryType } from "~/types/pd/pdCategoryType";
 import type { SyBrandType } from "~/types/sy/syBrandType";
 import type { PdReviewType } from "~/types/pd/pdReviewType";
 import type { PdProdOptType } from "~/types/pd/pdProdOptType";
-import { resolveCdnUrl } from "~/utils/cdnUrl";
+import type { SyAttachType } from "~/types/sy/syAttachType";
+import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
 
 /**
  * ecBeBo(Spring Boot 백엔드) 응답 shape → 이 앱의 PdProdType으로 변환.
@@ -81,9 +82,24 @@ export interface BeReviewCommentItem {
   regDate?: string | null;
 }
 
+/** ecBeBo AttachFile(sy_attach 조회 결과) 중 화면에 쓰는 필드 */
+export interface BeAttachFileItem {
+  attachId: string;
+  fileNm?: string | null;
+  fileExt?: string | null;
+  fileSize?: number | null;
+  attachUrl?: string | null;
+  cdnImgUrl?: string | null;
+  thumbCdnUrl?: string | null;
+  thumbUrl?: string | null;
+}
+
 export interface BeReviewItem {
   reviewId: string;
   prodId: string;
+  memberId?: string | null;
+  writerNm?: string | null; // 비회원 작성자명
+  attachFiles?: BeAttachFileItem[] | null;
   reviewTitle?: string | null;
   reviewContent: string;
   rating: number;
@@ -210,8 +226,25 @@ export function mapProduct(p: BeProdItem, cdnBase: string): Record<string, unkno
   };
 }
 
+const IMAGE_EXT = new Set(["jpg", "jpeg", "png", "gif", "webp", "bmp"]);
+const VIDEO_EXT = new Set(["mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"]);
+export const isImageExt = (ext?: string | null) => IMAGE_EXT.has((ext ?? "").toLowerCase());
+export const isVideoExt = (ext?: string | null) => VIDEO_EXT.has((ext ?? "").toLowerCase());
+
+/**
+ * 첨부(sy_attach) 목록 → 화면용. 업로드 응답/조회 응답의 파일 URL 호스트가 서버 내부 주소(host.docker.internal 등)로 올 수 있어
+ * 실제 CDN origin 으로 보정한다(cdnUrl.fixInternalCdnUrl).
+ */
+export function mapAttachFiles(list: BeAttachFileItem[] | null | undefined, cdnBase: string): SyAttachType[] {
+  return (list ?? []).map((f) => {
+    const url = fixInternalCdnUrl(resolveCdnUrl(f.cdnImgUrl || f.attachUrl, cdnBase), cdnBase) ?? "";
+    const thumb = fixInternalCdnUrl(resolveCdnUrl(f.thumbCdnUrl || f.thumbUrl, cdnBase), cdnBase);
+    return { attachId: f.attachId, fileNm: f.fileNm ?? "", fileExt: (f.fileExt ?? "").toLowerCase(), fileSize: Number(f.fileSize ?? 0), url, thumbUrl: thumb || undefined };
+  });
+}
+
 /** ecBeBo PdReviewDto.Item(+comments) → PdReviewType (재귀: 답글은 comments를 children review로 편입) */
-export function mapReview(r: BeReviewItem): PdReviewType {
+export function mapReview(r: BeReviewItem, cdnBase: string): PdReviewType {
   const replies: PdReviewType[] = (r.comments ?? []).map((c) => ({
     reviewId: c.reviewCommentId,
     img: "",
@@ -224,11 +257,17 @@ export function mapReview(r: BeReviewItem): PdReviewType {
   const base: PdReviewType = {
     reviewId: r.reviewId,
     img: "",
-    writerNm: r.regUserNm ?? "익명",
+    writerNm: r.writerNm ?? r.regUserNm ?? "익명", // 비회원은 writerNm, 회원은 등록자명
     reviewDate: r.reviewDate ?? "",
     rating: Number(r.rating) || 0,
     reviewContent: r.reviewContent,
   };
+  if (r.memberId) base.memberId = r.memberId;
+  const files = mapAttachFiles(r.attachFiles, cdnBase);
+  if (files.length) {
+    base.attachFiles = files;
+    base.attachments = files.filter((f) => f.url && (isImageExt(f.fileExt) || isVideoExt(f.fileExt))).map((f) => f.url);
+  }
   if (r.reviewTitle) base.reviewTitle = r.reviewTitle;
   if (replies.length) base.replies = replies;
   return base;

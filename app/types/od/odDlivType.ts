@@ -28,6 +28,7 @@ export interface OdDlivType {
   memberNm?: string; // 주문자명 (od_order 조인)
   orderDate?: string; // 주문일시 (od_order 조인)
   orderStatusCd?: string; // 주문상태 (od_order 조인) — ORDER_STATUS_CD
+  orderStatusCdNm?: string; // 주문상태 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   vendorNm?: string; // 업체명 (sy_vendor 조인)
   vendorTel?: string; // 업체 연락처 (sy_vendor 조인)
   dlivStatusCdNm?: string; // 배송상태 코드 라벨

@@ -13,6 +13,7 @@ import type { PdReviewType } from "~/types/pd/pdReviewType";
 export interface PdProdType {
   prodId: string; // 상품ID (ecBeBo prodId, 예: "PR2607070656371295")
   prodTypeCd?: string; // 상품유형 코드 (ecBeBo prodTypeCd: SINGLE/OPTION/GROUP/SET/GIFT) — 표시명은 conts/pdConst.ts prodTypeLabel
+  prodTypeCdNm?: string; // 상품유형 코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   img: string; // 대표 이미지 (prodImgs 중 대표 1장, cdnImgUrl)
   isTrending?: boolean; // 트렌딩 여부 — ecBeBo에 대응 컬럼 없음, 항상 false
   isTopRated?: boolean; // 베스트 평점 여부 — ecBeBo에 대응 컬럼 없음, 항상 false
