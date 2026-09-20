@@ -1,3 +1,4 @@
+import type { PdProdImgType } from "~/types/pd/pdProdImgType";
 import type { PdProdOptType } from "~/types/pd/pdProdOptType";
 import type { PdProdSkuType } from "~/types/pd/pdProdSkuType";
 import type { PdCategoryType } from "~/types/pd/pdCategoryType";
@@ -23,6 +24,7 @@ export interface PdProdType {
   isBanner?: boolean; // 배너 노출 여부 — ecBeBo에 대응 컬럼 없음, 항상 false
   bannerImg?: string; // 배너 이미지
   saleDiscntRate?: number; // 판매할인율(%) (ecBeBo saleDiscntRate, 없으면 stdPrice·salePrice 차이로 계산)
+  prodImgs?: PdProdImgType[]; // 이미지 전체(정렬순, 색상 옵션 연결 정보 포함) — 상세 갤러리가 색상 선택에 따라 순서를 바꾼다
   relatedImages?: string[]; // 대표 이미지를 제외한 나머지 이미지 목록 (prodImgs[].cdnImgUrl)
   thumbImg?: string; // 호버 시 보여줄 보조 이미지 (prodImgs 중 2번째 사진)
   bigImg?: string; // 상세페이지 확대용 (현재 백엔드엔 별도 고해상도본이 없어 img와 동일)

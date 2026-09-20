@@ -3,7 +3,7 @@
     <Transition name="order-pick-fade">
       <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/60 backdrop-blur-[3px]" role="dialog" aria-modal="true" aria-labelledby="order-pick-title" @click.self="close">
         <div class="relative w-full max-w-[520px] max-h-[80vh] flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-[#eee]">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-[#f0e2cf] bg-[#faf3ea]">
             <h3 id="order-pick-title" class="text-[1.05rem] font-bold text-gray-900 m-0">📋 주문 선택</h3>
             <button type="button" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 border-0 cursor-pointer" aria-label="닫기" @click="close"><i class="fal fa-times"></i></button>
           </div>

@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50" role="dialog" aria-modal="true" aria-labelledby="addr-search-title" @click.self="close">
       <div class="relative w-full max-w-[520px] bg-white rounded-xl shadow-xl overflow-hidden flex flex-col" style="height: 540px">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#f0e2cf] bg-[#faf3ea] flex-shrink-0">
           <h3 id="addr-search-title" class="text-base font-semibold text-gray-900">주소 검색</h3>
           <div class="flex items-center gap-3">
             <span class="text-[11px] text-gray-300">https://postcode.map.kakao.com/search</span>

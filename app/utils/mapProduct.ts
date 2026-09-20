@@ -10,6 +10,7 @@ import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import type { PdProdPageParamsType } from "~/types/pd/pdProdPageParamsType";
 import type { PdProdQnaRawType, PdProdQnaType } from "~/types/pd/pdProdQnaType";
 import type { PdProdType } from "~/types/pd/pdProdType";
+import type { PdProdImgType } from "~/types/pd/pdProdImgType";
 import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
 
 /**
@@ -70,6 +71,11 @@ export function mapProduct(p: PdProdRawType, cdnBase: string): Record<string, un
     .map((i) => resolveProdCdnUrl(i.cdnImgUrl))
     .filter((u): u is string => Boolean(u));
 
+  const prodImgs: PdProdImgType[] = sorted.flatMap((i) => {
+    const url = resolveProdCdnUrl(i.cdnImgUrl);
+    return url ? [{ url, sortOrd: i.sortOrd ?? 0, prodOpt1Id: i.prodOpt1Id || undefined, prodOpt2Id: i.prodOpt2Id || undefined }] : [];
+  });
+
   const category: PdCategoryType | undefined = p.categoryId ? { categoryId: p.categoryId, categoryNm: p.cateNm ?? "", categoryDepth: p.parentCategoryId ? 2 : 1 } : undefined;
   // 목록/상세 API 응답엔 상위 카테고리 "명"까지는 안 내려온다(ID만) — 이름이 필요하면 카테고리 목록을 별도 조회해야 함.
   const parentCategory: PdCategoryType | undefined = p.parentCategoryId ? { categoryId: p.parentCategoryId, categoryNm: "", categoryDepth: 1 } : undefined;
@@ -112,6 +118,7 @@ export function mapProduct(p: PdProdRawType, cdnBase: string): Record<string, un
     category,
     parentCategory,
     brand,
+    prodImgs,
     relatedImages,
     contentHtml: p.contentHtml ?? "",
     prodOpt1List,

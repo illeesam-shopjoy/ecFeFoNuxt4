@@ -13,8 +13,10 @@
           <button type="button" class="absolute top-4 right-4 p-2 rounded hover:bg-gray-100" @click="cancel" aria-label="닫기">
             <i class="fal fa-times"></i>
           </button>
-          <h3 id="coupon-modal-title" class="text-lg font-semibold text-gray-900 mb-1">쿠폰 적용</h3>
-          <p class="text-sm text-gray-500 mb-6">종류별로 하나씩 선택해서 적용할 수 있습니다.</p>
+          <div class="-mx-6 -mt-6 mb-6 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] px-6 pb-4 pt-5">
+            <h3 id="coupon-modal-title" class="text-lg font-semibold text-gray-900 mb-1">쿠폰 적용</h3>
+            <p class="text-sm text-gray-500 mb-0">종류별로 하나씩 선택해서 적용할 수 있습니다.</p>
+          </div>
 
           <fieldset v-for="section in sections" :key="section.category" class="mb-6 last:mb-0">
             <legend class="text-sm font-semibold text-gray-800 mb-2">{{ section.label }}</legend>
@@ -48,7 +50,7 @@
           </fieldset>
 
           <div class="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100">
-            <button type="button" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition" @click="cancel">취소</button>
+            <button type="button" class="px-4 py-2 rounded-lg border border-[#c9ced6] bg-[#f3f4f6] text-gray-700 shadow-sm hover:bg-[#e5e7eb] transition" @click="cancel">취소</button>
             <button type="button" class="os-btn os-btn-black" @click="apply">적용하기</button>
           </div>
         </div>

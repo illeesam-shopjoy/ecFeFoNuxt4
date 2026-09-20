@@ -6,8 +6,10 @@
           <button type="button" class="absolute top-4 right-4 p-2 rounded hover:bg-gray-100" @click="close" aria-label="닫기">
             <i class="fal fa-times"></i>
           </button>
-          <h3 id="terms-agree-title" class="text-lg font-semibold text-gray-900 mb-1 text-center">이용약관 동의</h3>
-          <p class="text-sm text-gray-500 mb-5 text-center">서비스 이용을 위해 약관에 동의해 주세요</p>
+          <div class="-mx-6 -mt-6 mb-5 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] px-6 pb-4 pt-5">
+            <h3 id="terms-agree-title" class="text-lg font-semibold text-gray-900 mb-1 text-center">이용약관 동의</h3>
+            <p class="text-sm text-gray-500 mb-0 text-center">서비스 이용을 위해 약관에 동의해 주세요</p>
+          </div>
 
           <label class="flex items-center gap-2 p-3 mb-3 rounded-lg bg-gray-100 cursor-pointer">
             <input type="checkbox" :checked="allChecked" @change="toggleAll(($event.target as HTMLInputElement).checked)" />
@@ -27,7 +29,7 @@
           </ul>
 
           <div class="flex gap-2">
-            <button type="button" class="os-btn os-btn-black flex-1" @click="close">이전</button>
+            <button type="button" class="os-btn flex-1 !border !border-[#c9ced6] !bg-[#f3f4f6] !text-gray-700 hover:!bg-[#e5e7eb]" @click="close">이전</button>
             <button type="button" class="os-btn os-btn-green flex-1" :disabled="!requiredAgreed" @click="confirm">다음</button>
           </div>
         </div>

@@ -15,10 +15,10 @@
               <div class="col-xl-6 col-lg-6">
                 <!-- 2026-09-20(요청사항: 상품상세를 ecFeBo 처럼 개선) — 메인 이미지 확대 보기, 하단 가로 썸네일(기본이미지 뱃지), 라이트박스는 ProdGallery.
                      예전엔 세로 썸네일 스트립 + 고정 문구 "new / -16%" 였다. -->
-                <prod-gallery :item="item" />
+                <prod-gallery :item="item" :color-opt-id="galleryColorId" />
               </div>
               <div class="col-xl-6 col-lg-6">
-                <product-details-content ref="detailRef" :item="item" :style_2="true" detail @inquiry="scrollToSection('qna')" />
+                <product-details-content ref="detailRef" :item="item" :style_2="true" detail @inquiry="scrollToSection('qna')" @color-change="galleryColorId = $event" />
               </div>
             </div>
           </div>
@@ -567,6 +567,7 @@ function openAllMedia() {
 }
 
 const reviewRating = ref(0);
+const galleryColorId = ref(""); // 선택한 색상 옵션ID — 갤러리가 그 색상 이미지를 먼저 보여준다
 const replyingToReviewId = ref<string | null>(null);
 
 // ── 작성자 판정 / 비회원 작성·수정 (2026-09-20: "상품평/Q&A 에 아무나 등록, 비로그인은 글 비밀번호로 수정·삭제") ──

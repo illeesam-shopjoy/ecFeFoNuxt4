@@ -8,6 +8,8 @@ export interface PdProdImgRawType {
   imgAltText?: string | null;
   sortOrd?: number | null;
   isThumb?: string | null; // Y/N
+  prodOpt1Id?: string | null; // 연결된 옵션1 값ID (색상 이미지)
+  prodOpt2Id?: string | null; // 연결된 옵션2 값ID
 }
 
 export interface PdProdOptRawType {

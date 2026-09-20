@@ -42,7 +42,7 @@
              단품/묶음/세트/사은품은 고를 옵션이 없어 영역 자체를 숨기고, 담기 검증에서도 사이즈 필수를 요구하지 않는다. -->
         <div v-if="isOptionProd" class="mb-5">
         <div class="mb-3 border-b border-[#e5e7eb] pb-2 text-[0.9rem] font-bold text-gray-800">옵션선택 : <span class="font-medium text-gray-600">색상, 사이즈</span></div>
-        <div class="product__modal-input color mb-20 relative">
+        <div class="product__modal-input color mb-20 relative after:!hidden">
           <label>색상 선택</label>
           <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
             <button
@@ -59,7 +59,7 @@
             <button
               v-if="hasMoreColors"
               type="button"
-              class="w-[26px] h-[26px] rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
+              class="ml-auto w-[26px] h-[26px] rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
               :title="`색상 전체 보기 (${colors.length})`"
               :aria-label="`색상 전체 보기 (${colors.length})`"
               aria-haspopup="true"
@@ -98,7 +98,7 @@
           </div>
         </div>
         <!-- 사이즈 선택 (아래) -->
-        <div class="product__modal-input size mb-20 relative">
+        <div class="product__modal-input size mb-20 relative after:!hidden">
           <label>사이즈 <i class="fas fa-star-of-life"></i></label>
           <div class="flex flex-wrap items-center gap-2 mt-2.5">
             <span v-if="!sizes.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
@@ -115,7 +115,7 @@
             <button
               v-if="hasMoreSizes"
               type="button"
-              class="px-3 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
+              class="ml-auto px-3 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
               :title="`사이즈 전체 보기 (${sizes.length})`"
               :aria-label="`사이즈 전체 보기 (${sizes.length})`"
               aria-haspopup="true"
@@ -233,7 +233,7 @@ const props = defineProps<{
   /** 상품 상세 페이지 전용 모드 — 유형·카테고리 칩, 찜·공유, 바로구매, 문의하기, 배송 안내를 함께 보여준다(빠른보기 모달은 false) */
   detail?: boolean;
 }>();
-const emit = defineEmits<{ (e: "inquiry"): void }>();
+const emit = defineEmits<{ (e: "inquiry"): void; (e: "color-change", prodOptId: string): void }>();
 const state = useCartStore();
 const wishlist = useWishlistStore();
 const shareTools = useShareTools();
@@ -247,6 +247,8 @@ const { formatPrice } = usePrice();
 
 const selectedColor = ref("");
 const selectedSize = ref("");
+// 선택한 색상 옵션ID 를 상세 갤러리에 알린다 — 그 색상의 이미지를 먼저 보여주기 위해(선택 해제 시 "")
+watch(selectedColor, (key) => emit("color-change", (props.item.prodOpt2List ?? []).find((o) => (o.prodOptStdCd ?? String(o.prodOptId)) === key)?.prodOptId ?? ""));
 
 // ── 옵션 더보기 팝오버 (2026-09-19) ──────────────────────────────────────
 type OptionItem = PdProdType["prodOpt2List"][number];

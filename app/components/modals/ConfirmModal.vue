@@ -22,7 +22,7 @@
             <div class="mt-6 flex gap-3">
               <button
                 type="button"
-                class="flex-1 cursor-pointer rounded-xl border border-gray-300 bg-white py-3 text-[0.92rem] font-semibold text-gray-700 transition hover:bg-gray-50"
+                class="flex-1 cursor-pointer rounded-xl border border-[#c9ced6] bg-[#f3f4f6] py-3 text-[0.92rem] font-semibold text-gray-700 shadow-sm transition hover:bg-[#e5e7eb]"
                 @click="cancel"
               >
                 {{ cancelText ?? "취소" }}
