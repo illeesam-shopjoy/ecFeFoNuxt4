@@ -109,11 +109,15 @@ const payRows = computed(() => {
   const card = p?.card?.number ? `${p.card.number}${p.card.installmentPlanMonths ? ` (${p.card.installmentPlanMonths}개월 할부)` : " (일시불)"}` : "";
   const rows = [
     { label: "주문번호", value: p?.orderId || orderId.value, strong: false },
+    { label: "거래번호", value: p?.lastTransactionKey ?? "", strong: false },
+    { label: "결제키", value: p?.paymentKey || paymentKey, strong: false },
     { label: "주문명", value: p?.orderName ?? "", strong: false },
     { label: "결제수단", value: method, strong: false },
     { label: "카드", value: card, strong: false },
+    { label: "승인번호", value: p?.card?.approveNo ?? "", strong: false },
     { label: "결제 상태", value: p?.status === "DONE" ? "결제 완료" : (p?.status ?? ""), strong: false },
-    { label: "승인 일시", value: fmtDateTime(p?.approvedAt), strong: false },
+    { label: "응답코드", value: p?.failure?.code ?? (p?.status ? `${p.status} (정상)` : ""), strong: false },
+    { label: "거래시간", value: fmtDateTime(p?.approvedAt || p?.requestedAt), strong: false },
     { label: "결제 금액", value: formatPrice(p?.totalAmount ?? amount.value), strong: true },
   ];
   return rows.filter((r) => r.value);
