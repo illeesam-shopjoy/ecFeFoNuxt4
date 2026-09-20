@@ -89,7 +89,7 @@ import 경로 예: `~/types/productType` → `~/types/pdProductType`, 타입명 
 | od (주문) | odCartItemType, odOrderType, odOrderItemType, odDlivType, odClaimType |
 | mb (회원) | mbLikeItemType, mbMemberType, mbRegisterFormType |
 | sy (시스템) | syBrandType, syCodeType, syMenuTreeType, syAttachType, syBbmType(게시판 마스터·`bbss`), syBbsType(게시글), syAlarmType(알람), syNotiType(알림함), syNoticeType(공지), syI18nType(다국어), syVendorType(업체), sySiteType(사이트), syLoginFormType, syCheckoutLoginFormType |
-| cm (콘텐츠/채팅) | cmBlogType, cmChattType(채팅방), cmChattMemberType(참여자), cmChattMsgType(메시지) — `chattMembers/chattMsgs` 로 참조 |
+| cm (콘텐츠/채팅) | cmBlogType, cmFaqType(FAQ), cmChattType(채팅방), cmChattMemberType(참여자), cmChattMsgType(메시지) — `chattMembers/chattMsgs` 로 참조 |
 | pm (프로모션) | pmCouponType, pmTimedealType, pmEventType, pmDiscntType, pmSaveType(적립금), pmVoucherType(상품권), pmGiftType(사은품) |
 | dp (전시) | dpUiType(dp_ui) → dpAreaType(dp_area) → dpPanelType(dp_panel) → dpPanelItemType(dp_panel_item) → dpWidgetLibType(dp_widget_lib) → dpWidgetType(dp_widget) — FK 로 서로 참조(`areas/panels/panelItems/widgetLib/widgets`) |
 | co (공통/전시 위젯 JSON) | coContactInfoItemType, coHeroSliderDataType(+Two/Three) |
