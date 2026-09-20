@@ -80,6 +80,14 @@ export const useCartStore = defineStore("cart", {
       }
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
     },
+    // 2026-09-20: 바로구매 — 선택한 수량으로 해당 줄(상품+SKU)의 수량을 지정한다(재고가 있으면 재고까지만).
+    setStQuantity(prodId: string, prodSkuId: string | undefined, qty: number) {
+      const line = this.cartProducts.find((i) => i.prodId === prodId && i.selectedProdSkuId === prodSkuId);
+      if (!line) return;
+      const max = line.prodStock > 0 ? line.prodStock : Number.MAX_SAFE_INTEGER;
+      line.orderQuantity = Math.max(1, Math.min(Math.floor(Number(qty)) || 1, max));
+      localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
+    },
     initialStOrderQuantity() {
       this.orderQuantity = 1; // 추가 시 적용할 수량을 1로 초기화
     },

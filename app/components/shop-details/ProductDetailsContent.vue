@@ -1,30 +1,24 @@
 <template>
   <div :class="`product__modal-content ${style_2 ? 'product__modal-content-2' : ''}`">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
+    <!-- 2026-09-20(요청사항: 상품상세를 ecFeBo 처럼) — 상품유형 + 카테고리 이름 칩(상품명 위) -->
+    <div v-if="detail && (prodTypeNm || item.category?.categoryNm)" class="mb-2 flex flex-wrap items-center gap-1.5">
+      <span v-if="prodTypeNm" class="rounded-full border border-[#e5e7eb] bg-[#f6f7f9] px-2.5 py-[3px] text-[0.72rem] font-semibold text-[#6b7280]">{{ prodTypeNm }}</span>
+      <span v-if="item.category?.categoryNm" class="rounded-full bg-[#eef2ff] px-2.5 py-[3px] text-[0.72rem] font-semibold text-[#4f46e5]">{{ item.category.categoryNm }}</span>
+    </div>
     <h4>
       <nuxt-link :to="`/prod-dtl/${item.prodId}`">
         <span v-html="item.prodNm"></span>
       </nuxt-link>
     </h4>
     <div class="rating rating-shop mb-15">
+      <!-- 2026-09-20: 예전엔 별 4개 고정 + "N개 평점" 이었다 — 실제 평균 평점과 리뷰 수를 보여준다 -->
       <ul>
-        <li>
-          <span><i class="fas fa-star"></i></span>
-        </li>
-        <li>
-          <span><i class="fas fa-star"></i></span>
-        </li>
-        <li>
-          <span><i class="fas fa-star"></i></span>
-        </li>
-        <li>
-          <span><i class="fas fa-star"></i></span>
-        </li>
-        <li>
-          <span><i class="fal fa-star"></i></span>
+        <li v-for="s in 5" :key="s">
+          <span><i :class="s <= filledStars ? 'fas fa-star' : 'fal fa-star'"></i></span>
         </li>
       </ul>
-      <span class="rating-no ml-10"> {{ item.rating }}개 평점 </span>
+      <span class="rating-no ml-10">{{ Number(item.rating || 0).toFixed(1) }} ({{ reviewCount }})</span>
     </div>
     <div class="product__price-2 mb-25">
       <span>{{ formatPrice(item.salePrice) }}</span>
@@ -154,7 +148,42 @@
         <!-- 2026-09-13(요청사항: "모바일로 보기에서 [장바구니추가] 버튼이 커서 우측에 숨겨진거 같아") —
              기존 flex-nowrap이 좁은 화면에서도 한 줄을 강제해 버튼이 화면 밖으로 밀려나갔다.
              좁은 화면(max-sm)에서는 줄바꿈을 허용하고 버튼은 다음 줄에서 꽉 채워 보이게 한다. -->
-        <div class="pro-quan-area flex flex-wrap items-center gap-3">
+        <!-- ===== 상세 페이지 전용 구매 영역 (2026-09-20: ecFeBo 처럼 장바구니 담기·찜·카카오 공유·바로구매·문의하기·배송 안내) ===== -->
+        <div v-if="detail" ref="buyEl">
+          <div class="mb-4 flex items-center gap-3">
+            <label class="text-[0.85rem] text-[#555]">수량</label>
+            <div class="product-quantity shrink-0">
+              <div class="cart-plus-minus">
+                <input type="text" v-model="state.orderQuantity" />
+                <div @click="state.orderQuantity > 1 ? state.orderQuantity-- : (state.orderQuantity = 1)" class="dec qtybutton">-</div>
+                <div @click="state.orderQuantity++" class="inc qtybutton">+</div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-4 flex flex-col gap-2">
+            <div class="flex gap-2">
+              <button type="button" class="h-12 flex-1 cursor-pointer rounded-[10px] border-0 bg-[#222] text-[0.95rem] font-semibold text-white transition-colors hover:bg-black" @click.prevent="handleAddToCart">🛒 장바구니 담기</button>
+              <button
+                type="button"
+                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border-[1.5px] border-solid border-[#e5e7eb] bg-white p-0 text-xl leading-none cursor-pointer hover:border-[#bbb]"
+                :title="isWished ? '찜 해제' : '찜하기'"
+                :aria-label="isWished ? '찜 해제' : '찜하기'"
+                @click.prevent="wishlist.addStWishlistProduct(item)"
+              >
+                <span :class="isWished ? 'text-red-500' : 'text-gray-400'">{{ isWished ? "♥" : "♡" }}</span>
+              </button>
+              <button type="button" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border-0 bg-[#FEE500] p-0 text-xl leading-none text-[#191919] cursor-pointer" title="카카오톡 공유" aria-label="카카오톡 공유" @click.prevent="shareTools.shareKakao()">💬</button>
+            </div>
+            <button type="button" class="h-12 w-full cursor-pointer rounded-[10px] border-2 border-solid border-[#222] bg-white text-[0.95rem] font-semibold text-[#222] transition-colors hover:bg-[#222] hover:text-white" @click.prevent="handleBuyNow">⚡ 바로구매</button>
+            <button type="button" class="cursor-pointer border-0 bg-transparent py-1 text-center text-[0.8rem] text-[#9ca3af] underline" @click.prevent="emit('inquiry')">상품 문의하기</button>
+          </div>
+          <div class="flex flex-col gap-1.5 border-t border-[#e5e7eb] pt-3.5 text-[0.8rem] text-[#555]">
+            <div class="flex gap-2"><span aria-hidden="true">🚚</span><span>결제 확인 후 <strong>1~2 영업일</strong> 내 출고</span></div>
+            <div class="flex gap-2"><span aria-hidden="true">↩️</span><span>수령 후 <strong>7일 이내</strong> 교환·반품 가능</span></div>
+            <div class="flex gap-2"><span aria-hidden="true">💳</span><span>결제: <strong>토스페이먼츠</strong> (카드·계좌이체 등)</span></div>
+          </div>
+        </div>
+        <div v-else class="pro-quan-area flex flex-wrap items-center gap-3">
           <div class="product-quantity-title shrink-0">
             <label>수량</label>
           </div>
@@ -188,11 +217,24 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { type PdProductType } from "~/types/pdProductType";
 import { useCartStore } from "~/store/useCartStore";
 
+import { useWishlistStore } from "~/store/useWishlistStore";
+import { prodTypeLabel } from "~/conts/pdConst";
+
 const props = defineProps<{
   item: PdProductType;
   style_2?: boolean;
+  /** 상품 상세 페이지 전용 모드 — 유형·카테고리 칩, 찜·공유, 바로구매, 문의하기, 배송 안내를 함께 보여준다(빠른보기 모달은 false) */
+  detail?: boolean;
 }>();
+const emit = defineEmits<{ (e: "inquiry"): void }>();
 const state = useCartStore();
+const wishlist = useWishlistStore();
+const shareTools = useShareTools();
+const isWished = computed(() => wishlist.wishlists.some((p) => p.prodId === props.item.prodId));
+const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
+const reviewCount = computed(() => props.item.reviews?.length ?? 0);
+const filledStars = computed(() => Math.max(0, Math.min(5, Math.round(Number(props.item.rating) || 0))));
+const buyEl = ref<HTMLElement | null>(null); // 구매 버튼 영역 — 하단 구매바가 "본문 버튼이 화면 밖으로 나갔는지" 판단하는 기준
 const { formatPrice } = usePrice();
 
 const selectedColor = ref("");
@@ -265,22 +307,48 @@ function findMatchedSku() {
   return skus.find((s) => matchesLevel(s.prodOpt1Id, s.prodOpt2Id, selectedColorOpt) && matchesLevel(s.prodOpt1Id, s.prodOpt2Id, selectedSizeOpt));
 }
 
-function handleAddToCart() {
+/** 옵션(사이즈)·SKU·재고를 검증하고 담을 SKU 를 돌려준다. 실패하면 토스트를 띄우고 null. (장바구니 담기/바로구매 공통) */
+function resolveSelection(): { prodSkuId?: string } | null {
   if (props.item.optionSizes?.length && !selectedSize.value) {
     useNuxtApp().$toast.error("사이즈를 선택해주세요.");
-    return;
+    return null;
   }
   const matchedSku = findMatchedSku();
   if (props.item.prodSkus?.length && !matchedSku) {
     useNuxtApp().$toast.error("선택한 옵션 조합의 재고 정보를 찾을 수 없습니다.");
-    return;
+    return null;
   }
   if (matchedSku?.stockQty != null && matchedSku.stockQty <= 0) {
     useNuxtApp().$toast.error("선택한 옵션은 품절되었습니다.");
-    return;
+    return null;
   }
-  state.addStCartProduct(props.item, matchedSku?.prodSkuId);
+  return { prodSkuId: matchedSku?.prodSkuId };
 }
+
+function handleAddToCart() {
+  const sel = resolveSelection();
+  if (!sel) return;
+  const existed = state.cartProducts.some((i) => i.prodId === props.item.prodId && i.selectedProdSkuId === sel.prodSkuId);
+  state.addStCartProduct(props.item, sel.prodSkuId);
+  // 스토어는 새 줄을 항상 수량 1 로 만든다(이미 담긴 줄만 선택 수량을 더한다) — 새로 담는 경우에도 선택한 수량을 반영한다
+  if (!existed) state.setStQuantity(props.item.prodId, sel.prodSkuId, state.orderQuantity);
+}
+
+/**
+ * 바로구매 (2026-09-20) — 옵션 검증 후 선택한 수량으로 장바구니에 담고 곧바로 결제 화면(/checkout)으로 이동한다.
+ * 이미 담겨 있던 같은 상품(같은 SKU)은 수량을 누적하지 않고 선택한 수량으로 맞춘다.
+ */
+async function handleBuyNow() {
+  const sel = resolveSelection();
+  if (!sel) return;
+  const exists = state.cartProducts.some((i) => i.prodId === props.item.prodId && i.selectedProdSkuId === sel.prodSkuId);
+  if (!exists) state.addStCartProduct(props.item, sel.prodSkuId);
+  state.setStQuantity(props.item.prodId, sel.prodSkuId, state.orderQuantity);
+  await navigateTo("/checkout");
+}
+
+// 페이지(하단 구매바 등)가 같은 검증·동작을 그대로 쓰도록 노출
+defineExpose({ addToCart: handleAddToCart, buyNow: handleBuyNow, getBuyEl: () => buyEl.value });
 
 const colorMap: Record<string, string> = {
   color01: "#E74C3C", // 빨강

@@ -43,6 +43,18 @@ interface BePage<T> {
   pageSize: number;
 }
 
+/** 상품 Q&A 1건 (ecBeBo PdProdQnaDto.Item 중 화면에 쓰는 필드) */
+export interface PdQnaItem {
+  prodQnaId: string;
+  memberId?: string | null;
+  prodQnaTitle?: string | null;
+  prodQnaContent?: string | null;
+  scrtYn?: string | null; // 비밀글 Y/N
+  answYn?: string | null; // 답변여부 Y/N
+  answContent?: string | null;
+  regDate?: string | null;
+}
+
 interface BeReviewsResponse {
   summary: { avgRating?: number; reviewCount?: number };
   reviewPage: { pageList: BeReviewItem[]; pageTotalCount: number };
@@ -72,6 +84,12 @@ export const pdProductSvc = {
       pageTotalPage: page.pageTotalPage,
       hasMore: page.pageNo < page.pageTotalPage,
     };
+  },
+
+  /** GET /fo/ec/pd/prod/{id}/qna — 상품 Q&A 목록(조회 전용, 공개). 응답은 { qnaPage: { pageList } } */
+  getQna: async (id: string, pageSize = 20): Promise<PdQnaItem[]> => {
+    const r = (await axiosCsr.get<{ qnaPage?: { pageList?: PdQnaItem[] } }>(`/fo/ec/pd/prod/${encodeURIComponent(id)}/qna`, { params: { pageNo: 1, pageSize } })).data;
+    return r?.qnaPage?.pageList ?? [];
   },
 
   /** GET /fo/ec/pd/prod/{id} + /{id}/reviews — 상품 단건(리뷰·평점 병합). 리뷰 조회 실패는 빈 리뷰로 대체 */

@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="상품 상세" subtitle="상품 상세" />
+    <breadcrumb-area title="상품 상세" subtitle="상품 상세" compact />
 
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
     <skeleton-product-detail v-if="pending" />
@@ -9,32 +9,16 @@
     <!-- 상품 상세 -->
     <template v-else-if="item">
       <section class="shop__area pb-65">
-        <div class="shop__top bg-white pt-100 pb-90">
+        <div class="shop__top bg-white pt-60 pb-60">
           <div class="max-w-7xl mx-auto px-4">
             <div class="row">
               <div class="col-xl-6 col-lg-6">
-                <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — 아래 product-details__*
-                     커스텀 클래스들을 전부 Tailwind 유틸리티로 대체. -->
-                <div class="grid grid-cols-[auto_1fr] gap-4 items-start">
-                  <!-- 썸네일이 많을 때: 메인 이미지 높이에 맞춘 세로 스크롤 + 위/아래 화살표 (ProductThumbStrip) -->
-                  <product-thumb-strip :images="item.relatedImages ?? []" :active="active_img" @select="handleActiveImg" />
-                  <div class="col-start-2 min-w-0" id="product-detailsContent">
-                    <div class="product__modal-img product__thumb w-img border border-[#e0e0e0] rounded overflow-hidden">
-                      <app-image
-                        :src="active_img"
-                        alt="product_img"
-                        :skeleton-style="{ width: '100%', aspectRatio: '3/4' }"
-                      />
-                      <div class="product__sale">
-                        <span class="new">new</span>
-                        <span class="percent">-16%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <!-- 2026-09-20(요청사항: 상품상세를 ecFeBo 처럼 개선) — 메인 이미지 확대 보기, 하단 가로 썸네일(기본이미지 뱃지), 라이트박스는 ProdGallery.
+                     예전엔 세로 썸네일 스트립 + 고정 문구 "new / -16%" 였다. -->
+                <prod-gallery :item="item" />
               </div>
               <div class="col-xl-6 col-lg-6">
-                <product-details-content :item="item" :style_2="true" />
+                <product-details-content ref="detailRef" :item="item" :style_2="true" detail @inquiry="scrollToSection('qna')" />
               </div>
             </div>
           </div>
@@ -52,13 +36,13 @@
                적용되어 원래 위치가 뷰포트 상단(헤더 높이만큼 아래)에 닿을 때만 고정된다. -->
           <div class="[position:sticky] z-40 bg-white border-b-2 border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.06)] min-h-[52px]" ref="tabNavRef" :style="{ top: headerH + 'px' }">
             <div class="max-w-7xl mx-auto px-4">
-              <div class="flex justify-center gap-0">
+              <div class="flex justify-start sm:justify-center gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <button
                   v-for="tab in tabs"
                   :key="tab.id"
                   type="button"
                   :class="[
-                    'px-7 py-4 text-base font-medium bg-transparent border-0 border-b-[3px] -mb-0.5 cursor-pointer transition-colors tracking-wide whitespace-nowrap',
+                    'px-5 sm:px-7 py-4 text-base font-medium bg-transparent border-0 border-b-[3px] -mb-0.5 cursor-pointer transition-colors tracking-wide whitespace-nowrap',
                     activeTab === tab.id ? 'text-theme border-theme font-bold' : 'text-gray-500 border-transparent hover:text-gray-700',
                   ]"
                   @click="scrollToSection(tab.id)"
@@ -68,26 +52,33 @@
           </div>
 
           <div class="max-w-7xl mx-auto px-4">
-            <!-- 상품설명 섹션 -->
-            <div ref="secDes" id="sec-des" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px] last:border-b-0">
-              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">상품설명</h2>
-              <!-- ecBeBo contentHtml은 단일 HTML 블록(2026-09 BFF 전환 — 예전 3분할(text/list/text2) 구조 없음) -->
-              <div class="product__details-des" v-html="item.contentHtml"></div>
-            </div>
-
-            <!-- 추가정보 섹션 -->
-            <div ref="secAdd" id="sec-add" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px] last:border-b-0">
-              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">추가 정보</h2>
-              <div class="product__details-add">
-                <ul>
-                  <li><span>무게</span></li>
-                  <li><span>.25 KG</span></li>
-                  <li><span>치수</span></li>
-                  <li><span>62 x 56 x 12 cm</span></li>
-                  <li><span>사이즈</span></li>
-                  <li><span>XL, XXL, LG, SM, MD</span></li>
+            <!-- 상세정보 섹션 (2026-09-20: 상품설명 + 세탁 및 관리. 예전 "추가 정보"의 무게/치수/사이즈는 상품과 무관한 고정값이라 제거) -->
+            <div ref="secDetail" id="sec-detail" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px]">
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">상세정보</h2>
+              <div class="mb-3.5 rounded-xl border border-[#e5e7eb] bg-white p-5 sm:p-7">
+                <h3 class="mb-3.5 flex items-center gap-2 text-[0.95rem] font-bold text-gray-900"><span aria-hidden="true">📋</span> 상품 설명</h3>
+                <!-- ecBeBo contentHtml 은 단일 HTML 블록. 서버 렌더(SEO 최소 정보)에는 비어 있고 브라우저가 전체 조회한 뒤 채워진다 -->
+                <div v-if="item.contentHtml" class="product__details-des" v-html="item.contentHtml"></div>
+                <p v-else-if="item.smDesc" class="text-[0.9rem] leading-[1.9] text-gray-600">{{ item.smDesc }}</p>
+              </div>
+              <div class="rounded-xl border border-[#e5e7eb] bg-white p-5 sm:p-7">
+                <h3 class="mb-3.5 flex items-center gap-2 text-[0.95rem] font-bold text-gray-900"><span aria-hidden="true">🧺</span> 세탁 및 관리</h3>
+                <ul class="m-0 flex list-none flex-col gap-3 p-0">
+                  <li v-for="c in careItems" :key="c.label" class="flex items-start gap-3">
+                    <span class="w-6 shrink-0 text-center text-lg" aria-hidden="true">{{ c.icon }}</span>
+                    <span>
+                      <span class="block text-[0.76rem] text-[#9ca3af]">{{ c.label }}</span>
+                      <span class="block text-[0.9rem] text-gray-800">{{ c.value }}</span>
+                    </span>
+                  </li>
                 </ul>
               </div>
+            </div>
+
+            <!-- 사이즈 섹션 -->
+            <div ref="secSize" id="sec-size" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px]">
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">사이즈</h2>
+              <prod-size-guide />
             </div>
 
             <!-- 리뷰 섹션 -->
@@ -96,16 +87,40 @@
                 <div class="postbox__comments">
                   <!-- 제목: 리뷰(N)만 한 줄에 배치 -->
                   <div class="block mb-20">
-                    <h3 class="m-0 text-[1.35rem] font-bold text-gray-900 pb-3 border-b-2 border-[#e5e7eb]">리뷰 ({{ totalReviewCount }})</h3>
+                    <h3 class="m-0 text-[1.35rem] font-bold text-gray-900 pb-3 border-b-2 border-[#e5e7eb]">상품평 ({{ totalReviewCount }})</h3>
                   </div>
                   <!-- 첨부·모아보기는 그 아래 줄 -->
                   <div v-if="totalAttachmentCount > 0" class="flex flex-nowrap items-center gap-2 mb-20">
                     <span class="whitespace-nowrap text-sm text-gray-600">첨부 이미지·동영상 {{ totalAttachmentCount }}개</span>
                     <button type="button" class="os-btn os-btn-black whitespace-nowrap !text-sm !px-3 !py-1 !h-auto" @click="openAllMedia">모아보기</button>
                   </div>
+                  <!-- 2026-09-20: 평점 요약(평균 + 별점 분포)과 정렬 — ecFeBo 상품평 -->
+                  <div v-if="reviewList.length" class="mb-5 flex flex-wrap items-center gap-8 rounded-xl border border-[#e5e7eb] bg-white p-6">
+                    <div class="text-center">
+                      <div class="text-[2.6rem] font-black leading-none text-gray-900">{{ avgRating.toFixed(1) }}</div>
+                      <div class="mt-1 text-[#f5a623]"><i v-for="st in 5" :key="st" :class="st <= Math.round(avgRating) ? 'fas fa-star' : 'fal fa-star'"></i></div>
+                      <div class="mt-1 text-[0.8rem] text-[#9ca3af]">{{ reviewList.length }}개 리뷰</div>
+                    </div>
+                    <div class="flex min-w-[200px] flex-1 flex-col gap-1">
+                      <div v-for="d in ratingDist" :key="d.star" class="flex items-center gap-2 text-[0.78rem] text-gray-600">
+                        <span class="w-6 text-right">{{ d.star }}<i class="fas fa-star ml-0.5 text-[0.65rem] text-[#f5a623]"></i></span>
+                        <div class="h-2 flex-1 overflow-hidden rounded bg-[#eee]"><div class="h-full bg-[#f5a623]" :style="{ width: d.pct + '%' }"></div></div>
+                        <span class="w-9 text-right text-[#9ca3af]">{{ d.pct }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="reviewList.length > 1" class="mb-5 flex flex-wrap gap-2">
+                    <button
+                      v-for="o in reviewSortOptions"
+                      :key="o.id"
+                      type="button"
+                      :class="['cursor-pointer rounded-full border px-3.5 py-1.5 text-[0.82rem] transition-colors', reviewSort === o.id ? 'border-[#222] bg-[#222] font-semibold text-white' : 'border-[#e5e7eb] bg-white text-gray-600 hover:border-[#999]']"
+                      @click="reviewSort = o.id"
+                    >{{ o.label }}</button>
+                  </div>
                   <div class="latest-comments mb-30">
                     <ul>
-                      <template v-for="review in item.reviews" :key="review.reviewId">
+                      <template v-for="review in sortedReviews" :key="review.reviewId">
                         <li>
                           <div class="flex items-start gap-4">
                             <div class="comments-avatar">
@@ -209,9 +224,24 @@
                 />
               </div>
             </div>
+
+            <!-- Q&A 섹션 (2026-09-20) -->
+            <div ref="secQna" id="sec-qna" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px]">
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">Q&amp;A <span class="ml-2 text-[0.85rem] font-normal text-[#9ca3af]">({{ qnaCount }})</span></h2>
+              <prod-qna :prod-id="item.prodId" @count="qnaCount = $event" />
+            </div>
+
+            <!-- 스타일 섹션 (2026-09-20) -->
+            <div ref="secStyle" id="sec-style" class="pt-12 pb-10 scroll-mt-[120px]">
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">스타일</h2>
+              <prod-style-rec />
+            </div>
           </div>
         </div>
       </section>
+
+      <!-- 하단 고정 구매바: 본문 구매 버튼이 화면 위로 지나가면 나타난다 (2026-09-20) -->
+      <prod-buy-bar :item="item" :show="showBuyBar" @cart="detailRef?.addToCart()" @buy="detailRef?.buyNow()" />
 
       <!-- 관련 상품 -->
       <section class="related__product pb-60">
@@ -252,7 +282,11 @@ import { type PdProductType } from "~/types/pdProductType";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
-import ProductThumbStrip from "~/components/shop-details/ProductThumbStrip.vue";
+import ProdGallery from "~/components/prod-detail/ProdGallery.vue";
+import ProdBuyBar from "~/components/prod-detail/ProdBuyBar.vue";
+import ProdSizeGuide from "~/components/prod-detail/ProdSizeGuide.vue";
+import ProdStyleRec from "~/components/prod-detail/ProdStyleRec.vue";
+import ProdQna from "~/components/prod-detail/ProdQna.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
@@ -334,33 +368,33 @@ watch(
   { immediate: true }
 );
 
-// ── 갤러리 이미지 전환 (옛 ShopDetailsArea) ─────────────────────────────
-const active_img = ref(item.value?.img ?? "");
-watch(
-  () => item.value?.img,
-  (v) => { active_img.value = v ?? ""; },
-);
-function handleActiveImg(img: string) {
-  active_img.value = img;
-}
+// ── 탭 & 섹션 스크롤 ─────────────────────────────────────────────
+// 2026-09-20(요청사항: 상품상세를 ecFeBo 처럼) — 탭: 상세정보 / 사이즈 / 상품평 / Q&A / 스타일
+type TabId = "detail" | "size" | "review" | "qna" | "style";
+const qnaCount = ref(0);
+const tabs = computed(() => [
+  { id: "detail" as TabId, label: "상세정보" },
+  { id: "size" as TabId, label: "사이즈" },
+  { id: "review" as TabId, label: `상품평 (${totalReviewCount.value})` },
+  { id: "qna" as TabId, label: qnaCount.value ? `Q&A (${qnaCount.value})` : "Q&A" },
+  { id: "style" as TabId, label: "스타일" },
+]);
 
-// ── 탭 & 섹션 스크롤 (옛 ShopDetailsArea) ─────────────────────────────
-type TabId = "des" | "add" | "review";
-const tabs = computed(() => {
-  const list = item.value?.reviews ?? [];
-  const n = list.reduce((sum, r) => sum + 1 + (r.replies?.length ?? 0), 0);
-  return [
-    { id: "des" as TabId, label: "상품설명" },
-    { id: "add" as TabId, label: "추가 정보" },
-    { id: "review" as TabId, label: `리뷰 (${n})` },
-  ];
-});
+// 세탁 및 관리 — 백엔드에 상품별 데이터가 없어 ecFeBo 와 같은 공통 안내문(고정값)
+const careItems = [
+  { icon: "💧", label: "세탁 방법", value: "찬물 손세탁 또는 세탁기 약세탁 권장" },
+  { icon: "🌡️", label: "건조 방법", value: "그늘에서 자연 건조 (드라이기 금지)" },
+  { icon: "👕", label: "다림질", value: "낮은 온도로 뒤집어 다림질" },
+  { icon: "🚫", label: "주의사항", value: "표백제 사용 금지, 드라이클리닝 권장 안함" },
+];
 
-const activeTab = ref<TabId>("des");
+const activeTab = ref<TabId>("detail");
 const tabNavRef = ref<HTMLElement | null>(null);
-const secDes = ref<HTMLElement | null>(null);
-const secAdd = ref<HTMLElement | null>(null);
+const secDetail = ref<HTMLElement | null>(null);
+const secSize = ref<HTMLElement | null>(null);
 const secReview = ref<HTMLElement | null>(null);
+const secQna = ref<HTMLElement | null>(null);
+const secStyle = ref<HTMLElement | null>(null);
 // 2026-09-14 버그수정(요청사항: "F5 refresh 하면 상품설명/추가정보/리뷰 바가 최상단에 보였다가
 // 사라지는데 이러면 안되") — SSR/하이드레이션 직후 onMounted가 실제 헤더 높이를 측정하기
 // 전까지는 이 값이 0이라 잠깐 top:0px로 렌더돼(=진짜 페이지 맨 위) 눈에 띄게 깜빡였다.
@@ -368,19 +402,31 @@ const secReview = ref<HTMLElement | null>(null);
 // 보이도록 하고, onMounted에서 정확한 값으로 즉시 보정한다.
 const headerH = ref(90);
 
+function sectionEl(id: TabId): HTMLElement | null {
+  return { detail: secDetail.value, size: secSize.value, review: secReview.value, qna: secQna.value, style: secStyle.value }[id];
+}
+
 function scrollToSection(id: TabId) {
   activeTab.value = id;
-  const elMap: Record<TabId, HTMLElement | null> = {
-    des: secDes.value,
-    add: secAdd.value,
-    review: secReview.value,
-  };
-  const el = elMap[id];
+  const el = sectionEl(id);
   if (!el) return;
   const navH = tabNavRef.value?.offsetHeight ?? 52;
   const total = headerH.value + navH + 12;
   const top = el.getBoundingClientRect().top + window.scrollY - total;
   window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+}
+
+// 하단 고정 구매바 — 본문 구매 버튼 영역이 헤더 아래로 완전히 지나가면 나타난다
+const detailRef = ref<InstanceType<typeof ProductDetailsContent> | null>(null);
+const showBuyBar = ref(false);
+let scrollRaf = 0;
+function updateBuyBar() {
+  scrollRaf = 0;
+  const buyEl = detailRef.value?.getBuyEl?.();
+  showBuyBar.value = buyEl ? buyEl.getBoundingClientRect().bottom < headerH.value : false;
+}
+function onScroll() {
+  if (!scrollRaf) scrollRaf = requestAnimationFrame(updateBuyBar);
 }
 
 // IntersectionObserver: 스크롤 중 활성 탭 자동 변경
@@ -397,11 +443,6 @@ onMounted(() => {
     headerObserver.observe(headerEl);
   }
 
-  const entries: { id: TabId; el: HTMLElement | null }[] = [
-    { id: "des", el: secDes.value },
-    { id: "add", el: secAdd.value },
-    { id: "review", el: secReview.value },
-  ];
   observer = new IntersectionObserver(
     (records) => {
       for (const record of records) {
@@ -413,11 +454,19 @@ onMounted(() => {
     },
     { rootMargin: "-20% 0px -65% 0px", threshold: 0 }
   );
-  entries.forEach(({ el }) => { if (el) observer!.observe(el); });
+  (["detail", "size", "review", "qna", "style"] as TabId[]).forEach((id) => {
+    const el = sectionEl(id);
+    if (el) observer!.observe(el);
+  });
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 });
 onUnmounted(() => {
   observer?.disconnect();
   headerObserver?.disconnect();
+  window.removeEventListener("scroll", onScroll);
+  if (scrollRaf) cancelAnimationFrame(scrollRaf);
 });
 
 // ── 리뷰 (옛 ProductDetailsReview) ─────────────────────────────
@@ -430,6 +479,32 @@ function isVideoUrl(url: string): boolean {
 const totalReviewCount = computed(() => {
   const list = item.value?.reviews ?? [];
   return list.reduce((sum, r) => sum + 1 + (r.replies?.length ?? 0), 0);
+});
+
+// 평점 요약(평균 + 별점 분포)과 정렬 (2026-09-20) — 답글이 아닌 리뷰 본문만 대상
+const reviewList = computed(() => item.value?.reviews ?? []);
+const avgRating = computed(() => {
+  const list = reviewList.value.filter((r) => r.rating > 0);
+  return list.length ? list.reduce((sum, r) => sum + r.rating, 0) / list.length : Number(item.value?.rating) || 0;
+});
+const ratingDist = computed(() => {
+  const total = reviewList.value.length || 1;
+  return [5, 4, 3, 2, 1].map((star) => {
+    const n = reviewList.value.filter((r) => Math.round(r.rating) === star).length;
+    return { star, pct: Math.round((n / total) * 100) };
+  });
+});
+const reviewSortOptions = [
+  { id: "latest", label: "최신순" },
+  { id: "high", label: "별점높은순" },
+  { id: "low", label: "별점낮은순" },
+] as const;
+const reviewSort = ref<(typeof reviewSortOptions)[number]["id"]>("latest");
+const sortedReviews = computed(() => {
+  const list = [...reviewList.value];
+  if (reviewSort.value === "high") return list.sort((a, b) => b.rating - a.rating || String(b.reviewDate).localeCompare(String(a.reviewDate)));
+  if (reviewSort.value === "low") return list.sort((a, b) => a.rating - b.rating || String(b.reviewDate).localeCompare(String(a.reviewDate)));
+  return list.sort((a, b) => String(b.reviewDate).localeCompare(String(a.reviewDate)));
 });
 
 const allAttachmentsList = computed(() => {

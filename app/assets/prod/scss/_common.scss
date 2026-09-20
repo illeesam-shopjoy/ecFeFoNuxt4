@@ -16,9 +16,20 @@
    오른쪽에 빈 공간이 딸려 나오는 가로 스크롤이 생긴다. html/body(뷰포트 자체의 스크롤 컨테이너)에
    가로 스크롤을 원천 차단해 어떤 하위요소가 살짝 넘쳐도 화면 전체가 옆으로 밀리지 않게 한다
    (position: sticky는 뷰포트 기준이라 영향 없음). */
-html,
+/* 2026-09-20 수정: 위 주석은 "position: sticky는 뷰포트 기준이라 영향 없음" 이라 했지만 틀렸다 — body 에 overflow(hidden)가 있으면 body 가
+   스크롤 컨테이너가 되어(실제로는 스크롤되지 않는다) 그 안의 sticky 요소(상품상세 탭바 등)가 절대 고정되지 않았다.
+   html 은 뷰포트 자체라 hidden 을 유지하고, body 는 스크롤 컨테이너를 만들지 않는 clip 으로 바꿔 가로 넘침 차단 효과만 남긴다.
+   (clip 미지원 브라우저는 기존처럼 hidden 으로 폴백) */
+html {
+  overflow-x: hidden;
+}
 body {
   overflow-x: hidden;
+}
+@supports (overflow: clip) {
+  body {
+    overflow-x: clip;
+  }
 }
 body {
   font-family: $font-kr;
