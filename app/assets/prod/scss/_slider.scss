@@ -394,3 +394,12 @@
     animation-duration: 0.9s;
   }
 }
+
+// 2026-09-20: 창 크기를 끌 때 캐러셀(히어로 배너 등)이 흔들리던 문제.
+// vue3-carousel 슬라이드는 <li class="carousel__slide"> 인데, 테마의 전역 규칙 `li, a, button, ... { transition: all .3s ease-out }` 에 걸려
+// 창 폭이 바뀌면 슬라이드 너비가 0.3초에 걸쳐 서서히 변한다. 반면 트랙 위치(translate/margin)는 JS 가 즉시 바꿔서 서로 어긋나고 옆 슬라이드가 비쳤다.
+// 너비·마진은 애니메이션하지 않고(크기 변화를 즉시 따라감), 투명도·크기(scale) 같은 슬라이드 효과만 남긴다.
+// (창 크기 변화를 매 프레임 JS 로 반영하는 부분은 app/plugins/carousel-resize.client.ts)
+.carousel__slide {
+  transition-property: transform, opacity, visibility, filter;
+}
