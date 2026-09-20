@@ -38,7 +38,7 @@ import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import type { SyCodeType } from "~/types/sy/syCodeType";
 import { myCashSvc } from "~/svc/fo/my/myCashSvc";
-import type { MyRow } from "~/types/fo/foMyType";
+import type { PmCacheType } from "~/types/pm/pmCacheType";
 import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
@@ -54,15 +54,15 @@ const chargeForm = reactive({ amount: "" });
 const chargeCols: FoFormColumn[] = [{ key: "charge", type: "slot" }];
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptCash). 구분 라벨: 서버 한글명 → 공통코드(CACHE_TYPE_CD) — 조회 시점에 1회 변환
-function adapt(h: MyRow) {
-  const amount = Number(h.cacheAmt ?? h.amount ?? 0);
+function adapt(h: PmCacheType) {
+  const amount = Number(h.cacheAmt ?? 0);
   return {
-    cashId: String(h.cacheId ?? h.cashId ?? ""),
+    cashId: String(h.cacheId),
     type: kor(h.cacheTypeCdNm, h.cacheTypeCd, codeMap(codes.cache_types)) || (amount >= 0 ? "적립" : "사용"),
     amount,
-    balance: Number(h.balanceAmt ?? h.balance ?? 0),
-    date: ymd(h.cacheDate ?? h.date),
-    desc: String(h.cacheDesc ?? h.desc ?? ""),
+    balance: Number(h.balanceAmt ?? 0),
+    date: ymd(h.cacheDate),
+    desc: String(h.cacheDesc ?? ""),
   };
 }
 

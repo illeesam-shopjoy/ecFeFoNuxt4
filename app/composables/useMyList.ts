@@ -6,7 +6,8 @@
  */
 import { reactive } from "vue";
 import { useAuthStore } from "~/store/useAuthStore";
-import type { MyListParams, MyRow } from "~/types/fo/foMyType";
+import type { MyListParams } from "~/types/fo/foMyType";
+import type { FoMyListOptionsType, FoMyListStateType } from "~/types/fo/foMyListType";
 
 export const MY_PRESETS = [
   { months: 1, label: "1달" },
@@ -34,47 +35,6 @@ export const kor = (nm: unknown, cd: unknown, map: Record<string, string>) => (n
 /** 코드그룹 목록 → { 코드값(대문자) → 라벨 } (kor() 의 매핑 인자용) */
 export const codeMap = (list: { codeValue: string; codeLabel: string }[]) => Object.fromEntries(list.map((c) => [String(c.codeValue).toUpperCase(), c.codeLabel]));
 
-export interface MyListLoadResult {
-  rows: MyRow[];
-  total: number;
-  totalPage: number;
-}
-
-export interface UseMyListOptions {
-  /** 백엔드 기간검색 기준 컬럼 (order_date | request_date | reg_date …) */
-  dateType: string;
-  /** 서버 페이징 조회 — 화면이 어떤 svc 를 부를지 결정. rows 는 화면용으로 어댑트해서 돌려준다(computed 없이 조회 시점에 1회 변환) */
-  loader: (params: MyListParams) => Promise<MyListLoadResult>;
-  /** 탭별 추가 필터(상태/유형 등). 값이 비어 있으면 서버로 보내지 않는다 */
-  extra?: () => Partial<MyListParams>;
-  /** 조회 성공 후 부가 작업(예: 유형별 건수 배지). 실패해도 화면은 계속 동작해야 하므로 예외를 던지지 말 것 */
-  afterLoad?: (params: MyListParams) => void;
-  defaultPageSize?: number;
-}
-
-/** useMyList() 반환 상태 (순환 추론을 피하려고 명시) */
-export interface MyListState {
-  dateStart: string;
-  dateEnd: string;
-  preset: number;
-  pageNo: number;
-  pageSize: number;
-  pageTotalPage: number;
-  total: number;
-  rows: MyRow[];
-  loading: boolean;
-  errorMsg: string;
-  openId: string | null;
-  load: () => Promise<void>;
-  search: () => Promise<void>;
-  resetSearch: () => Promise<void>;
-  applyPreset: () => Promise<void>;
-  goPage: (n: number) => Promise<void> | undefined;
-  changePageSize: () => Promise<void>;
-  toggle: (id: string) => void;
-  ensureLogin: () => Promise<boolean>;
-}
-
 const fmtYmd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export function rangeOf(months: number) {
   const end = new Date();
@@ -83,13 +43,13 @@ export function rangeOf(months: number) {
   return { start: fmtYmd(start), end: fmtYmd(end) };
 }
 
-export function useMyList(opts: UseMyListOptions): MyListState {
+export function useMyList<T extends object>(opts: FoMyListOptionsType<T>): FoMyListStateType<T> {
   const authStore = useAuthStore();
   const router = useRouter();
   const init = rangeOf(6);
   let seq = 0; // 늦게 도착한 이전 응답이 최신 결과를 덮어쓰지 않게 하는 요청 순번
 
-  const my: MyListState = reactive({
+  const my = reactive({
     dateStart: init.start,
     dateEnd: init.end,
     preset: 6,
@@ -97,7 +57,7 @@ export function useMyList(opts: UseMyListOptions): MyListState {
     pageSize: opts.defaultPageSize ?? 50,
     pageTotalPage: 1,
     total: 0,
-    rows: [] as MyRow[],
+    rows: [] as T[],
     loading: false,
     errorMsg: "",
     openId: null as string | null,
@@ -109,7 +69,7 @@ export function useMyList(opts: UseMyListOptions): MyListState {
     changePageSize,
     toggle,
     ensureLogin,
-  });
+  }) as unknown as FoMyListStateType<T>;
 
   async function load(): Promise<void> {
     const mySeq = ++seq;

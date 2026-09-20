@@ -137,6 +137,8 @@
 </template>
 
 <script setup lang="ts">
+import type { DpSlotDefType } from "~/types/dp/dpSlotDefType";
+
 import { reactive, ref, computed, onMounted } from "vue";
 import { CDN_URL } from "~/conts/baseConst";
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -157,14 +159,7 @@ usePageTitle("전시패널관리");
  * FoDpAdminController(FO_ONLY)를 통해 호출 — [[ecfefonuxt4-dp-widget-migration]] 메모리 참조.
  */
 
-interface SlotDef {
-  areaCd: string;
-  label: string;
-  widgetTypeCd: "SLIDER" | "TESTIMONIAL" | "BRAND_LOGO" | "CONTACT_INFO" | "CATEGORY_TREE" | "FOOTER_LINKS";
-  defaultJson: unknown;
-}
-
-const slots: SlotDef[] = [
+const slots: DpSlotDefType[] = [
   {
     areaCd: "HERO_SLIDER_MAIN",
     label: "메인 히어로 슬라이더 (home-6, index)",
@@ -398,7 +393,7 @@ async function createDefaultUi() {
   }
 }
 
-function resetDraft(slot: SlotDef) {
+function resetDraft(slot: DpSlotDefType) {
   draftJson[slot.areaCd] = JSON.stringify(slot.defaultJson, null, 2);
 }
 
@@ -417,7 +412,7 @@ function toggleSlot(areaCd: string) {
   }
 }
 
-async function createSlotArea(slot: SlotDef) {
+async function createSlotArea(slot: DpSlotDefType) {
   const firstUi = uis[0];
   if (!siteId.value || !firstUi) return;
   busy.value = true;
@@ -429,7 +424,7 @@ async function createSlotArea(slot: SlotDef) {
   }
 }
 
-async function createSlotPanel(slot: SlotDef) {
+async function createSlotPanel(slot: DpSlotDefType) {
   const area = areaOf(slot.areaCd);
   if (!area || !siteId.value) return;
   busy.value = true;
@@ -441,7 +436,7 @@ async function createSlotPanel(slot: SlotDef) {
   }
 }
 
-async function createSlotItem(slot: SlotDef) {
+async function createSlotItem(slot: DpSlotDefType) {
   const panel = panelOf(slot.areaCd);
   if (!panel || !siteId.value) return;
   let parsed: unknown;
@@ -469,7 +464,7 @@ async function createSlotItem(slot: SlotDef) {
   }
 }
 
-async function saveSlotItem(slot: SlotDef) {
+async function saveSlotItem(slot: DpSlotDefType) {
   const item = itemOf(slot.areaCd);
   if (!item) return;
   let parsed: unknown;
@@ -494,7 +489,7 @@ async function saveSlotItem(slot: SlotDef) {
   }
 }
 
-async function deleteSlotItem(slot: SlotDef) {
+async function deleteSlotItem(slot: DpSlotDefType) {
   const item = itemOf(slot.areaCd);
   if (!item) return;
   const ok = await useConfirm().openConfirm({ title: "삭제 확인", message: "이 콘텐츠를 삭제할까요? 화면은 기본값으로 되돌아갑니다.", confirmText: "삭제", variant: "danger" });

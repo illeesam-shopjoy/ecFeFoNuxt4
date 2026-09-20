@@ -67,7 +67,8 @@
  * 열릴 때 내 정보를 새로 조회해 채우고, 저장 성공 시 로그인 스토어의 이름/휴대폰(헤더 표시값)도 갱신한다.
  */
 import { reactive, ref, watch } from "vue";
-import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
+import AddrSearchModal from "~/components/modals/AddrSearchModal.vue";
+import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 import FoForm from "~/components/fo/FoForm.vue";
 import type { FoFormColumn } from "~/types/fo/foCompType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
@@ -130,7 +131,7 @@ watch(
   }
 );
 
-function onAddr(r: AddrSearchResult) {
+function onAddr(r: SyAddrSearchResultType) {
   f.memberZipCode = r.zonecode;
   f.memberAddr = r.address;
 }

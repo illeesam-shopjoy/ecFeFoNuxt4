@@ -53,12 +53,12 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myNotiSvc } from "~/svc/fo/my/myNotiSvc";
-import type { MyNotiItem } from "~/types/fo/foMyType";
+import type { SyNotiType } from "~/types/sy/syNotiType";
 
 const open = ref(false);
 const loading = ref(false);
 const errorMsg = ref("");
-const items = ref<MyNotiItem[]>([]);
+const items = ref<SyNotiType[]>([]);
 const unread = ref(0);
 const expandedId = ref<string | null>(null);
 const shake = ref(false);
@@ -79,7 +79,7 @@ const PAGE_ROUTES: Record<string, (refId?: string) => string> = {
   eventView: (id) => (id ? `/event-dtl/${id}` : "/event"),
   faq: () => "/faq",
 };
-const goLink = (n: MyNotiItem): string => {
+const goLink = (n: SyNotiType): string => {
   const route = n.linkPage ? PAGE_ROUTES[n.linkPage] : undefined;
   return route ? route(n.refId) : "";
 };
@@ -127,7 +127,7 @@ function toggle() {
   if (open.value && isLoggedIn.value) reload();
 }
 
-async function clickItem(n: MyNotiItem) {
+async function clickItem(n: SyNotiType) {
   expandedId.value = expandedId.value === n.notiId ? null : n.notiId;
   if (n.readYn !== "Y") {
     try {

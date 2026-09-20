@@ -3,6 +3,8 @@ import type { SyBrandType } from "~/types/sy/syBrandType";
 import type { PdReviewType } from "~/types/pd/pdReviewType";
 import type { PdProdOptType } from "~/types/pd/pdProdOptType";
 import type { SyAttachFileType, SyAttachType } from "~/types/sy/syAttachType";
+import type { PdProdImgRawType, PdProdOptRawType, PdProdSkuRawType, PdProdRawType } from "~/types/pd/pdProdRawType";
+import type { PdReviewCommentRawType, PdReviewRawType, PdReviewsRawType } from "~/types/pd/pdReviewRawType";
 import type { CoBasePageType } from "~/types/co/coBasePageType";
 import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import type { PdProdPageParamsType } from "~/types/pd/pdProdPageParamsType";
@@ -16,93 +18,6 @@ import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
  * PdProdType 필드명 자체를 ecBeBo(JPA) 기준으로 맞춰뒀기 때문에(app/types/pdProdType.ts 참조) 대부분 그대로
  * 통과시키면 되고, img/thumbImg/bigImg/relatedImages/rating/smDesc 처럼 JPA에 없는 파생값만 이 파일에서 계산한다.
  */
-
-export interface BeProdImgItem {
-  prodImgId: string;
-  prodId: string;
-  cdnHost?: string | null;
-  cdnImgUrl?: string | null;
-  cdnThumbUrl?: string | null;
-  imgAltText?: string | null;
-  sortOrd?: number | null;
-  isThumb?: string | null; // Y/N
-}
-
-export interface BeProdOptItem {
-  prodOptId: string;
-  prodOptNm: string;
-  prodOptVal?: string | null;
-  prodOptStdCd?: string | null;
-  prodOptTypeLevel?: number | null;
-  prodOpt1TypeCd?: string | null;
-  prodOpt2TypeCd?: string | null;
-}
-
-export interface BeProdSkuItem {
-  prodSkuId: string;
-  prodId: string;
-  prodOpt1Id?: string | null;
-  prodOpt2Id?: string | null;
-  skuCode?: string | null; // 2026-09-14: ecBeBo PdProdSkuDto.prodSkuCode → skuCode 리네이밍에 맞춤
-  addPrice?: number | null;
-  stockQty?: number | null;
-  useYn?: string | null;
-}
-
-export interface BeProdItem {
-  prodId: string;
-  categoryId?: string | null;
-  brandId?: string | null;
-  prodNm: string;
-  prodCode?: string | null;
-  prodTypeCd?: string | null; // 상품유형 SINGLE/OPTION/GROUP/SET/GIFT
-  stdPrice?: number | null; // 정가
-  salePrice?: number | null; // 판매가
-  saleDiscntRate?: number | null;
-  prodStatusCd?: string | null;
-  thumbnailUrl?: string | null;
-  contentHtml?: string | null;
-  weight?: number | null;
-  isNew?: string | null; // Y/N
-  isBest?: string | null; // Y/N
-  soldOutYn?: string | null; // Y/N
-  advrtStmt?: string | null;
-  cateNm?: string | null;
-  parentCategoryId?: string | null;
-  brandNm?: string | null;
-  prodStock?: number | null;
-  discntPrice?: number | null; // 프로모션 적용가 (있으면 salePrice보다 우선)
-  prodOpt1TypeCd?: string | null;
-  prodOpt2TypeCd?: string | null;
-  prodImgs?: BeProdImgItem[] | null;
-  prodOpts?: BeProdOptItem[] | null;
-  prodSkus?: BeProdSkuItem[] | null;
-}
-
-export interface BeReviewCommentItem {
-  reviewCommentId: string;
-  parentReplyId?: string | null;
-  writerNm?: string | null;
-  reviewReplyContent: string;
-  regDate?: string | null;
-}
-
-/** ecBeBo AttachFile 원본 — 정의는 types/sy/syAttachType.ts(SyAttachFileType). */
-export type BeAttachFileItem = SyAttachFileType;
-
-export interface BeReviewItem {
-  reviewId: string;
-  prodId: string;
-  memberId?: string | null;
-  writerNm?: string | null; // 비회원 작성자명
-  attachFiles?: BeAttachFileItem[] | null;
-  reviewTitle?: string | null;
-  reviewContent: string;
-  rating: number;
-  reviewDate?: string | null;
-  regUserNm?: string | null;
-  comments?: BeReviewCommentItem[] | null;
-}
 
 const HTML_TAG_RE = /<[^>]*>/g;
 
@@ -122,7 +37,7 @@ function classifyOptionType(typeCd: string | null | undefined): "color" | "size"
   return "etc";
 }
 
-function mapOption(o: BeProdOptItem, fallbackTypeCd?: string | null): PdProdOptType {
+function mapOption(o: PdProdOptRawType, fallbackTypeCd?: string | null): PdProdOptType {
   return {
     prodOptId: o.prodOptId,
     prodOptStdCd: o.prodOptStdCd ?? o.prodOptId,
@@ -133,7 +48,7 @@ function mapOption(o: BeProdOptItem, fallbackTypeCd?: string | null): PdProdOptT
 }
 
 /** ecBeBo PdProdDto.Item(+연관) → PdProdType 호환 객체 */
-export function mapProduct(p: BeProdItem, cdnBase: string): Record<string, unknown> {
+export function mapProduct(p: PdProdRawType, cdnBase: string): Record<string, unknown> {
   const resolveProdCdnUrl = (path: string | null | undefined) => resolveCdnUrl(path, cdnBase);
   const imgs = p.prodImgs ?? [];
   const thumb = imgs.find((i) => i.isThumb === "Y") ?? imgs[0];
@@ -231,7 +146,7 @@ export const isVideoExt = (ext?: string | null) => VIDEO_EXT.has((ext ?? "").toL
  * 첨부(sy_attach) 목록 → 화면용. 업로드 응답/조회 응답의 파일 URL 호스트가 서버 내부 주소(host.docker.internal 등)로 올 수 있어
  * 실제 CDN origin 으로 보정한다(cdnUrl.fixInternalCdnUrl).
  */
-export function mapAttachFiles(list: BeAttachFileItem[] | null | undefined, cdnBase: string): SyAttachType[] {
+export function mapAttachFiles(list: SyAttachFileType[] | null | undefined, cdnBase: string): SyAttachType[] {
   return (list ?? []).map((f) => {
     const fix = (u?: string | null) => fixInternalCdnUrl(resolveCdnUrl(u, cdnBase), cdnBase) || undefined;
     return {
@@ -252,7 +167,7 @@ export function mapAttachFiles(list: BeAttachFileItem[] | null | undefined, cdnB
 }
 
 /** ecBeBo PdReviewDto.Item(+comments) → PdReviewType (재귀: 답글은 comments를 children review로 편입) */
-export function mapReview(r: BeReviewItem, cdnBase: string): PdReviewType {
+export function mapReview(r: PdReviewRawType, cdnBase: string): PdReviewType {
   const replies: PdReviewType[] = (r.comments ?? []).map((c) => ({
     reviewId: c.reviewCommentId,
     img: "",
@@ -281,12 +196,6 @@ export function mapReview(r: BeReviewItem, cdnBase: string): PdReviewType {
   return base;
 }
 
-/** GET /fo/ec/pd/prod/{id}/reviews 응답 */
-export interface BeReviewsResponse {
-  summary: { avgRating?: number; reviewCount?: number };
-  reviewPage: { pageList: BeReviewItem[]; pageTotalCount: number };
-}
-
 /** 화면 조회 조건 → GET /fo/ec/pd/prod/page 쿼리 (배열 필터는 서버가 IN 조건으로 받는다) */
 export function buildProdPageQuery(params: PdProdPageParamsType): Record<string, unknown> {
   const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12, useYn: "Y" };
@@ -304,7 +213,7 @@ export function buildProdPageQuery(params: PdProdPageParamsType): Record<string,
 }
 
 /** 상품 페이징 응답 → 화면용(상품 매핑 + hasMore) */
-export function mapProdPage(page: CoBasePageType<BeProdItem>, cdnBase: string): CoPagedResultType<PdProdType> {
+export function mapProdPage(page: CoBasePageType<PdProdRawType>, cdnBase: string): CoPagedResultType<PdProdType> {
   return {
     items: page.pageList.map((p) => mapProduct(p, cdnBase) as unknown as PdProdType),
     pageNo: page.pageNo,
@@ -319,9 +228,12 @@ export function mapProdPage(page: CoBasePageType<BeProdItem>, cdnBase: string): 
 export const mapQnaList = (rows: PdProdQnaRawType[], cdnBase: string): PdProdQnaType[] => rows.map((q) => ({ ...q, attachFiles: mapAttachFiles(q.attachFiles, cdnBase) }));
 
 /** 상품 단건 + 리뷰·평균평점 병합 */
-export function mapProdDetail(detail: BeProdItem, reviewsRes: BeReviewsResponse, cdnBase: string): PdProdType {
+export function mapProdDetail(detail: PdProdRawType, reviewsRes: PdReviewsRawType, cdnBase: string): PdProdType {
   const out = mapProduct(detail, cdnBase);
   out.reviews = reviewsRes.reviewPage.pageList.map((r) => mapReview(r, cdnBase));
   if (typeof reviewsRes.summary?.avgRating === "number") out.rating = reviewsRes.summary.avgRating;
   return out as unknown as PdProdType;
 }
+
+/** 리뷰 조회 실패 시 대신 쓰는 빈 리뷰 응답 */
+export const EMPTY_REVIEWS: PdReviewsRawType = { summary: {}, reviewPage: { pageList: [], pageTotalCount: 0 } };

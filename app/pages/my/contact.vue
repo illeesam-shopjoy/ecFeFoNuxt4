@@ -29,7 +29,7 @@ import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import type { SyCodeType } from "~/types/sy/syCodeType";
 import { myInquirySvc } from "~/svc/fo/my/myInquirySvc";
-import type { MyRow } from "~/types/fo/foMyType";
+import type { SyContactType } from "~/types/sy/syContactType";
 import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
@@ -44,7 +44,7 @@ const CONTACT_COLOR: Record<string, string> = { 요청: "#3b82f6", 접수: "#3b8
 const codes = reactive({ contact_status: [] as SyCodeType[] });
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptContact). 상태 라벨: 서버 한글명 → 공통코드(CONTACT_STATUS_CD) → 기본 매핑 — 조회 시점에 1회 변환
-function adapt(q: MyRow) {
+function adapt(q: SyContactType) {
   return ({
     inquiryId: String(q.contactId),
     category: String(q.categoryCd ?? ""),

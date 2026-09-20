@@ -2,20 +2,13 @@
 import type { CoBasePageType } from "~/types/co/coBasePageType";
 import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import type { PmEventType } from "~/types/pm/pmEventType";
+import type { PmEventPageParamsType } from "~/types/pm/pmEventPageParamsType";
 import type { PmEventCardType, PmEventDetailType } from "~/types/pm/pmEventViewType";
 
 const ymd = (v: string | null | undefined) => (v ?? "").toString().slice(0, 10);
 
-export interface PmEventPageParams {
-  pageNo: number;
-  pageSize: number;
-  eventStatusCd?: string;
-  sort?: string;
-  searchValue?: string;
-}
-
 /** 화면 조회 조건 → GET /fo/ec/pm/event/page 쿼리 */
-export function buildEventPageQuery(params: PmEventPageParams): Record<string, unknown> {
+export function buildEventPageQuery(params: PmEventPageParamsType): Record<string, unknown> {
   const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize };
   if (params.eventStatusCd) q.eventStatusCd = params.eventStatusCd;
   if (params.sort) q.sort = params.sort;

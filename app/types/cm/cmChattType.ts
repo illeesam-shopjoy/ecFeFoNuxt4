@@ -14,6 +14,8 @@ export interface CmChattType {
   closeReason?: string; // 종료사유
   regDate?: string; // 등록일
   updDate?: string; // 수정일
+  members?: CmChattMemberType[]; // 채팅방 참여자 목록 (CmChattDto.members)
+  lastMsg?: CmChattMsgType; // 마지막 메시지 정보
   chattMembers?: CmChattMemberType[]; // 채팅방 참여자 (cm_chatt_member.chatt_id)
   chattMsgs?: CmChattMsgType[]; // 채팅 메시지 (cm_chatt_msg.chatt_id)
   // ── 공통(감사) 컬럼 ──

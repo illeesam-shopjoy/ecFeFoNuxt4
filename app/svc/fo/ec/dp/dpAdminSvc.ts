@@ -1,37 +1,30 @@
 /**
  * dpAdminSvc.ts — 전시패널관리 어드민(/dp/panels) API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
- * ecBeBo FoDpAdminController(/api/fo/ec/dp/admin/**, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
+ * ecBeBo FoDpAdminController(/api/fo/ec/dp/admin/**, FO_ONLY) — 로그인 토큰 필요(authCfg).
  * dp_ui → dp_area → dp_panel → dp_panel_item 4단 전시 구조([[ecfefonuxt4-dp-widget-convention]]).
  */
-import { axiosCsr } from "~/utils/axiosCsr";
-import { useAuthHeaders } from "~/composables/useAuthHeaders";
-import type { DpUiType } from "~/types/dp/dpUiType";
+import { authCfg, csrDelete, csrList, csrPost, csrPut, idPath } from "~/utils/svcHttp";
+import type { DpAreaCreateType, DpPanelCreateType, DpPanelItemCreateType, DpUiCreateType } from "~/types/dp/dpAdminCreateType";
 import type { DpAreaType } from "~/types/dp/dpAreaType";
-import type { DpPanelType } from "~/types/dp/dpPanelType";
 import type { DpPanelItemType } from "~/types/dp/dpPanelItemType";
+import type { DpPanelType } from "~/types/dp/dpPanelType";
+import type { DpUiType } from "~/types/dp/dpUiType";
 
-const auth = () => ({ headers: useAuthHeaders() });
 const BASE = "/fo/ec/dp/admin";
+const ITEM = `${BASE}/panel-item`;
 
 export const dpAdminSvc = {
-  listUis: async (): Promise<DpUiType[]> => (await axiosCsr.get<DpUiType[]>(`${BASE}/ui`, auth())).data ?? [],
-  createUi: async (body: Required<Pick<DpUiType, "siteId" | "uiCd" | "uiNm">> & Pick<DpUiType, "useYn">): Promise<DpUiType> => (await axiosCsr.post<DpUiType>(`${BASE}/ui`, body, auth())).data,
+  listUis: (): Promise<DpUiType[]> => csrList<DpUiType>(`${BASE}/ui`, authCfg()),
+  createUi: (body: DpUiCreateType): Promise<DpUiType> => csrPost<DpUiType>(`${BASE}/ui`, body, authCfg()),
 
-  listAreas: async (): Promise<DpAreaType[]> => (await axiosCsr.get<DpAreaType[]>(`${BASE}/area`, auth())).data ?? [],
-  createArea: async (body: Required<Pick<DpAreaType, "uiId" | "siteId" | "areaCd" | "areaNm">> & Pick<DpAreaType, "useYn">): Promise<DpAreaType> =>
-    (await axiosCsr.post<DpAreaType>(`${BASE}/area`, body, auth())).data,
+  listAreas: (): Promise<DpAreaType[]> => csrList<DpAreaType>(`${BASE}/area`, authCfg()),
+  createArea: (body: DpAreaCreateType): Promise<DpAreaType> => csrPost<DpAreaType>(`${BASE}/area`, body, authCfg()),
 
-  listPanels: async (areaId?: string): Promise<DpPanelType[]> => (await axiosCsr.get<DpPanelType[]>(`${BASE}/panel`, { ...auth(), params: { areaId: areaId || undefined } })).data ?? [],
-  createPanel: async (body: Required<Pick<DpPanelType, "areaId" | "siteId" | "panelNm">> & Pick<DpPanelType, "panelTypeCd" | "useYn" | "dispPanelStatusCd">): Promise<DpPanelType> =>
-    (await axiosCsr.post<DpPanelType>(`${BASE}/panel`, body, auth())).data,
+  listPanels: (areaId?: string): Promise<DpPanelType[]> => csrList<DpPanelType>(`${BASE}/panel`, authCfg({ params: { areaId: areaId || undefined } })),
+  createPanel: (body: DpPanelCreateType): Promise<DpPanelType> => csrPost<DpPanelType>(`${BASE}/panel`, body, authCfg()),
 
-  listPanelItems: async (panelId: string): Promise<DpPanelItemType[]> =>
-    (await axiosCsr.get<DpPanelItemType[]>(`${BASE}/panel-item`, { ...auth(), params: { panelId: panelId || undefined } })).data ?? [],
-  createPanelItem: async (body: Required<Pick<DpPanelItemType, "panelId" | "siteId" | "widgetTypeCd">> & Pick<DpPanelItemType, "widgetTitle" | "widgetContent" | "widgetConfigJson" | "sortOrd" | "useYn" | "dispYn">): Promise<DpPanelItemType> => (await axiosCsr.post<DpPanelItemType>(`${BASE}/panel-item`, body, auth())).data,
-  updatePanelItem: async (id: string, body: Partial<DpPanelItemType>): Promise<DpPanelItemType> =>
-    (await axiosCsr.put<DpPanelItemType>(`${BASE}/panel-item/${encodeURIComponent(id)}`, body, auth())).data,
-  deletePanelItem: async (id: string): Promise<{ success: boolean }> => {
-    await axiosCsr.delete(`${BASE}/panel-item/${encodeURIComponent(id)}`, auth());
-    return { success: true };
-  },
+  listPanelItems: (panelId: string): Promise<DpPanelItemType[]> => csrList<DpPanelItemType>(`${BASE}/panel-item`, authCfg({ params: { panelId: panelId || undefined } })),
+  createPanelItem: (body: DpPanelItemCreateType): Promise<DpPanelItemType> => csrPost<DpPanelItemType>(ITEM, body, authCfg()),
+  updatePanelItem: (id: string, body: Partial<DpPanelItemType>): Promise<DpPanelItemType> => csrPut<DpPanelItemType>(idPath(ITEM, id), body, authCfg()),
+  deletePanelItem: (id: string): Promise<void> => csrDelete(idPath(ITEM, id), authCfg()),
 };

@@ -93,3 +93,19 @@ export interface FoPagerState {
   pageTotalCount?: number;
   pageSizes?: number[];
 }
+
+/** 다중 체크 셀렉트(SelectMultiCheck) 옵션 */
+export interface FoSelectMultiCheckOptionType {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+/** 트리 셀렉트(SelectTree) 항목 */
+export interface FoSelectTreeItemType {
+  id: string;
+  path: string;
+  title: string;
+  pathLabel?: string;
+  children?: FoSelectTreeItemType[];
+}

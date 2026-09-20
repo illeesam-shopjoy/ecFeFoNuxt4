@@ -20,7 +20,7 @@ import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import type { SyCodeType } from "~/types/sy/syCodeType";
 import { myChatSvc } from "~/svc/fo/my/myChatSvc";
-import type { MyRow } from "~/types/fo/foMyType";
+import type { CmChattType } from "~/types/cm/cmChattType";
 import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
@@ -32,14 +32,14 @@ usePageTitle("마이페이지 - 채팅");
 const codes = reactive({ chatt_status: [] as SyCodeType[] });
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptChatt) — 조회 시점에 1회 변환
-function adapt(c: MyRow) {
+function adapt(c: CmChattType) {
   return ({
-    chatId: String(c.chattId ?? c.chattRoomId ?? ""),
+    chatId: String(c.chattId),
     subject: String(c.subject || "채팅 상담"),
     statusCd: String(c.chattStatusCd ?? ""),
     status: kor(c.chattStatusCdNm, c.chattStatusCd, codeMap(codes.chatt_status)),
     date: ymd(c.lastMsgDate),
-    lastMsg: typeof c.lastMsg === "string" ? c.lastMsg : String((c.lastMsg as MyRow | null)?.msgContent ?? (c.lastMsg as MyRow | null)?.chattMsg ?? "") || "새 채팅",
+    lastMsg: c.lastMsg?.msgText || "새 채팅",
   });
 }
 

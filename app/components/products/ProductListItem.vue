@@ -41,7 +41,7 @@
                  리뷰 요약을 따로 안 불러와 항상 0이지만(상세 페이지에서만 채워짐), 별점 UI
                  구조 자체는 데모와 맞춰 노출해둔다. -->
             <div class="rating mb-10">
-              <a v-for="n in 5" :key="n" href="#" @click.prevent><i :class="n <= Math.round(item.rating) ? 'fas fa-star' : 'fal fa-star'"></i></a>
+              <a v-for="n in 5" :key="n" href="#" @click.prevent><i class="text-[#f5a623]" :class="n <= Math.round(item.rating) ? 'fas fa-star' : 'fal fa-star'"></i></a>
             </div>
             <p>{{ item.smDesc }}</p>
           </div>

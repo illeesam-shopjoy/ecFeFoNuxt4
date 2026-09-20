@@ -73,7 +73,8 @@
 import Layout from "~/layout/Layout.vue";
 import FoPager from "~/components/fo/FoPager.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import { MY_PRESETS, MY_TABS, type MyListState, type MyTabKey } from "~/composables/useMyList";
+import { MY_PRESETS, MY_TABS, type MyTabKey } from "~/composables/useMyList";
+import type { FoMyListStateType } from "~/types/fo/foMyListType";
 
 // 버튼/선택 이벤트는 ecFeBo 규칙대로 (cmd, param) 로 올려 보내고, 각 화면의 handleBtnAction / handleSelectAction 이 처리한다
 const emit = defineEmits<{
@@ -87,7 +88,7 @@ defineProps<{
   /** 로컬 모드 파일경로 배지용 (useCurrentFilePath()) */
   filePath?: string | null;
   /** useMyList() 반환값 */
-  my: MyListState;
+  my: FoMyListStateType<object>;
   /** 목록이 비었을 때 문구 */
   emptyText: string;
   /** "총 N건" 을 서버 총건수 대신 다른 값으로 보여줄 때(예: 쿠폰의 미사용/사용 탭 필터 결과) */

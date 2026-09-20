@@ -57,16 +57,12 @@
 </template>
 
 <script setup lang="ts">
-export interface SelectMultiCheckOption {
-  value: string;
-  label: string;
-  disabled?: boolean;
-}
+import type { FoSelectMultiCheckOptionType } from "~/types/fo/foCompType";
 
 const props = withDefaults(
   defineProps<{
     modelValue: string[];
-    options: SelectMultiCheckOption[];
+    options: FoSelectMultiCheckOptionType[];
     searchable?: boolean;
     /** 한 줄 요약 표시 (예: 3/6 선택) */
     summaryMode?: boolean;

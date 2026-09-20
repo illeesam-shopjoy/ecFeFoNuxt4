@@ -30,6 +30,8 @@
 </template>
 
 <script setup lang="ts">
+import type { OdOrderPickRowType } from "~/types/od/odOrderPickRowType";
+
 /**
  * 2026-09-20(요청사항: "문의하기 주문번호") — ecFeBo cmPopup-myMemberOrder-pick(내 주문 선택 공통팝업) 대응.
  * 로그인 회원의 주문 목록(myOrderSvc.getList)에서 하나를 고르면 select(orderId) 로 알려준다.
@@ -37,13 +39,11 @@
 import { ref } from "vue";
 import { myOrderSvc } from "~/svc/fo/my/myOrderSvc";
 
-interface OrderRow { orderId: string; orderDate: string; status: string; payAmt: number }
-
 const emit = defineEmits<{ (e: "select", orderId: string): void }>();
 const visible = ref(false);
 const loading = ref(false);
 const errorMsg = ref("");
-const orders = ref<OrderRow[]>([]);
+const orders = ref<OdOrderPickRowType[]>([]);
 
 const ymd = (v: unknown) => String(v ?? "").slice(0, 10);
 

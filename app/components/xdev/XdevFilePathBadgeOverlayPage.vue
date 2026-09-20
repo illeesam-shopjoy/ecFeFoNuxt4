@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SelectTreeItem } from "~/components/ui/SelectTree.vue";
+import type { FoSelectTreeItemType } from "~/types/fo/foCompType";
 import SelectTree from "~/components/ui/SelectTree.vue";
 
 const { isPanelsLocked } = useXdevPanelsState();
@@ -91,15 +91,15 @@ const PAGES_FILE_MAP: { filePath: string; routePath: string }[] = [
   { filePath: "xdev-open-comp.vue", routePath: "/xdev-open-comp" },
 ];
 
-function buildPagesTree(): SelectTreeItem[] {
-  const leaves: SelectTreeItem[] = [];
-  const dirMap = new Map<string, SelectTreeItem>();
+function buildPagesTree(): FoSelectTreeItemType[] {
+  const leaves: FoSelectTreeItemType[] = [];
+  const dirMap = new Map<string, FoSelectTreeItemType>();
   for (const { filePath, routePath } of PAGES_FILE_MAP) {
     const segments = filePath.replace(/\.vue$/, "").split("/");
     const title = pathToTitle(routePath);
     const pathLabel = "pages / " + segments.join(" / ");
     const id = routePath || "index";
-    const item: SelectTreeItem = { id, path: routePath, title, pathLabel };
+    const item: FoSelectTreeItemType = { id, path: routePath, title, pathLabel };
     if (segments.length === 1) {
       leaves.push(item);
     } else {
@@ -122,7 +122,7 @@ function buildPagesTree(): SelectTreeItem[] {
     "home-2", "home-3", "home-4", "home-5", "home-6", "home-7",
     "dp", "xdev-open-comp",
   ];
-  const result: SelectTreeItem[] = [];
+  const result: FoSelectTreeItemType[] = [];
   const leafIds = new Set(leaves.map((l) => l.id));
   for (const key of dirOrder) {
     const folder = dirMap.get(key);
@@ -233,13 +233,13 @@ const COMPONENT_PATHS = [
   "xdev/XdevFilePathBadgeOverlayPage",
 ];
 
-function buildComponentsTree(): SelectTreeItem[] {
-  const byKey = new Map<string, SelectTreeItem>();
-  function ensureDir(segments: string[]): SelectTreeItem {
+function buildComponentsTree(): FoSelectTreeItemType[] {
+  const byKey = new Map<string, FoSelectTreeItemType>();
+  function ensureDir(segments: string[]): FoSelectTreeItemType {
     const key = segments.join("/");
     if (byKey.has(key)) return byKey.get(key)!;
     const segmentName = segments[segments.length - 1]!;
-    const node: SelectTreeItem = {
+    const node: FoSelectTreeItemType = {
       id: `comp-${key}`,
       path: "",
       title: segmentName,
@@ -254,11 +254,11 @@ function buildComponentsTree(): SelectTreeItem[] {
     }
     return node;
   }
-  const rootLeaves: SelectTreeItem[] = [];
+  const rootLeaves: FoSelectTreeItemType[] = [];
   for (const p of COMPONENT_PATHS) {
     const parts = p.split("/");
     const fileName = parts[parts.length - 1]!;
-    const item: SelectTreeItem = {
+    const item: FoSelectTreeItemType = {
       id: `comp-leaf-${p}`,
       path: p,
       title: `${fileName}.vue`,
@@ -276,7 +276,7 @@ function buildComponentsTree(): SelectTreeItem[] {
     .filter(([key]) => !key.includes("/"))
     .map(([, n]) => n);
   const order = ["back-to-top", "blog-dtl", "blogs", "cart-wishlists", "category", "checkout", "client-brands", "common", "contact", "compare", "forms", "hero-banner", "login-register", "profile", "products", "shop", "shop-banner", "shop-details", "social", "subscribe", "testimonial", "ui", "video-box", "xdev"];
-  const result: SelectTreeItem[] = [];
+  const result: FoSelectTreeItemType[] = [];
   for (const key of order) {
     const node = byKey.get(key);
     if (node) result.push(node);
@@ -291,7 +291,7 @@ function buildComponentsTree(): SelectTreeItem[] {
 const componentsTreeItems = computed(() => buildComponentsTree());
 
 // root 트리: components + pages (표시에 folder 글자 없음)
-const rootTreeItems = computed((): SelectTreeItem[] => {
+const rootTreeItems = computed((): FoSelectTreeItemType[] => {
   return [
     {
       id: "root-components",
@@ -310,7 +310,7 @@ const rootTreeItems = computed((): SelectTreeItem[] => {
   ];
 });
 
-function onSelect(item: SelectTreeItem) {
+function onSelect(item: FoSelectTreeItemType) {
   if (!item.path) return;
   if (item.path.startsWith("/")) {
     const path = item.path.replace(/:\w+/g, "1");

@@ -156,6 +156,8 @@
 </template>
 
 <script setup lang="ts">
+import type { CmBlogSidebarCategoryType } from "~/types/cm/cmBlogSidebarCategoryType";
+
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
@@ -173,11 +175,7 @@ const recentBlogs = computed(() => (blogs.value ?? []).slice(3, 6));
 
 // 전시 위젯(area_cd=BLOG_SIDEBAR_CATEGORY)에서 카테고리 트리 로드 — 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
-interface BlogSidebarCategoryConfig {
-  categoryTreeData: PdCategoryTreeType[];
-  catNameMap: Record<string, string>;
-}
-const DEFAULT_CONFIG: BlogSidebarCategoryConfig = {
+const DEFAULT_CONFIG: CmBlogSidebarCategoryType = {
   catNameMap: {
     category01: "조명",
     category02: "의자",
@@ -197,9 +195,9 @@ const DEFAULT_CONFIG: BlogSidebarCategoryConfig = {
 };
 // 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
 // 늦게 도착한 데이터가 catNameMap/categoryTreeData에 반영되게 한다.
-const { data: fetchedConfig } = useAsyncData<BlogSidebarCategoryConfig | null>(
+const { data: fetchedConfig } = useAsyncData<CmBlogSidebarCategoryType | null>(
   "dp-blog-sidebar-category",
-  () => dpAreaSvc.getFirstWidgetConfig<BlogSidebarCategoryConfig>("BLOG_SIDEBAR_CATEGORY"),
+  () => dpAreaSvc.getFirstWidgetConfig<CmBlogSidebarCategoryType>("BLOG_SIDEBAR_CATEGORY"),
   { lazy: true, server: false } // 2026-09-20: 보조 위젯 — 서버 렌더 제외
 );
 const catNameMap = computed<Record<string, string>>(() => fetchedConfig.value?.catNameMap ?? DEFAULT_CONFIG.catNameMap);

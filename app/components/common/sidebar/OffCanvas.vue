@@ -44,6 +44,8 @@
 </template>
 
 <script setup lang="ts">
+import type { SyMenuMobileType } from "~/types/sy/syMenuMobileType";
+
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
@@ -51,21 +53,11 @@ useComponentTitle('오프캔버스 메뉴');
 import { ref } from "vue";
 import { STATIC_MENUS } from "~/conts/foMenus";
 
-type MenuDataType = {
-  title: string;
-  link?: string;
-  dropdown?: boolean;
-  dropdownMenu?: {
-    link: string;
-    title: string;
-  }[];
-};
-
 const activeMenu = ref("");
 const showSidebar = ref(false);
 // 상단 메뉴(STATIC_MENUS)와 같은 목록을 쓴다 — 메뉴가 추가/삭제돼도 모바일 메뉴가 어긋나지 않게(고객센터 누락 방지).
 // 메가메뉴의 그룹(쇼핑 레이아웃/상품·주문 등)은 모바일에서 한 단계로 펼쳐 보여준다.
-const mobile_menus: MenuDataType[] = STATIC_MENUS.map((m) => {
+const mobile_menus: SyMenuMobileType[] = STATIC_MENUS.map((m) => {
   const subs = (m.dropdownItems ?? []).flatMap((it) => (it.dropdownMenu?.length ? it.dropdownMenu : [it]));
   const seen = new Set<string>();
   const dropdownMenu = subs

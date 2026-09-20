@@ -1,5 +1,6 @@
 import { beApi } from "~~/server/utils/beApi";
-import { mapBlog, type BeBlogItem } from "~~/app/utils/mapBlog";
+import { mapBlog } from "~~/app/utils/mapBlog";
+import type { CmBlogRawType } from "~~/app/types/cm/cmBlogRawType";
 import { PROD_CDN } from "~~/server/utils/cdn";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
@@ -18,7 +19,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
   if (!id) throw createError({ statusCode: 400, statusMessage: "잘못된 블로그 ID입니다." });
 
-  const row = await beApi.get<BeBlogItem>(`/fo/ec/cm/bltn/${id}`).catch((e: unknown) => {
+  const row = await beApi.get<CmBlogRawType>(`/fo/ec/cm/bltn/${id}`).catch((e: unknown) => {
     const err = e as { statusCode?: number };
     // ecBeBo 는 없는 게시물에 400("존재하지 않는 게시물입니다")을 내려주기도 한다
     if (err?.statusCode === 404 || err?.statusCode === 400) throw createError({ statusCode: 404, statusMessage: "블로그를 찾을 수 없습니다." });

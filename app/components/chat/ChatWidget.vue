@@ -169,17 +169,10 @@ import { reactive, ref, computed, onUnmounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
-import type { BeChattMsgItem } from "~/types/chatTypes";
+import type { CmChattMsgViewType } from "~/types/cm/cmChattMsgViewType";
+import type { CmChattParticipantType } from "~/types/cm/cmChattParticipantType";
 
-interface LocalMsg extends BeChattMsgItem {}
-interface Participant {
-  id: string;
-  icon: string;
-  name: string;
-  email: string;
-  userType: string;
-  phone: string;
-}
+type LocalMsg = CmChattMsgViewType;
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -199,8 +192,8 @@ const chatState = reactive({
 let chatPollTimer: ReturnType<typeof setInterval> | null = null;
 const chatInputRef = ref<HTMLTextAreaElement | null>(null);
 
-const participants = computed<Participant[]>(() => {
-  const result: Participant[] = [{ id: "_admin", icon: "💁", name: "상담사", email: "cs@shopjoy.com", userType: "상담 직원", phone: "" }];
+const participants = computed<CmChattParticipantType[]>(() => {
+  const result: CmChattParticipantType[] = [{ id: "_admin", icon: "💁", name: "상담사", email: "cs@shopjoy.com", userType: "상담 직원", phone: "" }];
   const user = authStore.user;
   if (user) {
     result.push({
@@ -252,7 +245,7 @@ async function fnLoadOrCreateRoom() {
     const activeRoom = rooms.find((r) => r.chattStatusCd === "PENDING" || r.chattStatusCd === "ACTIVE");
     if (activeRoom) {
       chatState.roomId = activeRoom.chattId;
-      chatState.status = activeRoom.chattStatusCd;
+      chatState.status = activeRoom.chattStatusCd ?? null;
       chatState.msgs = await myChatSvc.getMessages(chatState.roomId);
     } else {
       const newRoom = await myChatSvc.openRoom("채팅 상담 문의");

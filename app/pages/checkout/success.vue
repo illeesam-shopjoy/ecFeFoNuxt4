@@ -7,10 +7,20 @@
           <p class="text-gray-600">결제를 확인하고 있습니다...</p>
         </template>
         <template v-else-if="status === 'success'">
-          <h2 class="text-2xl font-bold text-green-700 mb-4">결제가 완료되었습니다</h2>
-          <p class="text-gray-600 mb-2">주문번호: {{ orderId }}</p>
-          <p class="text-gray-600 mb-8">결제 금액: {{ formatPrice(amount) }}</p>
-          <nuxt-link class="os-btn os-btn-black" to="/">쇼핑 계속하기</nuxt-link>
+          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0fdf4] text-[1.7rem] text-[#16a34a]"><i class="fas fa-check"></i></div>
+          <h2 class="text-2xl font-bold text-green-700 mb-2">결제가 완료되었습니다</h2>
+          <p class="text-gray-500 mb-8 text-[0.9rem]">주문해 주셔서 감사합니다. 아래 결제 내용을 확인해 주세요.</p>
+          <dl class="mx-auto mb-8 max-w-xl overflow-hidden rounded-xl border border-[#e5e7eb] bg-white text-left text-[0.9rem]">
+            <div v-for="r in payRows" :key="r.label" class="flex items-baseline justify-between gap-4 border-b border-[#f0f0f0] px-5 py-3 last:border-b-0">
+              <dt class="shrink-0 text-gray-500">{{ r.label }}</dt>
+              <dd class="m-0 min-w-0 break-all text-right font-semibold text-gray-800" :class="r.strong ? 'text-[1.05rem] !text-[#bc8246]' : ''">{{ r.value }}</dd>
+            </div>
+          </dl>
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <a v-if="pay?.receipt?.url" :href="pay.receipt.url" target="_blank" rel="noopener" class="os-btn">영수증 보기</a>
+            <nuxt-link class="os-btn" to="/my/order">주문 내역</nuxt-link>
+            <nuxt-link class="os-btn os-btn-black" to="/">쇼핑 계속하기</nuxt-link>
+          </div>
         </template>
         <template v-else>
           <h2 class="text-2xl font-bold text-red-600 mb-4">결제 확인 실패</h2>
@@ -29,6 +39,7 @@ import { usePrice } from "~/composables/usePrice";
 import { paymentSvc } from "~/svc/co/payments/paymentSvc";
 import { foOrderSvc } from "~/svc/fo/ec/order/foOrderSvc";
 import { useCartStore } from "~/store/useCartStore";
+import type { OdPayConfirmResType } from "~/types/od/odPayConfirmResType";
 
 const cartStore = useCartStore();
 
@@ -38,6 +49,7 @@ const { formatPrice } = usePrice();
 const status = ref<"loading" | "success" | "fail">("loading");
 const orderId = ref("");
 const amount = ref(0);
+const pay = ref<OdPayConfirmResType | null>(null); // 토스 결제 승인 결과 — 결제완료 화면에 보여준다
 const errorMessage = ref("");
 
 const paymentKey = route.query.paymentKey as string;
@@ -77,7 +89,7 @@ onMounted(async () => {
 
     await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: amount.value, items });
 
-    await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value });
+    pay.value = await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value });
     status.value = "success";
     cartStore.cartProducts = [];
     if (process.client) localStorage.setItem("cart_products", JSON.stringify([]));
@@ -86,6 +98,25 @@ onMounted(async () => {
     const err = e as { data?: { statusMessage?: string }; statusMessage?: string };
     errorMessage.value = err?.data?.statusMessage ?? err?.statusMessage ?? "주문 처리에 실패했습니다. 결제는 청구되지 않았습니다.";
   }
+});
+
+const fmtDateTime = (iso?: string) => (iso ? new Date(iso).toLocaleString("ko-KR", { hour12: false }) : "");
+
+/** 결제완료 화면에 보여줄 결제 내용 (토스 승인 응답 기준, 값이 있는 것만) */
+const payRows = computed(() => {
+  const p = pay.value;
+  const method = [p?.method, p?.easyPay?.provider].filter(Boolean).join(" · ");
+  const card = p?.card?.number ? `${p.card.number}${p.card.installmentPlanMonths ? ` (${p.card.installmentPlanMonths}개월 할부)` : " (일시불)"}` : "";
+  const rows = [
+    { label: "주문번호", value: p?.orderId || orderId.value, strong: false },
+    { label: "주문명", value: p?.orderName ?? "", strong: false },
+    { label: "결제수단", value: method, strong: false },
+    { label: "카드", value: card, strong: false },
+    { label: "결제 상태", value: p?.status === "DONE" ? "결제 완료" : (p?.status ?? ""), strong: false },
+    { label: "승인 일시", value: fmtDateTime(p?.approvedAt), strong: false },
+    { label: "결제 금액", value: formatPrice(p?.totalAmount ?? amount.value), strong: true },
+  ];
+  return rows.filter((r) => r.value);
 });
 
 useHead({ title: "결제 완료" });

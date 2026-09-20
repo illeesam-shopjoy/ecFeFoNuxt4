@@ -30,3 +30,23 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 export const prodOptSwatchColor = (stdCd?: string | null): string => COLOR_MAP[stdCd ?? ""] ?? "#ccc";
+
+/** 목록 화면 색상 필터에 항상 보여주는 표준 색상(코드 pd_prod_opt_val VAL_COLOR_*, 이름) — 사이즈 등 다른 필터로 상품이 줄어도 색상 목록은 그대로다 */
+export const PROD_COLOR_OPTIONS: { code: string; nm: string }[] = [
+  { code: "VAL_COLOR_BLACK", nm: "블랙" },
+  { code: "VAL_COLOR_WHITE", nm: "화이트" },
+  { code: "VAL_COLOR_IVORY", nm: "아이보리" },
+  { code: "VAL_COLOR_GRAY", nm: "그레이" },
+  { code: "VAL_COLOR_CHARCOAL", nm: "차콜" },
+  { code: "VAL_COLOR_NAVY", nm: "네이비" },
+  { code: "VAL_COLOR_BLUE", nm: "블루" },
+  { code: "VAL_COLOR_KHAKI", nm: "카키" },
+  { code: "VAL_COLOR_BEIGE", nm: "베이지" },
+  { code: "VAL_COLOR_BROWN", nm: "브라운" },
+  { code: "VAL_COLOR_RED", nm: "레드" },
+  { code: "VAL_COLOR_BURGUNDY", nm: "버건디" },
+  { code: "VAL_COLOR_PINK", nm: "핑크" },
+  { code: "VAL_COLOR_PURPLE", nm: "퍼플" },
+  { code: "VAL_COLOR_MUSTARD", nm: "머스타드" },
+  { code: "VAL_COLOR_ORANGE", nm: "오렌지" },
+];

@@ -1,4 +1,5 @@
 /** mapFaq.ts — FAQ 분류 트리 조립·목록 가공 (svc 는 조회만). */
+import type { CmFaqPageParamsType } from "~/types/cm/cmFaqPageParamsType";
 import type { CmFaqType } from "~/types/cm/cmFaqType";
 import type { CmFaqTreeNodeType, CmFaqTreeType } from "~/types/cm/cmFaqTreeType";
 import type { CoBasePageType } from "~/types/co/coBasePageType";
@@ -68,3 +69,10 @@ export function mapFaqPage(page: CoBasePageType<CmFaqType>): CoPagedResultType<C
     hasMore: page.pageNo < page.pageTotalPage,
   };
 }
+
+/** 화면 조회 조건 → GET /fo/faq/page 쿼리 (경로 필터는 값이 있을 때만) */
+export const buildFaqPageQuery = (params: CmFaqPageParamsType): Record<string, unknown> => ({
+  pageNo: params.pageNo,
+  pageSize: params.pageSize,
+  ...(params.pathId ? { pathId: params.pathId } : {}),
+});

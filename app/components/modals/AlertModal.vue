@@ -48,15 +48,15 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
-import type { AlertVariant } from "~/composables/useAlert";
+import type { CoAlertDetailType, CoAlertVariantType } from "~/types/co/coAlertType";
 
 const props = defineProps<{
   open: boolean;
   title?: string;
   message: string;
   confirmText?: string;
-  variant?: AlertVariant;
-  details?: { label: string; value: string }[];
+  variant?: CoAlertVariantType;
+  details?: CoAlertDetailType[];
 }>();
 
 const emit = defineEmits<{
@@ -64,7 +64,7 @@ const emit = defineEmits<{
 }>();
 
 // 종류별 아이콘/색상
-const TONES: Record<AlertVariant, { icon: string; color: string; bg: string }> = {
+const TONES: Record<CoAlertVariantType, { icon: string; color: string; bg: string }> = {
   info: { icon: "fas fa-info", color: "#3b82f6", bg: "#eff6ff" },
   success: { icon: "fas fa-check", color: "#16a34a", bg: "#f0fdf4" },
   warning: { icon: "fas fa-exclamation", color: "#d97706", bg: "#fffbeb" },

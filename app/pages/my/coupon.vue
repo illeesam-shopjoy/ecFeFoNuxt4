@@ -34,7 +34,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, ymd } from "~/composables/useMyList";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
-import type { MyRow } from "~/types/fo/foMyType";
+import type { PmCouponType } from "~/types/pm/pmCouponType";
 import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
@@ -53,7 +53,7 @@ const regForm = reactive({ couponCode: "" });
 const regCols: FoFormColumn[] = [{ key: "reg", type: "slot" }];
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptCoupon) — 조회 시점에 1회 변환
-function adapt(c: MyRow) {
+function adapt(c: PmCouponType) {
   const type = couponType(c);
   const status = String(c.couponStatusCd ?? "").toUpperCase();
   const minOrder = Number(c.minOrderAmt ?? 0);
@@ -79,7 +79,7 @@ const my = useMyList({
 });
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptCoupon)
-function couponType(c: MyRow): "rate" | "amount" | "shipping" {
+function couponType(c: PmCouponType): "rate" | "amount" | "shipping" {
   const cd = String(c.couponTypeCd ?? "").toUpperCase();
   const nm = String(c.couponTypeCdNm ?? "");
   if (cd.includes("SHIP") || nm.includes("배송")) return "shipping";

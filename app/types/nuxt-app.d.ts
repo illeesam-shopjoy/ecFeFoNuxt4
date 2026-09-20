@@ -1,9 +1,9 @@
-import type { ConfirmOptions } from "~/composables/useConfirm";
-import type { AlertOptions } from "~/composables/useAlert";
+import type { CoConfirmOptionsType } from "~/types/co/coConfirmType";
+import type { CoAlertOptionsType } from "~/types/co/coAlertType";
 
 declare module "#app" {
   interface NuxtApp {
-    $confirm: (options: ConfirmOptions) => Promise<boolean>;
-    $alert: (messageOrOptions: string | AlertOptions) => Promise<void>;
+    $confirm: (options: CoConfirmOptionsType) => Promise<boolean>;
+    $alert: (messageOrOptions: string | CoAlertOptionsType) => Promise<void>;
   }
 }

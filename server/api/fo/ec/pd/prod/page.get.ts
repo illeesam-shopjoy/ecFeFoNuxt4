@@ -1,5 +1,6 @@
 import { beApi, type BePage } from "~~/server/utils/beApi";
-import { mapProduct, type BeProdItem } from "~~/app/utils/mapProduct";
+import { mapProduct } from "~~/app/utils/mapProduct";
+import type { PdProdRawType } from "~~/app/types/pd/pdProdRawType";
 import { PROD_CDN } from "~~/server/utils/cdn";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
@@ -35,7 +36,7 @@ export default defineEventHandler(async (event) => {
     beQuery.searchValue = query.keyword;
   }
 
-  const page = await beApi.get<BePage<BeProdItem>>("/fo/ec/pd/prod/page", beQuery);
+  const page = await beApi.get<BePage<PdProdRawType>>("/fo/ec/pd/prod/page", beQuery);
   const out = {
     items: page.pageList.map((p) => Object.assign(mapProduct(p, PROD_CDN), { contentHtml: "" })),
     pageNo: page.pageNo,

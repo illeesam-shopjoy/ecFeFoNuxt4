@@ -78,6 +78,8 @@
 </template>
 
 <script setup lang="ts">
+import type { DpFooterDataType } from "~/types/dp/dpFooterType";
+
 // 2026-09-20(요청사항: "상세화면에서는 footer 가 안 보이면 된다") — 상품/블로그/이벤트 상세에서는 푸터를 렌더링하지 않는다
 const route = useRoute();
 const hideFooter = computed(() => /^\/(prod|blog|event)-dtl(\/|$)/.test(route.path));
@@ -87,24 +89,9 @@ defineProps({
   box_style: { type: Boolean, default: false },
 });
 
-interface FooterLinkSection {
-  title: string;
-  links: { href: string; label: string }[];
-}
-interface FooterContactItem {
-  icon: string;
-  label: string;
-  value: string;
-}
-interface FooterData {
-  introText: string;
-  contactInfo: FooterContactItem[];
-  sections: FooterLinkSection[];
-}
-
 // 전시 위젯(area_cd=FOOTER_LINKS_MAIN)에서 로드 — 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
-const DEFAULT_FOOTER_DATA: FooterData = {
+const DEFAULT_FOOTER_DATA: DpFooterDataType = {
   introText: "shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.",
   contactInfo: [
     { icon: "fal fa-map-marker-alt", label: "주소", value: "성남시 중원구 성남대로 997 (여수동)" },
@@ -136,12 +123,12 @@ const DEFAULT_FOOTER_DATA: FooterData = {
 };
 // 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
 // 늦게 도착한 데이터가 footerData에 반영되게 한다.
-const { data: fetchedFooterData } = useAsyncData<FooterData | null>(
+const { data: fetchedFooterData } = useAsyncData<DpFooterDataType | null>(
   "dp-footer-links-main",
-  () => dpAreaSvc.getFirstWidgetConfig<FooterData>("FOOTER_LINKS_MAIN"),
+  () => dpAreaSvc.getFirstWidgetConfig<DpFooterDataType>("FOOTER_LINKS_MAIN"),
   { lazy: true, server: false } // 2026-09-20: 푸터는 SEO 본문이 아니라 서버 렌더에서 뺀다(브라우저가 ecBeBo 직접 호출)
 );
-const footerData = computed<FooterData>(() => fetchedFooterData.value ?? DEFAULT_FOOTER_DATA);
+const footerData = computed<DpFooterDataType>(() => fetchedFooterData.value ?? DEFAULT_FOOTER_DATA);
 
 const currentUrl = computed(() =>
   import.meta.client ? window.location.href : ""

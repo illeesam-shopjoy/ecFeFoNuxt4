@@ -12,23 +12,16 @@
  * ecBeBo의 /api/co/fo-auth/social-login으로 옮기는 건 다음 작업.
  */
 import { defineStore } from "pinia";
+import type { MbAuthUserType } from "~/types/mb/mbAuthUserType";
 import { authSvc } from "~/svc/co/auth/authSvc";
 import { setCookie, deleteCookie } from "~/utils/cmUtil";
-
-export interface AuthUser {
-  memberId: string;
-  userNm: string;
-  userEmail: string; // = ec_member.login_id (FO는 로그인ID가 곧 이메일)
-  userPhone?: string;
-  siteId?: string;
-}
 
 const STORAGE_USER_KEY = "auth_user";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: null as string | null,
-    user: null as AuthUser | null,
+    user: null as MbAuthUserType | null,
     initialized: false,
   }),
 
@@ -39,12 +32,12 @@ export const useAuthStore = defineStore("auth", {
       this.token = localStorage.getItem("auth_token");
       const cached = localStorage.getItem(STORAGE_USER_KEY);
       if (cached) {
-        try { this.user = JSON.parse(cached) as AuthUser; } catch { /** 무시 */ }
+        try { this.user = JSON.parse(cached) as MbAuthUserType; } catch { /** 무시 */ }
       }
     },
 
     /** 토큰+프로필 저장 (로그인 성공 시 호출) */
-    setSession(token: string, user: AuthUser) {
+    setSession(token: string, user: MbAuthUserType) {
       this.token = token;
       this.user = user;
       this.initialized = true;
@@ -65,7 +58,7 @@ export const useAuthStore = defineStore("auth", {
     },
 
     /** OAuth 로그인 성공: 토큰과 사용자 정보를 한 번에 설정 (oauth_ 토큰용, 기존 로직 유지) */
-    setOAuthUser(token: string, user: AuthUser) {
+    setOAuthUser(token: string, user: MbAuthUserType) {
       this.setSession(token, user);
     },
 
@@ -135,7 +128,7 @@ export const useAuthStore = defineStore("auth", {
       if (!this.token) return false;
       try {
         const res = await authSvc.refresh(this.token);
-        this.setToken(res.token);
+        this.setToken(res.accessToken);
         return true;
       } catch {
         this.setStLogout();

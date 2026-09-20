@@ -36,7 +36,8 @@ import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import { myClaimSvc } from "~/svc/fo/my/myClaimSvc";
-import type { MyListParams, MyRow } from "~/types/fo/foMyType";
+import type { MyListParams } from "~/types/fo/foMyType";
+import type { OdClaimType } from "~/types/od/odClaimType";
 import type { SyCodeType } from "~/types/sy/syCodeType";
 import type { FoGridColumn } from "~/types/fo/foCompType";
 
@@ -74,7 +75,7 @@ const claimFilters = () => [
 ];
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptClaim) — 조회 시점에 1회 변환
-function adapt(c: MyRow) {
+function adapt(c: OdClaimType) {
   const tnm = String(c.claimTypeCdNm ?? "");
   const typeMap = { ...CLAIM_TYPE_KOR, ...codeMap(codes.claim_types) };
   return {

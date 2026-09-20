@@ -18,6 +18,8 @@
 </template>
 
 <script setup lang="ts">
+import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
+
 /**
  * 2026-09-15(요청사항: "주문하기의 카카오주소검색이야 모달처럼 띄워지는데
  * http://localhost:3100/checkout 에도 추가해줘") — ecFeBo(components/modals/FoModals.js의
@@ -44,17 +46,10 @@ declare global {
   }
 }
 
-export interface AddrSearchResult {
-  zonecode: string;
-  address: string;
-  sido: string;
-  sigungu: string;
-}
-
 const SDK_ID = "daum-postcode-sdk";
 const SDK_SRC = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
 
-const emit = defineEmits<{ (e: "select", result: AddrSearchResult): void }>();
+const emit = defineEmits<{ (e: "select", result: SyAddrSearchResultType): void }>();
 
 const visible = ref(false);
 const layerRef = ref<HTMLDivElement | null>(null);

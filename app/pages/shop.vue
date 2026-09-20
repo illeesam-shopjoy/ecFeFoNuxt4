@@ -93,11 +93,11 @@
               <!-- 상품 색상 (2026-09-20: 사이즈 위로 이동 · 멀티선택 · 실제 옵션 색상 스와치 · 선택 시 링+체크로 뚜렷하게) -->
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-30 flex items-center justify-between">
-                  <h3>색상 선택</h3>
+                  <h3>색상</h3>
                   <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetColor">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
-                  <div class="flex flex-wrap gap-3">
+                  <div class="flex flex-wrap gap-2.5">
                     <button
                       v-for="color in allColor"
                       :key="color"
@@ -105,12 +105,12 @@
                       :title="colorNameOf(color)"
                       :aria-label="colorNameOf(color)"
                       :aria-pressed="colorCds.includes(color)"
-                      class="relative flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-full border-2 bg-[var(--swatch-color)] p-0 transition-transform duration-150 hover:scale-105"
-                      :class="colorCds.includes(color) ? 'scale-105 border-white shadow-[0_0_0_3px_#bc8246,0_3px_8px_rgba(0,0,0,0.25)]' : 'border-black/10 shadow-[0_1px_3px_rgba(0,0,0,0.15)]'"
+                      class="relative flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-full border-2 bg-[var(--swatch-color)] p-0 transition-transform duration-150 hover:scale-105"
+                      :class="colorCds.includes(color) ? 'scale-105 border-white shadow-[0_0_0_2px_#bc8246,0_2px_6px_rgba(0,0,0,0.25)]' : 'border-black/10 shadow-[0_1px_3px_rgba(0,0,0,0.15)]'"
                       :style="{ '--swatch-color': prodOptSwatchColor(color) }"
                       @click.prevent="toggleColor(color)"
                     >
-                      <i v-if="colorCds.includes(color)" class="fas fa-check text-[14px] drop-shadow-[0_0_2px_rgba(0,0,0,0.6)]" :class="isLightColor(color) ? 'text-[#333]' : 'text-white'"></i>
+                      <i v-if="colorCds.includes(color)" class="fas fa-check text-[10px] drop-shadow-[0_0_2px_rgba(0,0,0,0.6)]" :class="isLightColor(color) ? 'text-[#333]' : 'text-white'"></i>
                     </button>
                     <span v-if="!allColor.length" class="text-[0.85rem] text-[#aaa]">표시할 색상이 없습니다</span>
                   </div>
@@ -127,8 +127,8 @@
                 <div class="sidebar__widget-content">
                   <div class="size">
                     <ul>
-                      <li v-for="size in SIZE_OPTIONS" :key="size" :class="`${sizeCds.includes(size) ? 'active' : ''}`">
-                        <a @click.prevent="toggleSize(size)" href="#">{{ size }}</a>
+                      <li v-for="size in SIZE_OPTIONS" :key="size" class="!mr-[6px]" :class="sizeCds.includes(size) ? 'active' : ''">
+                        <a class="!h-[28px] !w-auto !min-w-[28px] !px-[7px] !text-[10px] !leading-[28px]" @click.prevent="toggleSize(size)" href="#">{{ size }}</a>
                       </li>
                     </ul>
                   </div>
@@ -278,7 +278,7 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import ProductItem from "~/components/products/ProductItem.vue";
 import ProductListItem from "~/components/products/ProductListItem.vue";
-import { prodOptSwatchColor } from "~/utils/prodOptColor";
+import { PROD_COLOR_OPTIONS, prodOptSwatchColor } from "~/utils/prodOptColor";
 import AppImage from "~/components/ui/AppImage.vue";
 import Slider from "@vueform/slider";
 import "@vueform/slider/themes/default.css";
@@ -441,12 +441,22 @@ async function loadMore() {
   }
 }
 
-// 사이드바 색상 스와치 — 지금까지 불러온 상품의 옵션 색상(색상 필터 적용 전 기준이라 선택해도 목록이 줄지 않는다).
-const allColor = computed(() => {
-  const codes = new Set<string>();
-  items.value.forEach((p) => p.prodOpt2List?.forEach((o) => codes.add(o.prodOptStdCd ?? String(o.prodOptId))));
-  return Array.from(codes);
-});
+// 사이드바 색상 스와치 — 표준 색상(PROD_COLOR_OPTIONS)을 항상 보여주고, 상품에서 발견한 그 밖의 색상은 **누적**해 덧붙인다. 사이즈/브랜드 등 서버 필터로 목록이 줄어도 색상 목록은 줄지 않는다
+// (예전엔 현재 목록에서 계산해서 사이즈를 고르면 색상이 사라졌다). 이름은 툴팁/선택 표시용.
+const colorNames = reactive(new Map<string, string>(PROD_COLOR_OPTIONS.map((o) => [o.code, o.nm] as const)));
+const allColor = computed(() => Array.from(colorNames.keys()));
+watch(
+  [items, () => items.value.length],
+  () => {
+    items.value.forEach((p) =>
+      p.prodOpt2List?.forEach((o) => {
+        const code = o.prodOptStdCd ?? String(o.prodOptId);
+        if (!colorNames.has(code)) colorNames.set(code, o.prodOptNm);
+      })
+    );
+  },
+  { immediate: true, deep: false }
+);
 
 // 색상만 클라이언트 보조필터 적용 — 나머지는 전부 서버에서 이미 걸러져 온 결과.
 const displayItems = computed(() => {
@@ -458,7 +468,7 @@ const toggleCategory = (id: string) => (categoryIds.value = toggleIn(categoryIds
 const toggleBrand = (id: string) => (brandIds.value = toggleIn(brandIds.value, id));
 const toggleSize = (code: string) => (sizeCds.value = toggleIn(sizeCds.value, code));
 const toggleColor = (code: string) => (colorCds.value = toggleIn(colorCds.value, code));
-const colorNameOf = (code: string) => items.value.flatMap((p) => p.prodOpt2List ?? []).find((o) => (o.prodOptStdCd ?? String(o.prodOptId)) === code)?.prodOptNm ?? code;
+const colorNameOf = (code: string) => colorNames.get(code) ?? code;
 const isLightColor = (code: string) => {
   const hex = prodOptSwatchColor(code).replace("#", "");
   if (hex.length !== 6) return true;

@@ -31,7 +31,7 @@
                 <div v-for="(it, ix) in row.items" :key="ix" class="flex items-center gap-3 py-2.5">
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold text-gray-900 truncate">{{ it.prodNm }}</div>
-                    <div class="text-[0.75rem] text-gray-400">{{ [it.color, it.size].filter(Boolean).join(" / ") }}<template v-if="it.color || it.size"> · </template>{{ it.qty }}개</div>
+                    <div class="text-[0.75rem] text-gray-400">{{ it.qty }}개</div>
                   </div>
                   <div class="text-gray-700 whitespace-nowrap">{{ formatPrice(it.price * it.qty) }}</div>
                 </div>
@@ -79,7 +79,9 @@ import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import { myOrderSvc } from "~/svc/fo/my/myOrderSvc";
-import type { MyRow } from "~/types/fo/foMyType";
+import type { OdOrderType } from "~/types/od/odOrderType";
+import type { OdOrderItemType } from "~/types/od/odOrderItemType";
+import type { OdPayType } from "~/types/od/odPayType";
 import type { SyCodeType } from "~/types/sy/syCodeType";
 import type { FoGridColumn } from "~/types/fo/foCompType";
 
@@ -127,7 +129,7 @@ const columns: FoGridColumn[] = [
 ];
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptOrder) — 조회 시점에 1회 변환. 상태 라벨: 서버 한글명 → 공통코드(ORDER_STATUS_CD) → 기본 매핑
-function adapt(o: MyRow) {
+function adapt(o: OdOrderType) {
   const dliv = Array.isArray(o.orderDlivs) && o.orderDlivs.length ? o.orderDlivs[0] : null;
   return {
     orderId: String(o.orderId),
@@ -138,8 +140,8 @@ function adapt(o: MyRow) {
     cashPaid: Number(o.saveUseAmt ?? 0),
     courier: dliv ? dliv.outboundCourierCdNm || dliv.outboundCourierCd || "" : "",
     trackingNo: dliv ? dliv.outboundTrackingNo || "" : "",
-    items: (Array.isArray(o.orderItems) ? o.orderItems : []).map((it: MyRow) => ({ prodNm: it.prodNm, color: it.optItemNm1 || "", size: it.optItemNm2 || "", qty: Number(it.orderQty ?? 0), price: Number(it.unitPrice ?? 0) })),
-    pays: (Array.isArray(o.orderPays) ? o.orderPays : []).map((p: MyRow) => ({ type: p.payMethodCdNm || p.payMethodCd || "결제", amount: Number(p.payAmt ?? 0), datetime: ymd(p.payDate) })),
+    items: (Array.isArray(o.orderItems) ? o.orderItems : []).map((it: OdOrderItemType) => ({ prodNm: it.prodNm, qty: Number(it.orderQty ?? 0), price: Number(it.unitPrice ?? 0) })),
+    pays: (Array.isArray(o.orderPays) ? o.orderPays : []).map((p: OdPayType) => ({ type: p.payMethodCdNm || p.payMethodCd || "결제", amount: Number(p.payAmt ?? 0), datetime: ymd(p.payDate) })),
   };
 }
 

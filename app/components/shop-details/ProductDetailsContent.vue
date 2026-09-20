@@ -15,7 +15,7 @@
       <!-- 2026-09-20: 예전엔 별 4개 고정 + "N개 평점" 이었다 — 실제 평균 평점과 리뷰 수를 보여준다 -->
       <ul>
         <li v-for="s in 5" :key="s">
-          <span><i :class="s <= filledStars ? 'fas fa-star' : 'fal fa-star'"></i></span>
+          <span><i class="text-[#f5a623]" :class="s <= filledStars ? 'fas fa-star' : 'fal fa-star'"></i></span>
         </li>
       </ul>
       <span class="rating-no ml-10">{{ Number(item.rating || 0).toFixed(1) }} ({{ reviewCount }})</span>
@@ -24,7 +24,8 @@
       <span>{{ formatPrice(item.salePrice) }}</span>
       <span v-if="item.stdPrice" class="old-price">{{ formatPrice(item.stdPrice) }}</span>
     </div>
-    <div class="product__modal-des mb-30">
+    <!-- 짧은 설명이 없으면 이 박스(위/아래 테두리선)를 그리지 않는다 — 비어 있으면 빈 줄이 두 개 보였다 -->
+    <div v-if="item.smDesc" class="product__modal-des mb-30">
       <p>{{ item.smDesc }}</p>
     </div>
     <div class="product__modal-form">

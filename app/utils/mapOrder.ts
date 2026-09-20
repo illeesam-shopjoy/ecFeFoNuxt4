@@ -1,5 +1,6 @@
 /** mapOrder.ts — 주문 생성 요청 본문 조립 + 검증 (svc 는 전송만). */
 import type { OdOrderCreateType } from "~/types/od/odOrderCreateType";
+import type { OdOrderCreateRawType, OdOrderCreateResType } from "~/types/od/odOrderCreateResType";
 import { badRequest } from "~/utils/svcInput";
 
 /** POST /fo/order/create 본문 */
@@ -14,3 +15,6 @@ export function buildOrderCreatePayload(body: OdOrderCreateType): Record<string,
     items: body.items,
   };
 }
+
+/** POST /fo/order/create 응답 → { success, orderId } */
+export const mapOrderCreateRes = (raw?: OdOrderCreateRawType): OdOrderCreateResType => ({ success: true, orderId: raw?.data?.orderId });

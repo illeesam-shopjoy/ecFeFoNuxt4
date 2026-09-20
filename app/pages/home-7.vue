@@ -335,6 +335,8 @@
 </template>
 
 <script setup lang="ts">
+import type { DpTestimonialType } from "~/types/dp/dpTestimonialType";
+
 import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
@@ -436,12 +438,7 @@ function handleFeaturedPrev() {
 // 추천 후기 — 전시 위젯(area_cd=TESTIMONIAL_HOME7)에서 로드, 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
 const testimonialSliderRef = ref<{ next(): void; prev(): void } | null>(null);
-interface TestimonialDataType {
-  id: number;
-  img: string;
-  desc: string;
-}
-const DEFAULT_TESTIMONIALS: TestimonialDataType[] = [
+const DEFAULT_TESTIMONIALS: DpTestimonialType[] = [
   {
     id: 1,
     img: `${CDN_URL}/cdn/prod/img/testimonial/testi1.webp`,
@@ -459,12 +456,12 @@ const DEFAULT_TESTIMONIALS: TestimonialDataType[] = [
   },
 ];
 // 2026-09-13(성능 개선): lazy:true + computed — 늦게 도착한 데이터가 testimonialData에 반영되게 한다.
-const { data: fetchedTestimonials } = useAsyncData<TestimonialDataType[] | null>(
+const { data: fetchedTestimonials } = useAsyncData<DpTestimonialType[] | null>(
   "dp-testimonial-home7",
-  () => dpAreaSvc.getFirstWidgetConfig<TestimonialDataType[]>("TESTIMONIAL_HOME7"),
+  () => dpAreaSvc.getFirstWidgetConfig<DpTestimonialType[]>("TESTIMONIAL_HOME7"),
   { lazy: true }
 );
-const testimonialData = computed<TestimonialDataType[]>(() => fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS);
+const testimonialData = computed<DpTestimonialType[]>(() => fetchedTestimonials.value?.length ? fetchedTestimonials.value : DEFAULT_TESTIMONIALS);
 
 // 블로그 영역 2
 const { blogs } = useCacheBlogs();

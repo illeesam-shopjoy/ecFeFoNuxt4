@@ -233,13 +233,16 @@ import FoForm from "~/components/fo/FoForm.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
 import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
 import CouponModal from "~/components/modals/CouponModal.vue";
-import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
+import AddrSearchModal from "~/components/modals/AddrSearchModal.vue";
+import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useCartStore } from "~/store/useCartStore";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
+import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import type { SyCheckoutLoginFormType } from "~/types/sy/syCheckoutLoginFormType";
-import type { AppliedCoupons, CouponCategory } from "~/types/pm/pmCouponType";
+import type { AppliedCoupons, CouponCategory } from "~/types/pm/pmCouponApplyType";
+import type { OdTossPaymentsFactoryType, OdTossWidgetsType } from "~/types/od/odTossType";
 
 const state = useCartStore();
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -309,18 +312,50 @@ const orderCols: FoGridColumn[] = [
 // [자동입력] 버튼 — 이름/성/회사명/이메일/연락처처럼 검색 없이 바로 채울 수 있는 간단한
 // 항목만 대상. 주소는 이미 "주소 검색" 모달 + 로그인 시 기본배송지 자동채움이 있어 제외.
 // 로그인 상태면 회원 프로필 값으로, 비로그인/미보유 값은 테스트용 기본값으로 채운다.
-function handleAutoFillBilling() {
+/** "경기 성남시 중원구 …" → 시/도, 시/군/구 (주소 검색 모달이 채우는 값과 같은 모양) */
+function splitAddr(addr: string): { sido: string; sigungu: string } {
+  const [sido = "", ...rest] = addr.trim().split(/\s+/);
+  const sigungu = rest[0] && rest[1] && /시$/.test(rest[0]) && /[구군]$/.test(rest[1]) ? `${rest[0]} ${rest[1]}` : (rest[0] ?? "");
+  return { sido, sigungu };
+}
+
+/** 자동입력 — 로그인 회원이면 내 정보(프로필) + 기본 배송지로 결제 정보를 채운다(값이 있는 항목만). 비로그인은 테스트용 기본값 */
+async function handleAutoFillBilling() {
   const authStore = useAuthStore();
-  const user = authStore.user;
-  billingForm.name = user?.userNm || "홍길동";
-  billingForm.lastName = billingForm.lastName || "-";
-  billingForm.company = billingForm.company || "-";
-  billingForm.email = user?.userEmail || "illeesam@gmail.com";
-  billingForm.phone = user?.userPhone || "01038050206";
+  if (!authStore.isStLoggedIn) {
+    billingForm.name = "홍길동";
+    billingForm.lastName = billingForm.lastName || "-";
+    billingForm.email = billingForm.email || "illeesam@gmail.com";
+    billingForm.phone = billingForm.phone || "01038050206";
+    return;
+  }
+  try {
+    const [profile, addrs] = await Promise.all([myInfoSvc.getProfile(), myAddrSvc.getMyAddrs()]);
+    const addr = addrs.find((a) => a.defaultYn === "Y") ?? addrs[0];
+    const fullNm = (profile.memberNm || addr?.recvNm || authStore.user?.userNm || "").trim();
+    if (fullNm) {
+      // 한글 3~4글자 이름은 첫 글자가 성, 나머지가 이름. 그 밖의 이름은 그대로 이름에 넣는다(성은 "-")
+      const koreanFull = /^[가-힣]{3,4}$/.test(fullNm);
+      billingForm.lastName = koreanFull ? fullNm.slice(0, 1) : billingForm.lastName || "-";
+      billingForm.name = koreanFull ? fullNm.slice(1) : fullNm;
+    }
+    billingForm.email = profile.memberEmail || profile.loginId || authStore.user?.userEmail || billingForm.email;
+    billingForm.phone = addr?.recvPhone || profile.memberPhone || billingForm.phone;
+    const address = addr?.addr || profile.memberAddr;
+    if (address) {
+      billingForm.address = address;
+      billingForm.addressDetail = addr?.addrDetail || profile.memberAddrDetail || billingForm.addressDetail;
+      billingForm.zipCode = addr?.zipCode || profile.memberZipCode || billingForm.zipCode;
+      Object.assign(billingForm, splitAddr(address));
+    }
+  } catch (err) {
+    console.warn("[checkout] 자동입력 실패:", err);
+    useNuxtApp().$toast.error("내 정보를 불러오지 못했습니다.");
+  }
 }
 
 const addrSearchModalRef = ref<InstanceType<typeof AddrSearchModal> | null>(null);
-function handleAddrSelected(result: AddrSearchResult) {
+function handleAddrSelected(result: SyAddrSearchResultType) {
   billingForm.zipCode = result.zonecode;
   billingForm.address = result.address;
   billingForm.sido = result.sido;
@@ -439,18 +474,11 @@ watch(
 // @see https://docs.tosspayments.com/sdk/v2/js#tosspaymentswidgets
 const TOSSPAYMENTS_SCRIPT = "https://js.tosspayments.com/v2/standard";
 const TOSS_MIN_AMOUNT = 100; // 토스 최소 결제금액(원)
-type TossWidgets = {
-  setAmount: (amount: { currency: string; value: number }) => Promise<void>;
-  renderPaymentMethods: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
-  renderAgreement: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
-  requestPayment: (o: { orderId: string; orderName: string; successUrl: string; failUrl: string; customerEmail?: string; customerName?: string }) => Promise<void>;
-};
-type TossPaymentsFactory = (clientKey: string) => { widgets: (p: { customerKey: string }) => TossWidgets };
 const publicCfg = useRuntimeConfig().public as { tossPaymentClientKey?: string; mode?: string };
 const tossClientKey = publicCfg.tossPaymentClientKey;
 const tossStatus = ref<"idle" | "loading" | "ready" | "error">("idle");
 const tossError = ref("");
-let tossWidgets: TossWidgets | null = null;
+let tossWidgets: OdTossWidgetsType | null = null;
 
 /** 키의 가운데를 *** 로 가린다(앞 8자·뒤 4자만 노출) */
 const maskKey = (k?: string) => (!k ? "(미설정)" : k.length <= 12 ? "***" : `${k.slice(0, 8)}***${k.slice(-4)}`);
@@ -501,7 +529,7 @@ async function initTossWidgets() {
   try {
     if (!tossWidgets) {
       await loadScript(TOSSPAYMENTS_SCRIPT);
-      const TossPayments = (window as unknown as { TossPayments?: TossPaymentsFactory }).TossPayments;
+      const TossPayments = (window as unknown as { TossPayments?: OdTossPaymentsFactoryType }).TossPayments;
       if (!TossPayments) throw new Error("토스페이먼츠 SDK 를 초기화하지 못했습니다.");
       const customerKey = useAuthStore().user?.memberId || "@@ANONYMOUS"; // 비회원은 토스 ANONYMOUS 키
       const w = TossPayments(tossClientKey).widgets({ customerKey });

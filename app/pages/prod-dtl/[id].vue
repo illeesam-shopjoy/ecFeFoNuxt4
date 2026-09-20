@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
-    <breadcrumb-area title="상품 상세" subtitle="상품 상세" parent-title="상품목록" parent-link="/shop" heading-tag="div" />
+    <breadcrumb-area title="상품 상세" subtitle="상품 상세" parent-title="상품 목록" parent-link="/shop" heading-tag="div" />
 
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
     <skeleton-product-detail v-if="pending" />
@@ -140,7 +140,7 @@
                               <div class="user-rating">
                                 <ul>
                                   <li v-for="s in 5" :key="s">
-                                    <span><i :class="s <= review.rating ? 'fas fa-star' : 'fal fa-star'"></i></span>
+                                    <span><i class="text-[#f5a623]" :class="s <= review.rating ? 'fas fa-star' : 'fal fa-star'"></i></span>
                                   </li>
                                 </ul>
                               </div>
@@ -196,7 +196,7 @@
                       <ul>
                         <li v-for="n in 5" :key="n">
                           <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] hover:opacity-85" :aria-label="`${n}점`" @click.prevent="setReviewRating(n)">
-                            <i :class="n <= reviewRating ? 'fas fa-star' : 'fal fa-star'"></i>
+                            <i class="text-[#f5a623]" :class="n <= reviewRating ? 'fas fa-star' : 'fal fa-star'"></i>
                           </button>
                         </li>
                       </ul>
@@ -212,11 +212,13 @@
                         <div class="mb-3 grid gap-3 sm:grid-cols-2">
                           <label class="block">
                             <span class="mb-1 block text-[0.78rem] text-gray-500">이름<span class="ml-0.5 text-theme">*</span></span>
-                            <input v-model="guestNm" type="text" maxlength="20" placeholder="이름 (2~20자)" class="w-full rounded-lg border-[1.5px] border-[#e5e7eb] px-[13px] py-[10px] text-[0.88rem] outline-none focus:border-[#bc8246]" />
+                            <input v-model="guestNm" type="text" maxlength="20" placeholder="이름 (2~20자)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': guestNmError }" @input="guestNmError = ''" />
+                            <span v-if="guestNmError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ guestNmError }}</span>
                           </label>
                           <label class="block">
                             <span class="mb-1 block text-[0.78rem] text-gray-500">글 비밀번호<span class="ml-0.5 text-theme">*</span> <span class="text-gray-400">(수정·삭제할 때 필요)</span></span>
-                            <input v-model="guestPwd" type="password" maxlength="20" autocomplete="new-password" placeholder="4~20자" class="w-full rounded-lg border-[1.5px] border-[#e5e7eb] px-[13px] py-[10px] text-[0.88rem] outline-none focus:border-[#bc8246]" />
+                            <input v-model="guestPwd" type="password" maxlength="20" autocomplete="new-password" placeholder="4~20자" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': guestPwdError }" @input="guestPwdError = ''" />
+                            <span v-if="guestPwdError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ guestPwdError }}</span>
                           </label>
                         </div>
                       </div>
@@ -235,8 +237,8 @@
                       <div v-if="reviewFormError" class="col-xl-12 mb-3 text-[0.82rem] leading-snug text-red-500">{{ reviewFormError }}</div>
                       <!-- 2026-09-14(요청사항: "리뷰등록 가운데 정렬해줘") -->
                       <div class="col-xl-12 text-center">
-                        <button v-if="editingReviewId || replyingToReviewId" class="os-btn mr-2" type="button" @click="cancelReviewForm">취소</button>
-                        <button class="os-btn os-btn-black" type="submit" :disabled="reviewFormLoading">
+                        <button v-if="editingReviewId || replyingToReviewId" class="os-btn mr-2 !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="button" @click="cancelReviewForm">취소</button>
+                        <button class="os-btn os-btn-black !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="submit" :disabled="reviewFormLoading">
                           {{ reviewFormLoading ? "저장 중..." : (replyingToReviewId ? "답글 등록" : editingReviewId ? "수정 저장" : "리뷰 등록") }}
                         </button>
                       </div>
@@ -582,6 +584,8 @@ const reviewAttachChanges = ref<SyAttachChangeType[]>([]);
 const editingReviewId = ref<string | null>(null);
 const editingReviewFiles = ref<SyAttachType[]>([]);
 const reviewFormError = ref("");
+const guestNmError = ref(""); // 이름/글 비밀번호 검증 오류는 각 입력란 아래에 보여준다
+const guestPwdError = ref("");
 const reviewFormRef = ref<{ setFieldValue: (name: string, v: string) => void; resetForm: () => void } | null>(null);
 const pwdModal = ref<InstanceType<typeof WriterPwdModal> | null>(null);
 
@@ -659,6 +663,8 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
   const values = rawValues as { comments: string }; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
   const contentTrim = values.comments.trim();
   reviewFormError.value = "";
+  guestNmError.value = "";
+  guestPwdError.value = "";
   if (!replyingToReviewId.value && (reviewRating.value < 0.5 || !item.value?.prodId)) {
     $toast?.error?.("별점을 선택해 주세요.");
     return;
@@ -666,8 +672,9 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
   const isGuestWrite = !isLoggedIn.value && !replyingToReviewId.value && !editingReviewId.value;
   if (isGuestWrite) {
     const nm = guestNm.value.trim();
-    if (nm.length < 2 || nm.length > 20) return void (reviewFormError.value = "이름을 2~20자로 입력해 주세요.");
-    if (guestPwd.value.length < 4 || guestPwd.value.length > 20) return void (reviewFormError.value = "글 비밀번호를 4~20자로 입력해 주세요.");
+    guestNmError.value = nm.length < 2 || nm.length > 20 ? "이름을 2~20자로 입력해 주세요." : "";
+    guestPwdError.value = guestPwd.value.length < 4 || guestPwd.value.length > 20 ? "글 비밀번호를 4~20자로 입력해 주세요." : "";
+    if (guestNmError.value || guestPwdError.value) return;
   }
   reviewFormLoading.value = true;
   try {

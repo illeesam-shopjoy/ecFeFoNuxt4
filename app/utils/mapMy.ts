@@ -1,10 +1,13 @@
 /**
  * mapMy.ts — 회원/마이페이지 요청 본문 조립·검증, 응답 가공 (svc 는 전송만).
  */
-import type { AuthUser } from "~/store/useAuthStore";
 import type { SyLoginResType } from "~/types/sy/syLoginResType";
 import type { CmContactSubmitType } from "~/types/cm/cmContactSubmitType";
-import type { MyInquirySubmit, MyNotiItem, MyProfile } from "~/types/fo/foMyType";
+import type { CoOkResType } from "~/types/co/coOkResType";
+import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
+import type { MbMemberType } from "~/types/mb/mbMemberType";
+import type { SyLoginSessionType } from "~/types/sy/syLoginSessionType";
+import type { SyNotiType } from "~/types/sy/syNotiType";
 import { badRequest, requireText } from "~/utils/svcInput";
 
 // ── 인증 ──
@@ -14,7 +17,7 @@ export function buildLoginPayload(email: string, password: string): { loginId: s
   if (!loginId || !loginPwd) badRequest("이메일과 비밀번호를 입력해 주세요.");
   return { loginId, loginPwd };
 }
-export const mapLoginRes = (r: SyLoginResType): { token: string; user: AuthUser } => ({
+export const mapLoginRes = (r: SyLoginResType): SyLoginSessionType => ({
   token: r.accessToken,
   user: { memberId: r.memberId, userNm: r.userNm, userEmail: r.userEmail, userPhone: r.userPhone, siteId: r.siteId },
 });
@@ -28,49 +31,57 @@ export function buildJoinPayload(name: string, email: string, password: string):
 }
 
 // ── 내 정보 ──
-export function mapProfile(m: Record<string, unknown>): MyProfile {
-  return {
-    memberId: m.memberId,
-    loginId: m.loginId,
-    memberNm: m.memberNm ?? "",
-    memberEmail: m.memberEmail ?? "",
-    memberPhone: m.memberPhone ?? "",
-    memberGender: m.memberGender ?? "",
-    birthDate: m.birthDate ? String(m.birthDate).slice(0, 10) : "",
-    memberZipCode: m.memberZipCode ?? "",
-    memberAddr: m.memberAddr ?? "",
-    memberAddrDetail: m.memberAddrDetail ?? "",
-  } as unknown as MyProfile;
-}
+export const mapProfile = (m: MbMemberType): MbMemberProfileType => ({
+  memberId: m.memberId,
+  loginId: m.loginId,
+  memberNm: m.memberNm ?? "",
+  memberEmail: m.memberEmail ?? "",
+  memberPhone: m.memberPhone ?? "",
+  memberGender: m.memberGender ?? "",
+  birthDate: m.birthDate ? String(m.birthDate).slice(0, 10) : "",
+  memberZipCode: m.memberZipCode ?? "",
+  memberAddr: m.memberAddr ?? "",
+  memberAddrDetail: m.memberAddrDetail ?? "",
+});
 /** PUT /fo/ec/my/info 본문 — 이름 필수, 성별은 M/F 만 */
-export function buildProfileUpdatePayload(body: Partial<MyProfile>) {
-  const b = (body ?? {}) as Record<string, unknown>;
-  const memberNm = requireText(b.memberNm, "이름을 입력해 주세요.");
+export function buildProfileUpdatePayload(body: Partial<MbMemberProfileType>) {
+  const memberNm = requireText(body.memberNm, "이름을 입력해 주세요.");
   return {
     memberNm,
-    memberPhone: String(b.memberPhone ?? "").trim(),
-    memberGender: ["M", "F"].includes(String(b.memberGender)) ? String(b.memberGender) : "",
-    birthDate: b.birthDate ? String(b.birthDate).slice(0, 10) : null,
-    memberZipCode: String(b.memberZipCode ?? "").trim(),
-    memberAddr: String(b.memberAddr ?? "").trim(),
-    memberAddrDetail: String(b.memberAddrDetail ?? "").trim(),
+    memberPhone: String(body.memberPhone ?? "").trim(),
+    memberGender: ["M", "F"].includes(String(body.memberGender)) ? String(body.memberGender) : "",
+    birthDate: body.birthDate ? String(body.birthDate).slice(0, 10) : null,
+    memberZipCode: String(body.memberZipCode ?? "").trim(),
+    memberAddr: String(body.memberAddr ?? "").trim(),
+    memberAddrDetail: String(body.memberAddrDetail ?? "").trim(),
   };
 }
+/** 저장 응답 → 헤더/드롭다운에 즉시 반영할 이름·연락처 (응답이 비면 보낸 값) */
+export const mapProfileSaved = (saved: MbMemberType | null | undefined, payload: { memberNm: string; memberPhone: string }): Pick<MbMemberProfileType, "memberNm" | "memberPhone"> => ({
+  memberNm: String(saved?.memberNm ?? payload.memberNm),
+  memberPhone: String(saved?.memberPhone ?? payload.memberPhone),
+});
 /** 비밀번호 변경 검증 — 현재 비밀번호 필수, 새 비밀번호 6자 이상 */
 export function assertPasswordChange(currentPassword: string, newPassword: string): void {
   if (!currentPassword) badRequest("현재 비밀번호를 입력해 주세요.");
   if (String(newPassword ?? "").length < 6) badRequest("새 비밀번호는 6자 이상이어야 합니다.");
 }
 
+/** POST /fo/ec/my/password 본문 — 검증 통과 후 조립 */
+export function buildPasswordPayload(currentPassword: string, newPassword: string): { currentPassword: string; newPassword: string } {
+  assertPasswordChange(currentPassword, newPassword);
+  return { currentPassword, newPassword };
+}
+export const okRes = (): CoOkResType => ({ ok: true });
+
 // ── 문의 ──
 /** 1:1 문의 등록 본문(이름/이메일/내용 필수) */
-export function buildInquiryPayload(body: MyInquirySubmit) {
-  const b = body as unknown as Record<string, unknown>;
-  const name = String(b.name ?? "").trim();
-  const email = String(b.email ?? "").trim();
-  const message = String(b.message ?? "").trim();
+export function buildInquiryPayload(body: CmContactSubmitType) {
+  const name = String(body.name ?? "").trim();
+  const email = String(body.email ?? "").trim();
+  const message = String(body.message ?? "").trim();
   if (!name || !email || !message) badRequest("이름, 이메일, 문의 내용을 모두 입력해 주세요.");
-  return { inquiryType: String(b.inquiryType ?? "").trim(), name, email, tel: String(b.tel ?? "").trim(), orderNo: String(b.orderNo ?? "").trim(), message };
+  return { inquiryType: String(body.inquiryType ?? "").trim(), name, email, tel: String(body.tel ?? "").trim(), orderNo: String(body.orderNo ?? "").trim(), message };
 }
 /** 고객센터 문의 접수(문의하기 화면) 본문 — 필수값 검증 */
 export function buildContactPayload(body: CmContactSubmitType): CmContactSubmitType {
@@ -82,12 +93,11 @@ export function buildContactPayload(body: CmContactSubmitType): CmContactSubmitT
 
 // ── 알림 ──
 /** 최신순 정렬 후 limit(1~100)만 자른다(백엔드는 전체를 준다) */
-export function latestNotis(list: MyNotiItem[], limit = 30): MyNotiItem[] {
+export function latestNotis(list: SyNotiType[], limit = 30): SyNotiType[] {
   const max = Math.min(Math.max(Number(limit) || 30, 1), 100);
-  const reg = (n: MyNotiItem) => String((n as unknown as Record<string, unknown>).regDate ?? "");
   return list
     .slice()
-    .sort((a, b) => reg(b).localeCompare(reg(a)))
+    .sort((a, b) => String(b.regDate ?? "").localeCompare(String(a.regDate ?? "")))
     .slice(0, max);
 }
 

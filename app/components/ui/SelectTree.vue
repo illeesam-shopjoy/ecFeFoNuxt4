@@ -45,17 +45,11 @@
 </template>
 
 <script setup lang="ts">
-export interface SelectTreeItem {
-  id: string;
-  path: string;
-  title: string;
-  pathLabel?: string;
-  children?: SelectTreeItem[];
-}
+import type { FoSelectTreeItemType } from "~/types/fo/foCompType";
 
 const props = withDefaults(
   defineProps<{
-    items: SelectTreeItem[];
+    items: FoSelectTreeItemType[];
     searchQuery?: string;
     viewMode?: "flat" | "tree";
     initialExpandedIds?: string[];
@@ -63,7 +57,7 @@ const props = withDefaults(
   { searchQuery: "", viewMode: "flat", initialExpandedIds: () => [] },
 );
 
-const emit = defineEmits<{ (e: "select", item: SelectTreeItem): void }>();
+const emit = defineEmits<{ (e: "select", item: FoSelectTreeItemType): void }>();
 
 const expandedIds = ref<Set<string>>(new Set());
 
@@ -91,8 +85,8 @@ const expandedList = computed(() => Array.from(expandedIds.value));
 
 // Flat list: all leaves with pathLabel; filter by search
 const flatItems = computed(() => {
-  const out: SelectTreeItem[] = [];
-  function walk(nodes: SelectTreeItem[]) {
+  const out: FoSelectTreeItemType[] = [];
+  function walk(nodes: FoSelectTreeItemType[]) {
     for (const n of nodes) {
       if (n.children?.length) walk(n.children);
       else out.push(n);
@@ -135,7 +129,7 @@ const treeFiltered = computed((): TreeRow[] => {
     rows.push({ id, depth, isFolder: true, folderName: name });
   }
 
-  function walk(nodes: SelectTreeItem[], depth: number, parentPath: string) {
+  function walk(nodes: FoSelectTreeItemType[], depth: number, parentPath: string) {
     for (const n of nodes) {
       if (n.children?.length) {
         const folderId = `folder:${parentPath}/${n.id}`;
@@ -170,7 +164,7 @@ function toggleExpand(id: string) {
   expandedIds.value = next;
 }
 
-function onSelect(item: SelectTreeItem) {
+function onSelect(item: FoSelectTreeItemType) {
   if (item.path) emit("select", item);
 }
 

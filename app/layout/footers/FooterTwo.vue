@@ -49,21 +49,17 @@
 </template>
 
 <script setup lang="ts">
+import type { DpFooterLinkGroupType } from "~/types/dp/dpFooterType";
+
 // 2026-09-20(요청사항: "상세화면에서는 footer 가 안 보이면 된다") — 상품/블로그/이벤트 상세에서는 푸터를 렌더링하지 않는다
 const route = useRoute();
 const hideFooter = computed(() => /^\/(prod|blog|event)-dtl(\/|$)/.test(route.path));
 import Social from "~/components/social/Social.vue";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
-interface FooterLinkGroup {
-  id: number;
-  title: string;
-  links: { link: string; list: string }[];
-}
-
 // 전시 위젯(area_cd=FOOTER_LINKS_TWO)에서 로드 — 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
-const DEFAULT_WIDGET_DATA: FooterLinkGroup[] = [
+const DEFAULT_WIDGET_DATA: DpFooterLinkGroupType[] = [
   {
     id: 1,
     title: "마이페이지",
@@ -111,10 +107,10 @@ const DEFAULT_WIDGET_DATA: FooterLinkGroup[] = [
 ];
 // 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
 // 늦게 도착한 데이터가 widget_data에 반영되게 한다.
-const { data: fetchedWidgetData } = useAsyncData<FooterLinkGroup[] | null>(
+const { data: fetchedWidgetData } = useAsyncData<DpFooterLinkGroupType[] | null>(
   "dp-footer-links-two",
-  () => dpAreaSvc.getFirstWidgetConfig<FooterLinkGroup[]>("FOOTER_LINKS_TWO"),
+  () => dpAreaSvc.getFirstWidgetConfig<DpFooterLinkGroupType[]>("FOOTER_LINKS_TWO"),
   { lazy: true, server: false }
 );
-const widget_data = computed<FooterLinkGroup[]>(() => fetchedWidgetData.value?.length ? fetchedWidgetData.value : DEFAULT_WIDGET_DATA);
+const widget_data = computed<DpFooterLinkGroupType[]>(() => fetchedWidgetData.value?.length ? fetchedWidgetData.value : DEFAULT_WIDGET_DATA);
 </script>

@@ -1,19 +1,17 @@
 /**
  * myCashSvc.ts — 마이페이지 캐시(적립금) API 호출 객체 (CSR: 브라우저 → ecBeBo 직접 호출, axiosCsr).
- * ecBeBo FoMyPageController(/api/fo/my/cash/info|page, FO_ONLY) — 로그인 토큰 필요(useAuthHeaders).
+ * ecBeBo FoMyController(/api/fo/my/cash/info|page, FO_ONLY) — 로그인 토큰 필요(authCfg).
  */
-import { axiosCsr } from "~/utils/axiosCsr";
-import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import { authCfg, csrGet } from "~/utils/svcHttp";
 import { cleanParams } from "~/utils/svcInput";
-import type { MyCashResult, MyListParams, MyRow } from "~/types/fo/foMyType";
-
+import type { MyListParams } from "~/types/fo/foMyType";
+import type { PmCacheInfoResType, PmCachePageResType } from "~/types/pm/pmCacheResType";
 
 export const myCashSvc = {
   /** GET /fo/my/cash/info — 잔액 + 최근 이력 */
-  getInfo: async (params: MyListParams = {}): Promise<{ balance: number; history: MyRow[] }> =>
-    (await axiosCsr.get<{ balance: number; history: MyRow[] }>("/fo/my/cash/info", { headers: useAuthHeaders(), params: cleanParams(params) })).data,
+  getInfo: (params: MyListParams = {}): Promise<PmCacheInfoResType> => csrGet<PmCacheInfoResType>("/fo/my/cash/info", authCfg({ params: cleanParams(params) })),
 
   /** GET /fo/my/cash/page — 캐시 이력(페이징, 기본 1페이지 10건) */
-  getPage: async (params: MyListParams): Promise<MyCashResult> =>
-    (await axiosCsr.get<MyCashResult>("/fo/my/cash/page", { headers: useAuthHeaders(), params: { pageNo: 1, pageSize: 10, ...cleanParams(params) } })).data,
+  getPage: (params: MyListParams): Promise<PmCachePageResType> =>
+    csrGet<PmCachePageResType>("/fo/my/cash/page", authCfg({ params: { pageNo: 1, pageSize: 10, ...cleanParams(params) } })),
 };

@@ -15,6 +15,7 @@
  * - 인증이 필요한 호출은 svc 가 `headers: useAuthHeaders()` 를 명시한다(공개 API 에 만료 토큰이 붙어 401 나는 것 방지).
  */
 import axios, { AxiosError, type AxiosResponse } from "axios";
+import type { CoBeEnvelopeType, CoBeErrorType } from "~/types/co/coBeErrorType";
 
 const axiosCsr = axios.create({
   timeout: 15000,
@@ -22,22 +23,8 @@ const axiosCsr = axios.create({
   paramsSerializer: { indexes: null },
 });
 
-interface BeEnvelope {
-  ok?: boolean;
-  status?: number;
-  data?: unknown;
-  message?: string;
-}
-
-/** 소비처가 읽는 오류 모양(statusCode / statusMessage / data.message)을 axios 오류에 덧붙인다. 서버 내부 표기(::클래스::메서드:줄)는 소비처가 자른다. */
-export interface BeError extends AxiosError {
-  statusCode?: number;
-  statusMessage?: string;
-  data?: { message?: string; statusMessage?: string };
-}
-
-function toBeError(error: AxiosError<BeEnvelope>, fallbackStatus?: number, fallbackMessage?: string): BeError {
-  const e = error as BeError;
+function toBeError(error: AxiosError<CoBeEnvelopeType>, fallbackStatus?: number, fallbackMessage?: string): CoBeErrorType {
+  const e = error as CoBeErrorType;
   const env = error.response?.data;
   const status = env?.status ?? error.response?.status ?? fallbackStatus;
   const message = env?.message ?? fallbackMessage ?? error.message;
@@ -65,19 +52,19 @@ axiosCsr.interceptors.request.use(
 
 axiosCsr.interceptors.response.use(
   (response: AxiosResponse) => {
-    const body = response.data as BeEnvelope | undefined;
+    const body = response.data as CoBeEnvelopeType | undefined;
     if (body && typeof body === "object" && "ok" in body) {
       // ecBeBo 는 오류도 HTTP 4xx/5xx 로 내려주지만, 200 이면서 ok=false 인 경우도 오류로 취급한다.
       if (body.ok === false) {
         const err = new AxiosError(body.message ?? "백엔드 오류가 발생했습니다.", "ERR_BAD_RESPONSE", response.config, response.request, response);
-        return Promise.reject(toBeError(err as AxiosError<BeEnvelope>, body.status ?? response.status));
+        return Promise.reject(toBeError(err as AxiosError<CoBeEnvelopeType>, body.status ?? response.status));
       }
       response.data = body.data;
     }
     console.log(`[axiosCsr] ◀ 응답 성공: ${response.status} ${response.config.baseURL ?? ""}${response.config.url ?? ""}`);
     return response;
   },
-  (error: AxiosError<BeEnvelope>) => {
+  (error: AxiosError<CoBeEnvelopeType>) => {
     const status = error.response?.status ?? "NETWORK";
     console.error(`[axiosCsr] ✖ 응답 오류 [${status}] ${error.config?.method?.toUpperCase() ?? "-"} ${error.config?.baseURL ?? ""}${error.config?.url ?? ""} — ${error.message}`);
     return Promise.reject(toBeError(error, undefined, error.code === "ECONNABORTED" ? "요청 시간이 초과되었습니다." : error.response ? undefined : "서버에 연결할 수 없습니다."));

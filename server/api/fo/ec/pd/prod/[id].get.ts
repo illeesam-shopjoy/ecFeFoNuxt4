@@ -1,5 +1,6 @@
 import { beApi } from "~~/server/utils/beApi";
-import { mapProduct, type BeProdItem } from "~~/app/utils/mapProduct";
+import { mapProduct } from "~~/app/utils/mapProduct";
+import type { PdProdRawType } from "~~/app/types/pd/pdProdRawType";
 import { PROD_CDN } from "~~/server/utils/cdn";
 import { logger } from "~~/server/utils/logger";
 import { cdnCache } from "~~/server/utils/cdnCache";
@@ -22,7 +23,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: "잘못된 상품 ID입니다." });
   }
 
-  const detail = await beApi.get<BeProdItem>(`/fo/ec/pd/prod/${id}`).catch((e: unknown) => {
+  const detail = await beApi.get<PdProdRawType>(`/fo/ec/pd/prod/${id}`).catch((e: unknown) => {
     const err = e as { statusCode?: number };
     // ecBeBo 는 없는 상품에 400("존재하지 않는 상품입니다")을 내려준다 — 404 로 정규화해 검색엔진이 색인하지 않게 한다
     if (err?.statusCode === 404 || err?.statusCode === 400) throw createError({ statusCode: 404, statusMessage: "상품을 찾을 수 없습니다." });

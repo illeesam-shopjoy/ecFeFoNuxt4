@@ -1,13 +1,7 @@
+import type { CoConfirmOptionsType, CoConfirmVariantType } from "~/types/co/coConfirmType";
+
 const confirmResolveMap = new Map<number, (value: boolean) => void>();
 let confirmNextId = 0;
-
-export type ConfirmOptions = {
-  title?: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: "default" | "danger";
-};
 
 export function useConfirm() {
   const state = useState<{
@@ -16,7 +10,7 @@ export function useConfirm() {
     message: string;
     confirmText: string;
     cancelText: string;
-    variant: "default" | "danger";
+    variant: CoConfirmVariantType;
     pendingId: number;
   }>("confirm-dialog-state", () => ({
     open: false,
@@ -28,7 +22,7 @@ export function useConfirm() {
     pendingId: 0,
   }));
 
-  function openConfirm(options: ConfirmOptions): Promise<boolean> {
+  function openConfirm(options: CoConfirmOptionsType): Promise<boolean> {
     const id = ++confirmNextId;
     state.value = {
       open: true,
