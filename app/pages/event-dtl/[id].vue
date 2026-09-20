@@ -77,7 +77,8 @@
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
-import { foPmEventSvc, type PmEventDetailType } from "~/svc/fo/ec/pm/foPmEventSvc";
+import { foPmEventSvc } from "~/svc/fo/ec/pm/foPmEventSvc";
+import type { PmEventDetailType } from "~/types/pm/pmEventViewType";
 import { usePageTitle } from "~/composables/usePageTitle";
 
 const route = useRoute();

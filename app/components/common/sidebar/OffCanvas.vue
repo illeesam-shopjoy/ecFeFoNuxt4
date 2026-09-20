@@ -49,6 +49,7 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('오프캔버스 메뉴');
 import { ref } from "vue";
+import { STATIC_MENUS } from "~/conts/foMenus";
 
 type MenuDataType = {
   title: string;
@@ -62,60 +63,16 @@ type MenuDataType = {
 
 const activeMenu = ref("");
 const showSidebar = ref(false);
-const mobile_menus: MenuDataType[] = [
-      {
-        title: "홈",
-        dropdown: true,
-        dropdownMenu: [
-          { link: "/", title: "홈 스타일 1" },
-          { link: "/home-2", title: "홈 스타일 2" },
-          { link: "/home-3", title: "홈 스타일 3" },
-          { link: "/home-4", title: "홈 스타일 4" },
-          { link: "/home-5", title: "홈 스타일 5" },
-          { link: "/home-6", title: "홈 스타일 6" },
-          { link: "/home-7", title: "홈 스타일 7" },
-        ],
-      },
-      {
-        title: "쇼핑",
-        dropdown: true,
-        dropdownMenu: [
-          { link: "/shop", title: "기본 쇼핑" },
-          { link: "/prod-dtl", title: "상품 상세" },
-        ],
-      },
-      {
-        title: "기타 페이지",
-        dropdown: true,
-        dropdownMenu: [
-          { link: "/wishlist", title: "위시리스트" },
-          { link: "/cart", title: "장바구니" },
-          { link: "/compare", title: "비교" },
-          { link: "/checkout", title: "주문/결제" },
-          { link: "/register", title: "회원가입" },
-          { link: "/login", title: "로그인" },
-          { link: "/account", title: "마이페이지" },
-        ],
-      },
-      {
-        title: "블로그",
-        dropdown: true,
-        dropdownMenu: [
-          { link: "/blog", title: "블로그" },
-          { link: "/blog-left-sidebar", title: "블로그 (좌측 사이드바)" },
-          { link: "/blog-no-sidebar", title: "블로그 (사이드바 없음)" },
-          { link: "/blog-2-col", title: "블로그 2단" },
-          { link: "/blog-3-col", title: "블로그 3단" },
-          { link: "/blog-2-col-mas", title: "블로그 2단 메이슨리" },
-          { link: "/blog-dtl", title: "블로그 상세" },
-        ],
-      },
-  {
-    title: "문의하기",
-    dropdown: false,
-    link: "/contact",
-  },
-];
+// 상단 메뉴(STATIC_MENUS)와 같은 목록을 쓴다 — 메뉴가 추가/삭제돼도 모바일 메뉴가 어긋나지 않게(고객센터 누락 방지).
+// 메가메뉴의 그룹(쇼핑 레이아웃/상품·주문 등)은 모바일에서 한 단계로 펼쳐 보여준다.
+const mobile_menus: MenuDataType[] = STATIC_MENUS.map((m) => {
+  const subs = (m.dropdownItems ?? []).flatMap((it) => (it.dropdownMenu?.length ? it.dropdownMenu : [it]));
+  const seen = new Set<string>();
+  const dropdownMenu = subs
+    .map((it) => ({ link: it.link, title: it.title }))
+    .filter((it) => (seen.has(it.link + it.title) ? false : (seen.add(it.link + it.title), true)));
+  return dropdownMenu.length ? { title: m.title, dropdown: true, dropdownMenu } : { title: m.title, link: m.link, dropdown: false };
+});
 
 function OpenOffcanvas() {
   showSidebar.value = true;

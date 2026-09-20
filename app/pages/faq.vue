@@ -96,7 +96,9 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import { coFaqSvc, type FaqItemType, type FaqTreeType } from "~/svc/fo/ec/cm/coFaqSvc";
+import { coFaqSvc } from "~/svc/fo/ec/cm/coFaqSvc";
+import type { CmFaqType } from "~/types/cm/cmFaqType";
+import type { CmFaqTreeType } from "~/types/cm/cmFaqTreeType";
 import FoPager from "~/components/fo/FoPager.vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 
@@ -106,11 +108,11 @@ usePageTitle("FAQ");
 const PAGE_SIZES = [5, 10, 20, 30, 50];
 
 // ── 분류 트리(+건수 배지) ─────────────────────────────────────────────
-const { data: treeData } = useAsyncData<FaqTreeType>("faq-tree", () => coFaqSvc.getTree(), { lazy: true, server: false });
+const { data: treeData } = useAsyncData<CmFaqTreeType>("faq-tree", () => coFaqSvc.getTree(), { lazy: true, server: false });
 
 // ── 목록 (분류·페이지·페이지크기가 바뀔 때마다 서버 재조회) ────────────────────
 const selectedPathId = ref<string | null>(null);
-const faqs = ref<FaqItemType[]>([]);
+const faqs = ref<CmFaqType[]>([]);
 const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalPage: 1, pageSizes: PAGE_SIZES });
 const loading = ref(false);
 const errorMsg = ref("");
@@ -165,7 +167,7 @@ const handleSelectAction = (cmd: string, param: unknown = {}) => {
 
 // ── 아코디언: 펼칠 때 처음 읽는 FAQ만 조회수 +1 (이번 세션 중복 증가 방지) ────────────
 const viewedIds = new Set<string>();
-async function toggleFaq(faq: FaqItemType) {
+async function toggleFaq(faq: CmFaqType) {
   const willOpen = openFaqId.value !== faq.faqId;
   openFaqId.value = willOpen ? faq.faqId : null;
   if (!willOpen || viewedIds.has(faq.faqId)) return;

@@ -126,3 +126,8 @@ BeCategory → PdCategoryType, BeBrand → SyBrandType, MbMemberAddrItem → MbM
 DpUiRow/DpAreaRow/DpPanelRow/DpAreaWidgetItem → DpUiType/DpAreaType/DpPanelType/DpPanelItemType, BeEventItem/BeEventDetail → PmEventType(+benefits/eventItems),
 BePathRow → SyPathType, BeFaqRow → Pick<CmFaqType>, AttachChange(중복 3곳) → SyAttachChangeType, UploadedFile → Pick<SyAttachType>.
 남긴 것(테이블이 아닌 요청 본문/화면 전용): MapKeys, DevEnv*, FoOrderCreate*, ContactSubmitBody, FaqTree*, PmEventCard/Detail(화면용 요약), *PagedResult, PdProductPageParams, WriteResult, BeLoginRes/BeTokenPair.
+
+### svc 는 전달(bypass) 계층 (2026-09-20)
+`app/svc/**` 에는 **타입 선언과 로직을 두지 않는다** — HTTP 호출만 한다(예외: 로그아웃의 토큰 유무 가드).
+- 입력 검증·요청 본문 조립·응답 가공 → `app/utils/` : `svcInput`(badRequest/cleanParams/requireText), `mapBoard`(상품평·Q&A), `mapMy`(인증·내정보·문의·알림·채팅), `mapOrder`, `mapFaq`, `mapCategory`, `mapEvent`, `mapMaster`(브랜드·코드·위젯 config), `mapProduct`(상품 조회 조건/페이지/상세 병합), `mapBlog`.
+- 요청/응답 데이터 타입 → `app/types/` : `co/coPagedResultType`(화면용 페이징)·`coWriteResultType`, `sy/syLoginResType`·`syMapKeysType`·`syUploadResultType`·`syDevEnvType`·`syAttachFileType`(원본 AttachFile), `cm/cmFaqTreeType`·`cmContactSubmitType`, `od/odOrderCreateType`, `pd/pdProdPageParamsType`·`pdCategoryTreeType(TreeItem/Res)`, `pm/pmEventViewType`.

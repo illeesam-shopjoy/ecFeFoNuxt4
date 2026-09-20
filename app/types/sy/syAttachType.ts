@@ -35,3 +35,19 @@ export interface SyAttachType {
   updDate?: string; // 수정일시 (upd_date)
   regSiteId?: string; // 등록 사이트ID (reg_site_id)
 }
+
+/** 서버(AttachFile) 원본 응답 — URL 보정 전 값이라 null 이 올 수 있다. utils/mapProduct.mapAttachFiles 가 SyAttachType 으로 바꾼다. */
+export interface SyAttachFileType {
+  attachId: string;
+  fileNm?: string | null;
+  fileExt?: string | null;
+  fileSize?: number | null;
+  attachUrl?: string | null;
+  cdnImgUrl?: string | null;
+  thumbCdnUrl?: string | null;
+  thumbUrl?: string | null;
+  refTableNm?: string | null;
+  refId?: string | null;
+  storagePath?: string | null;
+  sortOrd?: number | null;
+}

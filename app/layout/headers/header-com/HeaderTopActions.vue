@@ -8,7 +8,7 @@
     </a>
 
     <client-only>
-      <noti-bell v-if="authStore.isStLoggedIn" />
+      <noti-bell />
       <user-dropdown />
 
       <!-- 좋아요 -->

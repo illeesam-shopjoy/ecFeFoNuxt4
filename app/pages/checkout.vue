@@ -189,28 +189,21 @@
                     </div>
 
                     <div class="payment-method">
-                      <div class="accordion" id="accordionExample">
-                        <div class="card">
-                          <div class="card-header" id="headingOne">
-                            <h5 class="mb-0">
-                              <button class="btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">계좌이체</button>
-                            </h5>
+                      <!-- 2026-09-20(요청사항: "주문하기 토스페이먼트 연동") — 토스 결제위젯(v2). 결제수단/약관 UI 는 토스가 이 컨테이너 안에 그린다 -->
+                      <div id="toss-payment-method"></div>
+                      <div id="toss-agreement"></div>
+                      <div v-if="tossStatus === 'idle'" class="rounded-lg border border-dashed border-[#d1d5db] bg-[#fafafa] px-4 py-5 text-center text-[0.85rem] text-gray-500">결제 금액이 100원 이상이면 결제수단이 표시됩니다.</div>
+                      <div v-else-if="tossStatus === 'loading'" class="rounded-lg bg-[#fafafa] px-4 py-5 text-center text-[0.85rem] text-gray-500"><i class="fas fa-spinner fa-spin mr-1.5"></i>결제수단을 불러오는 중…</div>
+                      <!-- 연동 실패: 오류 + 설정된 키 정보(가운데 마스킹) -->
+                      <div v-else-if="tossStatus === 'error'" class="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-left">
+                        <div class="mb-2 text-[0.9rem] font-bold text-red-600"><i class="fas fa-exclamation-triangle mr-1.5"></i>토스페이먼츠 연동에 실패했습니다</div>
+                        <div class="mb-3 whitespace-pre-line text-[0.82rem] leading-relaxed text-gray-700">{{ tossError }}</div>
+                        <dl class="m-0 rounded-lg border border-red-100 bg-white px-3 py-2">
+                          <div v-for="d in tossKeyInfo()" :key="d.label" class="flex items-baseline justify-between gap-3 py-0.5 text-[0.78rem]">
+                            <dt class="shrink-0 text-gray-500">{{ d.label }}</dt>
+                            <dd class="m-0 min-w-0 break-all text-right font-mono font-semibold text-gray-800">{{ d.value }}</dd>
                           </div>
-
-                          <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                            <div class="card-body">당사 계좌로 직접 입금해 주세요. 결제 시 주문 번호를 참조란에 기입해 주세요. 입금 확인 후 배송됩니다.</div>
-                          </div>
-                        </div>
-                        <div class="card">
-                          <div class="card-header" id="headingTwo">
-                            <h5 class="mb-0">
-                              <button class="btn-link collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">수표 결제</button>
-                            </h5>
-                          </div>
-                          <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                            <div class="card-body">수표는 당사 주소로 발송해 주세요.</div>
-                          </div>
-                        </div>
+                        </dl>
                       </div>
                       <div class="order-button-payment mt-20">
                         <button type="submit" class="os-btn os-btn-black">주문하기</button>
@@ -441,23 +434,39 @@ watch(
   { immediate: true }
 );
 
-// ── 토스페이먼츠 결제창 SDK v2 (클라이언트 전용) — 2026-09-20: 이 화면에서만 쓰는 useTossPayments 컴포저블을 이 파일로 병합 ──
-// @see https://docs.tosspayments.com/sdk/v2/js
+// ── 토스페이먼츠 결제위젯 SDK v2 (클라이언트 전용) — 2026-09-20: 이 화면에서만 쓰는 useTossPayments 컴포저블을 이 파일로 병합 ──
+// 설정된 키(test_gck_…)는 "결제위젯 연동 키"라 결제창(payment()) 방식이 아니라 widgets() 로 연동한다.
+// @see https://docs.tosspayments.com/sdk/v2/js#tosspaymentswidgets
 const TOSSPAYMENTS_SCRIPT = "https://js.tosspayments.com/v2/standard";
-type TossPaymentsFactory = (clientKey: string) => {
-  payment: (params: { customerKey: string }) => {
-    requestPayment: (options: {
-      method: string;
-      amount: { currency: string; value: number };
-      orderId: string;
-      orderName: string;
-      successUrl: string;
-      failUrl: string;
-      customerName?: string;
-    }) => Promise<void>;
-  };
+const TOSS_MIN_AMOUNT = 100; // 토스 최소 결제금액(원)
+type TossWidgets = {
+  setAmount: (amount: { currency: string; value: number }) => Promise<void>;
+  renderPaymentMethods: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
+  renderAgreement: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
+  requestPayment: (o: { orderId: string; orderName: string; successUrl: string; failUrl: string; customerEmail?: string; customerName?: string }) => Promise<void>;
 };
-const tossClientKey = (useRuntimeConfig().public as { tossPaymentClientKey?: string }).tossPaymentClientKey;
+type TossPaymentsFactory = (clientKey: string) => { widgets: (p: { customerKey: string }) => TossWidgets };
+const publicCfg = useRuntimeConfig().public as { tossPaymentClientKey?: string; mode?: string };
+const tossClientKey = publicCfg.tossPaymentClientKey;
+const tossStatus = ref<"idle" | "loading" | "ready" | "error">("idle");
+const tossError = ref("");
+let tossWidgets: TossWidgets | null = null;
+
+/** 키의 가운데를 *** 로 가린다(앞 8자·뒤 4자만 노출) */
+const maskKey = (k?: string) => (!k ? "(미설정)" : k.length <= 12 ? "***" : `${k.slice(0, 8)}***${k.slice(-4)}`);
+/** 연동 실패 시 보여줄 설정 정보 — 실행 모드 + 마스킹한 클라이언트 키 */
+function tossKeyInfo(): { label: string; value: string }[] {
+  const k = tossClientKey ?? "";
+  const kind = k.includes("_gck_") ? "결제위젯 연동 키" : k.includes("_ck_") ? "API 개별 연동 키" : k ? "알 수 없음" : "-";
+  return [
+    { label: "실행 모드(RUN_MODE)", value: publicCfg.mode ?? "-" },
+    { label: "클라이언트 키", value: maskKey(k) },
+    { label: "키 종류", value: kind },
+  ];
+}
+function showTossFail(message: string) {
+  return useAlert().openAlert({ title: "결제 연동 실패", variant: "error", message, details: tossKeyInfo() });
+}
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -466,54 +475,80 @@ function loadScript(src: string): Promise<void> {
     script.src = src;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    script.onerror = () => reject(new Error("토스페이먼츠 SDK 스크립트를 불러오지 못했습니다. 네트워크를 확인해 주세요."));
     document.head.appendChild(script);
   });
 }
+const tossErrMsg = (e: unknown) => {
+  const err = e as { code?: string; message?: string };
+  return `${err?.message ?? "알 수 없는 오류"}${err?.code ? `\n(오류 코드: ${err.code})` : ""}`;
+};
 
-// 카드 결제창 호출 — 결제 성공/실패는 successUrl/failUrl(/checkout/success, /checkout/fail)로 돌아온다
-async function requestCardPayment(params: { amount: number; orderId: string; orderName: string; successUrl: string; failUrl: string; customerName?: string }) {
-  if (!tossClientKey) throw new Error("토스페이먼츠 클라이언트 키가 설정되지 않았습니다.");
-  await loadScript(TOSSPAYMENTS_SCRIPT);
-  const TossPayments = (window as unknown as { TossPayments?: TossPaymentsFactory }).TossPayments;
-  if (!TossPayments) throw new Error("토스페이먼츠 스크립트를 불러오지 못했습니다.");
-  const customerKey = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
-  await TossPayments(tossClientKey).payment({ customerKey }).requestPayment({
-    method: "CARD",
-    amount: { currency: "KRW", value: params.amount },
-    orderId: params.orderId,
-    orderName: params.orderName,
-    successUrl: params.successUrl,
-    failUrl: params.failUrl,
-    ...(params.customerName && { customerName: params.customerName }),
-  });
-}
-
-// 결제 제출(옛 CheckoutArea)
-async function handleFormSubmit() {
-  if (import.meta.server) return;
-  if (!tossClientKey) {
-    await useAlert().openAlert("결제 설정이 없습니다. .env에 NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY를 설정해 주세요.");
+// 결제 금액이 정해지면 결제위젯(결제수단/약관)을 그린다. 금액이 바뀌면 setAmount 만 다시 호출한다.
+async function initTossWidgets() {
+  if (import.meta.server || tossStatus.value === "loading") return;
+  const total = orderTotalRef.value;
+  if (total < TOSS_MIN_AMOUNT) {
+    if (tossStatus.value !== "error") tossStatus.value = "idle";
     return;
   }
+  if (!tossClientKey) {
+    tossStatus.value = "error";
+    tossError.value = "토스페이먼츠 클라이언트 키가 설정되지 않았습니다.\n(.env 의 NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY)";
+    return;
+  }
+  tossStatus.value = "loading";
+  try {
+    if (!tossWidgets) {
+      await loadScript(TOSSPAYMENTS_SCRIPT);
+      const TossPayments = (window as unknown as { TossPayments?: TossPaymentsFactory }).TossPayments;
+      if (!TossPayments) throw new Error("토스페이먼츠 SDK 를 초기화하지 못했습니다.");
+      const customerKey = useAuthStore().user?.memberId || "@@ANONYMOUS"; // 비회원은 토스 ANONYMOUS 키
+      const w = TossPayments(tossClientKey).widgets({ customerKey });
+      await w.setAmount({ currency: "KRW", value: total });
+      await Promise.all([w.renderPaymentMethods({ selector: "#toss-payment-method", variantKey: "DEFAULT" }), w.renderAgreement({ selector: "#toss-agreement", variantKey: "AGREEMENT" })]);
+      tossWidgets = w;
+    } else {
+      await tossWidgets.setAmount({ currency: "KRW", value: total });
+    }
+    tossStatus.value = "ready";
+  } catch (e) {
+    tossWidgets = null;
+    tossStatus.value = "error";
+    tossError.value = tossErrMsg(e);
+  }
+}
+onMounted(initTossWidgets);
+watch(orderTotalRef, initTossWidgets);
+
+// 결제 제출(옛 CheckoutArea) — 위젯에서 고른 결제수단으로 결제창을 연다. 성공/실패는 successUrl/failUrl(/checkout/success, /checkout/fail)로 돌아온다
+async function handleFormSubmit() {
+  if (import.meta.server) return;
   const total = orderTotalRef.value;
-  if (total <= 0) {
-    await useAlert().openAlert("주문 금액을 확인해 주세요.");
+  if (total < TOSS_MIN_AMOUNT) {
+    await useAlert().openAlert({ title: "주문 금액 확인", variant: "warning", message: `결제 금액이 ${TOSS_MIN_AMOUNT}원 이상이어야 주문할 수 있습니다.
+장바구니와 쿠폰 적용 금액을 확인해 주세요.` });
+    return;
+  }
+  if (tossStatus.value !== "ready") await initTossWidgets(); // 아직 준비 안 됐으면(또는 이전에 실패했으면) 한 번 더 시도
+  if (tossStatus.value !== "ready" || !tossWidgets) {
+    await showTossFail(tossError.value || "결제수단을 불러오지 못했습니다.");
     return;
   }
   const orderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   const origin = window.location.origin;
   try {
-    await requestCardPayment({
-      amount: total,
+    await tossWidgets.requestPayment({
       orderId,
       orderName: "shopjoy 주문",
       successUrl: `${origin}/checkout/success`,
       failUrl: `${origin}/checkout/fail`,
+      customerEmail: billingForm.email || undefined,
+      customerName: billingForm.name || undefined,
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "결제 요청 중 오류가 발생했습니다.";
-    await useAlert().openAlert(msg);
+    if ((e as { code?: string })?.code === "USER_CANCEL") return; // 사용자가 결제창을 닫음
+    await showTossFail(tossErrMsg(e));
   }
 }
 

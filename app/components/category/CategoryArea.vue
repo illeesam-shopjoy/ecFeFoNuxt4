@@ -44,7 +44,8 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('카테고리');
 import { computed } from "vue";
 import AppImage from "~/components/ui/AppImage.vue";
-import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
+import { pdCategorySvc } from "~/svc/fo/ec/pd/pdCategorySvc";
+import type { PdCategoryTreeResType } from "~/types/pd/pdCategoryTreeType";
 
 defineProps({
   style_2: { type: Boolean, default: false },
@@ -54,7 +55,7 @@ defineProps({
 
 // 2026-09-13(성능 개선): lazy:true — 화면 마운트를 블로킹하지 않고 카테고리 로드 완료 시
 // categoryItems(computed)가 자동 갱신된다. default 폴백이 있어 로딩 중엔 빈 배열로 안전하게 렌더.
-const { data: catData } = useAsyncData<CategoryTreeResponse>(
+const { data: catData } = useAsyncData<PdCategoryTreeResType>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
   { default: () => ({ categoryTree: [], categoryIdToName: {}, categoryIdToDescendants: {} }), lazy: true }

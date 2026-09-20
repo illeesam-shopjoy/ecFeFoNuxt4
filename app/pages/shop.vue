@@ -272,9 +272,12 @@ import ProductListItem from "~/components/products/ProductListItem.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import Slider from "@vueform/slider";
 import "@vueform/slider/themes/default.css";
-import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
+import { pdCategorySvc } from "~/svc/fo/ec/pd/pdCategorySvc";
+import type { PdCategoryTreeResType } from "~/types/pd/pdCategoryTreeType";
 import { syBrandSvc } from "~/svc/fo/ec/sy/syBrandSvc";
-import { pdProductSvc, type PdProductPageParams, type PdProductPagedResult } from "~/svc/fo/ec/pd/pdProductSvc";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
+import type { PdProdPageParamsType } from "~/types/pd/pdProdPageParamsType";
+import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import { axiosSsr } from "~/utils/axiosSsr";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from "vue";
@@ -303,7 +306,7 @@ const { formatPrice } = usePrice();
  * 검색엔진이 상품 링크·이름을 HTML 로 읽게 하고, 브라우저(필터 변경·더보기·클라이언트 내비게이션)는 svc 로 ecBeBo 를 직접 호출한다.
  * server/api 는 배열 파라미터를 콤마 문자열로 받는다(server/api/fo/ec/pd/prod/page.get.ts).
  */
-function fetchProducts(params: PdProductPageParams): Promise<PdProductPagedResult> {
+function fetchProducts(params: PdProdPageParamsType): Promise<CoPagedResultType<PdProdType>> {
   if (!import.meta.server) return pdProductSvc.getPaged(params);
   const q: Record<string, string | number> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12 };
   if (params.categoryIds?.length) q.categoryIds = params.categoryIds.join(",");
@@ -313,7 +316,7 @@ function fetchProducts(params: PdProductPageParams): Promise<PdProductPagedResul
   if (params.priceMax != null) q.priceMax = params.priceMax;
   if (params.sort) q.sort = params.sort;
   if (params.keyword) q.keyword = params.keyword;
-  return axiosSsr.get<PdProductPagedResult>("/api/fo/ec/pd/prod/page", { params: q }).then((r) => r.data);
+  return axiosSsr.get<CoPagedResultType<PdProdType>>("/api/fo/ec/pd/prod/page", { params: q }).then((r) => r.data);
 }
 const toggleIn = (arr: string[], value: string): string[] => (arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]);
 
@@ -338,7 +341,7 @@ const isInitialLoading = computed(() => pending.value && displayItems.value.leng
 const SIZE_OPTIONS = ["FREE", "XS", "S", "M", "L", "XL"];
 
 // ── 사이드바: 상품 카테고리 (옛 ProductCategory) ─────────────────────────────
-const { data: catData } = useAsyncData<CategoryTreeResponse>(
+const { data: catData } = useAsyncData<PdCategoryTreeResType>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
   // 2026-09-19: server:false — 사이드바는 SEO 대상이 아닌데 서버 렌더가 이걸 기다리면(특히 Netlify→NAS WAN) 페이지 응답이 그만큼 늦어진다.
@@ -353,7 +356,7 @@ const expandCategoryIds = (ids: string[]): string[] => {
 };
 
 function buildParams(pageNo: number) {
-  const params: PdProductPageParams = { pageNo, pageSize: PAGE_SIZE };
+  const params: PdProdPageParamsType = { pageNo, pageSize: PAGE_SIZE };
   if (categoryIds.value.length) params.categoryIds = expandCategoryIds(categoryIds.value);
   if (brandIds.value.length) params.brandIds = brandIds.value;
   if (sizeCds.value.length) params.sizeCds = sizeCds.value;
@@ -368,7 +371,7 @@ function buildParams(pageNo: number) {
 // 2026-09-13 버그수정: "사이즈 XS만 여러번 클릭하니 화면 깜빡임" — useAsyncData 의 watch 옵션은 값이 바뀔 때마다 즉시 재조회해서
 // 토글 연타 시 매번 다른 결과가 화면에 반영돼 깜빡였다. watch 는 빼고 아래에서 300ms 디바운스로 직접 refresh() 를 호출해,
 // 클릭을 멈춘 뒤의 "최종 상태" 한 번만 서버에 물어본다.
-const { data: firstPage, pending, refresh } = useAsyncData<PdProductPagedResult>("shop-products-paged", () => fetchProducts(buildParams(1)));
+const { data: firstPage, pending, refresh } = useAsyncData<CoPagedResultType<PdProdType>>("shop-products-paged", () => fetchProducts(buildParams(1)));
 
 // 서버 렌더의 첫 페이지 조회가 일시적으로 실패하면(Ohio→NAS 콜드 지연 등) firstPage 가 비어 하이드레이션되고 클라이언트는 다시 조회하지 않는다
 // — 화면이 뜬 뒤 비어 있으면 브라우저가 ecBeBo 에서 1페이지를 직접 다시 가져온다.

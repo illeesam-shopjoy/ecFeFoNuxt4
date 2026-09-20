@@ -1,4 +1,4 @@
-import type { SyAttachType } from "~/types/sy/syAttachType";
+import type { SyAttachFileType, SyAttachType } from "~/types/sy/syAttachType";
 
 /** 상품 Q&A(상품문의). 필드명은 ecBeBo(JPA) PdProdQnaDto.Item(pd_prod_qna) 기준 — 서버가 내려주는 값을 그대로 담는다(대부분 optional). */
 export interface PdProdQnaType {
@@ -30,3 +30,6 @@ export interface PdProdQnaType {
   updByNm?: string; // 수정자명 (upd_by_nm)
   regSiteId?: string; // 등록 사이트ID (reg_site_id)
 }
+
+/** 서버 원본 Q&A — 첨부(attachFiles)가 아직 URL 보정 전인 AttachFile 형태. pdProductSvc.getQna 가 PdProdQnaType 으로 바꾼다. */
+export type PdProdQnaRawType = Omit<PdProdQnaType, "attachFiles"> & { attachFiles?: SyAttachFileType[] | null };

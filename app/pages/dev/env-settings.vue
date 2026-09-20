@@ -65,7 +65,8 @@
  * 개발 서버에서만 동작)를 통해 이뤄진다.
  */
 import { ref, reactive } from "vue";
-import { envSvc, type DevEnvFieldRow } from "~/svc/co/dev/envSvc";
+import { envSvc } from "~/svc/co/dev/envSvc";
+import type { SyDevEnvFieldType } from "~/types/sy/syDevEnvType";
 
 definePageMeta({ layout: "admin" });
 usePageTitle("환경변수 설정");
@@ -74,7 +75,7 @@ const config = useRuntimeConfig();
 const isLocal = config.public.mode === "local";
 
 const envPath = ref(".env");
-const groups = ref<Record<string, DevEnvFieldRow[]>>({});
+const groups = ref<Record<string, SyDevEnvFieldType[]>>({});
 const original = reactive<Record<string, string>>({});
 const draft = reactive<Record<string, string>>({});
 const revealed = reactive<Record<string, boolean>>({});

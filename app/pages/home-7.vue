@@ -343,7 +343,8 @@ import { ref, computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataTypeThree } from "~/types/co/coHeroSliderDataTypeThree";
 import AppImage from "~/components/ui/AppImage.vue";
-import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
+import { pdCategorySvc } from "~/svc/fo/ec/pd/pdCategorySvc";
+import type { PdCategoryTreeResType } from "~/types/pd/pdCategoryTreeType";
 import ProductItemTwo from "~/components/products/ProductItemTwo.vue";
 import VideoModal from "~/components/modals/VideoModal.vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
@@ -398,7 +399,7 @@ function handleHeroPrev() {
 }
 
 // 카테고리 2 (2026-09-13 성능 개선: lazy:true)
-const { data: catData } = useAsyncData<CategoryTreeResponse>(
+const { data: catData } = useAsyncData<PdCategoryTreeResType>(
   "category-tree",
   () => pdCategorySvc.getCategoryTree(),
   { default: () => ({ categoryTree: [], categoryIdToName: {}, categoryIdToDescendants: {} }), lazy: true }

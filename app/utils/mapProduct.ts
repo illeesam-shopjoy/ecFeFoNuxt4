@@ -2,7 +2,12 @@ import type { PdCategoryType } from "~/types/pd/pdCategoryType";
 import type { SyBrandType } from "~/types/sy/syBrandType";
 import type { PdReviewType } from "~/types/pd/pdReviewType";
 import type { PdProdOptType } from "~/types/pd/pdProdOptType";
-import type { SyAttachType } from "~/types/sy/syAttachType";
+import type { SyAttachFileType, SyAttachType } from "~/types/sy/syAttachType";
+import type { CoBasePageType } from "~/types/co/coBasePageType";
+import type { CoPagedResultType } from "~/types/co/coPagedResultType";
+import type { PdProdPageParamsType } from "~/types/pd/pdProdPageParamsType";
+import type { PdProdQnaRawType, PdProdQnaType } from "~/types/pd/pdProdQnaType";
+import type { PdProdType } from "~/types/pd/pdProdType";
 import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
 
 /**
@@ -82,21 +87,8 @@ export interface BeReviewCommentItem {
   regDate?: string | null;
 }
 
-/** ecBeBo AttachFile(sy_attach 조회 결과) 중 화면에 쓰는 필드 */
-export interface BeAttachFileItem {
-  attachId: string;
-  fileNm?: string | null;
-  fileExt?: string | null;
-  fileSize?: number | null;
-  attachUrl?: string | null;
-  cdnImgUrl?: string | null;
-  thumbCdnUrl?: string | null;
-  thumbUrl?: string | null;
-  refTableNm?: string | null;
-  refId?: string | null;
-  storagePath?: string | null;
-  sortOrd?: number | null;
-}
+/** ecBeBo AttachFile 원본 — 정의는 types/sy/syAttachType.ts(SyAttachFileType). */
+export type BeAttachFileItem = SyAttachFileType;
 
 export interface BeReviewItem {
   reviewId: string;
@@ -287,4 +279,49 @@ export function mapReview(r: BeReviewItem, cdnBase: string): PdReviewType {
   if (r.reviewTitle) base.reviewTitle = r.reviewTitle;
   if (replies.length) base.replies = replies;
   return base;
+}
+
+/** GET /fo/ec/pd/prod/{id}/reviews 응답 */
+export interface BeReviewsResponse {
+  summary: { avgRating?: number; reviewCount?: number };
+  reviewPage: { pageList: BeReviewItem[]; pageTotalCount: number };
+}
+
+/** 화면 조회 조건 → GET /fo/ec/pd/prod/page 쿼리 (배열 필터는 서버가 IN 조건으로 받는다) */
+export function buildProdPageQuery(params: PdProdPageParamsType): Record<string, unknown> {
+  const q: Record<string, unknown> = { pageNo: params.pageNo, pageSize: params.pageSize ?? 12, useYn: "Y" };
+  if (params.categoryIds?.length) q.categoryIds = params.categoryIds;
+  if (params.brandIds?.length) q.brandIds = params.brandIds;
+  if (params.sizeCds?.length) q.sizeInfoCds = params.sizeCds;
+  if (params.priceMin != null) q.priceMin = params.priceMin;
+  if (params.priceMax != null) q.priceMax = params.priceMax;
+  if (params.sort) q.sort = params.sort;
+  if (params.keyword) {
+    q.searchType = "prodNm";
+    q.searchValue = params.keyword;
+  }
+  return q;
+}
+
+/** 상품 페이징 응답 → 화면용(상품 매핑 + hasMore) */
+export function mapProdPage(page: CoBasePageType<BeProdItem>, cdnBase: string): CoPagedResultType<PdProdType> {
+  return {
+    items: page.pageList.map((p) => mapProduct(p, cdnBase) as unknown as PdProdType),
+    pageNo: page.pageNo,
+    pageSize: page.pageSize,
+    pageTotalCount: page.pageTotalCount,
+    pageTotalPage: page.pageTotalPage,
+    hasMore: page.pageNo < page.pageTotalPage,
+  };
+}
+
+/** Q&A 목록 — 첨부(attachFiles)를 브라우저에서 열 수 있는 CDN URL 로 보정 */
+export const mapQnaList = (rows: PdProdQnaRawType[], cdnBase: string): PdProdQnaType[] => rows.map((q) => ({ ...q, attachFiles: mapAttachFiles(q.attachFiles, cdnBase) }));
+
+/** 상품 단건 + 리뷰·평균평점 병합 */
+export function mapProdDetail(detail: BeProdItem, reviewsRes: BeReviewsResponse, cdnBase: string): PdProdType {
+  const out = mapProduct(detail, cdnBase);
+  out.reviews = reviewsRes.reviewPage.pageList.map((r) => mapReview(r, cdnBase));
+  if (typeof reviewsRes.summary?.avgRating === "number") out.rating = reviewsRes.summary.avgRating;
+  return out as unknown as PdProdType;
 }

@@ -15,3 +15,20 @@ export interface PdCategoryTreeType extends Partial<Omit<PdCategoryType, "catego
   value: string; // 값(코드) 대용 (= categoryId)
   smDesc?: string; // 짧은 설명 (= categoryDesc)
 }
+
+/** 카테고리 API(pdCategorySvc.getCategoryTree)가 조립하는 최상위 카테고리 노드 — 컬럼명은 pd_category 그대로 + 하위 {id,name} 목록. */
+export interface PdCategoryTreeItemType extends Partial<Omit<PdCategoryType, "categoryId">> {
+  categoryId: string;
+  img: string; // 카테고리 배너 이미지
+  parentTitle: string; // 표시명 (= categoryNm)
+  value: string; // 카테고리 코드 대용(= categoryId)
+  children: { id: string; name: string }[]; // 하위 카테고리
+  smDesc?: string;
+}
+
+export interface PdCategoryTreeResType {
+  categoryTree: PdCategoryTreeItemType[];
+  categoryIdToName: Record<string, string>;
+  /** 카테고리 id → 자기 자신 + 모든 하위 id. 백엔드 categoryIds 필터가 정확히 일치만 지원해 상위 선택 시 이 목록으로 확장해 조회한다. */
+  categoryIdToDescendants: Record<string, string[]>;
+}

@@ -6,16 +6,41 @@ import { defineStore } from "pinia";
 import { type SyCodeType } from "~/types/sy/syCodeType";
 import { syCodeSvc } from "~/svc/co/sy/syCodeSvc";
 
+/** 진행 중인 그룹 요청(중복 요청 방지) — 스토어 상태가 아니라 모듈 변수로 둔다 */
+const inflight = new Map<string, Promise<void>>();
+
 export const useCodeStore = defineStore("code", {
   state: () => ({
     codes: [] as SyCodeType[],
-    loaded: false,
+    loaded: false, // 전체 코드를 받았는지(loadStCodes)
+    loadedGrps: [] as string[], // 그룹 단위로 이미 받은 코드그룹(saLoadCodes) — 빈 그룹도 포함해 재요청을 막는다
   }),
 
   actions: {
-    /** 화면이 쓰는 코드그룹 로딩 (ecFeBo foCodeStore.saLoadCodes 와 같은 이름). 현재는 전체 코드를 1회 로드·캐시하므로 grps 는 표기용 */
-    async saLoadCodes(_grps?: string[]) {
-      await this.loadStCodes();
+    /**
+     * 화면이 쓰는 코드그룹만 로딩해 누적 적재한다 (ecFeBo foCodeStore.saLoadCodes 와 같은 이름).
+     * 이미 받은 그룹은 다시 요청하지 않고, 같은 그룹을 동시에 요청해도 한 번만 나간다. grps 를 안 주면 전체 로드.
+     */
+    async saLoadCodes(grps?: string[]) {
+      if (!grps?.length) return this.loadStCodes();
+      if (this.loaded) return; // 전체를 이미 받았으면 그룹 요청 불필요
+      const missing = [...new Set(grps)].filter((g) => !this.loadedGrps.includes(g));
+      if (!missing.length) return;
+      const key = missing.slice().sort().join(",");
+      let p = inflight.get(key);
+      if (!p) {
+        p = syCodeSvc
+          .getByGroups(missing)
+          .then((rows) => {
+            const have = new Set(this.codes.map((c) => c.codeId));
+            this.codes.push(...rows.filter((r) => !have.has(r.codeId)));
+            this.loadedGrps.push(...missing);
+          })
+          .catch((err) => console.error("[useCodeStore] 코드그룹 로드 실패:", missing, err))
+          .finally(() => inflight.delete(key));
+        inflight.set(key, p);
+      }
+      await p;
     },
     async loadStCodes() {
       if (this.loaded) return;

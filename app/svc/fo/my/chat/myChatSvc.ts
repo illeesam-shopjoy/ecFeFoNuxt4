@@ -4,6 +4,7 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import { requireMsgText } from "~/utils/mapMy";
 import type { BeChattItem, BeChattMsgItem } from "~/types/chatTypes";
 
 export const myChatSvc = {
@@ -18,11 +19,6 @@ export const myChatSvc = {
     (await axiosCsr.get<BeChattMsgItem[]>(`/fo/my/chat/${encodeURIComponent(chattId)}/messages`, { headers: useAuthHeaders(), params: afterMsgId ? { afterMsgId } : undefined })).data ?? [],
 
   /** POST /fo/my/chat/{id}/msg — 메시지 전송 */
-  sendMsg: async (chattId: string, msgText: string): Promise<BeChattMsgItem> => {
-    if (!msgText?.trim()) {
-      const msg = "메시지 내용이 필요합니다.";
-      throw Object.assign(new Error(msg), { statusCode: 400, statusMessage: msg, data: { message: msg, statusMessage: msg } });
-    }
-    return (await axiosCsr.post<BeChattMsgItem>(`/fo/my/chat/${encodeURIComponent(chattId)}/msg`, { msgText }, { headers: useAuthHeaders() })).data;
-  },
+  sendMsg: async (chattId: string, msgText: string): Promise<BeChattMsgItem> =>
+    (await axiosCsr.post<BeChattMsgItem>(`/fo/my/chat/${encodeURIComponent(chattId)}/msg`, { msgText: requireMsgText(msgText) }, { headers: useAuthHeaders() })).data,
 };

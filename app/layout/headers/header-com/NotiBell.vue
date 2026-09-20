@@ -15,6 +15,13 @@
     </button>
 
     <div v-show="open" class="absolute top-[calc(100%+14px)] right-0 w-[340px] max-w-[92vw] bg-white rounded-lg shadow-[0_10px_35px_rgba(0,0,0,0.16)] border border-[#e5e7eb] z-[9999] text-gray-800" @click.stop>
+      <!-- 비로그인: 알림 종은 항상 보이되 로그인 안내만 보여준다 -->
+      <div v-if="!isLoggedIn" class="px-5 py-8 text-center">
+        <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#faf3ea] text-[1.2rem] text-theme"><i class="fas fa-bell"></i></div>
+        <p class="m-0 mb-4 text-[0.85rem] text-gray-600">로그인하면 주문·배송·문의 알림을<br />이곳에서 확인할 수 있습니다.</p>
+        <nuxt-link to="/login" class="inline-block rounded-lg bg-theme px-5 py-2 text-[0.82rem] font-semibold text-white" @click="open = false">로그인</nuxt-link>
+      </div>
+      <template v-else>
       <div class="flex items-center gap-2 px-3.5 py-2.5 border-b border-[#f0f0f0]">
         <span class="text-[0.85rem] font-bold flex-1">알림 <span class="font-normal text-gray-400">{{ items.length }}건 · 안읽음 {{ unread }}</span></span>
         <button type="button" class="noti-btn" title="새로고침" aria-label="새로고침" @click="reload"><i class="fas fa-sync-alt text-[0.7rem]" :class="{ 'animate-spin': loading }"></i></button>
@@ -37,12 +44,14 @@
           </li>
         </ul>
       </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useAuthStore } from "~/store/useAuthStore";
 import { myNotiSvc } from "~/svc/fo/my/myNotiSvc";
 import type { MyNotiItem } from "~/types/fo/foMyType";
 
@@ -55,6 +64,8 @@ const expandedId = ref<string | null>(null);
 const shake = ref(false);
 const wrapRef = ref<HTMLElement | null>(null);
 const router = useRouter();
+const authStore = useAuthStore();
+const isLoggedIn = computed(() => authStore.isStLoggedIn);
 
 // 알림의 linkPage(ecFeBo 화면명) → 이 프로젝트 경로
 const PAGE_ROUTES: Record<string, (refId?: string) => string> = {
@@ -113,7 +124,7 @@ async function reload() {
 
 function toggle() {
   open.value = !open.value;
-  if (open.value) reload();
+  if (open.value && isLoggedIn.value) reload();
 }
 
 async function clickItem(n: MyNotiItem) {
@@ -150,10 +161,17 @@ const onOutside = (e: MouseEvent) => {
 let timer: ReturnType<typeof setInterval> | null = null;
 onMounted(() => {
   document.addEventListener("click", onOutside);
-  loadUnread(false);
+  if (isLoggedIn.value) loadUnread(false);
   timer = setInterval(() => {
-    if (!open.value && document.visibilityState === "visible") loadUnread();
+    if (isLoggedIn.value && !open.value && document.visibilityState === "visible") loadUnread();
   }, 60_000); // 1분마다 안읽음 수 갱신(팝오버가 닫혀 있고 탭이 보일 때만)
+});
+watch(isLoggedIn, (v) => {
+  if (v) loadUnread(false);
+  else {
+    unread.value = 0;
+    items.value = [];
+  }
 });
 onBeforeUnmount(() => {
   document.removeEventListener("click", onOutside);

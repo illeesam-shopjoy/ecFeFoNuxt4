@@ -103,7 +103,9 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import { foPmEventSvc, type PmEventCardType, type PmEventPagedResult } from "~/svc/fo/ec/pm/foPmEventSvc";
+import { foPmEventSvc } from "~/svc/fo/ec/pm/foPmEventSvc";
+import type { PmEventCardType } from "~/types/pm/pmEventViewType";
+import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import FoPager from "~/components/fo/FoPager.vue";
 import { usePageTitle } from "~/composables/usePageTitle";
 
@@ -170,7 +172,7 @@ const ongoingCount = computed(() => {
   return broadened.value ? 0 : pageTotalCount.value;
 });
 
-async function fetchEvents(statusCd: string | null): Promise<PmEventPagedResult> {
+async function fetchEvents(statusCd: string | null): Promise<CoPagedResultType<PmEventCardType>> {
   const sv = searchValue.value.trim();
   return foPmEventSvc.getPage({
     pageNo: pager.pageNo,
@@ -186,7 +188,7 @@ async function load() {
   errorMsg.value = "";
   broadened.value = false;
   try {
-    let r: PmEventPagedResult;
+    let r: CoPagedResultType<PmEventCardType>;
     if (searchValue.value.trim()) {
       // 검색어가 있으면 진행중 필터 없이 검색(종료 탭이면 종료만)
       r = await fetchEvents(activeTab.value === "ended" ? "ENDED" : null);

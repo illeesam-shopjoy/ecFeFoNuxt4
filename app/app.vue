@@ -17,6 +17,8 @@
     :title="alertState.title"
     :message="alertState.message"
     :confirm-text="alertState.confirmText"
+    :variant="alertState.variant"
+    :details="alertState.details"
     @close="alertHandleClose"
   />
 </template>

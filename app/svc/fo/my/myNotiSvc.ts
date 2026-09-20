@@ -4,25 +4,19 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
+import { cleanParams } from "~/utils/svcInput";
+import { latestNotis } from "~/utils/mapMy";
 import type { MyListParams, MyNotiItem, MyPageResult } from "~/types/fo/foMyType";
 
-const clean = (p: Record<string, unknown>) => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined && v !== ""));
 const auth = () => ({ headers: useAuthHeaders() });
 
 export const myNotiSvc = {
-  /** GET /fo/my/noti/list — 알림 목록. 백엔드는 전체를 주므로 최신순 정렬 후 limit(1~100)만 자른다 */
-  getList: async (limit = 30): Promise<MyNotiItem[]> => {
-    const max = Math.min(Math.max(Number(limit) || 30, 1), 100);
-    const list = (await axiosCsr.get<MyNotiItem[]>("/fo/my/noti/list", auth())).data ?? [];
-    return list
-      .slice()
-      .sort((a, b) => String((b as unknown as Record<string, unknown>).regDate ?? "").localeCompare(String((a as unknown as Record<string, unknown>).regDate ?? "")))
-      .slice(0, max);
-  },
+  /** GET /fo/my/noti/list — 알림 목록. 백엔드는 전체를 주므로 최신순 정렬 후 limit(1~100)만 자른다(utils/mapMy.latestNotis) */
+  getList: async (limit = 30): Promise<MyNotiItem[]> => latestNotis((await axiosCsr.get<MyNotiItem[]>("/fo/my/noti/list", auth())).data ?? [], limit),
 
   /** GET /fo/my/noti/page — 알림 목록(페이징, 기본 1페이지 10건) */
   getPage: async (params: MyListParams & { readYn?: string; notiTypeCd?: string }): Promise<MyPageResult<MyNotiItem>> =>
-    (await axiosCsr.get<MyPageResult<MyNotiItem>>("/fo/my/noti/page", { ...auth(), params: { pageNo: 1, pageSize: 10, ...clean(params as Record<string, unknown>) } })).data,
+    (await axiosCsr.get<MyPageResult<MyNotiItem>>("/fo/my/noti/page", { ...auth(), params: { pageNo: 1, pageSize: 10, ...cleanParams(params as Record<string, unknown>) } })).data,
 
   /** GET /fo/my/noti/unread-count — 안 읽은 알림 수 */
   getUnreadCount: async (): Promise<number> => (await axiosCsr.get<number>("/fo/my/noti/unread-count", auth())).data ?? 0,

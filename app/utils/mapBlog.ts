@@ -1,4 +1,6 @@
 import type { CmBlogType } from "~/types/cm/cmBlogType";
+import type { CoBasePageType } from "~/types/co/coBasePageType";
+import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import { resolveCdnUrl, fixRelativeCdnImgSrc } from "~/utils/cdnUrl";
 
 export interface BeBlogFileItem {
@@ -31,5 +33,17 @@ export function mapBlog(b: BeBlogItem, cdnBase: string): CmBlogType {
     regDate: b.regDate ?? "",
     blogSummary: b.blogSummary ?? "",
     blogContent: fixRelativeCdnImgSrc(b.blogContent, cdnBase),
+  };
+}
+
+/** 블로그 페이징 응답 → 화면용(글 매핑 + hasMore) */
+export function mapBlogPage(page: CoBasePageType<BeBlogItem>, cdnBase: string): CoPagedResultType<CmBlogType> {
+  return {
+    items: page.pageList.map((b) => mapBlog(b, cdnBase)),
+    pageNo: page.pageNo,
+    pageSize: page.pageSize,
+    pageTotalCount: page.pageTotalCount,
+    pageTotalPage: page.pageTotalPage,
+    hasMore: page.pageNo < page.pageTotalPage,
   };
 }
