@@ -34,8 +34,8 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, ymd } from "~/composables/useMyList";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
-import type { MyRow } from "~/types/foMyType";
-import type { FoFormColumn, FoGridColumn } from "~/types/foCompType";
+import type { MyRow } from "~/types/fo/foMyType";
+import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 

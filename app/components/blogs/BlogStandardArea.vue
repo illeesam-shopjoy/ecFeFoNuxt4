@@ -40,7 +40,7 @@ import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import BlogSidebar from "../common/sidebar/BlogSidebar.vue";
 import FoPager from "~/components/fo/FoPager.vue";
 import { useClientPager } from "~/composables/useClientPager";
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 import BlogStandardItem from "./BlogStandardItem.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 

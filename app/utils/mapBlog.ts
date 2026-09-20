@@ -1,4 +1,4 @@
-import type { CoBlogType } from "~/types/coBlogType";
+import type { CmBlogType } from "~/types/cm/cmBlogType";
 import { resolveCdnUrl, fixRelativeCdnImgSrc } from "~/utils/cdnUrl";
 
 export interface BeBlogFileItem {
@@ -19,8 +19,8 @@ export interface BeBlogItem {
   files?: BeBlogFileItem[] | null;
 }
 
-/** ecBeBo CmBlogDto.Item → CoBlogType */
-export function mapBlog(b: BeBlogItem, cdnBase: string): CoBlogType {
+/** ecBeBo CmBlogDto.Item → CmBlogType */
+export function mapBlog(b: BeBlogItem, cdnBase: string): CmBlogType {
   const sorted = [...(b.files ?? [])].sort((a, c) => (a.sortOrd ?? 0) - (c.sortOrd ?? 0));
   const cover = sorted[0];
   return {

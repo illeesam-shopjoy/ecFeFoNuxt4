@@ -1,13 +1,13 @@
-import type { CoCategoryType } from "~/types/coCategoryType";
-import type { CoBrandType } from "~/types/coBrandType";
-import type { PdReviewType } from "~/types/pdReviewType";
-import type { PdOptionType } from "~/types/pdOptionType";
+import type { PdCategoryType } from "~/types/pd/pdCategoryType";
+import type { SyBrandType } from "~/types/sy/syBrandType";
+import type { PdReviewType } from "~/types/pd/pdReviewType";
+import type { PdProdOptType } from "~/types/pd/pdProdOptType";
 import { resolveCdnUrl } from "~/utils/cdnUrl";
 
 /**
- * ecBeBo(Spring Boot 백엔드) 응답 shape → 이 앱의 PdProductType으로 변환.
+ * ecBeBo(Spring Boot 백엔드) 응답 shape → 이 앱의 PdProdType으로 변환.
  * 2026-09 BFF 전환으로 Prisma 직결 DB row 대신 ecBeBo의 PdProdDto.Item(+prodImgs/prodOpts/prodSkus)을 입력으로 받는다.
- * PdProductType 필드명 자체를 ecBeBo(JPA) 기준으로 맞춰뒀기 때문에(app/types/pdProductType.ts 참조) 대부분 그대로
+ * PdProdType 필드명 자체를 ecBeBo(JPA) 기준으로 맞춰뒀기 때문에(app/types/pdProdType.ts 참조) 대부분 그대로
  * 통과시키면 되고, img/thumbImg/bigImg/relatedImages/rating/smDesc 처럼 JPA에 없는 파생값만 이 파일에서 계산한다.
  */
 
@@ -110,17 +110,17 @@ function classifyOptionType(typeCd: string | null | undefined): "color" | "size"
   return "etc";
 }
 
-function mapOption(o: BeProdOptItem, fallbackTypeCd?: string | null): PdOptionType {
+function mapOption(o: BeProdOptItem, fallbackTypeCd?: string | null): PdProdOptType {
   return {
-    optionId: o.prodOptId,
-    optionCode: o.prodOptStdCd ?? o.prodOptId,
-    optionNm: o.prodOptNm,
-    optionType: o.prodOpt1TypeCd ?? o.prodOpt2TypeCd ?? fallbackTypeCd ?? "",
-    optionLevel: o.prodOptTypeLevel ?? 1,
+    prodOptId: o.prodOptId,
+    prodOptStdCd: o.prodOptStdCd ?? o.prodOptId,
+    prodOptNm: o.prodOptNm,
+    prodOptTypeCd: o.prodOpt1TypeCd ?? o.prodOpt2TypeCd ?? fallbackTypeCd ?? "",
+    prodOptTypeLevel: o.prodOptTypeLevel ?? 1,
   };
 }
 
-/** ecBeBo PdProdDto.Item(+연관) → PdProductType 호환 객체 */
+/** ecBeBo PdProdDto.Item(+연관) → PdProdType 호환 객체 */
 export function mapProduct(p: BeProdItem, cdnBase: string): Record<string, unknown> {
   const resolveProdCdnUrl = (path: string | null | undefined) => resolveCdnUrl(path, cdnBase);
   const imgs = p.prodImgs ?? [];
@@ -143,25 +143,25 @@ export function mapProduct(p: BeProdItem, cdnBase: string): Record<string, unkno
     .map((i) => resolveProdCdnUrl(i.cdnImgUrl))
     .filter((u): u is string => Boolean(u));
 
-  const category: CoCategoryType | undefined = p.categoryId ? { categoryId: p.categoryId, categoryNm: p.cateNm ?? "", categoryDepth: p.parentCategoryId ? 2 : 1 } : undefined;
+  const category: PdCategoryType | undefined = p.categoryId ? { categoryId: p.categoryId, categoryNm: p.cateNm ?? "", categoryDepth: p.parentCategoryId ? 2 : 1 } : undefined;
   // 목록/상세 API 응답엔 상위 카테고리 "명"까지는 안 내려온다(ID만) — 이름이 필요하면 카테고리 목록을 별도 조회해야 함.
-  const parentCategory: CoCategoryType | undefined = p.parentCategoryId ? { categoryId: p.parentCategoryId, categoryNm: "", categoryDepth: 1 } : undefined;
-  const brand: CoBrandType | undefined = p.brandId ? { brandId: p.brandId, brandCode: p.brandId, brandNm: p.brandNm ?? "" } : undefined;
+  const parentCategory: PdCategoryType | undefined = p.parentCategoryId ? { categoryId: p.parentCategoryId, categoryNm: "", categoryDepth: 1 } : undefined;
+  const brand: SyBrandType | undefined = p.brandId ? { brandId: p.brandId, brandCode: p.brandId, brandNm: p.brandNm ?? "" } : undefined;
 
   // 2026-09-14 버그수정 — o.prodOpt1TypeCd/prodOpt2TypeCd는 pd_prod_opt 각 행에는 항상
   // null로 내려온다(실제로 확인함, BO "옵션설정" 저장 시 이 값들은 상품 레벨 플랫 컬럼
   // p.prodOpt1TypeCd/prodOpt2TypeCd에만 저장되고 옵션값 행 자체엔 안 채워짐) — 그래서
   // 예전 코드는 항상 p.prodOpt1TypeCd(1단=색상)로만 폴백해, 2단(사이즈) 옵션값까지 전부
-  // "색상"으로 분류되어 optionSizes가 항상 비어 있었다. o.prodOptTypeLevel(1|2)로 어느
+  // "색상"으로 분류되어 prodOpt1List(사이즈)가 항상 비어 있었다. o.prodOptTypeLevel(1|2)로 어느
   // 상품 레벨 컬럼을 볼지 먼저 골라야 함.
-  const optionColors: PdOptionType[] = [];
-  const optionSizes: PdOptionType[] = [];
+  const prodOpt2List: PdProdOptType[] = [];
+  const prodOpt1List: PdProdOptType[] = [];
   for (const o of p.prodOpts ?? []) {
     const levelTypeCd = o.prodOptTypeLevel === 2 ? p.prodOpt2TypeCd : p.prodOpt1TypeCd;
     const kind = classifyOptionType(o.prodOpt1TypeCd ?? o.prodOpt2TypeCd ?? levelTypeCd);
     const mapped = mapOption(o, levelTypeCd);
-    if (kind === "size") optionSizes.push(mapped);
-    else optionColors.push(mapped); // 색상/기타는 optionColors 쪽에 몰아둠 (템플릿이 컬러 스와치를 기본 옵션 UI로 씀)
+    if (kind === "size") prodOpt1List.push(mapped);
+    else prodOpt2List.push(mapped); // 색상/기타는 prodOpt2List 쪽에 몰아둠 (템플릿이 컬러 스와치를 기본 옵션 UI로 씀)
   }
 
   const salePrice = p.discntPrice ?? p.salePrice ?? p.stdPrice ?? 0;
@@ -187,8 +187,8 @@ export function mapProduct(p: BeProdItem, cdnBase: string): Record<string, unkno
     brand,
     relatedImages,
     contentHtml: p.contentHtml ?? "",
-    optionSizes,
-    optionColors,
+    prodOpt1List,
+    prodOpt2List,
     prodSkus: (p.prodSkus ?? [])
       .filter((s) => s.useYn !== "N")
       .map((s) => ({
@@ -200,10 +200,10 @@ export function mapProduct(p: BeProdItem, cdnBase: string): Record<string, unkno
         stockQty: s.stockQty,
       })),
     reviews: [] as PdReviewType[],
-    // 아래 3개(trending/banner/topRated)는 실 스키마에 대응 컬럼이 없음 — 큐레이션 기능 재도입 시 별도 정책 필요, 지금은 항상 false
-    trending: false,
-    banner: false,
-    topRated: false,
+    // 아래 3개(isTrending/isBanner/isTopRated)는 실 스키마에 대응 컬럼이 없음 — 큐레이션 기능 재도입 시 별도 정책 필요, 지금은 항상 false
+    isTrending: false,
+    isBanner: false,
+    isTopRated: false,
     isBest: p.isBest === "Y",
     isNew: p.isNew === "Y",
     saleDiscntRate,
@@ -229,7 +229,7 @@ export function mapReview(r: BeReviewItem): PdReviewType {
     rating: Number(r.rating) || 0,
     reviewContent: r.reviewContent,
   };
-  if (r.reviewTitle) base.title = r.reviewTitle;
+  if (r.reviewTitle) base.reviewTitle = r.reviewTitle;
   if (replies.length) base.replies = replies;
   return base;
 }

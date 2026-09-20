@@ -36,7 +36,7 @@ const currentFilePath = useCurrentFilePath();
 import LayoutFive from "~/layout/LayoutFive.vue";
 import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
-import { type CoHeroSliderDataType } from "~/types/coHeroSliderDataType";
+import { type CoHeroSliderDataType } from "~/types/co/coHeroSliderDataType";
 import TrendingProducts from "~/components/products/TrendingProducts.vue";
 import ShopBanner from "~/components/shop-banner/ShopBanner.vue";
 import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";

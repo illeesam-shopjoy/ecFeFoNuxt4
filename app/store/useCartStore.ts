@@ -3,12 +3,12 @@
  * 담은 상품 목록, 수량, 합계를 관리하고 localStorage와 동기화합니다.
  */
 import { defineStore } from "pinia";
-import { type PdProductType } from "~/types/pdProductType";
-import { type OrCartItemType } from "~/types/orCartItemType";
+import { type PdProdType } from "~/types/pd/pdProdType";
+import { type OdCartItemType } from "~/types/od/odCartItemType";
 
 export const useCartStore = defineStore("cart", {
   state: () => ({
-    cartProducts: [] as OrCartItemType[], // 장바구니에 담긴 상품 목록
+    cartProducts: [] as OdCartItemType[], // 장바구니에 담긴 상품 목록
     orderQuantity: 1 as number, // 주문 수량 (추가 시 적용)
     quantityCount: 0 as number, // 전체 수량 합계
     total: 0 as number, // 총 금액
@@ -16,10 +16,10 @@ export const useCartStore = defineStore("cart", {
   actions: {
     // 2026-09 추가 — 옵션상품(SKU) 지원: prodSkuId 가 다르면 같은 상품이라도 별도 줄로 담는다
     // (예: 같은 티셔츠의 빨강/파랑을 각각 다른 재고로 관리해야 하므로 수량을 합치면 안 됨).
-    addStCartProduct(payload: PdProductType, prodSkuId?: string) {
+    addStCartProduct(payload: PdProdType, prodSkuId?: string) {
       const isExist = this.cartProducts.some((i) => i.prodId === payload.prodId && i.selectedProdSkuId === prodSkuId);
       if (!isExist) {
-        const newItem: OrCartItemType = {
+        const newItem: OdCartItemType = {
           ...payload,
           orderQuantity: 1,
           selectedProdSkuId: prodSkuId,
@@ -44,7 +44,7 @@ export const useCartStore = defineStore("cart", {
       }
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
     },
-    setStQuantityDecrement(payload: OrCartItemType) {
+    setStQuantityDecrement(payload: OdCartItemType) {
       // 해당 상품 수량 1 감소 (1 미만으로 내려가지 않음). selectedProdSkuId까지 일치해야
       // 같은 상품의 다른 옵션(SKU) 줄을 잘못 건드리지 않는다.
       this.cartProducts.map((item) => {
@@ -60,7 +60,7 @@ export const useCartStore = defineStore("cart", {
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
     },
     // remover_cart_products
-    removerStCartProducts(payload: OrCartItemType) {
+    removerStCartProducts(payload: OdCartItemType) {
       this.cartProducts = this.cartProducts.filter((p) => !(p.prodId === payload.prodId && p.selectedProdSkuId === payload.selectedProdSkuId));
       useNuxtApp().$toast.error(`${payload.prodNm} 장바구니에서 제거됨`);
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));

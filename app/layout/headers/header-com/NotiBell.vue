@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { myNotiSvc } from "~/svc/fo/my/myNotiSvc";
-import type { MyNotiItem } from "~/types/foMyType";
+import type { MyNotiItem } from "~/types/fo/foMyType";
 
 const open = ref(false);
 const loading = ref(false);

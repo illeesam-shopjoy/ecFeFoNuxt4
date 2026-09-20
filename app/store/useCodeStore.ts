@@ -3,7 +3,7 @@
  * codeGrp / codeValue / codeLabel 구조의 코드 목록을 /api/co/sy/code 에서 로드·캐시합니다.
  */
 import { defineStore } from "pinia";
-import { type SyCodeType } from "~/types/syCodeType";
+import { type SyCodeType } from "~/types/sy/syCodeType";
 import { syCodeSvc } from "~/svc/co/sy/syCodeSvc";
 
 export const useCodeStore = defineStore("code", {

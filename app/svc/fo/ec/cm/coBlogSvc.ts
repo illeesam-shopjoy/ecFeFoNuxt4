@@ -5,11 +5,11 @@
 import { axiosCsr } from "~/utils/axiosCsr";
 import { mapBlog, type BeBlogItem } from "~/utils/mapBlog";
 import { beConfig } from "~/utils/beConfig";
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 
 /** 목록 응답(페이징) — server/api/fo/ec/cm/bltn 와 같은 모양 */
 export interface CoBlogPagedResult {
-  items: CoBlogType[];
+  items: CmBlogType[];
   pageNo: number;
   pageSize: number;
   pageTotalCount: number;
@@ -27,7 +27,7 @@ interface BePage<T> {
 
 export const coBlogSvc = {
   /** GET /fo/ec/cm/bltn/page — 블로그 전체 목록(최대 200건, 홈 최신글/사이드바용) */
-  getPage: async (): Promise<CoBlogType[]> => {
+  getPage: async (): Promise<CmBlogType[]> => {
     const page = (await axiosCsr.get<BePage<BeBlogItem>>("/fo/ec/cm/bltn/page", { params: { pageSize: 200, useYn: "Y" } })).data;
     return page.pageList.map((b) => mapBlog(b, beConfig.cdnBase));
   },
@@ -46,7 +46,7 @@ export const coBlogSvc = {
   },
 
   /** GET /fo/ec/cm/bltn/{id} — 블로그 단건 */
-  getById: async (id: string): Promise<CoBlogType> => {
+  getById: async (id: string): Promise<CmBlogType> => {
     const row = (await axiosCsr.get<BeBlogItem>(`/fo/ec/cm/bltn/${encodeURIComponent(id)}`)).data;
     return mapBlog(row, beConfig.cdnBase);
   },

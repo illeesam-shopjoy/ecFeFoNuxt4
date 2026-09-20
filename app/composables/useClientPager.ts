@@ -6,7 +6,7 @@
  *   <div v-for="b in cp.rows()">…  <fo-pager :pager="cp.pager" :on-set-page="n => handleSelectAction('pager-setPage', n)" :on-size-change="() => handleSelectAction('pager-sizeChange')" />
  */
 import { reactive, watch } from "vue";
-import type { FoPagerState } from "~/types/foCompType";
+import type { FoPagerState } from "~/types/fo/foCompType";
 
 export function useClientPager<T>(getList: () => T[], pageSize = 10, pageSizes: number[] = []) {
   const pager: FoPagerState = reactive({ pageNo: 1, pageSize, pageSizes, pageTotalCount: 0, pageTotalPage: 1 });

@@ -1,5 +1,5 @@
 /** 카테고리 트리 타입 */
-export interface CoCategoryTreeType {
+export interface PdCategoryTreeType {
   categoryId: string; // 카테고리ID
   id?: string; // ID (기존 호환, categoryId와 동일)
   img?: string; // 이미지

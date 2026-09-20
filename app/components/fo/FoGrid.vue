@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends FoRow">
-import type { FoGridColumn, FoGridRowAction, FoRow } from "~/types/foCompType";
+import type { FoGridColumn, FoGridRowAction, FoRow } from "~/types/fo/foCompType";
 
 const props = withDefaults(
   defineProps<{

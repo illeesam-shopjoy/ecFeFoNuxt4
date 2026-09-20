@@ -238,15 +238,15 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import CountrySelect from "~/components/checkout/CountrySelect.vue";
 import FoForm from "~/components/fo/FoForm.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
-import type { FoFormColumn, FoGridColumn } from "~/types/foCompType";
+import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
 import CouponModal from "~/components/modals/CouponModal.vue";
 import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useCartStore } from "~/store/useCartStore";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
-import type { SyCheckoutLoginFormType } from "~/types/syCheckoutLoginFormType";
-import type { AppliedCoupons, CouponCategory } from "~/types/syCouponType";
+import type { SyCheckoutLoginFormType } from "~/types/sy/syCheckoutLoginFormType";
+import type { AppliedCoupons, CouponCategory } from "~/types/pm/pmCouponType";
 
 const state = useCartStore();
 import { usePageTitle } from "~/composables/usePageTitle";

@@ -79,9 +79,9 @@ import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import { myOrderSvc } from "~/svc/fo/my/myOrderSvc";
-import type { MyRow } from "~/types/foMyType";
-import type { SyCodeType } from "~/types/syCodeType";
-import type { FoGridColumn } from "~/types/foCompType";
+import type { MyRow } from "~/types/fo/foMyType";
+import type { SyCodeType } from "~/types/sy/syCodeType";
+import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 

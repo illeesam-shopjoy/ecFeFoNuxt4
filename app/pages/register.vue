@@ -66,9 +66,9 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { ref } from "vue";
 import FoForm from "~/components/fo/FoForm.vue";
 import { useFoValidate } from "~/composables/useFoValidate";
-import type { FoFormColumn } from "~/types/foCompType";
+import type { FoFormColumn } from "~/types/fo/foCompType";
 import * as yup from "yup";
-import type { MbRegisterFormType } from "~/types/mbRegisterFormType";
+import type { MbRegisterFormType } from "~/types/mb/mbRegisterFormType";
 import { useAuthStore } from "~/store/useAuthStore";
 import { useRouter } from "vue-router";
 

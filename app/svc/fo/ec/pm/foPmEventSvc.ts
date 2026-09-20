@@ -3,7 +3,7 @@
  * ecBeBo FoPmEventController(/api/fo/ec/pm/event, 공개) 를 직접 부른다.
  */
 import { axiosCsr } from "~/utils/axiosCsr";
-import type { PmTimedealItemType } from "~/types/pmTimedealType";
+import type { PmTimedealItemType } from "~/types/pm/pmTimedealType";
 
 /** 이벤트 목록 카드 1건 */
 export interface PmEventCardType {

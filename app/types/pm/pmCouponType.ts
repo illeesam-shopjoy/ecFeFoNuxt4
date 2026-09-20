@@ -8,7 +8,7 @@ export type CouponCategory = "order" | "product" | "shipping";
 
 export type CouponDiscountType = "amount" | "percent" | "free-shipping";
 
-export interface SyCouponType {
+export interface PmCouponType {
   couponId: string;
   category: CouponCategory;
   name: string; // "5,000원 할인 쿠폰"
@@ -18,4 +18,4 @@ export interface SyCouponType {
 }
 
 /** category별로 적용된(또는 미적용=null) 쿠폰 */
-export type AppliedCoupons = Record<CouponCategory, SyCouponType | null>;
+export type AppliedCoupons = Record<CouponCategory, PmCouponType | null>;

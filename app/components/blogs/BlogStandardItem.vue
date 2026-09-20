@@ -34,11 +34,11 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('블로그 아이템');
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 import AppImage from "~/components/ui/AppImage.vue";
 
 defineProps<{
-  blog: CoBlogType;
+  blog: CmBlogType;
   style_2?: boolean;
   style_3?: boolean;
 }>();

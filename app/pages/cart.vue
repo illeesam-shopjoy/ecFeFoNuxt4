@@ -98,7 +98,7 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { useCartStore } from "~/store/useCartStore";
 import AppImage from "~/components/ui/AppImage.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
-import type { FoGridColumn } from "~/types/foCompType";
+import type { FoGridColumn } from "~/types/fo/foCompType";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({

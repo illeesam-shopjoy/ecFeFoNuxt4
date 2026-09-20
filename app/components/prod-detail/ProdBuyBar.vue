@@ -23,9 +23,9 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from "vue";
-import type { PdProductType } from "~/types/pdProductType";
+import type { PdProdType } from "~/types/pd/pdProdType";
 
-const props = defineProps<{ item: PdProductType; show: boolean }>();
+const props = defineProps<{ item: PdProdType; show: boolean }>();
 const barRef = ref<HTMLElement | null>(null);
 
 // 2026-09-20(요청사항: "하단 구매하기바와 채팅아이콘이 겹쳐보이는데 채팅아이콘이 약간 위로") — 구매바가 나타나면 우하단 플로팅 요소

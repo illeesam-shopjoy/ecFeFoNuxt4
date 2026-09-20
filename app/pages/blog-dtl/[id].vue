@@ -210,7 +210,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 import { computed } from "vue";
 import BlogItem from "~/components/blogs/BlogItem.vue";
@@ -220,14 +220,14 @@ import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import { CDN_URL } from "~/conts/baseConst";
 import FoForm from "~/components/fo/FoForm.vue";
 import { useFoValidate } from "~/composables/useFoValidate";
-import type { FoFormColumn } from "~/types/foCompType";
+import type { FoFormColumn } from "~/types/fo/foCompType";
 import * as yup from "yup";
 
 const route = useRoute();
 const id = route.params.id as string;
 
 // SEO 단위화면(useSeoDetail): 서버 렌더링은 SEO 용 최소 정보(제목/요약/이미지)만, 화면이 뜬 뒤 브라우저가 ecBeBo 에서 본문까지 직접 조회한다.
-const { item, pending, seo } = await useSeoDetail<CoBlogType>(`blog-${id}`, id ? `/api/fo/ec/cm/bltn/${encodeURIComponent(id)}` : null, () => coBlogSvc.getById(id));
+const { item, pending, seo } = await useSeoDetail<CmBlogType>(`blog-${id}`, id ? `/api/fo/ec/cm/bltn/${encodeURIComponent(id)}` : null, () => coBlogSvc.getById(id));
 
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useGa } from "~/composables/useGa";
@@ -254,7 +254,7 @@ watch(
 // ── 추천 글 (옛 BlogDetailsArea) ─────────────────────────────
 // 2026-09-13(성능 개선): lazy:true — 본문(item)만 SSR을 블로킹하고 "추천 글"은 보조
 // 콘텐츠라 화면이 뜬 뒤 비동기로 채워지게 한다.
-const { data: allBlogs, pending: relatedPending } = useAsyncData<CoBlogType[]>(
+const { data: allBlogs, pending: relatedPending } = useAsyncData<CmBlogType[]>(
   "blog-related",
   () => coBlogSvc.getPage(),
   { lazy: true, server: false } // 보조 콘텐츠 — 서버 렌더 제외

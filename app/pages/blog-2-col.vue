@@ -34,7 +34,7 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { ref, reactive, computed } from "vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 import FoPager from "~/components/fo/FoPager.vue";
 import { useClientPager } from "~/composables/useClientPager";
 import BlogStandardItem from "~/components/blogs/BlogStandardItem.vue";

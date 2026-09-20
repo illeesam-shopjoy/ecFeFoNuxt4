@@ -36,7 +36,7 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('히어로 슬라이더');
 import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
-import { type CoHeroSliderDataType } from "~/types/coHeroSliderDataType";
+import { type CoHeroSliderDataType } from "~/types/co/coHeroSliderDataType";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 defineProps({
   style_2: { type: Boolean, default: false },

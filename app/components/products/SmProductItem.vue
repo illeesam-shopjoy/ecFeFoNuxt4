@@ -21,7 +21,7 @@
           <span v-html="prd.prodNm"></span>
         </nuxt-link>
       </h5>
-      <div v-if="prd.topRated" class="rating rating-shop mb-5">
+      <div v-if="prd.isTopRated" class="rating rating-shop mb-5">
         <ul>
           <li>
             <span><i class="fas fa-star"></i></span>
@@ -59,11 +59,11 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 아이템 (소)');
 import { useCartStore } from "~/store/useCartStore";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import AppImage from "~/components/ui/AppImage.vue";
 
 defineProps<{
-  prd: PdProductType;
+  prd: PdProdType;
 }>();
 const state = useCartStore();
 const { formatPrice } = usePrice();

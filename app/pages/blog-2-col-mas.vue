@@ -67,7 +67,7 @@ import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 import AppImage from "~/components/ui/AppImage.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 
@@ -83,7 +83,7 @@ usePageTitle("블로그 2단 메이슨리");
 // 목록 끝에 다다르면(IntersectionObserver) 자동으로 다음 20개를 더 불러온다.
 const PAGE_SIZE = 20;
 const pageNo = ref(1);
-const blogs = ref<CoBlogType[]>([]);
+const blogs = ref<CmBlogType[]>([]);
 const pending = ref(true);
 const loadingMore = ref(false);
 const hasMore = ref(false);

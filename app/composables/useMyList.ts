@@ -6,7 +6,7 @@
  */
 import { reactive } from "vue";
 import { useAuthStore } from "~/store/useAuthStore";
-import type { MyListParams, MyRow } from "~/types/foMyType";
+import type { MyListParams, MyRow } from "~/types/fo/foMyType";
 
 export const MY_PRESETS = [
   { months: 1, label: "1달" },

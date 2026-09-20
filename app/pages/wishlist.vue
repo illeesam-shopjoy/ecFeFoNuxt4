@@ -55,7 +55,7 @@ import { useCartStore } from "~/store/useCartStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
 import AppImage from "~/components/ui/AppImage.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
-import type { FoGridColumn } from "~/types/foCompType";
+import type { FoGridColumn } from "~/types/fo/foCompType";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({

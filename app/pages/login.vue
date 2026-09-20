@@ -100,9 +100,9 @@ import TermsAgreementModal from "~/components/modals/TermsAgreementModal.vue";
 import { ref } from "vue";
 import FoForm from "~/components/fo/FoForm.vue";
 import { useFoValidate } from "~/composables/useFoValidate";
-import type { FoFormColumn } from "~/types/foCompType";
+import type { FoFormColumn } from "~/types/fo/foCompType";
 import * as yup from "yup";
-import type { SyLoginFormType } from "~/types/syLoginFormType";
+import type { SyLoginFormType } from "~/types/sy/syLoginFormType";
 import { useAuthStore } from "~/store/useAuthStore";
 import { useRouter } from "vue-router";
 

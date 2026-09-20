@@ -3,15 +3,15 @@
  * 찜한 상품 목록을 관리하고 localStorage와 동기화합니다.
  */
 import { defineStore } from "pinia";
-import { type PdProductType } from "~/types/pdProductType";
-import { type MbWishlistItemType } from "~/types/mbWishlistItemType";
+import { type PdProdType } from "~/types/pd/pdProdType";
+import { type MbLikeItemType } from "~/types/mb/mbLikeItemType";
 
 export const useWishlistStore = defineStore("wishlist", {
   state: () => ({
-    wishlists: [] as MbWishlistItemType[], // 위시리스트에 담긴 상품 목록
+    wishlists: [] as MbLikeItemType[], // 위시리스트에 담긴 상품 목록
   }),
   actions: {
-    addStWishlistProduct(payload: PdProductType) {
+    addStWishlistProduct(payload: PdProdType) {
       // 위시리스트에 추가 또는 이미 있으면 제거 (토글)
       const isAdded = this.wishlists.findIndex((p) => p.prodId === payload.prodId);
       if (isAdded !== -1) {
@@ -23,7 +23,7 @@ export const useWishlistStore = defineStore("wishlist", {
       }
       localStorage.setItem("wishlist_products", JSON.stringify(this.wishlists));
     },
-    removeStWishlist(payload: PdProductType) {
+    removeStWishlist(payload: PdProdType) {
       // 해당 상품을 위시리스트에서 제거
       this.wishlists = this.wishlists.filter((p) => p.prodId !== payload.prodId);
       useNuxtApp().$toast.error(`${payload.prodNm} 위시리스트에서 제거됨`);

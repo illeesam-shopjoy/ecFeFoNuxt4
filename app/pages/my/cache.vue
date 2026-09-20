@@ -36,10 +36,10 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
-import type { SyCodeType } from "~/types/syCodeType";
+import type { SyCodeType } from "~/types/sy/syCodeType";
 import { myCashSvc } from "~/svc/fo/my/myCashSvc";
-import type { MyRow } from "~/types/foMyType";
-import type { FoFormColumn, FoGridColumn } from "~/types/foCompType";
+import type { MyRow } from "~/types/fo/foMyType";
+import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 

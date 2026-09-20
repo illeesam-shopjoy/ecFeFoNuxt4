@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FoFormColumn, FoOption, FoRow } from "~/types/foCompType";
+import type { FoFormColumn, FoOption, FoRow } from "~/types/fo/foCompType";
 
 const props = withDefaults(
   defineProps<{

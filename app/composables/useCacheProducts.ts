@@ -8,13 +8,13 @@
  * - lazy: 화면 진입을 막지 않고 도착하는 대로 채운다(브라우저→Netlify→NAS 왕복을 렌더 경로에서 제외).
  */
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 
 export function useCacheProducts(size = 24) {
-  const { data } = useAsyncData<PdProductType[]>(`pd-latest-${size}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: size }).then((r) => r.items), {
+  const { data } = useAsyncData<PdProdType[]>(`pd-latest-${size}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: size }).then((r) => r.items), {
     default: () => [],
     lazy: true,
     server: false, // 보조 위젯 — SEO 서버 렌더(/shop 사이드바 등)에서는 뺀다
   });
-  return data as Ref<PdProductType[]>;
+  return data as Ref<PdProdType[]>;
 }

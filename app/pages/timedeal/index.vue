@@ -35,7 +35,7 @@ import { foPmEventSvc } from "~/svc/fo/ec/pm/foPmEventSvc";
 import { foPmPlanSvc } from "~/svc/fo/ec/pm/foPmPlanSvc";
 import { foOrderSvc } from "~/svc/fo/ec/order/foOrderSvc";
 import { useAuthStore } from "~/store/useAuthStore";
-import type { PmTimedealItemType } from "~/types/pmTimedealType";
+import type { PmTimedealItemType } from "~/types/pm/pmTimedealType";
 
 const { formatPrice } = usePrice();
 const items = ref<PmTimedealItemType[]>([]);

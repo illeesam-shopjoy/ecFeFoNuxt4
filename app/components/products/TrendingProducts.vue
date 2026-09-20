@@ -49,7 +49,7 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('트렌드 상품');
 import { ref } from "vue";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import ProductItem from "./ProductItem.vue";
 
 const props = defineProps({
@@ -70,7 +70,7 @@ const hasMore = ref(false);
 const loadingMore = ref(false);
 
 const { data: firstPage } = await useAsyncData(`dp-trending-products-${initialSize}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: initialSize }));
-const trending_prd = ref<PdProductType[]>(firstPage.value?.items ?? []);
+const trending_prd = ref<PdProdType[]>(firstPage.value?.items ?? []);
 hasMore.value = firstPage.value?.hasMore ?? false;
 
 // 2026-09-14(요청사항: "더보기 버튼 클릭하면 8개씩 더 나오게 해줘") — 이제 서버에서 다음 페이지를 실제로 더 받아온다.

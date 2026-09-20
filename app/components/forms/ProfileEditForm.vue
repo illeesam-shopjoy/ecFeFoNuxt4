@@ -34,7 +34,7 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('프로필 수정 폼');
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
-import type { MbMemberType } from "~/types/mbMemberType";
+import type { MbMemberType } from "~/types/mb/mbMemberType";
 
 const schema = yup.object({
   name: yup.string().required("이름을 입력해 주세요").label("이름"),

@@ -341,7 +341,7 @@ const currentFilePath = useCurrentFilePath();
 import LayoutSeven from "~/layout/LayoutSeven.vue";
 import { ref, computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
-import { type CoHeroSliderDataTypeThree } from "~/types/coHeroSliderDataTypeThree";
+import { type CoHeroSliderDataTypeThree } from "~/types/co/coHeroSliderDataTypeThree";
 import AppImage from "~/components/ui/AppImage.vue";
 import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCategorySvc";
 import ProductItemTwo from "~/components/products/ProductItemTwo.vue";

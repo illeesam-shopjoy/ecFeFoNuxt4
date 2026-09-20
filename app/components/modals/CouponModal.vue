@@ -64,10 +64,10 @@
  * 대신, 종류별(주문/상품/배송비) 쿠폰을 목록에서 골라 적용하는 모달.
  */
 import { reactive, ref, watch } from "vue";
-import { type SyCouponType, type CouponCategory, type AppliedCoupons } from "~/types/syCouponType";
+import { type PmCouponType, type CouponCategory, type AppliedCoupons } from "~/types/pm/pmCouponType";
 
 // ecBeBo에 쿠폰 API가 아직 없어(syCouponType.ts 주석 참조) 하드코딩된 목업 목록.
-const COUPONS: SyCouponType[] = [
+const COUPONS: PmCouponType[] = [
   { couponId: "order-5000", category: "order", name: "주문 5,000원 할인", desc: "3만원 이상 구매 시 사용 가능", discountType: "amount", discountValue: 5000 },
   { couponId: "order-10pct", category: "order", name: "주문 금액 10% 할인", desc: "전체 주문 금액 기준", discountType: "percent", discountValue: 10 },
   { couponId: "product-3000", category: "product", name: "상품 3,000원 할인", desc: "상품 금액에서 즉시 할인", discountType: "amount", discountValue: 3000 },
@@ -76,7 +76,7 @@ const COUPONS: SyCouponType[] = [
   { couponId: "ship-3000", category: "shipping", name: "배송비 3,000원 할인", desc: "배송비 일부 할인", discountType: "amount", discountValue: 3000 },
 ];
 
-const sections: { category: CouponCategory; label: string; coupons: SyCouponType[] }[] = [
+const sections: { category: CouponCategory; label: string; coupons: PmCouponType[] }[] = [
   { category: "order", label: "주문할인쿠폰", coupons: COUPONS.filter((c) => c.category === "order") },
   { category: "product", label: "상품할인쿠폰", coupons: COUPONS.filter((c) => c.category === "product") },
   { category: "shipping", label: "배송비할인쿠폰", coupons: COUPONS.filter((c) => c.category === "shipping") },

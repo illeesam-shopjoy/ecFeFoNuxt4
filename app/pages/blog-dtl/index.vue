@@ -205,7 +205,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 import { computed } from "vue";
 import BlogItem from "~/components/blogs/BlogItem.vue";
@@ -215,12 +215,12 @@ import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import { CDN_URL } from "~/conts/baseConst";
 import FoForm from "~/components/fo/FoForm.vue";
 import { useFoValidate } from "~/composables/useFoValidate";
-import type { FoFormColumn } from "~/types/foCompType";
+import type { FoFormColumn } from "~/types/fo/foCompType";
 import * as yup from "yup";
 
 // ecBeBo blogId는 문자열이라 고정 ID로 바로 조회할 수 없어 목록에서 첫 건을 가져와
 // 그 blogId로 상세를 다시 조회한다(2026-09 BFF 전환, prod-dtl/index.vue와 동일 패턴).
-const { data: item, pending } = useAsyncData<CoBlogType | null>("blog-details-preview", async () => {
+const { data: item, pending } = useAsyncData<CmBlogType | null>("blog-details-preview", async () => {
   const list = await coBlogSvc.getPage();
   const first = list[0];
   if (!first) return null;
@@ -233,7 +233,7 @@ usePageTitle("블로그 상세");
 
 // ── 추천 글 (옛 BlogDetailsArea) ─────────────────────────────
 // 2026-09-13(성능 개선): lazy:true — 보조 콘텐츠라 화면이 뜬 뒤 비동기로 채워지게 한다.
-const { data: allBlogs, pending: relatedPending } = useAsyncData<CoBlogType[]>(
+const { data: allBlogs, pending: relatedPending } = useAsyncData<CmBlogType[]>(
   "blog-related",
   () => coBlogSvc.getPage(),
   { lazy: true, server: false } // 보조 콘텐츠 — 서버 렌더 제외

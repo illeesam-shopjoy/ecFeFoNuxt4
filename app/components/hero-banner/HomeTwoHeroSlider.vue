@@ -33,7 +33,7 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('히어로 슬라이더 2');
 import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
-import { type CoHeroSliderDataTypeTwo } from "~/types/coHeroSliderDataTypeTwo";
+import { type CoHeroSliderDataTypeTwo } from "~/types/co/coHeroSliderDataTypeTwo";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 // 전시 위젯(area_cd=HERO_SLIDER_TWO)에서 슬라이드 로드 — 미등록/조회실패 시 기본값 폴백

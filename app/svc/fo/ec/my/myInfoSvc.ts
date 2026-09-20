@@ -4,7 +4,7 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
-import type { MyProfile } from "~/types/foMyType";
+import type { MyProfile } from "~/types/fo/foMyType";
 
 /** 백엔드 호출 전 검증 실패를 소비처(e.data.statusMessage)가 읽는 모양으로 던진다 */
 function badRequest(message: string): never {

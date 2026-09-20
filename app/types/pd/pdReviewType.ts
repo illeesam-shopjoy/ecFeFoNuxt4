@@ -10,7 +10,7 @@ export interface PdReviewType {
   writerNm: string; // 작성자명 (리뷰는 ecBeBo regUserNm, 답글은 writerNm)
   reviewDate: string; // 작성일시 (리뷰는 ecBeBo reviewDate, 답글은 regDate)
   rating: number; // 평점 (답글은 0)
-  title?: string; // 리뷰 제목 (ecBeBo reviewTitle, 답글엔 없음)
+  reviewTitle?: string; // 리뷰 제목 (ecBeBo reviewTitle, 답글엔 없음)
   reviewContent?: string; // 리뷰/답글 내용 (ecBeBo reviewContent/reviewReplyContent)
   attachments?: string[]; // 첨부 이미지·동영상 URL 목록 — 미연동, 항상 빈 배열
   children?: boolean; // 답글 여부

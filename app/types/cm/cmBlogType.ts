@@ -1,5 +1,5 @@
 /** 블로그 타입. 필드명은 ecBeBo(JPA) CmBlogDto.Item 기준 (2026-09 정렬). */
-export interface CoBlogType {
+export interface CmBlogType {
   blogId: string; // 블로그ID (ecBeBo blogId)
   img: string; // 대표 이미지 — ecBeBo files[0].imgUrl (BFF가 뽑아낸 파생값, JPA 원본 컬럼 아님)
   blogTitle: string; // 제목 (ecBeBo blogTitle)

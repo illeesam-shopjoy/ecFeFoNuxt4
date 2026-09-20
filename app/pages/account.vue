@@ -144,7 +144,7 @@ import AppImage from "~/components/ui/AppImage.vue";
 import ProfileEditModal from "~/components/modals/ProfileEditModal.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
 import FoForm from "~/components/fo/FoForm.vue";
-import type { FoFormColumn, FoGridColumn } from "~/types/foCompType";
+import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
 import { useRouter } from "vue-router";
 
 import { usePageTitle } from "~/composables/usePageTitle";

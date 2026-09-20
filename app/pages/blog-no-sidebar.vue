@@ -30,7 +30,7 @@ import { ref, reactive, computed } from "vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import FoPager from "~/components/fo/FoPager.vue";
 import { useClientPager } from "~/composables/useClientPager";
-import { type CoBlogType } from "~/types/coBlogType";
+import { type CmBlogType } from "~/types/cm/cmBlogType";
 import BlogStandardItem from "~/components/blogs/BlogStandardItem.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";

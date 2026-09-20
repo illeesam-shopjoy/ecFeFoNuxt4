@@ -42,10 +42,10 @@
           <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
             <button
               v-for="opt in visibleColors"
-              :key="opt.optionCode ?? opt.optionId"
+              :key="opt.prodOptStdCd ?? opt.prodOptId"
               type="button"
-              :title="opt.optionNm"
-              :aria-label="opt.optionNm"
+              :title="opt.prodOptNm"
+              :aria-label="opt.prodOptNm"
               class="relative w-[26px] h-[26px] rounded-full border-[1.5px] border-black/10 cursor-pointer bg-[var(--swatch-color)] shadow-[0_1px_3px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-150 hover:scale-110 hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
               :class="{ 'scale-110 shadow-[0_0_0_2px_#fff,0_0_0_4px_#555,0_2px_6px_rgba(0,0,0,0.2)]': selectedColor === optKey(opt) }"
               :style="{ '--swatch-color': swatchColor(opt) }"
@@ -64,7 +64,7 @@
               <i class="fas fa-ellipsis-h text-[0.7rem]"></i>
             </button>
           </div>
-          <span v-if="selectedColor" class="text-xs text-[#666] ml-0.5">선택: {{ colors.find((o) => optKey(o) === selectedColor)?.optionNm }}</span>
+          <span v-if="selectedColor" class="text-xs text-[#666] ml-0.5">선택: {{ colors.find((o) => optKey(o) === selectedColor)?.prodOptNm }}</span>
           <!-- 색상 전체 팝오버 -->
           <div
             v-if="openPopover === 'color'"
@@ -76,7 +76,7 @@
             <div class="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3">
               <button
                 v-for="opt in colors"
-                :key="opt.optionCode ?? opt.optionId"
+                :key="opt.prodOptStdCd ?? opt.prodOptId"
                 type="button"
                 class="flex items-center gap-2 rounded px-1.5 py-1 text-left text-[13px] text-[#444] bg-transparent border-0 cursor-pointer hover:bg-[#f4f4f4]"
                 :class="{ 'font-bold bg-[#f4f4f4]': selectedColor === optKey(opt) }"
@@ -87,7 +87,7 @@
                   :class="{ 'shadow-[0_0_0_2px_#fff,0_0_0_3.5px_#555]': selectedColor === optKey(opt) }"
                   :style="{ '--swatch-color': swatchColor(opt) }"
                 ></span>
-                <span class="truncate">{{ opt.optionNm }}</span>
+                <span class="truncate">{{ opt.prodOptNm }}</span>
               </button>
             </div>
           </div>
@@ -99,13 +99,13 @@
             <span v-if="!sizes.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
             <button
               v-for="opt in visibleSizes"
-              :key="opt.optionCode ?? opt.optionId"
+              :key="opt.prodOptStdCd ?? opt.prodOptId"
               type="button"
               class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222]"
               :class="{ '!border-[#222] !bg-[#222] !text-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]': selectedSize === optKey(opt) }"
               @click="selectedSize = optKey(opt)"
             >
-              {{ opt.optionNm }}
+              {{ opt.prodOptNm }}
             </button>
             <button
               v-if="hasMoreSizes"
@@ -131,13 +131,13 @@
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="opt in sizes"
-                :key="opt.optionCode ?? opt.optionId"
+                :key="opt.prodOptStdCd ?? opt.prodOptId"
                 type="button"
                 class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222]"
                 :class="{ '!border-[#222] !bg-[#222] !text-white': selectedSize === optKey(opt) }"
                 @click="pickSize(opt)"
               >
-                {{ opt.optionNm }}
+                {{ opt.prodOptNm }}
               </button>
             </div>
           </div>
@@ -214,14 +214,14 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle("상품 상세 내용");
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import { useCartStore } from "~/store/useCartStore";
 
 import { useWishlistStore } from "~/store/useWishlistStore";
 import { prodTypeLabel } from "~/conts/pdConst";
 
 const props = defineProps<{
-  item: PdProductType;
+  item: PdProdType;
   style_2?: boolean;
   /** 상품 상세 페이지 전용 모드 — 유형·카테고리 칩, 찜·공유, 바로구매, 문의하기, 배송 안내를 함께 보여준다(빠른보기 모달은 false) */
   detail?: boolean;
@@ -241,12 +241,12 @@ const selectedColor = ref("");
 const selectedSize = ref("");
 
 // ── 옵션 더보기 팝오버 (2026-09-19) ──────────────────────────────────────
-type OptionItem = PdProductType["optionColors"][number];
+type OptionItem = PdProdType["prodOpt2List"][number];
 const COLOR_VISIBLE = 8; // 색상표는 이 개수까지만 한 줄에 노출, 넘으면 "…" 팝오버
 const SIZE_VISIBLE = 6; // 사이즈 칩도 동일
-const colors = computed<OptionItem[]>(() => props.item.optionColors ?? []);
-const sizes = computed<OptionItem[]>(() => props.item.optionSizes ?? []);
-const optKey = (o: OptionItem) => o.optionCode ?? String(o.optionId);
+const colors = computed<OptionItem[]>(() => props.item.prodOpt2List ?? []);
+const sizes = computed<OptionItem[]>(() => props.item.prodOpt1List ?? []);
+const optKey = (o: OptionItem) => o.prodOptStdCd ?? String(o.prodOptId);
 
 // 앞쪽 N개를 보여주되, 선택한 옵션이 접힌 쪽에 있으면 마지막 칸을 그 옵션으로 교체해 선택 상태가 줄 안에서 보이게 한다
 function foldOptions(all: OptionItem[], limit: number, selected: string): OptionItem[] {
@@ -289,19 +289,19 @@ onBeforeUnmount(() => {
 });
 
 // 2026-09 추가 — 선택한 옵션조합(색상/사이즈)에 해당하는 SKU를 찾아 장바구니에 담는다.
-// optionColors/optionSizes 의 optionLevel(1|2)로 prodOpt1Id/prodOpt2Id 중 어느 자리와
+// prodOpt2List/prodOpt1List 의 prodOptTypeLevel(1|2)로 prodOpt1Id/prodOpt2Id 중 어느 자리와
 // 비교해야 하는지 판별한다(상품마다 어느 레벨이 색상/사이즈인지 다를 수 있음).
 function findMatchedSku() {
   const skus = props.item.prodSkus ?? [];
   if (!skus.length) return undefined;
 
-  const selectedColorOpt = props.item.optionColors?.find((o) => (o.optionCode ?? String(o.optionId)) === selectedColor.value);
-  const selectedSizeOpt = props.item.optionSizes?.find((o) => (o.optionCode ?? String(o.optionId)) === selectedSize.value);
+  const selectedColorOpt = props.item.prodOpt2List?.find((o) => (o.prodOptStdCd ?? String(o.prodOptId)) === selectedColor.value);
+  const selectedSizeOpt = props.item.prodOpt1List?.find((o) => (o.prodOptStdCd ?? String(o.prodOptId)) === selectedSize.value);
 
   const matchesLevel = (skuOpt1?: string | null, skuOpt2?: string | null, opt?: typeof selectedColorOpt) => {
     if (!opt) return true; // 이 슬롯에 해당하는 옵션 선택이 없으면(옵션 자체가 없는 상품) 통과
-    const skuOptId = opt.optionLevel === 2 ? skuOpt2 : skuOpt1;
-    return skuOptId === opt.optionId;
+    const skuOptId = opt.prodOptTypeLevel === 2 ? skuOpt2 : skuOpt1;
+    return skuOptId === opt.prodOptId;
   };
 
   return skus.find((s) => matchesLevel(s.prodOpt1Id, s.prodOpt2Id, selectedColorOpt) && matchesLevel(s.prodOpt1Id, s.prodOpt2Id, selectedSizeOpt));
@@ -309,7 +309,7 @@ function findMatchedSku() {
 
 /** 옵션(사이즈)·SKU·재고를 검증하고 담을 SKU 를 돌려준다. 실패하면 토스트를 띄우고 null. (장바구니 담기/바로구매 공통) */
 function resolveSelection(): { prodSkuId?: string } | null {
-  if (props.item.optionSizes?.length && !selectedSize.value) {
+  if (props.item.prodOpt1List?.length && !selectedSize.value) {
     useNuxtApp().$toast.error("사이즈를 선택해주세요.");
     return null;
   }
@@ -379,5 +379,5 @@ const colorMap: Record<string, string> = {
   VAL_COLOR_MUSTARD: "#D4A017", // 머스타드
   VAL_COLOR_ORANGE: "#F57C00", // 오렌지
 };
-const swatchColor = (opt: OptionItem) => colorMap[opt.optionCode ?? ""] ?? "#ccc";
+const swatchColor = (opt: OptionItem) => colorMap[opt.prodOptStdCd ?? ""] ?? "#ccc";
 </script>

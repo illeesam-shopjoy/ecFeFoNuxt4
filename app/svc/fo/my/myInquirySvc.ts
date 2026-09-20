@@ -4,7 +4,7 @@
  */
 import { axiosCsr } from "~/utils/axiosCsr";
 import { useAuthHeaders } from "~/composables/useAuthHeaders";
-import type { MyInquirySubmit, MyListParams, MyPageResult, MyRow } from "~/types/foMyType";
+import type { MyInquirySubmit, MyListParams, MyPageResult, MyRow } from "~/types/fo/foMyType";
 
 const clean = (p: MyListParams) => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined && v !== ""));
 

@@ -32,9 +32,9 @@
             </div>
             <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
             <div v-if="item.brand?.brandNm" class="text-[13px] text-[#a3a3a3] mb-1">{{ item.brand.brandNm }}</div>
-            <div v-if="item.optionSizes?.length || item.optionColors?.length" class="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#c2c2c2] mb-1">
-              <span v-if="item.optionSizes?.length">사이즈 {{ item.optionSizes.map((o) => o.optionNm).join('/') }}</span>
-              <span v-if="item.optionColors?.length">색상 {{ item.optionColors.map((o) => o.optionNm).join('/') }}</span>
+            <div v-if="item.prodOpt1List?.length || item.prodOpt2List?.length" class="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#c2c2c2] mb-1">
+              <span v-if="item.prodOpt1List?.length">사이즈 {{ item.prodOpt1List.map((o) => o.prodOptNm).join('/') }}</span>
+              <span v-if="item.prodOpt2List?.length">색상 {{ item.prodOpt2List.map((o) => o.prodOptNm).join('/') }}</span>
             </div>
             <div class="product__price-2 mb-10">
               <span>{{ formatPrice(item.salePrice) }}</span>
@@ -77,7 +77,7 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 목록 아이템');
 import { ref, computed } from "vue";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import { prodTypeLabel } from "~/conts/pdConst";
@@ -86,7 +86,7 @@ import { useCompareStore } from "~/store/useCompareStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
 
 const props = defineProps<{
-  item: PdProductType;
+  item: PdProdType;
 }>();
 const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
 const store = useCartStore();

@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FoPagerState } from "~/types/foCompType";
+import type { FoPagerState } from "~/types/fo/foCompType";
 
 const props = withDefaults(
   defineProps<{

@@ -276,7 +276,7 @@ import { pdCategorySvc, type CategoryTreeResponse } from "~/svc/fo/ec/pd/pdCateg
 import { syBrandSvc } from "~/svc/fo/ec/sy/syBrandSvc";
 import { pdProductSvc, type PdProductPageParams, type PdProductPagedResult } from "~/svc/fo/ec/pd/pdProductSvc";
 import { axiosSsr } from "~/utils/axiosSsr";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from "vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -294,7 +294,7 @@ const initialQuery = typeof route.query.q === "string" ? route.query.q : "";
 // ── 쇼핑 영역 — 2026-09-13(요청사항: "10000개가 될수도 있기에 페이징 api 조회 해야해") ──
 // 서버 페이징/멀티선택 필터(전체 상품 클라이언트 필터링 X). 2026-09-20: 이 화면에서만 쓰는 useShopProducts 컴포저블을 이 파일로 병합했다.
 // 카테고리/브랜드/사이즈는 전부 배열(멀티선택, 토글)로 ecBeBo(categoryIds/brandIds/sizeInfoCds IN 조건)에 넘겨 서버에서 필터링하고,
-// 가격범위도 서버(priceMin/priceMax)로 넘긴다. 색상(optionColors)만 옵션 테이블 조인 필터가 없어 "지금까지 불러온 페이지 안에서만" 보조로 거른다.
+// 가격범위도 서버(priceMin/priceMax)로 넘긴다. 색상(prodOpt2List)만 옵션 테이블 조인 필터가 없어 "지금까지 불러온 페이지 안에서만" 보조로 거른다.
 const PAGE_SIZE = 12;
 const { formatPrice } = usePrice();
 
@@ -395,7 +395,7 @@ onBeforeUnmount(() => {
 // 무한스크롤로 이어붙일 2페이지 이후 항목만 별도 보관 — 1페이지는 useAsyncData 의 data ref(firstPage)를 computed 로 그대로 합쳐 쓴다.
 // 2026-09-14 버그수정: 예전엔 watch(firstPage) 로 별도 items ref 에 옮겨 담았는데 SSR 단일 렌더 패스에선 그 watch 가 다시 실행된다는
 // 보장이 없어 /shop 최초 SSR HTML 에 상품이 0개로 나갔다(SEO 무의미). computed 는 읽는 시점의 firstPage.value 를 그대로 읽어 이 문제가 없다.
-const extraItems = ref<PdProductType[]>([]);
+const extraItems = ref<PdProdType[]>([]);
 const pageNo = ref(1);
 const loadingMore = ref(false);
 const extraHasMore = ref<boolean | null>(null); // loadMore 로 알아낸 마지막 페이지 기준 hasMore
@@ -407,7 +407,7 @@ watch(firstPage, () => {
   extraHasMore.value = null;
 });
 
-const items = computed<PdProductType[]>(() => [...(firstPage.value?.items ?? []), ...extraItems.value]);
+const items = computed<PdProdType[]>(() => [...(firstPage.value?.items ?? []), ...extraItems.value]);
 const totalCount = computed(() => firstPage.value?.pageTotalCount ?? 0);
 const rawCount = computed(() => items.value.length);
 const hasMore = computed(() => extraHasMore.value ?? firstPage.value?.hasMore ?? true);
@@ -431,14 +431,14 @@ async function loadMore() {
 // 사이드바 색상 스와치 — 지금까지 불러온 상품의 옵션 색상(색상 필터 적용 전 기준이라 선택해도 목록이 줄지 않는다).
 const allColor = computed(() => {
   const codes = new Set<string>();
-  items.value.forEach((p) => p.optionColors?.forEach((o) => codes.add(o.optionCode ?? String(o.optionId))));
+  items.value.forEach((p) => p.prodOpt2List?.forEach((o) => codes.add(o.prodOptStdCd ?? String(o.prodOptId))));
   return Array.from(codes);
 });
 
 // 색상만 클라이언트 보조필터 적용 — 나머지는 전부 서버에서 이미 걸러져 온 결과.
 const displayItems = computed(() => {
   if (!colorFilter.value) return items.value;
-  return items.value.filter((p) => p.optionColors?.some((o) => (o.optionCode ?? String(o.optionId)) === colorFilter.value));
+  return items.value.filter((p) => p.prodOpt2List?.some((o) => (o.prodOptStdCd ?? String(o.prodOptId)) === colorFilter.value));
 });
 
 const toggleCategory = (id: string) => (categoryIds.value = toggleIn(categoryIds.value, id));

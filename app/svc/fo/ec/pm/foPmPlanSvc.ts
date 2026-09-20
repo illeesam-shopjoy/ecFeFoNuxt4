@@ -3,7 +3,7 @@
  * ecBeBo FoPmPlanController(/api/fo/ec/pm/plan, 공개) 를 직접 부른다.
  */
 import { axiosCsr } from "~/utils/axiosCsr";
-import type { PmTimedealItemType } from "~/types/pmTimedealType";
+import type { PmTimedealItemType } from "~/types/pm/pmTimedealType";
 
 export const foPmPlanSvc = {
   /** GET /fo/ec/pm/plan/timedeal — 타임딜 기획전 목록 */

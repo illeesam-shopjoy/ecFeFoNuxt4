@@ -164,7 +164,7 @@ import { ref, computed } from "vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import AppImage from "~/components/ui/AppImage.vue";
 import { CDN_URL } from "~/conts/baseConst";
-import { type CoCategoryTreeType } from "~/types/coCategoryTreeType";
+import { type PdCategoryTreeType } from "~/types/pd/pdCategoryTreeType";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 const { blogs, pending } = useCacheBlogs();
@@ -174,7 +174,7 @@ const recentBlogs = computed(() => (blogs.value ?? []).slice(3, 6));
 // 전시 위젯(area_cd=BLOG_SIDEBAR_CATEGORY)에서 카테고리 트리 로드 — 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
 interface BlogSidebarCategoryConfig {
-  categoryTreeData: CoCategoryTreeType[];
+  categoryTreeData: PdCategoryTreeType[];
   catNameMap: Record<string, string>;
 }
 const DEFAULT_CONFIG: BlogSidebarCategoryConfig = {
@@ -203,7 +203,7 @@ const { data: fetchedConfig } = useAsyncData<BlogSidebarCategoryConfig | null>(
   { lazy: true, server: false } // 2026-09-20: 보조 위젯 — 서버 렌더 제외
 );
 const catNameMap = computed<Record<string, string>>(() => fetchedConfig.value?.catNameMap ?? DEFAULT_CONFIG.catNameMap);
-const categoryTreeData = computed<CoCategoryTreeType[]>(() => fetchedConfig.value?.categoryTreeData?.length ? fetchedConfig.value.categoryTreeData : DEFAULT_CONFIG.categoryTreeData);
+const categoryTreeData = computed<PdCategoryTreeType[]>(() => fetchedConfig.value?.categoryTreeData?.length ? fetchedConfig.value.categoryTreeData : DEFAULT_CONFIG.categoryTreeData);
 
 const expandedIndex = ref<number>(0);
 

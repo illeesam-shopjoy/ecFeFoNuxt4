@@ -8,11 +8,11 @@
 import { axiosCsr } from "~/utils/axiosCsr";
 import { mapProduct, mapReview, type BeProdItem, type BeReviewItem } from "~/utils/mapProduct";
 import { beConfig } from "~/utils/beConfig";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 
 /** 목록 응답(페이징) — SSR 라우트(server/api/fo/ec/pd/prod/page.get.ts)와 같은 모양 */
 export interface PdProductPagedResult {
-  items: PdProductType[];
+  items: PdProdType[];
   pageNo: number;
   pageSize: number;
   pageTotalCount: number;
@@ -77,7 +77,7 @@ export const pdProductSvc = {
     const page = (await axiosCsr.get<BePage<BeProdItem>>("/fo/ec/pd/prod/page", { params: q })).data;
     const base = beConfig.cdnBase;
     return {
-      items: page.pageList.map((p) => mapProduct(p, base) as unknown as PdProductType),
+      items: page.pageList.map((p) => mapProduct(p, base) as unknown as PdProdType),
       pageNo: page.pageNo,
       pageSize: page.pageSize,
       pageTotalCount: page.pageTotalCount,
@@ -93,7 +93,7 @@ export const pdProductSvc = {
   },
 
   /** GET /fo/ec/pd/prod/{id} + /{id}/reviews — 상품 단건(리뷰·평점 병합). 리뷰 조회 실패는 빈 리뷰로 대체 */
-  getById: async (id: string): Promise<PdProductType> => {
+  getById: async (id: string): Promise<PdProdType> => {
     const [detail, reviewsRes] = await Promise.all([
       axiosCsr.get<BeProdItem>(`/fo/ec/pd/prod/${encodeURIComponent(id)}`).then((r) => r.data),
       axiosCsr
@@ -104,6 +104,6 @@ export const pdProductSvc = {
     const out = mapProduct(detail, beConfig.cdnBase);
     out.reviews = reviewsRes.reviewPage.pageList.map(mapReview);
     if (typeof reviewsRes.summary?.avgRating === "number") out.rating = reviewsRes.summary.avgRating;
-    return out as unknown as PdProductType;
+    return out as unknown as PdProdType;
   },
 };

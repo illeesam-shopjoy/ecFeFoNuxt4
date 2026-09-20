@@ -61,10 +61,10 @@
         </div>
         <!-- 2026-09-14(요청사항: "브랜드정보 사이즈, 색상, 상품유형 표시해주면좋겠어") -->
         <div v-if="item.brand?.brandNm" class="text-[12px] text-[#a3a3a3] mb-2">{{ item.brand.brandNm }}</div>
-        <div v-if="item.optionSizes?.length || item.optionColors?.length" class="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-[#c2c2c2] mb-2">
-          <span v-if="item.optionSizes?.length">{{ item.optionSizes.map((o) => o.optionNm).join('/') }}</span>
-          <span v-if="item.optionSizes?.length && item.optionColors?.length">|</span>
-          <span v-if="item.optionColors?.length">{{ item.optionColors.map((o) => o.optionNm).join('/') }}</span>
+        <div v-if="item.prodOpt1List?.length || item.prodOpt2List?.length" class="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-[#c2c2c2] mb-2">
+          <span v-if="item.prodOpt1List?.length">{{ item.prodOpt1List.map((o) => o.prodOptNm).join('/') }}</span>
+          <span v-if="item.prodOpt1List?.length && item.prodOpt2List?.length">|</span>
+          <span v-if="item.prodOpt2List?.length">{{ item.prodOpt2List.map((o) => o.prodOptNm).join('/') }}</span>
         </div>
         <div class="product__price transition-3">
           <span class="!text-base">{{ formatPrice(item.salePrice) }}</span>
@@ -86,7 +86,7 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle("상품 아이템");
 import { ref, computed } from "vue";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import { useCartStore } from "~/store/useCartStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
 import { useCompareStore } from "~/store/useCompareStore";
@@ -95,7 +95,7 @@ import AppImage from "~/components/ui/AppImage.vue";
 import { prodTypeLabel } from "~/conts/pdConst";
 
 const props = defineProps<{
-  item: PdProductType;
+  item: PdProdType;
 }>();
 const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
 const store = useCartStore();

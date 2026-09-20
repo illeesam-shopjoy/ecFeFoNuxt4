@@ -49,7 +49,7 @@
  */
 import { reactive, ref, watch } from "vue";
 import FoForm from "~/components/fo/FoForm.vue";
-import type { FoFormColumn } from "~/types/foCompType";
+import type { FoFormColumn } from "~/types/fo/foCompType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 
 // ProfileEditModal 과 같은 방식 — 부모가 ref.show() / ref.close() 로 연다.

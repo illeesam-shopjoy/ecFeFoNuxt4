@@ -3,7 +3,7 @@
  * 2026-09-20: server/api/fo/menu.get.ts(API)를 없애고 상수로 옮겼다 — ecBeBo에 이 화면 전용 동적 메뉴 API가 없고
  * 정적 목록이라 서버·브라우저 어디서든 그대로 import 하면 된다(SEO 서버렌더에도 메뉴가 그대로 나온다).
  */
-import type { SyMenuTreeType } from "~/types/syMenuTreeType";
+import type { SyMenuTreeType } from "~/types/sy/syMenuTreeType";
 
 /**
  * 상단 내비게이션 메뉴. ecBeBo에 이 화면 전용 동적 메뉴 API가 없다 — ecFeBo(FO 파일럿)도

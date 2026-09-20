@@ -69,7 +69,7 @@
 import { reactive, ref, watch } from "vue";
 import AddrSearchModal, { type AddrSearchResult } from "~/components/modals/AddrSearchModal.vue";
 import FoForm from "~/components/fo/FoForm.vue";
-import type { FoFormColumn } from "~/types/foCompType";
+import type { FoFormColumn } from "~/types/fo/foCompType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import { useAuthStore } from "~/store/useAuthStore";
 

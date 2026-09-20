@@ -3,7 +3,7 @@
  * ecBeBo CoSyCodeController(/api/co/sy/code, 공개) 를 직접 부른다.
  */
 import { axiosCsr } from "~/utils/axiosCsr";
-import { type SyCodeType } from "~/types/syCodeType";
+import { type SyCodeType } from "~/types/sy/syCodeType";
 
 export const syCodeSvc = {
   /** GET /co/sy/code — 공통코드 전체 */

@@ -113,9 +113,9 @@
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import AppImage from "~/components/ui/AppImage.vue";
-import type { PdProductType } from "~/types/pdProductType";
+import type { PdProdType } from "~/types/pd/pdProdType";
 
-const props = defineProps<{ item: PdProductType }>();
+const props = defineProps<{ item: PdProdType }>();
 
 const images = computed<string[]>(() => {
   const list = [props.item.bigImg || props.item.img, props.item.thumbImg, ...(props.item.relatedImages ?? [])].filter((u): u is string => Boolean(u));

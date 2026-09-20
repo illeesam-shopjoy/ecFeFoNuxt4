@@ -52,13 +52,13 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 아이템 2');
 import { ref } from "vue";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import { useCartStore } from "~/store/useCartStore";
 import ProductModal from "../modals/ProductModal.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 
 defineProps<{
-  item: PdProductType;
+  item: PdProdType;
 }>();
 const store = useCartStore();
 const { formatPrice } = usePrice();

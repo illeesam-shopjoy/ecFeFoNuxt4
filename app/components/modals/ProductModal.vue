@@ -57,11 +57,11 @@ import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 모달');
 import { ref, watch, onBeforeUnmount } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import AppImage from "~/components/ui/AppImage.vue";
 
 const props = defineProps<{
-  item: PdProductType;
+  item: PdProdType;
   list?: boolean;
 }>();
 const visible = ref(false);

@@ -280,7 +280,7 @@ const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonProductDetail from "~/components/ui/SkeletonProductDetail.vue";
-import { type PdProductType } from "~/types/pdProductType";
+import { type PdProdType } from "~/types/pd/pdProdType";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
@@ -303,14 +303,14 @@ const id = route.params.id as string;
 const isValidProdId = Boolean(id) && !id.includes(".");
 
 // SEO 단위화면(useSeoDetail): 서버 렌더링은 SEO 용 최소 정보만(server/api), 화면이 뜬 뒤 브라우저가 ecBeBo 에서 전체 정보(리뷰·옵션·본문)를 직접 조회한다.
-const { item, pending, refresh: refreshItem, seo } = await useSeoDetail<PdProductType>(
+const { item, pending, refresh: refreshItem, seo } = await useSeoDetail<PdProdType>(
   `product-${id}`,
   isValidProdId ? `/api/fo/ec/pd/prod/${id}` : null,
   () => (isValidProdId ? pdProductSvc.getById(id) : Promise.resolve(null))
 );
 
 // 관련 상품 — 같은 카테고리 상품 4개만 별도 조회(전체 카탈로그 X). SEO 대상이 아니라 서버 렌더에서는 뺀다.
-const { data: relatedList } = useAsyncData<PdProductType[]>(
+const { data: relatedList } = useAsyncData<PdProdType[]>(
   `related-${id}`,
   async () => {
     const categoryId = item.value?.category?.categoryId;
