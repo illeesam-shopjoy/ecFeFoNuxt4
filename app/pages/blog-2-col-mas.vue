@@ -11,7 +11,9 @@
           </div>
         </div>
         <div v-else class="row grid">
-          <masonry-wall :items="blogs" :gap="30">
+          <!-- 2026-09-20(요청사항: "스크롤을 약간 내려야 2단으로 배치됨") — .row(flex) 안에서 masonry-wall 이 내용 폭(≈500px)으로
+               줄어들어 그 폭 기준으로 1열만 계산됐다. w-full 로 컨테이너 폭을 채우고, "2단" 화면이므로 열 너비를 520px 로 잡는다. -->
+          <masonry-wall class="w-full" :items="blogs" :gap="30" :column-width="520">
             <template #default="{ item }">
               <div class="blog__wrapper">
                 <div class="blog__item mb-60">
