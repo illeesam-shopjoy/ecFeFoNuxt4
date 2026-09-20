@@ -43,10 +43,12 @@
 
               <template v-else-if="step === 3">
                 <p class="mt-0 text-[0.88rem] text-gray-500">본인확인이 완료되었습니다. 새 비밀번호를 설정해 주세요.</p>
-                <label class="lb">새 비밀번호 (6자 이상)</label>
-                <input v-model="pw1" class="in" type="password" autocomplete="new-password" />
+                <label class="lb">새 비밀번호</label>
+                <password-input v-model="pw1" class="in" autocomplete="new-password" />
+                <password-rules class="mt-2" :value="pw1" />
                 <label class="lb mt-3">새 비밀번호 확인</label>
-                <input v-model="pw2" class="in" type="password" autocomplete="new-password" @keyup.enter="confirm" />
+                <password-input v-model="pw2" class="in" autocomplete="new-password" @keyup.enter="confirm" />
+                <field-msg v-if="pw2" class="mt-2" :ok="pw1 === pw2" :text="pw1 === pw2 ? '비밀번호가 일치합니다' : '비밀번호가 일치하지 않습니다'" />
                 <button type="button" class="btn-main mt-4" :disabled="busy" @click="confirm">{{ busy ? "저장 중..." : "비밀번호 초기화" }}</button>
               </template>
 
@@ -90,6 +92,11 @@ const code = ref("");
 const sentTo = ref("");
 const expireMin = ref(10);
 const resetToken = ref("");
+import PasswordInput from "~/components/fo/PasswordInput.vue";
+import PasswordRules from "~/components/fo/PasswordRules.vue";
+import FieldMsg from "~/components/fo/FieldMsg.vue";
+import { isPasswordValid, PASSWORD_RULE_MESSAGE } from "~/utils/passwordPolicy";
+
 const pw1 = ref("");
 const pw2 = ref("");
 
@@ -147,7 +154,7 @@ async function verifyCode() {
 /** ③: 새 비밀번호 설정 */
 async function confirm() {
   err.value = "";
-  if (pw1.value.length < 6) return void (err.value = "새 비밀번호는 6자 이상이어야 합니다.");
+  if (!isPasswordValid(pw1.value)) return void (err.value = PASSWORD_RULE_MESSAGE);
   if (pw1.value !== pw2.value) return void (err.value = "새 비밀번호가 서로 다릅니다.");
   busy.value = true;
   try {

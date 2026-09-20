@@ -15,9 +15,21 @@
 
         <!-- 읽기 전용 표시 -->
         <div v-if="col.type === 'readonly'" class="fo-in bg-[#f9fafb] text-gray-700 min-h-[42px] flex items-center">{{ dispVal(col) }}</div>
-        <!-- text / email / tel / password -->
+        <!-- password (눈 아이콘으로 보기/숨기기) -->
+        <password-input
+          v-else-if="col.type === 'password'"
+          :id="`fo-form-${col.key}`"
+          v-model="form[col.key]"
+          class="fo-in"
+          :class="[errors[col.key] ? 'is-invalid' : '']"
+          :placeholder="col.placeholder"
+          :maxlength="col.maxlength"
+          :autocomplete="col.autocomplete"
+          @input="onChange(col, $event)"
+        />
+        <!-- text / email / tel -->
         <input
-          v-else-if="col.type === 'text' || col.type === 'email' || col.type === 'tel' || col.type === 'password' || !col.type"
+          v-else-if="col.type === 'text' || col.type === 'email' || col.type === 'tel' || !col.type"
           :id="`fo-form-${col.key}`"
           v-model="form[col.key]"
           class="fo-in"
@@ -60,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import PasswordInput from "~/components/fo/PasswordInput.vue";
 import type { FoFormColumn, FoOption, FoRow } from "~/types/fo/foCompType";
 
 const props = withDefaults(

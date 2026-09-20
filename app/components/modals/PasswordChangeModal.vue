@@ -18,12 +18,13 @@
 
         <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체 -->
         <fo-form v-else :columns="formCols" :form="form" :cols="1" :gap="12" @submit="handleBtnAction('form-save')">
-          <!-- 강도 표시 -->
-          <template #strength>
-            <div v-if="form.next" class="flex gap-1 items-center">
-              <div v-for="i in 4" :key="i" class="flex-1 h-[3px] rounded-sm transition-colors" :class="i <= strength().level ? 'bg-theme' : 'bg-[#e5e7eb]'"></div>
-              <span class="text-[0.72rem] text-gray-400 ml-1.5 whitespace-nowrap">{{ strength().label }}</span>
-            </div>
+          <!-- 규칙 충족 표시 -->
+          <template #rules>
+            <password-rules class="-mt-2" :value="form.next" />
+          </template>
+
+          <template #match>
+            <field-msg v-if="form.next2" class="-mt-2" :ok="form.next2 === form.next" :text="form.next2 === form.next ? '비밀번호가 일치합니다' : '비밀번호가 일치하지 않습니다'" />
           </template>
 
           <template #actions>
@@ -49,6 +50,9 @@
  */
 import { reactive, ref, watch } from "vue";
 import FoForm from "~/components/fo/FoForm.vue";
+import PasswordRules from "~/components/fo/PasswordRules.vue";
+import FieldMsg from "~/components/fo/FieldMsg.vue";
+import { isPasswordValid, PASSWORD_RULE_MESSAGE } from "~/utils/passwordPolicy";
 import type { FoFormColumn } from "~/types/fo/foCompType";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 
@@ -65,9 +69,10 @@ defineExpose({ show, close });
 const form = reactive({ current: "", next: "", next2: "" });
 const formCols: FoFormColumn[] = [
   { key: "current", label: "현재 비밀번호", type: "password", placeholder: "현재 비밀번호 입력", autocomplete: "current-password" },
-  { key: "next", label: "새 비밀번호", hint: "(6자 이상)", type: "password", placeholder: "새 비밀번호 입력", autocomplete: "new-password" },
+  { key: "next", label: "새 비밀번호", type: "password", placeholder: "새 비밀번호 입력", autocomplete: "new-password" },
+  { key: "rules", type: "slot" },
   { key: "next2", label: "새 비밀번호 확인", type: "password", placeholder: "새 비밀번호 재입력", autocomplete: "new-password" },
-  { key: "strength", type: "slot" },
+  { key: "match", type: "slot" },
 ];
 const errorMsg = ref("");
 const saving = ref(false);
@@ -82,16 +87,10 @@ watch(
   }
 );
 
-function strength() {
-  const n = form.next;
-  const level = n.length < 6 ? 1 : n.length < 8 ? 2 : /[^a-zA-Z0-9]/.test(n) ? 4 : 3;
-  return { level, label: ["", "약함", "보통", "양호", "강함"][level] };
-}
-
 async function save() {
   errorMsg.value = "";
   if (!form.current) return void (errorMsg.value = "현재 비밀번호를 입력하세요.");
-  if (form.next.length < 6) return void (errorMsg.value = "새 비밀번호는 6자 이상이어야 합니다.");
+  if (!isPasswordValid(form.next)) return void (errorMsg.value = PASSWORD_RULE_MESSAGE);
   if (form.next !== form.next2) return void (errorMsg.value = "새 비밀번호가 일치하지 않습니다.");
   if (form.next === form.current) return void (errorMsg.value = "현재 비밀번호와 다른 비밀번호를 입력하세요.");
   saving.value = true;

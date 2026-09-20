@@ -10,6 +10,12 @@
               <h3 class="text-center mb-60">회원가입</h3>
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체 -->
               <fo-form :columns="formCols" :form="form" :errors="errors" :cols="1" :gap="20" @submit="handleBtnAction('form-submit')">
+                <template #passwordRules>
+                  <password-rules class="-mt-3.5" :value="form.password" />
+                </template>
+                <template #password2Msg>
+                  <field-msg v-if="form.password2" class="-mt-3.5" :ok="form.password2 === form.password" :text="form.password2 === form.password ? '비밀번호가 일치합니다' : '비밀번호가 일치하지 않습니다'" />
+                </template>
                 <template #actions>
                 <!-- 프로필 이미지 · 수신 동의(휴대폰/카카오/SMS/이메일/광고) — 모두 선택 -->
                 <profile-img-upload v-model="profileImgUrl" class="mb-15" />
@@ -25,6 +31,7 @@
                     <button v-else type="button" class="ml-auto cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="idv = null">다시 인증</button>
                   </div>
                 </div>
+                <field-msg v-if="idv" class="-mt-1 mb-10" :ok="true" text="휴대폰 본인인증이 완료되었습니다" />
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
                 <div class="mt-10"></div>
@@ -115,17 +122,25 @@ async function runPass() {
   form.name = v.name;
 }
 
+import PasswordRules from "~/components/fo/PasswordRules.vue";
+import FieldMsg from "~/components/fo/FieldMsg.vue";
+import { isPasswordValid, PASSWORD_RULE_MESSAGE } from "~/utils/passwordPolicy";
+
 const schema = yup.object({
   name: yup.string().required("이름을 입력해 주세요").label("이름"),
   email: yup.string().required("이메일을 입력해 주세요").email("올바른 이메일 주소를 입력해 주세요").label("이메일"),
-  password: yup.string().required("비밀번호를 입력해 주세요").min(6, "비밀번호는 6자 이상이어야 합니다").label("비밀번호"),
+  password: yup.string().required("비밀번호를 입력해 주세요").test("pw-policy", PASSWORD_RULE_MESSAGE, (v) => isPasswordValid(v ?? "")).label("비밀번호"),
+  password2: yup.string().required("비밀번호를 한 번 더 입력해 주세요").oneOf([yup.ref("password")], "비밀번호가 일치하지 않습니다").label("비밀번호 확인"),
 });
 
-const form = reactive({ name: "", email: "", password: "" });
+const form = reactive({ name: "", email: "", password: "", password2: "" });
 const formCols: FoFormColumn[] = [
   { key: "name", label: "사용자명", type: "text", required: true, placeholder: "사용자명 입력", autocomplete: "name" },
   { key: "email", label: "이메일 주소", type: "text", required: true, placeholder: "이메일 주소...", autocomplete: "username" },
   { key: "password", label: "비밀번호", type: "password", required: true, placeholder: "비밀번호 입력...", autocomplete: "new-password" },
+  { key: "passwordRules", type: "slot" },
+  { key: "password2", label: "비밀번호 확인", type: "password", required: true, placeholder: "비밀번호 재입력...", autocomplete: "new-password" },
+  { key: "password2Msg", type: "slot" },
 ];
 const { errors, validate } = useFoValidate(schema, form);
 
@@ -137,7 +152,7 @@ async function onSubmit() {
   const result = await authStore.register(name, email, password, idv.value?.identityVerificationId, { profileImgUrl: profileImgUrl.value, ...consent.value });
   loading.value = false;
   if (result.ok) {
-    Object.assign(form, { name: "", email: "", password: "" });
+    Object.assign(form, { name: "", email: "", password: "", password2: "" });
     idv.value = null;
     profileImgUrl.value = "";
     consent.value = { recvPhoneYn: "N", recvKakaoYn: "N", recvSmsYn: "N", recvEmailYn: "N", recvAdYn: "N" };

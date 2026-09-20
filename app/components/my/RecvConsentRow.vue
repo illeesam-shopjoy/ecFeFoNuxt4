@@ -4,10 +4,10 @@
     <span class="mb-1 block text-[0.78rem] text-gray-500">수신 동의</span>
     <div class="grid grid-cols-2 gap-x-3 gap-y-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-3 text-[0.85rem] sm:grid-cols-3">
       <label v-for="o in OPTS" :key="o.key" class="m-0 flex cursor-pointer items-center gap-2" :class="o.key === 'recvAdYn' ? 'font-semibold text-[#8a5a25]' : 'text-gray-700'">
-        <input type="checkbox" :checked="model[o.key] === 'Y'" @change="set(o.key, ($event.target as HTMLInputElement).checked)" />{{ o.label }}
+        <input type="checkbox" class="!my-0 !ml-0 !mr-2 !h-4 !w-4 shrink-0 !border-0 !p-0 accent-[#bc8246]" :checked="model[o.key] === 'Y'" @change="set(o.key, ($event.target as HTMLInputElement).checked)" />{{ o.label }}
       </label>
     </div>
-    <label class="m-0 mt-1.5 flex cursor-pointer items-center gap-2 text-[0.78rem] text-gray-500"><input type="checkbox" :checked="allOn" @change="setAll(($event.target as HTMLInputElement).checked)" />전체 동의</label>
+    <label class="m-0 mt-1.5 flex cursor-pointer items-center gap-2 text-[0.78rem] text-gray-500"><input type="checkbox" class="!my-0 !ml-0 !mr-2 !h-4 !w-4 shrink-0 !border-0 !p-0 accent-[#bc8246]" :checked="allOn" @change="setAll(($event.target as HTMLInputElement).checked)" />전체 동의</label>
   </div>
 </template>
 
