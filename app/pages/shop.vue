@@ -30,6 +30,11 @@
           <div class="col-xl-3 col-lg-3 col-md-4">
             <!-- 쇼핑 사이드바 (옛 ShopSidebar) -->
             <div class="shop__sidebar">
+              <!-- 2026-09-21(요청사항: "전체초기화 버튼 상단에 위치") — 맨 아래에 있던 전체 초기화를 사이드바 맨 위로 -->
+              <div class="reset-button mb-30">
+                <button class="os-btn os-btn-black" @click="resetAllFilters">전체 초기화</button>
+              </div>
+
               <!-- 상품 카테고리 (2026-09-13: 멀티선택 토글) -->
               <div class="sidebar__widget mb-55">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
@@ -86,6 +91,23 @@
                 </div>
               </div>
 
+              <!-- 2026-09-21(요청사항: "기본은 카테고리·상품명 검색만 두고 나머지는 숨김 + 펼치기 기능") — 아래 나머지 조건들은 기본 접힘.
+                   접힌 채로 조건이 걸려 있으면 버튼에 걸린 개수를 보여준다(v-show 라 값은 접어도 그대로 유지). -->
+              <button
+                type="button"
+                class="mb-40 flex w-full cursor-pointer items-center justify-between rounded-md border border-[#e5e7eb] bg-white px-4 py-3 text-[0.9rem] font-semibold text-gray-800 hover:border-[#bc8246]"
+                :aria-expanded="showAdvanced"
+                aria-controls="shop-advanced-filters"
+                @click="showAdvanced = !showAdvanced"
+              >
+                <span>
+                  상세 검색조건 {{ showAdvanced ? "접기" : "펼치기" }}
+                  <span v-if="advancedActiveCount" class="ml-1 inline-flex min-w-[20px] items-center justify-center rounded-full bg-[#bc8246] px-1.5 text-[0.72rem] font-bold leading-[20px] text-white">{{ advancedActiveCount }}</span>
+                </span>
+                <i class="fas text-[0.75rem] text-gray-500" :class="showAdvanced ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </button>
+
+              <div v-show="showAdvanced" id="shop-advanced-filters">
               <!-- 가격 필터 (2026-09-13: 서버 priceMin/priceMax로 실제 전체 카탈로그 기준 필터링) -->
               <client-only>
                 <div class="sidebar__widget mb-55">
@@ -246,13 +268,10 @@
                 </div>
               </div>
 
+              </div>
+
               <filter-pick-modal ref="vendorModalRef" v-model="vendorIds" title="판매업체" :options="vendorList" />
               <filter-pick-modal ref="mdModalRef" v-model="mdUserIds" title="MD" :options="mdList" />
-
-              <!-- 전체 초기화 버튼 -->
-              <div class="reset-button mt-20 mb-30">
-                <button class="os-btn os-btn-black" @click="resetAllFilters">전체 초기화</button>
-              </div>
 
             </div>
           </div>
@@ -415,6 +434,22 @@ const priceRange = ref<[number, number]>([0, 500000]);
 const colorCds = ref<string[]>([]); // 색상만 서버 필터가 없어 클라이언트 보조필터로 남김(멀티선택, 하나라도 일치하면 노출)
 
 const viewMode = ref<"grid" | "list">("grid");
+
+// 사이드바 "상세 검색조건"(가격/색상/사이즈/별점/브랜드/판매업체/사이트/MD) 펼침 여부 — 기본 접힘. 카테고리·상품명 검색만 항상 보인다.
+const showAdvanced = ref(false);
+const advancedActiveCount = computed(
+  () =>
+    [
+      priceRange.value[0] > 0 || priceRange.value[1] < 500000,
+      colorCds.value.length > 0,
+      sizeCds.value.length > 0,
+      ratingRange.value[0] > 0 || ratingRange.value[1] < 5,
+      brandIds.value.length > 0,
+      vendorIds.value.length > 0,
+      !!siteId.value,
+      mdUserIds.value.length > 0,
+    ].filter(Boolean).length
+);
 
 // 2026-09-13(요청사항: "브랜드 클릭하니 화면이 백지현상" → "깜빡임 효과 안나오게 해줘") —
 // 필터 재조회 중(pending)에도 이미 보여주고 있던 목록은 그대로 유지하고(useAsyncData가
