@@ -47,14 +47,17 @@
                 </fo-grid>
                 <div class="row">
                   <div class="col-12">
-                    <div class="coupon-all">
-                      <div class="coupon">
-                        <input required id="coupon_code" class="input-text" name="coupon_code" value="" placeholder="쿠폰 코드" type="text" />
-                        <button class="os-btn os-btn-black" name="apply_coupon" type="button">쿠폰 적용</button>
-                      </div>
-                      <div class="coupon2">
-                        <button @click="handleBtnAction('cart-clear')" class="os-btn os-btn-black" name="update_cart" type="button">장바구니 비우기</button>
-                      </div>
+                    <!-- 2026-09-22(요청사항: "쿠폰코드는 여기서 입력 안 해도 되고(주문 시 입력), 장바구니 비우기는 우측 정렬 + 주문/결제하기 버튼과 다른 스타일") —
+                         쿠폰 코드 입력/적용은 뺐다(주문/결제 화면에서 쿠폰 선택). 비우기는 눈에 덜 띄는 흰 바탕 테두리 버튼으로 오른쪽에. -->
+                    <div class="mt-3 mb-2 flex justify-end">
+                      <button
+                        @click="handleBtnAction('cart-clear')"
+                        class="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-lg border border-solid border-[#d8dce2] bg-white px-4 text-[0.85rem] font-semibold text-gray-600 transition hover:border-[#d9534f] hover:bg-[#fff5f5] hover:text-[#d9534f]"
+                        name="update_cart"
+                        type="button"
+                      >
+                        <i class="fal fa-trash-alt text-[0.8rem]"></i>장바구니 비우기
+                      </button>
                     </div>
                   </div>
                 </div>

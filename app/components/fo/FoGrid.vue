@@ -15,11 +15,11 @@
     </div>
 
     <!-- 표 -->
-    <div v-if="layout === 'table'" class="relative overflow-auto" :style="tableMaxHeight ? { maxHeight: tableMaxHeight } : {}">
+    <div v-if="layout === 'table'" class="fo-grid-scroll relative overflow-auto" :style="tableMaxHeight ? { maxHeight: tableMaxHeight } : {}">
       <div v-if="loading && rows.length" class="absolute inset-0 z-[5] bg-white/55 flex items-start justify-center pt-10">
         <span class="text-[13px] text-theme bg-white border border-[#e5e7eb] rounded-full px-3.5 py-1 shadow">⏳ 조회 중…</span>
       </div>
-      <table class="fo-grid-table" :style="minWidth ? { minWidth } : {}">
+      <table ref="tableRef" class="fo-grid-table" :style="minWidth ? { minWidth } : {}">
         <thead>
           <tr>
             <th v-if="showRowNo" class="w-[52px] text-center">번호</th>
@@ -92,6 +92,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends FoRow">
+import { onMounted, onUpdated, ref } from "vue";
 import type { FoGridColumn, FoGridRowAction, FoRow } from "~/types/fo/foCompType";
 
 const props = withDefaults(
@@ -140,6 +141,27 @@ const firstText = (row: FoRow) => {
   const c = visCols()[0];
   return c ? cellText(c, row) : "";
 };
+// ── 모바일: 표를 카드(행마다 한 덩어리, 셀은 "라벨  값")로 바꿔 그린다 ────────────────────────────
+// 2026-09-22(요청사항: "fo-grid 모바일에서 가로 스크롤이 생기면 안 되고 모바일에 맞게") — 좁은 화면(<640px)에서는 CSS 가 thead 를 숨기고 tr/td 를 블록으로 쌓는다.
+// 셀 라벨은 컬럼 순서대로 td 의 data-label 로 붙인다(슬롯이 직접 그리는 <td> 도 포함하려고 렌더 후 DOM 에서 채운다).
+const tableRef = ref<HTMLTableElement | null>(null);
+const NO_LABEL = /^(이미지|상품|상품명|제거|삭제|관리|번호)?$/; // 라벨 없이 값만 보여줄 셀(이미지·상품명·삭제 버튼 등)
+function labelCells() {
+  const t = tableRef.value;
+  if (!t) return;
+  const cols = visCols();
+  const off = props.showRowNo ? 1 : 0;
+  t.querySelectorAll("tbody > tr:not(.fo-grid-expand-row)").forEach((tr) => {
+    Array.from(tr.children).forEach((td, i) => {
+      if (td.tagName !== "TD" || td.hasAttribute("colspan")) return;
+      const label = i < off ? "번호" : (cols[i - off]?.label ?? "");
+      td.setAttribute("data-label", NO_LABEL.test(label) ? "" : label);
+    });
+  });
+}
+onMounted(labelCells);
+onUpdated(labelCells);
+
 const rowNo = (idx: number) => ((props.pageNo ?? 1) - 1) * (props.pageSize ?? props.rows.length) + idx + 1;
 
 function onRowClick(row: T) {
@@ -199,6 +221,93 @@ const actVisible = (a: FoGridRowAction, row: FoRow, idx: number) => (a.visible ?
 </script>
 
 <style scoped>
+/* 모바일 카드형 표 — 가로 스크롤 없이 한 열로 쌓는다 */
+@media (max-width: 639px) {
+  .fo-grid-scroll {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  .fo-grid-table {
+    display: block;
+    min-width: 0 !important;
+    width: 100%;
+  }
+  .fo-grid-table thead {
+    display: none;
+  }
+  .fo-grid-table :deep(tbody),
+  .fo-grid-table :deep(tbody tr),
+  .fo-grid-table :deep(tbody td) {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .fo-grid-table :deep(tbody tr:not(.fo-grid-expand-row)) {
+    margin-bottom: 12px;
+    padding: 6px 14px;
+    background: #fff !important;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+  .fo-grid-table :deep(tbody td) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px dashed #eee;
+    text-align: right !important;
+    white-space: normal !important;
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+  .fo-grid-table :deep(tbody tr:not(.fo-grid-expand-row) td:last-child) {
+    border-bottom: 0;
+  }
+  .fo-grid-table :deep(tbody td[data-label]:not([data-label=""])::before) {
+    content: attr(data-label);
+    flex: none;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-align: left;
+  }
+  /* 라벨 없는 셀(이미지·상품명·삭제)은 값만, 가운데/왼쪽으로 */
+  .fo-grid-table :deep(tbody td[data-label=""]) {
+    display: block;
+    text-align: left !important;
+  }
+  .fo-grid-table :deep(tbody td[data-label=""]:first-child) {
+    text-align: center !important;
+  }
+  .fo-grid-table :deep(.fo-grid-expand-row td) {
+    display: block;
+    width: 100%;
+  }
+  /* 합계 줄(tfoot): 라벨(th)과 값(td)을 양끝으로 */
+  .fo-grid-table :deep(tfoot),
+  .fo-grid-table :deep(tfoot tr) {
+    display: block;
+    width: 100%;
+  }
+  .fo-grid-table :deep(tfoot tr) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 4px;
+    border-top: 1px solid #eee;
+  }
+  .fo-grid-table :deep(tfoot th),
+  .fo-grid-table :deep(tfoot td) {
+    display: block;
+    width: auto;
+    border: 0;
+    padding: 0;
+  }
+}
 .fo-grid-card {
   background: #fff;
   border: 1px solid #e5e7eb;

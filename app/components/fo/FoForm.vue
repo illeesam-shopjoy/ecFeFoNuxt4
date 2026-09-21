@@ -3,7 +3,7 @@
        FoFormArea(<fo-form-area>) 이식. 필드 정의(columns)와 form/errors 객체만 넘기면 라벨·입력·오류 메시지를 그려준다.
        type: text|email|tel|password|number|date|textarea|select|readonly|slot|rowBreak|group. 한 줄 필드 수는 cols, 필드 폭은 colSpan. -->
   <component :is="as" class="fo-form" @submit.prevent="as === 'form' && emit('submit')">
-    <div v-for="(row, ri) in layoutRows()" :key="ri" class="grid" :style="{ gridTemplateColumns: `repeat(auto-fit, minmax(${minColWidth}, 1fr))`, gap: `${gap}px`, marginBottom: `${gap}px` }">
+    <div v-for="(row, ri) in layoutRows()" :key="ri" class="grid fo-form-row" :style="{ gridTemplateColumns: `repeat(auto-fit, minmax(min(${minColWidth}, 100%), 1fr))`, gap: `${gap}px`, marginBottom: `${gap}px` }">
       <div v-for="col in row" :key="col.key || col.label" :style="col.colSpan && col.colSpan > 1 ? { gridColumn: `span ${Math.min(col.colSpan, cols)}` } : {}">
         <!-- 섹션 제목 -->
         <div v-if="col.type === 'group'" class="text-[0.95rem] font-extrabold text-gray-900 mb-1" :class="ri === 0 ? '' : 'mt-2'">{{ col.label }}</div>
@@ -154,6 +154,14 @@ const dispVal = (col: FoFormColumn) => {
 </script>
 
 <style scoped>
+/* 2026-09-22(요청사항: "fo-form 모바일 점검") — 좁은 화면(폰)에서는 colSpan 을 무시하고 한 칸씩 쌓는다. 한 칸짜리 그리드에서 span 2 가 있으면 보이지 않는 2번째 열이 생겨
+   화면이 가로로 넘쳤다. 최소 열 너비도 min(값, 100%) 로 컨테이너보다 커지지 않게 했다(위 gridTemplateColumns). */
+@media (max-width: 560px) {
+  .fo-form-row > * {
+    grid-column: 1 / -1 !important;
+    min-width: 0;
+  }
+}
 .fo-in {
   width: 100%;
   padding: 10px 13px;
