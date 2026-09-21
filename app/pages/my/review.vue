@@ -1,7 +1,7 @@
 <template>
-  <my-shell active="review" title="리뷰 관리" :file-path="currentFilePath">
+  <my-shell active="review" title="상품평 관리" :file-path="currentFilePath">
     <div v-if="loading" class="py-12 text-center text-gray-400">불러오는 중...</div>
-    <div v-else-if="!list.length" class="rounded-2xl border border-dashed border-gray-300 py-14 text-center text-gray-400">작성한 리뷰가 없습니다.</div>
+    <div v-else-if="!list.length" class="rounded-2xl border border-dashed border-gray-300 py-14 text-center text-gray-400">작성한 상품평이 없습니다.</div>
     <ul v-else class="m-0 grid list-none gap-3 p-0">
       <li v-for="r in list" :key="r.reviewId" class="rounded-2xl border border-[#e5e7eb] bg-white p-4">
         <div class="flex flex-wrap items-center gap-2">
@@ -32,8 +32,8 @@ import { htmlToText, toSafeHtml } from "~/utils/htmlSafe";
 import type { PdMyReviewType } from "~/types/pd/pdMyReviewType";
 
 const currentFilePath = useCurrentFilePath();
-useHead({ title: "마이페이지 - 리뷰 관리" });
-usePageTitle("마이페이지 - 리뷰 관리");
+useHead({ title: "마이페이지 - 상품평 관리" });
+usePageTitle("마이페이지 - 상품평 관리");
 
 const loading = ref(true);
 const list = ref<PdMyReviewType[]>([]);
@@ -50,7 +50,7 @@ async function load() {
   }
 }
 async function remove(r: PdMyReviewType) {
-  if (!(await useConfirm().openConfirm({ title: "리뷰 삭제", message: "이 리뷰를 삭제할까요?", confirmText: "삭제", cancelText: "취소", variant: "danger" }))) return;
+  if (!(await useConfirm().openConfirm({ title: "상품평 삭제", message: "이 상품평을 삭제할까요?", confirmText: "삭제", cancelText: "취소", variant: "danger" }))) return;
   try {
     await pdReviewSvc.deleteReview(r.reviewId);
     await load();

@@ -14,7 +14,7 @@ const COMMENT = "/fo/ec/pd/review-comment";
 export const pdReviewSvc = {
   /** POST /fo/ec/pd/review — 리뷰 작성(비회원은 writerNm+writerPwd) */
   createReview: (body: PdReviewCreateType): Promise<CoWriteResultType> =>
-    csrPost<{ reviewId: string }>(REVIEW, buildReviewCreatePayload(body), authCfg()).then((r) => writeRes(r.reviewId, "리뷰가 등록되었습니다.")),
+    csrPost<{ reviewId: string }>(REVIEW, buildReviewCreatePayload(body), authCfg()).then((r) => writeRes(r.reviewId, "상품평이 등록되었습니다.")),
 
   /** PUT /fo/ec/pd/review/{id} — 리뷰 수정(작성자만: 회원 본인 또는 비회원은 writerPwd 일치) */
   updateReview: (reviewId: string, body: PdReviewUpdateType): Promise<CoWriteResultType> =>

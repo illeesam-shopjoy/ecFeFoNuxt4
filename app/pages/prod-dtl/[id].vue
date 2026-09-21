@@ -95,7 +95,7 @@
                     <div class="text-center">
                       <div class="text-[2.6rem] font-black leading-none text-gray-900">{{ avgRating.toFixed(1) }}</div>
                       <div class="mt-1 text-[#f5a623]"><i v-for="st in 5" :key="st" :class="st <= Math.round(avgRating) ? 'fas fa-star' : 'fal fa-star'"></i></div>
-                      <div class="mt-1 text-[0.8rem] text-[#9ca3af]">{{ reviewList.length }}개 리뷰</div>
+                      <div class="mt-1 text-[0.8rem] text-[#9ca3af]">{{ reviewList.length }}개 상품평</div>
                     </div>
                     <div class="flex min-w-[200px] flex-1 flex-col gap-1">
                       <div v-for="d in ratingDist" :key="d.star" class="flex items-center gap-2 text-[0.78rem] text-gray-600">
@@ -186,7 +186,7 @@
                 </div>
                 <div class="post-comments-form mb-100">
                   <div class="post-comments-title mb-30">
-                    <h3>{{ replyingToReviewId ? '답글 쓰기' : editingReviewId ? '리뷰 수정' : '리뷰 쓰기' }}</h3>
+                    <h3>{{ replyingToReviewId ? '답글 쓰기' : editingReviewId ? '상품평 수정' : '상품평 쓰기' }}</h3>
                     <div v-if="!replyingToReviewId" class="post-rating">
                       <ul>
                         <li v-for="n in 5" :key="n">
@@ -241,7 +241,7 @@
                       <div class="col-xl-12 text-center">
                         <button v-if="editingReviewId || replyingToReviewId" class="os-btn mr-2 !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="button" @click="cancelReviewForm">취소</button>
                         <button class="os-btn os-btn-black !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="submit" :disabled="reviewFormLoading">
-                          {{ reviewFormLoading ? "저장 중..." : (replyingToReviewId ? "답글 등록" : editingReviewId ? "수정 저장" : "리뷰 등록") }}
+                          {{ reviewFormLoading ? "저장 중..." : (replyingToReviewId ? "답글 등록" : editingReviewId ? "수정 저장" : "상품평 등록") }}
                         </button>
                       </div>
                     </div>
@@ -403,7 +403,7 @@ useHead(() => ({
     : [],
 }));
 usePageTitle("상품 상세");
-if (seo.value) useCdnCache(300); // 서버 렌더 결과(SEO 정보 있음)만 Netlify CDN 5분 캐시 — 변하는 데이터(리뷰 등)는 SSR 에 없어 안전, 오류/빈 페이지는 캐시 안 함
+if (seo.value) useCdnCache(300); // 서버 렌더 결과(SEO 정보 있음)만 Netlify CDN 5분 캐시 — 변하는 데이터(상품평 등)는 SSR 에 없어 안전, 오류/빈 페이지는 캐시 안 함
 
 // GA4: 상세 조회 데이터 기준으로 page_view 전송
 const { sendPageView } = useGa();
@@ -591,7 +591,7 @@ const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.
 const REVIEW_ATTACH_ACCEPT = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"];
 const guestNm = ref("");
 const guestPwd = ref("");
-const reviewTitleInput = ref(""); // 리뷰 제목(선택)
+const reviewTitleInput = ref(""); // 상품평 제목(선택)
 const reviewAttachChanges = ref<SyAttachChangeType[]>([]);
 const editingReviewId = ref<string | null>(null);
 const editingReviewFiles = ref<SyAttachType[]>([]);
@@ -645,7 +645,7 @@ const deletingId = ref<string | null>(null);
 async function deleteReview(reviewId: string, isReply: boolean, guest = false) {
   const ok = await useConfirm().openConfirm({
     title: "삭제 확인",
-    message: isReply ? "이 답글을 삭제할까요?" : "이 리뷰를 삭제할까요? 달린 답글도 함께 삭제됩니다.",
+    message: isReply ? "이 답글을 삭제할까요?" : "이 상품평을 삭제할까요? 달린 답글도 함께 삭제됩니다.",
     confirmText: "삭제",
     cancelText: "취소",
     variant: "danger",
@@ -662,7 +662,7 @@ async function deleteReview(reviewId: string, isReply: boolean, guest = false) {
     const res = isReply ? await pdReviewSvc.deleteReviewComment(reviewId) : await pdReviewSvc.deleteReview(reviewId, writerPwd);
     if (res?.success) {
       $toast?.success?.(res.message ?? "삭제되었습니다.");
-      await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
+      await refreshItem(); // 새로고침 대신 최신 상품·상품평을 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
     }
   } catch (e: any) {
     const msg = String(e?.data?.message ?? e?.message ?? "삭제에 실패했습니다.").split("::")[0] ?? "";
@@ -708,7 +708,7 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         $toast?.success?.(res.message ?? "답글이 등록되었습니다.");
         resetForm();
         replyingToReviewId.value = null;
-        await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
+        await refreshItem(); // 새로고침 대신 최신 상품·상품평을 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     } else if (editingReviewId.value) {
       const target = (item.value?.reviews ?? []).find((r) => r.reviewId === editingReviewId.value);
@@ -735,13 +735,13 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         attachFiles: reviewAttachChanges.value,
       });
       if (res?.success) {
-        $toast?.success?.(res.message ?? "리뷰가 등록되었습니다.");
+        $toast?.success?.(res.message ?? "상품평이 등록되었습니다.");
         resetForm();
         guestPwd.value = "";
         reviewTitleInput.value = "";
         reviewAttachChanges.value = [];
         reviewRating.value = 0;
-        await refreshItem(); // 새로고침 대신 최신 상품·리뷰를 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
+        await refreshItem(); // 새로고침 대신 최신 상품·상품평을 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     }
   } catch (e: any) {

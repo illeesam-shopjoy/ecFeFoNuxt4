@@ -31,7 +31,7 @@ export const MY_MENU_GROUPS: MyMenuGroup[] = [
   {
     title: "활동",
     items: [
-      { key: "review", label: "리뷰 관리", to: "/my/review", icon: "⭐" },
+      { key: "review", label: "상품평 관리", to: "/my/review", icon: "⭐" },
       { key: "qna", label: "상품문의 관리", to: "/my/qna", icon: "❓" },
       { key: "contact", label: "1:1 문의", to: "/my/contact", icon: "📩" },
       { key: "chatt", label: "채팅", to: "/my/chatt", icon: "💬" },

@@ -20,7 +20,7 @@ const checkRating = (v: unknown): number => {
 export function buildReviewCreatePayload(body: PdReviewCreateType): Record<string, unknown> {
   const reviewContent = String(body.content ?? "").trim();
   if (!body.prodId) badRequest("상품 ID가 필요합니다.");
-  if (!reviewContent) badRequest("리뷰 내용을 입력해 주세요.");
+  if (!reviewContent) badRequest("상품평 내용을 입력해 주세요.");
   const rating = checkRating(body.rating);
   const reviewTitle = String(body.reviewTitle ?? "").trim() || firstLine(reviewContent);
   const payload: Record<string, unknown> = { prodId: body.prodId, reviewTitle, reviewContent, rating };
@@ -33,7 +33,7 @@ export function buildReviewCreatePayload(body: PdReviewCreateType): Record<strin
 /** PUT /fo/ec/pd/review/{id} 본문 */
 export function buildReviewUpdatePayload(body: PdReviewUpdateType): Record<string, unknown> {
   const reviewContent = String(body.content ?? "").trim();
-  if (!reviewContent) badRequest("리뷰 내용을 입력해 주세요.");
+  if (!reviewContent) badRequest("상품평 내용을 입력해 주세요.");
   const rating = checkRating(body.rating);
   const payload: Record<string, unknown> = { reviewTitle: String(body.reviewTitle ?? "").trim() || firstLine(reviewContent), reviewContent, rating };
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
@@ -44,7 +44,7 @@ export function buildReviewUpdatePayload(body: PdReviewUpdateType): Record<strin
 /** POST /fo/ec/pd/review-comment 본문 */
 export function buildReviewCommentPayload(body: PdReviewCommentCreateType): Record<string, unknown> {
   const reviewReplyContent = String(body.content ?? "").trim();
-  if (!body.reviewId) badRequest("리뷰 ID가 필요합니다.");
+  if (!body.reviewId) badRequest("상품평 ID가 필요합니다.");
   if (!reviewReplyContent) badRequest("답글 내용을 입력해 주세요.");
   return { reviewId: body.reviewId, reviewReplyContent };
 }

@@ -721,7 +721,7 @@ const ratingLabel = computed(() => {
   const [min, max] = ratingRange.value;
   if (min === 0 && max === 5) return "전체";
   const range = max === 5 ? `${min}점 이상` : min === max ? `${min}점` : `${min}~${max}점`;
-  return `${range} (리뷰 있는 상품)`;
+  return `${range} (상품평 있는 상품)`;
 });
 const nameOfOpt = (list: SyFilterOptType[], id: string) => list.find((o) => o.id === id)?.name ?? id;
 const resetVendor = () => (vendorIds.value = []);
