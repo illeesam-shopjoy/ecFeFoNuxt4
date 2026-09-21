@@ -129,7 +129,6 @@
                     </button>
                     <span v-if="!allColor.length" class="text-[0.85rem] text-[#aaa]">표시할 색상이 없습니다</span>
                   </div>
-                  <div v-if="colorCds.length" class="mt-3 text-[0.8rem] text-[#777]">선택: {{ colorCds.map(colorNameOf).join(", ") }}</div>
                 </div>
               </div>
 
@@ -142,8 +141,9 @@
                 <div class="sidebar__widget-content">
                   <div class="size">
                     <ul>
-                      <li v-for="size in SIZE_OPTIONS" :key="size" class="!mr-[6px]" :class="sizeCds.includes(size) ? 'active' : ''">
-                        <a class="!h-[28px] !w-auto !min-w-[28px] !px-[7px] !text-[10px] !leading-[28px]" @click.prevent="toggleSize(size)" href="#">{{ size }}</a>
+                      <li v-for="size in SIZE_OPTIONS" :key="size" class="!mr-[10px] !mb-[10px] align-top" :class="sizeCds.includes(size) ? 'active' : ''">
+                        <!-- 2026-09-21(요청사항: "색상과 사이즈 동그라미 크기 같게") — 색상 스와치(28px)와 같은 28x28 원으로 고정. FREE만 글자가 길어 폰트를 줄임 -->
+                        <a class="!h-[28px] !w-[28px] !p-0 !leading-[28px]" :class="size.length > 2 ? '!text-[8px]' : '!text-[10px]'" @click.prevent="toggleSize(size)" href="#">{{ size }}</a>
                       </li>
                     </ul>
                   </div>
@@ -157,19 +157,21 @@
                   <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetRating">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
-                  <div class="flex items-center gap-2 text-[0.85rem] text-gray-700">
-                    <select :value="ratingRange[0]" class="min-w-0 flex-1 rounded-md border border-[#e5e7eb] px-2 py-2 outline-none focus:border-[#bc8246]" aria-label="최소 별점" @change="setRatingMin(Number(($event.target as HTMLSelectElement).value))">
-                      <option v-for="n in RATING_STEPS.slice(0, 5)" :key="n" :value="n">{{ n === 0 ? "전체" : `★ ${n}점` }} 이상</option>
-                    </select>
-                    <span>~</span>
-                    <select :value="ratingRange[1]" class="min-w-0 flex-1 rounded-md border border-[#e5e7eb] px-2 py-2 outline-none focus:border-[#bc8246]" aria-label="최대 별점" @change="setRatingMax(Number(($event.target as HTMLSelectElement).value))">
-                      <option v-for="n in RATING_STEPS.slice(1)" :key="n" :value="n">{{ n === 5 ? "전체" : `★ ${n}점` }} 이하</option>
-                    </select>
+                  <!-- 2026-09-21(요청사항: "select 2개인데 별표를 드래그하면 좋을거 같아") — 별을 누르면 "n점 이상", 별 위에서 끌면 시작~끝 별 범위.
+                       터치 스크롤(세로)은 그대로 두고 가로 드래그만 받는다(touch-action: pan-y). -->
+                  <div
+                    ref="ratingStarsRef"
+                    class="grid cursor-pointer select-none grid-cols-5 touch-pan-y text-center text-[1.7rem]"
+                    role="group"
+                    aria-label="평가 별점 범위 (별을 누르거나 끌어서 선택)"
+                    @pointerdown="onRatingDown"
+                    @pointermove="onRatingMove"
+                    @pointerup="onRatingEnd"
+                    @pointercancel="onRatingEnd"
+                  >
+                    <i v-for="n in 5" :key="n" class="fas fa-star transition-colors duration-100" :class="n >= Math.max(ratingRange[0], 1) && n <= ratingRange[1] ? 'text-[#f5a623]' : 'text-[#e3e3e3]'"></i>
                   </div>
-                  <div class="mt-2 text-[1rem] text-[#f5a623]">
-                    <i v-for="n in 5" :key="n" :class="n >= Math.max(ratingRange[0], 1) && n <= ratingRange[1] ? 'fas fa-star' : 'fal fa-star'"></i>
-                    <span class="ml-2 text-[0.78rem] text-[#999]">{{ ratingRange[0] === 0 && ratingRange[1] === 5 ? "전체" : `${ratingRange[0]}~${ratingRange[1]}점 (리뷰 있는 상품)` }}</span>
-                  </div>
+                  <div class="mt-2 text-[0.78rem] text-[#999]">{{ ratingLabel }}</div>
                 </div>
               </div>
 
@@ -252,40 +254,6 @@
                 <button class="os-btn os-btn-black" @click="resetAllFilters">전체 초기화</button>
               </div>
 
-              <!-- 추천 상품 -->
-              <div class="sidebar__widget">
-                <div class="sidebar__widget-title mb-30">
-                  <h3>추천 상품</h3>
-                </div>
-                <div class="sidebar__widget-content">
-                  <div class="features__product">
-                    <ul>
-                      <li v-for="(item, i) in featuredProducts" :key="i" class="mb-20">
-                        <div class="featires__product-wrapper d-flex">
-                          <div class="features__product-thumb mr-15">
-                            <nuxt-link :to="`/prod-dtl/${item.prodId}`">
-                              <app-image :src="item.img" alt="pro-sm-1" :img-style="{ width: '86px', height: '110px', objectFit: 'cover' }" :skeleton-style="{ width: '86px', height: '110px' }" />
-                            </nuxt-link>
-                          </div>
-                          <div class="features__product-content">
-                            <h5>
-                              <nuxt-link :to="`/prod-dtl/${item.prodId}`">
-                                <span v-html="item.prodNm"></span>
-                              </nuxt-link>
-                            </h5>
-                            <div class="price">
-                              <span>{{ formatPrice(item.salePrice) }}</span>
-                              <span v-if="item.stdPrice" class="old-price">
-                                <del>{{ formatPrice(item.stdPrice) }}</del>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div class="col-xl-9 col-lg-9 col-md-8">
@@ -375,7 +343,6 @@ import FilterPickModal from "~/components/modals/FilterPickModal.vue";
 import { syVendorMdSvc } from "~/svc/fo/ec/sy/syVendorMdSvc";
 import type { SyFilterOptType } from "~/types/sy/syFilterOptType";
 import { PROD_COLOR_OPTIONS, prodOptSwatchColor } from "~/utils/prodOptColor";
-import AppImage from "~/components/ui/AppImage.vue";
 import Slider from "@vueform/slider";
 import "@vueform/slider/themes/default.css";
 import { pdCategorySvc } from "~/svc/fo/ec/pd/pdCategorySvc";
@@ -452,7 +419,10 @@ const viewMode = ref<"grid" | "list">("grid");
 // 2026-09-13(요청사항: "브랜드 클릭하니 화면이 백지현상" → "깜빡임 효과 안나오게 해줘") —
 // 필터 재조회 중(pending)에도 이미 보여주고 있던 목록은 그대로 유지하고(useAsyncData가
 // 알아서 유지해줌), 스켈레톤 전체화면 전환은 "정말 처음이라 아직 아무 상품도 없을 때"만.
-const isInitialLoading = computed(() => pending.value && displayItems.value.length === 0);
+// 2026-09-21 보강(요청사항: "사이즈 선택시 화면깜빡임 — 조건 변경시 깜빡임 없게") — 예전엔 "지금 보이는 상품이 0개 + 조회 중"이면 스켈레톤으로 바뀌어서,
+// 결과가 0건이던 조건에서 다른 조건을 누르거나 색상 보조필터로 다 가려진 상태에서 재조회하면 사이드바째 스켈레톤↔실화면이 번갈아 깜빡였다.
+// 이제는 1페이지 응답이 아직 한 번도 없을 때(firstPage 없음)만 스켈레톤.
+const isInitialLoading = computed(() => pending.value && !firstPage.value);
 
 // 2026-09-13: ecBeBo sizeInfoCd 실 enum 값(자유 텍스트가 아니라 고정 코드) — 상품 옵션(SKU)
 // 스캔이 아니라 상품 자체 필드라 서버에서 바로 IN 필터링된다.
@@ -690,22 +660,40 @@ const resetName = () => {
   keyword.value = "";
 };
 const resetRating = () => (ratingRange.value = [0, 5]);
-/** 별점 범위 선택지 — 이상(min) / 이하(max) */
-const RATING_STEPS = [0, 1, 2, 3, 4, 5];
-const setRatingMin = (v: number) => (ratingRange.value = [v, Math.max(v, ratingRange.value[1])]);
-const setRatingMax = (v: number) => (ratingRange.value = [Math.min(v, ratingRange.value[0]), v]);
+/** 별점 드래그 — 누른 별이 시작점(anchor). 그대로 떼면 "anchor점 이상", 다른 별까지 끌면 두 별 사이 범위. */
+const ratingStarsRef = ref<HTMLElement | null>(null);
+let ratingAnchor: number | null = null;
+const ratingStarAt = (e: PointerEvent): number => {
+  const rect = ratingStarsRef.value!.getBoundingClientRect();
+  return Math.min(5, Math.max(1, Math.ceil(((e.clientX - rect.left) / rect.width) * 5)));
+};
+const setRatingRange = (min: number, max: number) => {
+  if (ratingRange.value[0] !== min || ratingRange.value[1] !== max) ratingRange.value = [min, max];
+};
+function onRatingDown(e: PointerEvent) {
+  ratingAnchor = ratingStarAt(e);
+  ratingStarsRef.value?.setPointerCapture(e.pointerId);
+  setRatingRange(ratingAnchor, 5);
+}
+function onRatingMove(e: PointerEvent) {
+  if (ratingAnchor == null) return;
+  const n = ratingStarAt(e);
+  if (n === ratingAnchor) setRatingRange(n, 5);
+  else setRatingRange(Math.min(n, ratingAnchor), Math.max(n, ratingAnchor));
+}
+const onRatingEnd = () => (ratingAnchor = null);
+const ratingLabel = computed(() => {
+  const [min, max] = ratingRange.value;
+  if (min === 0 && max === 5) return "전체";
+  const range = max === 5 ? `${min}점 이상` : min === max ? `${min}점` : `${min}~${max}점`;
+  return `${range} (리뷰 있는 상품)`;
+});
 const nameOfOpt = (list: SyFilterOptType[], id: string) => list.find((o) => o.id === id)?.name ?? id;
 const resetVendor = () => (vendorIds.value = []);
 const resetMd = () => (mdUserIds.value = []);
 
 // ── 사이드바: 상품 색상 — 지금까지 불러온 상품의 옵션값(색상은 ecBeBo 서버 필터가 아직 없음) ──
-
-// ── 사이드바: 추천 상품 — 최신 상품 24개 중 베스트 2개, 없으면 최신 2개(백엔드에 isBest 서버 필터 없음) ──
-const latestProducts = useCacheProducts();
-const featuredProducts = computed(() => {
-  const best = latestProducts.value.filter((p) => p.isBest);
-  return (best.length ? best : latestProducts.value).slice(0, 2);
-});
+// (2026-09-21: 사이드바 "추천 상품" 위젯 제거 — 이 화면에서만 쓰던 useCacheProducts 호출도 함께 뺌)
 
 // ── 더보기 자동 스크롤(IntersectionObserver) ─────────────────────────────
 const loadMoreSentinel = ref<HTMLElement | null>(null);
@@ -739,13 +727,12 @@ onBeforeUnmount(() => observer?.disconnect());
 /* 2026-09-14(요청사항: "필터에 따라 우측 목록 다시 보여줄때 반짝하여 보여주는것보다
    약간의 애니메이션 효과 넣어주면 좋겠어") — 필터 변경으로 상품 카드가 통째로 교체될 때
    개별 카드가 살짝 fade+이동하며 사라졌다/나타나게. */
-.product-fade-enter-active,
-.product-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+/* 2026-09-21 깜빡임 수정 — 예전엔 leave 트랜지션도 있어서 필터가 바뀌면 "사라지는 옛 카드"와 "나타나는 새 카드"가 0.3초간 같이 그리드에 남아
+   목록 높이가 순간 두 배가 되고 스크롤/레이아웃이 출렁였다(모바일에서 특히 눈에 띔). 옛 카드는 즉시 제거하고 새 카드만 살짝 fade-in. */
+.product-fade-enter-active {
+  transition: opacity 0.25s ease;
 }
-.product-fade-enter-from,
-.product-fade-leave-to {
+.product-fade-enter-from {
   opacity: 0;
-  transform: translateY(10px);
 }
 </style>
