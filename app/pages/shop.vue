@@ -11,7 +11,7 @@
     <!-- 2026-09-14(요청사항: "상품항목 반응형으로 20% 늘어나면 좋겠어") — 전체 영역
          너비를 max-w-7xl(1280px)에서 max-w-screen-2xl(1536px, 정확히 20% 증가)로 늘려
          사이드바/상품그리드가 반응형 비율을 그대로 유지한 채 전부 20% 커지게 함. -->
-    <section v-if="isInitialLoading" class="shop__area pt-100 pb-100">
+    <section v-if="isInitialLoading" class="shop__area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-screen-2xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-9 col-lg-9 col-md-8 offset-xl-3 offset-lg-3 offset-md-4">
@@ -24,7 +24,7 @@
     </section>
 
     <!-- 실제 쇼핑 영역 (옛 ShopArea, 사이드바 좌측) -->
-    <section v-else class="shop__area pt-100 pb-100">
+    <section v-else class="shop__area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-screen-2xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-3 col-lg-3 col-md-4">
@@ -77,7 +77,7 @@
               </div>
 
               <!-- 상품명 검색 -->
-              <div class="sidebar__widget mb-50">
+              <div class="sidebar__widget mb-25">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>상품명 검색</h3>
                   <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetName">초기화</button>
@@ -95,7 +95,7 @@
                    접힌 채로 조건이 걸려 있으면 버튼에 걸린 개수를 보여준다(v-show 라 값은 접어도 그대로 유지). -->
               <button
                 type="button"
-                class="mb-40 flex w-full cursor-pointer items-center justify-between rounded-md border border-[#e5e7eb] bg-white px-4 py-3 text-[0.9rem] font-semibold text-gray-800 hover:border-[#bc8246]"
+                class="mb-30 flex w-full cursor-pointer items-center justify-between rounded-md border border-[#e5e7eb] bg-white px-4 py-3 text-[0.9rem] font-semibold text-gray-800 hover:border-[#bc8246]"
                 :aria-expanded="showAdvanced"
                 aria-controls="shop-advanced-filters"
                 @click="showAdvanced = !showAdvanced"
