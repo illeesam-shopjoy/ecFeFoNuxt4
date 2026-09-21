@@ -902,6 +902,26 @@ p {
   overscroll-behavior: contain;
 }
 
+/* 2026-09-22 전화하기/메일 보내기 아이콘 버튼(연락처·이메일 값 오른쪽) */
+.contact-act {
+  display: inline-flex;
+  height: 28px;
+  width: 28px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+  &:hover {
+    background: #2563eb;
+    color: #fff;
+  }
+}
+
 /* scroll to top */
 /* 2026-09-15(요청사항: "최상위버튼과, 채팅버튼이 겹치는네 최하단에 바가 들어올수 있으니
    약간 공백을둬줘") — ChatWidget.vue의 채팅 플로팅 버튼(right:24px, bottom:40px, 54px 원)과

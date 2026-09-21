@@ -18,6 +18,9 @@
                   <div class="contact__info-content min-w-0 text-[0.9rem] leading-snug pt-1.5">
                     <h6 class="!mb-0 inline !text-[0.85rem]">{{ item.title }}:</h6>
                     <span class="ml-1 break-words">{{ item.subtitle }}</span>
+                    <!-- 2026-09-22: 연락처 → 전화하기, 이메일 → 메일 보내기 -->
+                    <a v-if="item.title === '연락처'" :href="`tel:${item.subtitle.replace(/[^0-9+]/g, '')}`" class="contact-act ml-2" aria-label="전화하기" title="전화하기"><i class="fas fa-phone-alt"></i></a>
+                    <a v-else-if="item.title === '이메일'" :href="`mailto:${item.subtitle}`" class="contact-act ml-2" aria-label="메일 보내기" title="메일 보내기"><i class="fas fa-envelope"></i></a>
                   </div>
                 </li>
               </ul>

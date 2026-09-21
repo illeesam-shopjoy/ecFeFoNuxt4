@@ -31,8 +31,8 @@
         <div>
           <h5 class="mb-3 text-[0.95rem] font-bold text-white">고객센터</h5>
           <ul class="m-0 flex list-none flex-col gap-2 p-0 text-[0.85rem]">
-            <li><a :href="`tel:${bizValue('고객센터').replace(/-/g, '')}`" class="ft-link text-[1.05rem] font-semibold !text-white">{{ bizValue("고객센터") }}</a></li>
-            <li><a :href="`mailto:${bizValue('이메일')}`" class="ft-link">{{ bizValue("이메일") }}</a></li>
+            <li class="flex items-center gap-2"><span class="text-[1.05rem] font-semibold text-white">{{ bizValue("고객센터") }}</span><a :href="telHref(bizValue('고객센터'))" class="fs-act" aria-label="전화하기" title="전화하기"><i class="fas fa-phone-alt"></i></a></li>
+            <li class="flex items-center gap-2"><span class="min-w-0 break-all text-[#b5b5b5]">{{ bizValue("이메일") }}</span><a :href="`mailto:${bizValue('이메일')}`" class="fs-act" aria-label="메일 보내기" title="메일 보내기"><i class="fas fa-envelope"></i></a></li>
             <li><nuxt-link href="/contact" class="ft-link">1:1 문의하기</nuxt-link></li>
           </ul>
         </div>
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { BIZ_INFO, bizValue } from "~/conts/bizInfo";
+import { BIZ_INFO, bizValue, telHref } from "~/conts/bizInfo";
 
 // 2026-09-20(요청사항: "상세화면에서는 footer 가 안 보이면 된다") — 상품/블로그/이벤트 상세에서는 푸터를 렌더링하지 않는다
 const route = useRoute();
@@ -131,6 +131,23 @@ async function shareLink() {
   background: #262626;
   font-size: 14px;
   transition: background 0.15s;
+}
+.fs-act {
+  display: inline-flex;
+  height: 26px;
+  width: 26px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #262626;
+  color: #bc8246;
+  font-size: 11px;
+  transition: background 0.15s;
+}
+.fs-act:hover {
+  background: #bc8246;
+  color: #fff;
 }
 .fs-btn:hover {
   background: #333;

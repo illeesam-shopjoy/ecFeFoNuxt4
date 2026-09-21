@@ -59,6 +59,29 @@ const googleSrc = computed(() => `https://maps.google.com/maps?q=${addrEnc.value
 const kakaoSrc = computed(() => `https://map.kakao.com/?q=${encodeURIComponent(props.addr)}`);
 const naverLink = computed(() => `https://map.naver.com/p/search/${addrEnc.value}`);
 
+// 2026-09-22(요청사항: "지도가 보이는 곳에는 위치공유하기 버튼") — 지금 보고 있는 지도의 링크를 공유한다. 폰은 공유 시트(navigator.share), 안 되면 링크 복사.
+const shareUrl = computed(() => (provider.value === "kakao" ? kakaoSrc.value : provider.value === "naver" ? naverLink.value : `https://www.google.com/maps/search/?api=1&query=${addrEnc.value}`));
+async function shareLocation() {
+  const title = "모두누리 위치";
+  const text = props.addr;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title, text, url: shareUrl.value });
+      return;
+    }
+    await navigator.clipboard.writeText(`${title}\n${text}\n${shareUrl.value}`);
+    await useAlert().openAlert("위치 링크가 복사되었습니다. 붙여넣어 공유해 주세요!");
+  } catch (e) {
+    if ((e as { name?: string })?.name === "AbortError") return; // 사용자가 공유 창을 닫음
+    try {
+      await navigator.clipboard.writeText(shareUrl.value);
+      await useAlert().openAlert("위치 링크가 복사되었습니다.");
+    } catch {
+      await useAlert().openAlert("공유할 수 없는 환경입니다. 주소를 직접 복사해 주세요.");
+    }
+  }
+}
+
 // 버튼 정의 — 활성: 브랜드색 채움 + 링 + ✓ 표시 / 비활성: 흰 배경 + 색 테두리
 const BTNS: { key: Provider; label: string; bg: string; fg: string }[] = [
   { key: "kakao", label: "카카오맵", bg: "#fee500", fg: "#3c1e1e" },
@@ -86,7 +109,13 @@ const MapButtons = defineComponent({
             },
             [active ? h("span", { class: "mr-1" }, "✓") : null, b.label]
           );
-        })
+        }).concat([
+          h(
+            "button",
+            { type: "button", class: "map-link", style: { background: "#fff", color: "#333", border: "2px solid #d1d5db" }, "aria-label": "위치 공유하기", title: "위치 공유하기", onClick: shareLocation },
+            [h("i", { class: "fas fa-share-alt mr-1.5" }), "위치 공유"]
+          ),
+        ])
       );
   },
 });

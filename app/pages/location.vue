@@ -48,8 +48,8 @@
               <div class="text-base font-extrabold text-gray-900">연락처</div>
             </div>
             <div class="text-[0.87rem] text-gray-600 leading-[2]">
-              <div class="flex justify-between items-center"><span>전화</span><a :href="`tel:${TEL}`" class="font-bold text-blue-600 no-underline">{{ TEL }}</a></div>
-              <div class="flex justify-between items-center"><span>이메일</span><a :href="`mailto:${EMAIL}`" class="font-bold text-blue-600 no-underline text-[0.82rem]">{{ EMAIL }}</a></div>
+              <div class="flex justify-between items-center gap-2"><span>전화</span><span class="flex items-center gap-2"><span class="font-bold text-gray-900">{{ TEL }}</span><a :href="`tel:${TEL.replace(/[^0-9+]/g, '')}`" class="contact-act" aria-label="전화하기" title="전화하기"><i class="fas fa-phone-alt"></i></a></span></div>
+              <div class="flex justify-between items-center gap-2"><span>이메일</span><span class="flex min-w-0 items-center gap-2"><span class="min-w-0 break-all text-[0.82rem] font-bold text-gray-900">{{ EMAIL }}</span><a :href="`mailto:${EMAIL}`" class="contact-act" aria-label="메일 보내기" title="메일 보내기"><i class="fas fa-envelope"></i></a></span></div>
               <div class="flex justify-between items-center"><span>카카오채널</span><span class="font-bold text-gray-900">@shopjoy</span></div>
             </div>
           </div>

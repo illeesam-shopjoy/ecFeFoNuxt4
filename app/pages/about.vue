@@ -72,7 +72,10 @@
           <div class="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
             <div v-for="info in bizInfo" :key="info.label" class="flex gap-2.5">
               <span class="text-[0.8rem] text-gray-400 min-w-[80px] shrink-0">{{ info.label }}</span>
-              <span class="text-[0.85rem] font-semibold text-gray-900">{{ info.value }}</span>
+              <span class="min-w-0 flex-1 text-[0.85rem] font-semibold text-gray-900">{{ info.value }}</span>
+              <!-- 2026-09-22(요청사항: "전화번호는 우측에 전화하기 아이콘, 메일은 메일발송하기 아이콘") -->
+              <a v-if="info.label === '고객센터'" :href="telHref(info.value)" class="contact-act" aria-label="전화하기" title="전화하기"><i class="fas fa-phone-alt"></i></a>
+              <a v-else-if="info.label === '이메일'" :href="`mailto:${info.value}`" class="contact-act" aria-label="메일 보내기" title="메일 보내기"><i class="fas fa-envelope"></i></a>
             </div>
           </div>
           <div class="mt-4 px-4 py-3 bg-[#f9fafb] rounded-lg text-[0.8rem] text-gray-400 leading-[1.7]">
@@ -92,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { BIZ_INFO } from "~/conts/bizInfo";
+import { BIZ_INFO, telHref } from "~/conts/bizInfo";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
