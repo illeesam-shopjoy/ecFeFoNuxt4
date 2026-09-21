@@ -10,17 +10,23 @@
 
       <!-- 모바일 사이드 메뉴 시작 -->
       <nav class="side-mobile-menu block lg:hidden mm-menu">
+        <!-- 2026-09-22(요청사항: "전체 펼치기 버튼") — 서브메뉴가 있는 메뉴를 한 번에 펼치거나 접는다 -->
+        <div class="mb-2 flex justify-end">
+          <button type="button" class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-[#d8dce2] bg-white px-3.5 py-1.5 text-[0.8rem] font-semibold text-gray-600 hover:border-[#bc8246] hover:text-[#bc8246]" @click="toggleAll">
+            <i class="fas text-[0.7rem]" :class="allOpen ? 'fa-angle-double-up' : 'fa-angle-double-down'"></i>{{ allOpen ? "전체 접기" : "전체 펼치기" }}
+          </button>
+        </div>
         <ul>
           <template v-for="(menu, i) in mobile_menus" :key="i">
             <li
               v-if="menu.dropdownMenu"
               :class="`menu-item-has-children has-droupdown
-              ${activeMenu === menu.title ? 'active' : ''}`"
+              ${isOpen(menu.title) ? 'active' : ''}`"
             >
               <a @click.prevent="handleOpenMenu(menu.title)">
                 {{ menu.title }}
               </a>
-              <ul @click.prevent="showSidebar = false" :class="`sub-menu ${activeMenu === menu.title ? 'active' : ''}`">
+              <ul @click.prevent="showSidebar = false" :class="`sub-menu ${isOpen(menu.title) ? 'active' : ''}`">
                 <li v-for="(sub_m, index) in menu.dropdownMenu" :key="index">
                   <nuxt-link :to="`${sub_m.link}`">
                     {{ sub_m.title }}
@@ -50,11 +56,12 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('오프캔버스 메뉴');
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { STATIC_MENUS } from "~/conts/foMenus";
 
-const activeMenu = ref("");
+const openTitles = ref<string[]>([]); // 펼쳐진 메뉴(여러 개 동시에 펼칠 수 있다)
 const showSidebar = ref(false);
+const isOpen = (title: string) => openTitles.value.includes(title);
 // 상단 메뉴(STATIC_MENUS)와 같은 목록을 쓴다 — 메뉴가 추가/삭제돼도 모바일 메뉴가 어긋나지 않게(고객센터 누락 방지).
 // 메가메뉴의 그룹(쇼핑 레이아웃/상품·주문 등)은 모바일에서 한 단계로 펼쳐 보여준다.
 const mobile_menus: SyMenuMobileType[] = STATIC_MENUS.map((m) => {
@@ -70,11 +77,12 @@ function OpenOffcanvas() {
   showSidebar.value = true;
 }
 function handleOpenMenu(navTitle: string) {
-  if (navTitle === activeMenu.value) {
-    activeMenu.value = "";
-  } else {
-    activeMenu.value = navTitle;
-  }
+  openTitles.value = isOpen(navTitle) ? openTitles.value.filter((t) => t !== navTitle) : [...openTitles.value, navTitle];
+}
+const expandable = mobile_menus.filter((m) => m.dropdownMenu?.length).map((m) => m.title);
+const allOpen = computed(() => expandable.length > 0 && expandable.every((t) => isOpen(t)));
+function toggleAll() {
+  openTitles.value = allOpen.value ? [] : [...expandable];
 }
 defineExpose({ OpenOffcanvas });
 </script>

@@ -799,9 +799,10 @@
 
           & a {
             position: relative;
-            padding-left: 15px;
+            /* 2026-09-22(요청사항: "서브메뉴는 height 좀더 줄여도 될거 같아") 위아래 13px → 8px, 글자 16 → 15px */
+            padding: 8px 0 8px 15px;
             text-transform: capitalize;
-            font-size: 16px;
+            font-size: 15px;
 
             &:before {
               content: "";
