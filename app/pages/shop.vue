@@ -161,7 +161,7 @@
                        터치 스크롤(세로)은 그대로 두고 가로 드래그만 받는다(touch-action: pan-y). -->
                   <div
                     ref="ratingStarsRef"
-                    class="grid cursor-pointer select-none grid-cols-5 touch-pan-y text-center text-[1.7rem]"
+                    class="grid cursor-pointer select-none grid-cols-5 touch-pan-y text-center text-[1.1rem] w-[180px] max-w-full"
                     role="group"
                     aria-label="평가 별점 범위 (별을 누르거나 끌어서 선택)"
                     @pointerdown="onRatingDown"
