@@ -2,13 +2,14 @@
   <!-- 2026-09-20(요청사항: "shopjoy 로고부분 글씨 작게하고 ecFeBo 처럼 로고 표시") — ecFeBo(foAppHeader.js)의 로고와 같은 구성:
        야자수 아이콘 + 이름 + 태그라인 + 환경(prod/dev/local) 배지 + api/cdn 호스트. 예전 EnvModeBadge(로고 아래 2줄)를 이 컴포넌트가 대신한다. -->
   <div class="flex" :class="align === 'center' ? 'justify-center' : 'justify-start'">
-    <nuxt-link href="/" class="inline-flex items-center gap-2 min-w-0 no-underline" aria-label="ShopJoy 홈">
+    <nuxt-link href="/" class="inline-flex items-center gap-1 sm:gap-2 min-w-0 no-underline" aria-label="ShopJoy 홈">
       <!-- <img> 로 둬야 다크모드(html invert 필터, assets/theme-dark.css)에서 img 규칙으로 색이 되돌려진다 -->
-      <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-9 h-9" />
+      <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-7 h-7 sm:w-9 sm:h-9" />
       <span class="flex flex-col min-w-0 leading-[1.1] text-left">
-        <span class="text-[0.95rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy</span>
+        <span class="text-[0.85rem] sm:text-[0.95rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy</span>
         <span class="flex flex-wrap items-center gap-1 text-[0.6rem] font-medium tracking-[0.08em] text-[#8a8a8a]">
-          쇼핑의 즐거움
+          <!-- 2026-09-21(요청사항: 폰에서 로고 폭 줄이기) — 좁은 화면(<sm)에선 "쇼핑의 즐거움" 문구를 빼고 그 자리에 환경 배지(prod)만 보인다 -->
+          <span class="max-sm:hidden">쇼핑의 즐거움</span>
           <span class="px-[5px] rounded-[3px] border font-mono text-[9px] font-bold" :class="chipClass">{{ modeLabel }}</span>
         </span>
         <span class="hidden lg:block text-[0.58rem] text-[#a3a3a3] opacity-75 whitespace-nowrap overflow-hidden text-ellipsis max-w-[45vw]">api {{ apiHost }} · cdn {{ cdnHost }}</span>
