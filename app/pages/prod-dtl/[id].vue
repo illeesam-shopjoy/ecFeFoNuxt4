@@ -35,8 +35,8 @@
                [position:sticky] 임의 속성 문법으로 바꿔 이름 충돌을 피함 — 진짜 position:sticky가
                적용되어 원래 위치가 뷰포트 상단(헤더 높이만큼 아래)에 닿을 때만 고정된다. -->
           <div class="[position:sticky] z-40 bg-white border-b-2 border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.06)] min-h-[52px]" ref="tabNavRef" :style="{ top: headerH + 'px' }">
-            <div class="max-w-7xl mx-auto px-4">
-              <div class="flex justify-start sm:justify-center gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div class="max-w-7xl mx-auto px-0 sm:px-4">
+              <div class="flex justify-between sm:justify-center gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <!-- 2026-09-20(요청사항: 탭 강조) — 지금 보고 있는 섹션의 탭은 굵은 글씨 + 아래 밑줄 + 옅은 배경 -->
                 <button
                   v-for="tab in tabs"
@@ -44,11 +44,11 @@
                   type="button"
                   :aria-current="activeTab === tab.id ? 'true' : undefined"
                   :class="[
-                    'relative px-5 sm:px-7 py-4 text-base border-0 cursor-pointer transition-colors tracking-wide whitespace-nowrap after:absolute after:inset-x-3 after:bottom-0 after:h-[3px] after:rounded-t after:transition-colors',
+                    'relative px-2 sm:px-7 py-4 text-[0.85rem] sm:text-base border-0 cursor-pointer transition-colors tracking-wide whitespace-nowrap after:absolute after:inset-x-3 after:bottom-0 after:h-[3px] after:rounded-t after:transition-colors',
                     activeTab === tab.id ? 'text-theme font-semibold bg-[#fbf6ee] after:bg-current' : 'font-medium bg-transparent text-gray-500 hover:text-gray-700 after:bg-transparent',
                   ]"
                   @click="scrollToSection(tab.id)"
-                >{{ tab.label }}<span v-if="tab.count != null" class="ml-1.5 inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-px text-[0.72rem] font-bold leading-[1.3]" :class="activeTab === tab.id ? 'bg-theme text-white' : tab.count > 0 ? 'bg-[#e8587a] text-white' : 'bg-[#e5e7eb] text-gray-500'">{{ tab.count }}</span></button>
+                >{{ tab.label }}<span v-if="tab.count != null" class="ml-1 sm:ml-1.5 inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-px text-[0.72rem] font-bold leading-[1.3]" :class="activeTab === tab.id ? 'bg-theme text-white' : tab.count > 0 ? 'bg-[#e8587a] text-white' : 'bg-[#e5e7eb] text-gray-500'">{{ tab.count }}</span></button>
               </div>
             </div>
           </div>
@@ -75,12 +75,6 @@
                   </li>
                 </ul>
               </div>
-            </div>
-
-            <!-- 사이즈 섹션 -->
-            <div ref="secSize" id="sec-size" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px]">
-              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">사이즈</h2>
-              <prod-size-guide />
             </div>
 
             <!-- 리뷰 섹션 -->
@@ -269,6 +263,12 @@
               <prod-qna :prod-id="item.prodId" @count="qnaCount = $event" />
             </div>
 
+            <!-- 사이즈 섹션 -->
+            <div ref="secSize" id="sec-size" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px]">
+              <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">사이즈</h2>
+              <prod-size-guide />
+            </div>
+
             <!-- 스타일 섹션 (2026-09-20) -->
             <div ref="secStyle" id="sec-style" class="pt-12 pb-10 scroll-mt-[120px]">
               <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">스타일</h2>
@@ -416,14 +416,14 @@ watch(
 );
 
 // ── 탭 & 섹션 스크롤 ─────────────────────────────────────────────
-// 2026-09-20(요청사항: 상품상세를 ecFeBo 처럼) — 탭: 상세정보 / 사이즈 / 상품평 / Q&A / 스타일
+// 2026-09-20(요청사항: 상품상세를 ecFeBo 처럼) — 탭: 상세정보 / 상품평 / Q&A / 사이즈 / 스타일 (2026-09-22 순서 변경 — 화면의 섹션 순서도 같다)
 type TabId = "detail" | "size" | "review" | "qna" | "style";
 const qnaCount = ref(0);
 const tabs = computed(() => [
   { id: "detail" as TabId, label: "상세정보", count: null as number | null },
-  { id: "size" as TabId, label: "사이즈", count: null as number | null },
   { id: "review" as TabId, label: "상품평", count: totalReviewCount.value },
   { id: "qna" as TabId, label: "Q&A", count: qnaCount.value },
+  { id: "size" as TabId, label: "사이즈", count: null as number | null },
   { id: "style" as TabId, label: "스타일", count: null as number | null },
 ]);
 
@@ -465,7 +465,7 @@ function scrollToSection(id: TabId) {
 
 // 활성 탭 — 스크롤 위치 기준: 고정 탭바 바로 아래(기준선)를 지나간 마지막 섹션이 "지금 보고 있는 섹션"이다.
 // (예전 IntersectionObserver 는 화면 20~35% 띠를 지나는 섹션만 잡아 짧은 섹션(Q&A/스타일)을 건너뛰거나 못 잡았다.)
-const TAB_ORDER: TabId[] = ["detail", "size", "review", "qna", "style"];
+const TAB_ORDER: TabId[] = ["detail", "review", "qna", "size", "style"];
 function updateActiveTab() {
   const anchor = headerH.value + (tabNavRef.value?.offsetHeight ?? 52) + 24;
   let current: TabId = "detail";

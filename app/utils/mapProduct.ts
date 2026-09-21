@@ -45,6 +45,7 @@ function mapOption(o: PdProdOptRawType, fallbackTypeCd?: string | null): PdProdO
     prodOptNm: o.prodOptNm,
     prodOptTypeCd: o.prodOpt1TypeCd ?? o.prodOpt2TypeCd ?? fallbackTypeCd ?? "",
     prodOptTypeLevel: o.prodOptTypeLevel ?? 1,
+    useYn: o.useYn ?? undefined,
   };
 }
 
@@ -124,9 +125,10 @@ export function mapProduct(p: PdProdRawType, cdnBase: string): Record<string, un
     contentHtml: p.contentHtml ?? "",
     prodOpt1List,
     prodOpt2List,
+    // 2026-09-22: useYn=N 인 SKU(판매종료)도 남겨서 화면이 "품절"로 표시하게 한다(예전엔 여기서 빼서 아예 없는 조합처럼 보였다). 담기 검증에서 막는다.
     prodSkus: (p.prodSkus ?? [])
-      .filter((s) => s.useYn !== "N")
       .map((s) => ({
+        useYn: s.useYn ?? undefined,
         prodSkuId: s.prodSkuId,
         prodOpt1Id: s.prodOpt1Id,
         prodOpt2Id: s.prodOpt2Id,

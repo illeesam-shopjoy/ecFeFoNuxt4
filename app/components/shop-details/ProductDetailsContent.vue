@@ -45,21 +45,24 @@
         <div v-if="isOptionProd" class="mb-5">
         <div class="mb-3 border-b border-[#e5e7eb] pb-2 text-[0.9rem] font-bold text-gray-800">옵션선택 : <span class="font-medium text-gray-600">색상, 사이즈</span></div>
         <div class="product__modal-input color mb-20 relative after:!hidden">
-          <label>색상 선택</label>
+          <label>색상 <i class="fas fa-star-of-life"></i></label>
           <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
             <button
               v-for="opt in visibleColors"
               :key="opt.prodOptStdCd ?? opt.prodOptId"
               type="button"
-              :title="opt.prodOptNm"
-              :aria-label="opt.prodOptNm"
-              class="relative w-[26px] h-[26px] rounded-full border-[1.5px] border-black/10 cursor-pointer bg-[var(--swatch-color)] shadow-[0_1px_3px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-150 hover:scale-110 hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
+              :title="optTitle(opt, 'color')"
+              :aria-label="optTitle(opt, 'color')"
+              :disabled="soldOut(opt, 'color')"
+              class="relative w-[26px] h-[26px] rounded-full border-[1.5px] border-black/10 cursor-pointer bg-[var(--swatch-color)] shadow-[0_1px_3px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-150 hover:scale-110 hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
               :class="{ 'scale-110 !border-white !shadow-[0_0_0_2px_#fff,0_0_0_5px_#bc8246,0_3px_8px_rgba(0,0,0,0.3)]': selectedColor === optKey(opt) }"
               :style="{ '--swatch-color': swatchColor(opt) }"
               :aria-pressed="selectedColor === optKey(opt)"
               @click="selectedColor = optKey(opt)"
             >
               <i v-if="selectedColor === optKey(opt)" class="fas fa-check absolute inset-0 flex items-center justify-center text-[11px] text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.85)]"></i>
+              <!-- 품절: 대각선 -->
+              <span v-if="soldOut(opt, 'color')" class="pointer-events-none absolute left-1/2 top-1/2 h-[2px] w-[130%] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded bg-[#c0392b]"></span>
             </button>
             <button
               v-if="hasMoreColors"
@@ -74,7 +77,7 @@
               <i class="fas fa-ellipsis-h text-[0.7rem]"></i>
             </button>
           </div>
-          <span v-if="selectedColor" class="text-xs text-[#666] ml-0.5">선택: {{ colors.find((o) => optKey(o) === selectedColor)?.prodOptNm }}</span>
+          <span v-if="selectedColor" class="text-xs text-[#666] ml-0.5">선택: {{ selectedColorOpt?.prodOptNm }}<span v-if="selectedColorOpt && optAdd(selectedColorOpt, 'color') > 0" class="ml-1 font-semibold text-[#c0392b]">+{{ formatPrice(optAdd(selectedColorOpt, 'color')) }}</span></span>
           <!-- 색상 전체 팝오버 -->
           <div
             v-if="openPopover === 'color'"
@@ -88,8 +91,9 @@
                 v-for="opt in colors"
                 :key="opt.prodOptStdCd ?? opt.prodOptId"
                 type="button"
-                class="flex items-center gap-2 rounded px-1.5 py-1 text-left text-[13px] text-[#444] bg-transparent border-0 cursor-pointer hover:bg-[#f4f4f4]"
+                class="flex items-center gap-2 rounded px-1.5 py-1 text-left text-[13px] text-[#444] bg-transparent border-0 cursor-pointer hover:bg-[#f4f4f4] disabled:cursor-not-allowed disabled:opacity-50"
                 :class="{ 'font-bold bg-[#f4f4f4]': selectedColor === optKey(opt) }"
+                :disabled="soldOut(opt, 'color')"
                 @click="pickColor(opt)"
               >
                 <span
@@ -97,7 +101,9 @@
                   :class="{ '!shadow-[0_0_0_2px_#fff,0_0_0_4px_#bc8246]': selectedColor === optKey(opt) }"
                   :style="{ '--swatch-color': swatchColor(opt) }"
                 ></span>
-                <span class="truncate">{{ opt.prodOptNm }}</span>
+                <span class="truncate" :class="{ 'line-through': soldOut(opt, 'color') }">{{ opt.prodOptNm }}</span>
+                <span v-if="soldOut(opt, 'color')" class="shrink-0 text-[11px] font-semibold text-[#c0392b]">품절</span>
+                <span v-else-if="optAdd(opt, 'color') > 0" class="shrink-0 text-[11px] font-semibold text-[#c0392b]">+{{ formatPrice(optAdd(opt, 'color')) }}</span>
               </button>
             </div>
           </div>
@@ -111,11 +117,12 @@
               v-for="opt in visibleSizes"
               :key="opt.prodOptStdCd ?? opt.prodOptId"
               type="button"
-              class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222]"
+              class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-[#d0d0d0] disabled:hover:bg-[#fafafa]"
               :class="{ '!border-[#222] !bg-[#222] !text-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]': selectedSize === optKey(opt) }"
+              :disabled="soldOut(opt, 'size')"
               @click="selectedSize = optKey(opt)"
             >
-              {{ opt.prodOptNm }}<span v-if="sizeAdd(opt) > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(sizeAdd(opt)) }}</span>
+              <span :class="{ 'line-through': soldOut(opt, 'size') }">{{ opt.prodOptNm }}</span><span v-if="soldOut(opt, 'size')" class="ml-1 text-[11px] font-semibold text-[#c0392b]">품절</span><span v-else-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
             </button>
             <button
               v-if="hasMoreSizes"
@@ -143,11 +150,12 @@
                 v-for="opt in sizes"
                 :key="opt.prodOptStdCd ?? opt.prodOptId"
                 type="button"
-                class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222]"
+                class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222] disabled:cursor-not-allowed disabled:opacity-50"
                 :class="{ '!border-[#222] !bg-[#222] !text-white': selectedSize === optKey(opt) }"
+                :disabled="soldOut(opt, 'size')"
                 @click="pickSize(opt)"
               >
-                {{ opt.prodOptNm }}<span v-if="sizeAdd(opt) > 0" class="ml-1 text-[11px] font-semibold text-[#c0392b]">+{{ formatPrice(sizeAdd(opt)) }}</span>
+                <span :class="{ 'line-through': soldOut(opt, 'size') }">{{ opt.prodOptNm }}</span><span v-if="soldOut(opt, 'size')" class="ml-1 text-[11px] font-semibold text-[#c0392b]">품절</span><span v-else-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold text-[#c0392b]">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
               </button>
             </div>
           </div>
@@ -259,8 +267,10 @@ watch(selectedColor, (key) => emit("color-change", (props.item.prodOpt2List ?? [
 type OptionItem = PdProdType["prodOpt2List"][number];
 const COLOR_VISIBLE = 8; // 색상표는 이 개수까지만 한 줄에 노출, 넘으면 "…" 팝오버
 const SIZE_VISIBLE = 6; // 사이즈 칩도 동일
-const colors = computed<OptionItem[]>(() => props.item.prodOpt2List ?? []);
-const sizes = computed<OptionItem[]>(() => props.item.prodOpt1List ?? []);
+// 2026-09-22(요청사항: "판매 안하는 색상/사이즈는 안 보여주고, 판매종료·품절은 품절 표시, 추가비용 있으면 표시") — 사용여부 N 인 옵션은 목록에서 뺀다
+const colors = computed<OptionItem[]>(() => (props.item.prodOpt2List ?? []).filter((o) => o.useYn !== "N"));
+const sizes = computed<OptionItem[]>(() => (props.item.prodOpt1List ?? []).filter((o) => o.useYn !== "N"));
+const selectedColorOpt = computed(() => colors.value.find((o) => optKey(o) === selectedColor.value));
 const optKey = (o: OptionItem) => o.prodOptStdCd ?? String(o.prodOptId);
 
 // 앞쪽 N개를 보여주되, 선택한 옵션이 접힌 쪽에 있으면 마지막 칸을 그 옵션으로 교체해 선택 상태가 줄 안에서 보이게 한다
@@ -309,15 +319,35 @@ onBeforeUnmount(() => {
 /** 선택한 색상·사이즈 조합의 추가금액 (사이즈를 고른 뒤에만 — 없으면 0) */
 const selectedAddPrice = computed(() => (selectedSize.value ? Number(findMatchedSku()?.addPrice ?? 0) : 0));
 
-/** 사이즈 칩에 붙일 추가금액 — 그 사이즈의 SKU(색상을 골랐으면 그 색상 한정) 중 가장 낮은 추가금액 */
-function sizeAdd(opt: OptionItem): number {
-  const colorOpt = colors.value.find((o) => optKey(o) === selectedColor.value);
-  const skuOptOf = (level: number | undefined, s: { prodOpt1Id?: string | null; prodOpt2Id?: string | null }) => (level === 2 ? s.prodOpt2Id : s.prodOpt1Id);
-  const adds = (props.item.prodSkus ?? [])
-    .filter((s) => skuOptOf(opt.prodOptTypeLevel, s) === opt.prodOptId && (!colorOpt || skuOptOf(colorOpt.prodOptTypeLevel, s) === colorOpt.prodOptId))
+type SkuItem = NonNullable<PdProdType["prodSkus"]>[number];
+const skuOptOf = (level: number | undefined, s: SkuItem) => (level === 2 ? s.prodOpt2Id : s.prodOpt1Id);
+
+/** 이 옵션(색상/사이즈)의 SKU 들 — 반대편(사이즈↔색상)을 이미 골랐다면 그 조합으로 한정 */
+function skusOf(opt: OptionItem, kind: "color" | "size"): SkuItem[] {
+  const other = kind === "color" ? sizes.value.find((o) => optKey(o) === selectedSize.value) : selectedColorOpt.value;
+  return (props.item.prodSkus ?? []).filter((s) => skuOptOf(opt.prodOptTypeLevel, s) === opt.prodOptId && (!other || skuOptOf(other.prodOptTypeLevel, s) === other.prodOptId));
+}
+/** 품절 — 해당 SKU 가 있고 전부 (판매종료 useYn=N 이거나 재고 0). SKU 정보가 없으면 품절로 보지 않는다 */
+function soldOut(opt: OptionItem, kind: "color" | "size"): boolean {
+  const skus = skusOf(opt, kind);
+  return skus.length > 0 && skus.every((s) => s.useYn === "N" || (s.stockQty != null && s.stockQty <= 0));
+}
+/** 추가금액 — 판매 가능한 SKU 중 가장 낮은 추가금액(없으면 0) */
+function optAdd(opt: OptionItem, kind: "color" | "size"): number {
+  const adds = skusOf(opt, kind)
+    .filter((s) => s.useYn !== "N" && !(s.stockQty != null && s.stockQty <= 0))
     .map((s) => Number(s.addPrice ?? 0));
   return adds.length ? Math.min(...adds) : 0;
 }
+const optTitle = (opt: OptionItem, kind: "color" | "size") => `${opt.prodOptNm}${soldOut(opt, kind) ? " (품절)" : optAdd(opt, kind) > 0 ? ` (+${formatPrice(optAdd(opt, kind))})` : ""}`;
+
+// 반대편 옵션을 바꿔서 이미 고른 옵션이 품절이 되면 선택을 푼다
+watch([selectedColor, selectedSize], () => {
+  const c = selectedColorOpt.value;
+  if (c && soldOut(c, "color")) selectedColor.value = "";
+  const z = sizes.value.find((o) => optKey(o) === selectedSize.value);
+  if (z && soldOut(z, "size")) selectedSize.value = "";
+});
 
 function findMatchedSku() {
   const skus = props.item.prodSkus ?? [];
@@ -337,7 +367,11 @@ function findMatchedSku() {
 
 /** 옵션(사이즈)·SKU·재고를 검증하고 담을 SKU 를 돌려준다. 실패하면 토스트를 띄우고 null. (장바구니 담기/바로구매 공통) */
 function resolveSelection(): { prodSkuId?: string } | null {
-  if (isOptionProd.value && props.item.prodOpt1List?.length && !selectedSize.value) {
+  if (isOptionProd.value && colors.value.length && !selectedColor.value) {
+    useNuxtApp().$toast.error("색상을 선택해주세요.");
+    return null;
+  }
+  if (isOptionProd.value && sizes.value.length && !selectedSize.value) {
     useNuxtApp().$toast.error("사이즈를 선택해주세요.");
     return null;
   }
@@ -346,7 +380,7 @@ function resolveSelection(): { prodSkuId?: string } | null {
     useNuxtApp().$toast.error("선택한 옵션 조합의 재고 정보를 찾을 수 없습니다.");
     return null;
   }
-  if (matchedSku?.stockQty != null && matchedSku.stockQty <= 0) {
+  if (matchedSku?.useYn === "N" || (matchedSku?.stockQty != null && matchedSku.stockQty <= 0)) {
     useNuxtApp().$toast.error("선택한 옵션은 품절되었습니다.");
     return null;
   }

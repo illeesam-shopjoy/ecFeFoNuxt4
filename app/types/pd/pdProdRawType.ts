@@ -20,6 +20,7 @@ export interface PdProdOptRawType {
   prodOptTypeLevel?: number | null;
   prodOpt1TypeCd?: string | null;
   prodOpt2TypeCd?: string | null;
+  useYn?: string | null; // 사용여부 Y/N — N 이면 판매 안 하는 옵션(화면에서 숨김)
 }
 
 export interface PdProdSkuRawType {
