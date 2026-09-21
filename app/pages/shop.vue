@@ -30,13 +30,22 @@
           <div class="col-xl-3 col-lg-3 col-md-4">
             <!-- 쇼핑 사이드바 (옛 ShopSidebar) -->
             <div class="shop__sidebar">
-              <!-- 2026-09-21(요청사항: "전체초기화 버튼 상단에 위치") — 맨 아래에 있던 전체 초기화를 사이드바 맨 위로 -->
-              <div class="reset-button mb-30">
-                <button class="os-btn os-btn-black" @click="resetAllFilters">전체 초기화</button>
-              </div>
+              <!-- 2026-09-22(요청사항: "전체 초기화 버튼이 덩그러니 있는 게 안 예쁘다 — 상품검색 바로 만들고 제일 우측에 초기화 아이콘") — 사이드바 맨 위를
+                   상품명 검색 바로 바꾸고, 오른쪽 끝에 전체 초기화(↺) 아이콘 버튼을 붙였다. -->
+              <form class="mb-30 flex items-stretch gap-1.5" role="search" @submit.prevent="applyName">
+                <div class="relative min-w-0 flex-1">
+                  <i class="fal fa-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[0.85rem] text-gray-400"></i>
+                  <input v-model="nameInput" type="text" placeholder="상품명 검색" aria-label="상품명 검색" class="h-11 w-full rounded-lg border border-[#e5e7eb] bg-white pl-9 pr-3 text-[0.88rem] outline-none focus:border-[#bc8246]" />
+                </div>
+                <button type="submit" class="h-11 shrink-0 cursor-pointer rounded-lg border-0 bg-gray-900 px-4 text-[0.85rem] font-semibold text-white hover:bg-black">검색</button>
+                <button type="button" class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-[#e5e7eb] bg-white text-gray-500 transition hover:border-[#bc8246] hover:text-[#bc8246]" title="전체 초기화" aria-label="전체 초기화" @click="resetAllFilters">
+                  <i class="fas fa-undo-alt text-[0.9rem]"></i>
+                </button>
+              </form>
+              <div v-if="keyword" class="-mt-5 mb-25 text-[0.78rem] text-[#8a5a25]">"{{ keyword }}" 검색 중</div>
 
               <!-- 상품 카테고리 (2026-09-13: 멀티선택 토글) -->
-              <div class="sidebar__widget mb-55">
+              <div class="sidebar__widget mb-30">
                 <div class="sidebar__widget-title mb-25 flex items-center justify-between">
                   <h3>상품 카테고리</h3>
                   <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetCategoryFilter">초기화</button>
@@ -73,21 +82,6 @@
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              <!-- 상품명 검색 -->
-              <div class="sidebar__widget mb-25">
-                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
-                  <h3>상품명 검색</h3>
-                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="resetName">초기화</button>
-                </div>
-                <div class="sidebar__widget-content">
-                  <form class="flex gap-1.5" @submit.prevent="applyName">
-                    <input v-model="nameInput" type="text" placeholder="상품명을 입력하세요" class="min-w-0 flex-1 rounded-md border border-[#e5e7eb] px-3 py-2 text-[0.85rem] outline-none focus:border-[#bc8246]" />
-                    <button type="submit" class="cursor-pointer rounded-md border-0 bg-gray-900 px-3 text-[0.8rem] font-semibold text-white">검색</button>
-                  </form>
-                  <div v-if="keyword" class="mt-2 text-[0.78rem] text-[#8a5a25]">"{{ keyword }}" 검색 중</div>
                 </div>
               </div>
 
