@@ -110,7 +110,10 @@
         </div>
         <!-- 사이즈 선택 (아래) -->
         <div class="product__modal-input size mb-20 relative after:!hidden">
-          <label>사이즈 <i class="fas fa-star-of-life"></i></label>
+          <label>사이즈 <i class="fas fa-star-of-life"></i>
+            <!-- 2026-09-22(요청사항: "사이즈 라벨 우측에 도움말 아이콘 — 클릭하면 모달로 사이즈 안내") -->
+            <button type="button" class="ml-1.5 inline-flex h-[19px] w-[19px] cursor-pointer items-center justify-center rounded-full border border-solid border-[#b8b8b8] bg-white p-0 align-middle text-[11px] font-bold leading-none text-[#666] hover:border-[#bc8246] hover:text-[#bc8246]" aria-label="사이즈 안내" title="사이즈 안내" @click.stop.prevent="sizeGuideRef?.show()">?</button>
+          </label>
           <div class="flex flex-wrap items-center gap-2 mt-2.5">
             <span v-if="!sizes.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
             <button
@@ -160,6 +163,7 @@
             </div>
           </div>
         </div>
+        <size-guide-modal ref="sizeGuideRef" />
         <div class="product__modal-required mb-5">
           <span>필수 입력 항목 *</span>
         </div>
@@ -239,6 +243,7 @@ import { useCartStore } from "~/store/useCartStore";
 import { useWishlistStore } from "~/store/useWishlistStore";
 import { prodTypeLabel } from "~/conts/pdConst";
 import { prodOptSwatchColor } from "~/utils/prodOptColor";
+import SizeGuideModal from "~/components/modals/SizeGuideModal.vue";
 
 const props = defineProps<{
   item: PdProdType;
@@ -258,6 +263,7 @@ const filledStars = computed(() => Math.max(0, Math.min(5, Math.round(Number(pro
 const buyEl = ref<HTMLElement | null>(null); // 구매 버튼 영역 — 하단 구매바가 "본문 버튼이 화면 밖으로 나갔는지" 판단하는 기준
 const { formatPrice } = usePrice();
 
+const sizeGuideRef = ref<InstanceType<typeof SizeGuideModal> | null>(null);
 const selectedColor = ref("");
 const selectedSize = ref("");
 // 선택한 색상 옵션ID 를 상세 갤러리에 알린다 — 그 색상의 이미지를 먼저 보여주기 위해(선택 해제 시 "")

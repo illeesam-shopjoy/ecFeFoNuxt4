@@ -4,13 +4,17 @@
        우하단 채팅 버튼(z-[8801])과 겹치지 않게 오른쪽 여백을 둔다. -->
   <div
     ref="barRef"
-    class="fixed inset-x-0 bottom-0 z-[900] border-t border-[#e5e7eb] bg-white/95 backdrop-blur-md shadow-[0_-4px_18px_rgba(80,100,160,0.08)] transition-transform duration-200 pl-4 pr-20 py-2.5 sm:px-6"
+    class="fixed inset-x-0 bottom-0 z-[900] border-t-[3px] border-solid border-[#bc8246] bg-[#fffaf3]/95 backdrop-blur-md shadow-[0_-6px_22px_rgba(60,40,10,0.16)] transition-transform duration-200 pl-4 pr-20 py-2.5 sm:px-6"
     :class="show ? 'translate-y-0' : 'translate-y-full pointer-events-none'"
     :aria-hidden="!show"
   >
     <div class="mx-auto flex w-full max-w-[760px] items-center gap-2.5">
       <div class="min-w-0 flex-1">
-        <div class="truncate text-[0.8rem] text-[#8a8a8a]" v-html="item.prodNm"></div>
+        <!-- 2026-09-22(요청사항: "제목 왼쪽에 상품유형 뱃지 — 옵션상품의 경우 표시") -->
+        <div class="flex items-center gap-1.5 text-[0.8rem] text-[#8a8a8a]">
+          <span v-if="isOptionProd" class="shrink-0 rounded-full border border-solid border-[#d9c3a3] bg-white px-2 py-px text-[0.68rem] font-semibold text-[#8a5a25]">{{ prodTypeNm }}</span>
+          <span class="min-w-0 truncate" v-html="item.prodNm"></span>
+        </div>
         <div class="truncate text-[1.05rem] font-black text-[#222]">{{ formatPrice(item.salePrice) }}</div>
       </div>
       <div class="flex shrink-0 gap-1.5">
@@ -22,10 +26,13 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { prodTypeLabel } from "~/conts/pdConst";
 import type { PdProdType } from "~/types/pd/pdProdType";
 
 const props = defineProps<{ item: PdProdType; show: boolean }>();
+const isOptionProd = computed(() => props.item.prodTypeCd === "OPTION");
+const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
 const barRef = ref<HTMLElement | null>(null);
 
 // 2026-09-20(요청사항: "하단 구매하기바와 채팅아이콘이 겹쳐보이는데 채팅아이콘이 약간 위로") — 구매바가 나타나면 우하단 플로팅 요소
