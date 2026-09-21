@@ -3,17 +3,17 @@
     <Transition name="coupon-fade">
       <div
         v-show="visible"
-        class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50"
+        class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/55 backdrop-blur-[2px]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="coupon-modal-title"
         @click.self="cancel"
       >
-        <div class="coupon-dialog relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-xl p-6">
-          <button type="button" class="absolute top-4 right-4 p-2 rounded hover:bg-gray-100" @click="cancel" aria-label="닫기">
-            <i class="fal fa-times"></i>
+        <div class="coupon-dialog relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)] p-6">
+          <button type="button" class="modal-x" @click="cancel" aria-label="닫기">
+            <i class="fal fa-times text-[0.95rem]"></i>
           </button>
-          <div class="-mx-6 -mt-6 mb-6 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] py-4 pl-6 pr-14 pt-5">
+          <div class="-mx-6 -mt-6 mb-6 rounded-t-2xl border-b border-[#f0e2cf] bg-gradient-to-b from-[#fcf5e9] to-[#f8ecd9] py-4 pl-6 pr-14 pt-5">
             <h3 id="coupon-modal-title" class="text-lg font-semibold text-gray-900 mb-1">쿠폰 적용</h3>
             <!-- 2026-09-22(요청사항: "상품할인쿠폰은 최대 1개가 아니라 상품별 1개") — 상품할인은 상품(주문 줄)마다 1개씩, 주문할인·배송비할인은 주문당 1개 -->
             <p class="text-sm text-gray-500 mb-0">상품할인쿠폰은 <b>상품별로 1개</b>씩, 주문할인·배송비할인쿠폰은 주문당 1개씩 적용됩니다. 기본은 혜택이 가장 큰 쿠폰(같으면 종료가 빠른 쿠폰)이 자동 적용되며, 여기서 바꿀 수 있습니다.</p>
@@ -118,8 +118,8 @@
           </fieldset>
 
           <div class="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100">
-            <button type="button" class="px-4 py-2 rounded-lg border border-[#c9ced6] bg-[#f3f4f6] text-gray-700 shadow-sm hover:bg-[#e5e7eb] transition" @click="cancel">취소</button>
-            <button type="button" class="os-btn os-btn-black" @click="apply">적용하기</button>
+            <button type="button" class="mbtn mbtn-ghost" @click="cancel">취소</button>
+            <button type="button" class="mbtn mbtn-primary min-w-[120px]" @click="apply">적용하기</button>
           </div>
         </div>
       </div>

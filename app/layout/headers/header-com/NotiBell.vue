@@ -67,6 +67,94 @@ const router = useRouter();
 const authStore = useAuthStore();
 const isLoggedIn = computed(() => authStore.isStLoggedIn);
 
+// ── 임의(temp) 알림 — 2026-09-22(요청사항: "로그인되어 있다면 랜덤으로 5분에 한 건씩 추가, 임의 발송이므로 제목 앞에 temp") ──
+// 백엔드에 FO 사용자가 자기 알림을 만드는 API 가 없어, 브라우저가 만들어 이 종 목록에만 넣는다(서버에 저장되지 않음 · localStorage 에 최대 20건 보관, 로그아웃하면 비운다).
+// 로그인 상태로 페이지가 열려 있는 동안 5분마다 아래 문구 중 하나를 무작위로 골라 1건 추가한다(마지막 추가 시각을 저장해 새로고침해도 5분 간격 유지).
+const TEMP_KEY = "shopjoy_temp_noti";
+const TEMP_LAST_KEY = "shopjoy_temp_noti_last";
+const TEMP_INTERVAL_MS = 5 * 60 * 1000;
+const TEMP_MAX = 20;
+const TEMP_SAMPLES: { title: string; content: string; linkPage?: string; notiTypeCd?: string }[] = [
+  { title: "주문하신 상품이 출고 준비 중입니다", content: "결제가 확인되어 상품을 포장하고 있어요. 곧 배송이 시작됩니다.", linkPage: "myOrder" },
+  { title: "배송이 시작되었습니다", content: "오늘 출고된 상품이 택배사로 인계되었습니다. 배송 조회는 주문 내역에서 확인하세요.", linkPage: "myOrder" },
+  { title: "새 할인 쿠폰이 도착했어요", content: "사용 기한 안에 쿠폰함에서 확인하고 주문 시 적용해 보세요.", linkPage: "myCoupon" },
+  { title: "쿠폰 사용 기한이 곧 끝나요", content: "보유 중인 쿠폰 중 이번 주에 만료되는 쿠폰이 있습니다.", linkPage: "myCoupon" },
+  { title: "진행 중인 이벤트가 있어요", content: "지금 참여하면 추가 혜택을 받을 수 있는 이벤트를 확인해 보세요.", linkPage: "event" },
+  { title: "캐시가 적립되었습니다", content: "상품평 작성 적립 캐시가 반영되었어요. 다음 주문에서 사용할 수 있습니다.", linkPage: "myCache" },
+  { title: "문의하신 내용에 답변이 등록되었습니다", content: "1:1 문의 내역에서 답변을 확인해 주세요.", linkPage: "myContact" },
+  { title: "장바구니에 담아 둔 상품이 기다리고 있어요", content: "재고가 소진되기 전에 주문을 마무리해 보세요." },
+  { title: "자주 묻는 질문을 확인해 보세요", content: "배송·교환·환불 안내를 한눈에 볼 수 있어요.", linkPage: "faq" },
+];
+const tempItems = ref<SyNotiType[]>([]);
+const isTemp = (n: SyNotiType) => n.notiId.startsWith("temp-");
+function loadTemp() {
+  try {
+    tempItems.value = JSON.parse(localStorage.getItem(TEMP_KEY) || "[]") as SyNotiType[];
+  } catch {
+    tempItems.value = [];
+  }
+}
+function saveTemp() {
+  try {
+    localStorage.setItem(TEMP_KEY, JSON.stringify(tempItems.value.slice(0, TEMP_MAX)));
+  } catch {
+    /* 저장소를 못 써도 이번 화면에서는 동작 */
+  }
+}
+const tempUnread = () => tempItems.value.filter((n) => n.readYn !== "Y").length;
+/** 임의 알림 1건 추가 — 제목 앞에 "temp" */
+function addTempNoti() {
+  const s = TEMP_SAMPLES[Math.floor(Math.random() * TEMP_SAMPLES.length)]!;
+  const now = new Date();
+  const n: SyNotiType = {
+    notiId: `temp-${now.getTime()}`,
+    notiTitle: `temp ${s.title}`,
+    notiContent: s.content,
+    linkPage: s.linkPage,
+    readYn: "N",
+    regDate: now.toISOString(),
+  };
+  tempItems.value = [n, ...tempItems.value].slice(0, TEMP_MAX);
+  saveTemp();
+  try {
+    localStorage.setItem(TEMP_LAST_KEY, String(now.getTime()));
+  } catch {
+    /* ignore */
+  }
+  unread.value += 1;
+  shake.value = true;
+  setTimeout(() => (shake.value = false), 2000);
+  if (open.value) items.value = mergeItems(items.value.filter((x) => !isTemp(x)));
+}
+const mergeItems = (server: SyNotiType[]): SyNotiType[] =>
+  [...tempItems.value, ...server].sort((a, b) => String(b.regDate ?? "").localeCompare(String(a.regDate ?? "")));
+
+let tempTimer: ReturnType<typeof setTimeout> | null = null;
+/** 마지막 추가 시각 기준으로 다음 5분 시점에 추가하고, 이후 5분마다 반복 */
+function scheduleTemp() {
+  stopTemp();
+  if (!isLoggedIn.value) return;
+  let last = Number(localStorage.getItem(TEMP_LAST_KEY) || 0);
+  if (!last) {
+    last = Date.now();
+    try {
+      localStorage.setItem(TEMP_LAST_KEY, String(last));
+    } catch {
+      /* ignore */
+    }
+  }
+  const wait = Math.max(0, last + TEMP_INTERVAL_MS - Date.now());
+  tempTimer = setTimeout(function tick() {
+    if (!isLoggedIn.value) return;
+    addTempNoti();
+    tempTimer = setTimeout(tick, TEMP_INTERVAL_MS);
+  }, wait);
+}
+function stopTemp() {
+  if (tempTimer) clearTimeout(tempTimer);
+  tempTimer = null;
+}
+
 // 알림의 linkPage(ecFeBo 화면명) → 이 프로젝트 경로
 const PAGE_ROUTES: Record<string, (refId?: string) => string> = {
   myOrder: () => "/my/order",
@@ -99,7 +187,7 @@ function fmtTime(v?: string): string {
 async function loadUnread(silent = true) {
   try {
     const before = unread.value;
-    unread.value = Number(await myNotiSvc.getUnreadCount()) || 0;
+    unread.value = (Number(await myNotiSvc.getUnreadCount()) || 0) + tempUnread();
     if (unread.value > before && silent) {
       shake.value = true; // 새 알림이 오면 종이 잠깐 흔들린다
       setTimeout(() => (shake.value = false), 2000);
@@ -113,10 +201,13 @@ async function reload() {
   loading.value = true;
   errorMsg.value = "";
   try {
-    items.value = await myNotiSvc.getList(30);
+    items.value = mergeItems(await myNotiSvc.getList(30));
     unread.value = items.value.filter((n) => n.readYn !== "Y").length;
   } catch {
-    errorMsg.value = "알림을 불러오지 못했습니다.";
+    // 서버 목록을 못 불러와도 임의(temp) 알림은 보여준다
+    items.value = mergeItems([]);
+    unread.value = tempUnread();
+    if (!items.value.length) errorMsg.value = "알림을 불러오지 못했습니다.";
   } finally {
     loading.value = false;
   }
@@ -130,12 +221,21 @@ function toggle() {
 async function clickItem(n: SyNotiType) {
   expandedId.value = expandedId.value === n.notiId ? null : n.notiId;
   if (n.readYn !== "Y") {
-    try {
-      await myNotiSvc.markRead(n.notiId, "Y");
+    if (isTemp(n)) {
+      // 임의(temp) 알림은 서버에 없으므로 브라우저에서만 읽음 처리
       n.readYn = "Y";
+      const t = tempItems.value.find((x) => x.notiId === n.notiId);
+      if (t) t.readYn = "Y";
+      saveTemp();
       unread.value = Math.max(0, unread.value - 1);
-    } catch {
-      /* 읽음 처리 실패해도 화면 이동/펼침은 계속 */
+    } else {
+      try {
+        await myNotiSvc.markRead(n.notiId, "Y");
+        n.readYn = "Y";
+        unread.value = Math.max(0, unread.value - 1);
+      } catch {
+        /* 읽음 처리 실패해도 화면 이동/펼침은 계속 */
+      }
     }
   }
   const to = goLink(n);
@@ -148,6 +248,8 @@ async function clickItem(n: SyNotiType) {
 async function readAll() {
   try {
     await myNotiSvc.markAllRead();
+    tempItems.value.forEach((n) => (n.readYn = "Y"));
+    saveTemp();
     items.value.forEach((n) => (n.readYn = "Y"));
     unread.value = 0;
   } catch {
@@ -161,20 +263,34 @@ const onOutside = (e: MouseEvent) => {
 let timer: ReturnType<typeof setInterval> | null = null;
 onMounted(() => {
   document.addEventListener("click", onOutside);
+  loadTemp();
   if (isLoggedIn.value) loadUnread(false);
+  scheduleTemp();
   timer = setInterval(() => {
     if (isLoggedIn.value && !open.value && document.visibilityState === "visible") loadUnread();
   }, 60_000); // 1분마다 안읽음 수 갱신(팝오버가 닫혀 있고 탭이 보일 때만)
 });
 watch(isLoggedIn, (v) => {
-  if (v) loadUnread(false);
-  else {
+  if (v) {
+    loadTemp();
+    loadUnread(false);
+    scheduleTemp();
+  } else {
+    stopTemp();
+    tempItems.value = [];
+    try {
+      localStorage.removeItem(TEMP_KEY);
+      localStorage.removeItem(TEMP_LAST_KEY);
+    } catch {
+      /* ignore */
+    }
     unread.value = 0;
     items.value = [];
   }
 });
 onBeforeUnmount(() => {
   document.removeEventListener("click", onOutside);
+  stopTemp();
   if (timer) clearInterval(timer);
 });
 </script>

@@ -6,7 +6,7 @@
           <i class="fal fa-times"></i>
         </button>
 
-        <div class="-mx-7 -mt-7 mb-5 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] px-7 pb-4 pt-6">
+        <div class="-mx-7 -mt-7 mb-5 rounded-t-2xl border-b border-[#f0e2cf] bg-gradient-to-b from-[#fcf5e9] to-[#f8ecd9] px-7 pb-4 pt-6">
           <h3 id="pw-change-title" class="text-[1.2rem] font-extrabold text-gray-900 m-0"><i class="fas fa-key text-theme mr-2 text-base"></i>비밀번호 변경</h3>
           <div class="text-[0.8rem] text-gray-400 mt-1">현재 비밀번호 확인 후 변경할 수 있습니다</div>
         </div>
@@ -31,8 +31,8 @@
             <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 mb-3 bg-red-50 rounded-md">{{ errorMsg }}</div>
 
             <div class="flex gap-2.5 mt-2">
-              <button type="button" class="flex-1 py-3 border border-[#c9ced6] rounded-lg bg-[#f3f4f6] text-gray-700 text-[0.88rem] font-semibold cursor-pointer shadow-sm hover:bg-[#e5e7eb] transition" @click="handleBtnAction('modal-close')">취소</button>
-              <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50" :disabled="saving">
+              <button type="button" class="mbtn mbtn-ghost flex-1" @click="handleBtnAction('modal-close')">취소</button>
+              <button type="submit" class="mbtn mbtn-primary flex-[2]" :disabled="saving">
                 {{ saving ? "변경 중..." : "변경하기" }}
               </button>
             </div>

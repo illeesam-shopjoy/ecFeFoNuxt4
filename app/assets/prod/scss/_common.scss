@@ -831,6 +831,77 @@ p {
   }
 }
 
+/* 2026-09-22(요청사항: "모든 모달 스타일 확인하여 이쁘게 개선") — 모달 공통 버튼/모양. 모달 컴포넌트는 이 클래스를 쓴다(.mbtn / .mbtn-primary / .mbtn-ghost / .modal-x). */
+.mbtn {
+  display: inline-flex;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s, filter 0.15s;
+  &:active:not(:disabled) {
+    transform: scale(0.985);
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+.mbtn-primary {
+  background: linear-gradient(135deg, #34302b, #15130f);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(20, 15, 5, 0.22);
+  &:hover:not(:disabled) {
+    filter: brightness(1.25);
+    box-shadow: 0 6px 16px rgba(20, 15, 5, 0.28);
+  }
+}
+.mbtn-ghost {
+  background: #fff;
+  border-color: #d8dce2;
+  color: #4b5563;
+  &:hover:not(:disabled) {
+    background: #f5f6f8;
+    border-color: #bfc4cc;
+  }
+}
+/* 모달 오른쪽 위 닫기(X) 버튼 */
+.modal-x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.06);
+  color: #555;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  &:hover {
+    background: rgba(0, 0, 0, 0.12);
+  }
+}
+/* 모달 안 스크롤이 끝에 닿아도 남은 스크롤이 뒤 화면으로 번지지 않게(scroll chaining 차단) */
+[role="dialog"],
+[role="dialog"] *,
+[role="alertdialog"],
+[role="alertdialog"] * {
+  overscroll-behavior: contain;
+}
+
 /* scroll to top */
 /* 2026-09-15(요청사항: "최상위버튼과, 채팅버튼이 겹치는네 최하단에 바가 들어올수 있으니
    약간 공백을둬줘") — ChatWidget.vue의 채팅 플로팅 버튼(right:24px, bottom:40px, 54px 원)과

@@ -1,36 +1,35 @@
 <template>
   <Teleport to="body">
     <Transition name="terms-agree-fade">
-      <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50" role="dialog" aria-modal="true" aria-labelledby="terms-agree-title" @click.self="close">
-        <div class="terms-agree-dialog relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-xl p-6">
-          <button type="button" class="absolute top-4 right-4 p-2 rounded hover:bg-gray-100" @click="close" aria-label="닫기">
-            <i class="fal fa-times"></i>
+      <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/55 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-labelledby="terms-agree-title" @click.self="close">
+        <div class="terms-agree-dialog relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)] p-6">
+          <button type="button" class="modal-x" @click="close" aria-label="닫기">
+            <i class="fal fa-times text-[0.95rem]"></i>
           </button>
-          <div class="-mx-6 -mt-6 mb-5 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] px-6 pb-4 pt-5">
+          <div class="-mx-6 -mt-6 mb-5 rounded-t-2xl border-b border-[#f0e2cf] bg-gradient-to-b from-[#fcf5e9] to-[#f8ecd9] px-6 pb-4 pt-5">
             <h3 id="terms-agree-title" class="text-lg font-semibold text-gray-900 mb-1 text-center">이용약관 동의</h3>
             <p class="text-sm text-gray-500 mb-0 text-center">서비스 이용을 위해 약관에 동의해 주세요</p>
           </div>
 
-          <label class="flex items-center gap-2 p-3 mb-3 rounded-lg bg-gray-100 cursor-pointer">
-            <input type="checkbox" :checked="allChecked" @change="toggleAll(($event.target as HTMLInputElement).checked)" />
-            <span class="font-medium text-gray-900">전체 동의</span>
+          <label class="mb-3 flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 transition" :class="allChecked ? 'border-[#bc8246] bg-[#fdf6ee]' : 'border-[#e5e7eb] bg-[#f8f9fb] hover:border-[#cfd4db]'">
+            <input type="checkbox" class="h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#bc8246]" :checked="allChecked" @change="toggleAll(($event.target as HTMLInputElement).checked)" />
+            <span class="text-[0.98rem] font-bold text-gray-900">전체 동의</span>
           </label>
 
-          <ul class="flex flex-col gap-1 mb-5">
+          <ul class="m-0 mb-6 flex list-none flex-col gap-0.5 p-0">
             <li v-for="item in items" :key="item.key">
-              <label class="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                <input type="checkbox" v-model="item.checked" />
-                <span class="text-sm text-gray-800">
-                  <span :class="item.required ? 'text-danger' : 'text-gray-400'">[{{ item.required ? "필수" : "선택" }}]</span>
-                  {{ item.label }}
+              <label class="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 hover:bg-[#f8f9fb]">
+                <input type="checkbox" class="h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#bc8246]" v-model="item.checked" />
+                <span class="text-[0.9rem] leading-snug text-gray-800">
+                  <span class="mr-1 font-semibold" :class="item.required ? 'text-[#d9534f]' : 'text-gray-400'">[{{ item.required ? "필수" : "선택" }}]</span>{{ item.label }}
                 </span>
               </label>
             </li>
           </ul>
 
-          <div class="flex gap-2">
-            <button type="button" class="os-btn flex-1 !border !border-[#c9ced6] !bg-[#f3f4f6] !text-gray-700 hover:!bg-[#e5e7eb]" @click="close">이전</button>
-            <button type="button" class="os-btn os-btn-green flex-1" :disabled="!requiredAgreed" @click="confirm">다음</button>
+          <div class="flex gap-2.5">
+            <button type="button" class="mbtn mbtn-ghost flex-1" @click="close">이전</button>
+            <button type="button" class="mbtn mbtn-primary flex-[1.4]" :disabled="!requiredAgreed" @click="confirm">다음</button>
           </div>
         </div>
       </div>

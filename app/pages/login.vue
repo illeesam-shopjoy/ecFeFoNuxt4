@@ -37,32 +37,27 @@
                   {{ loading ? "로그인 중..." : "로그인" }}
                 </button>
 
-                <!-- 소셜 로그인 -->
-                <div class="social-login mt-20">
-                  <div class="flex flex-wrap gap-2 justify-center">
-                    <!-- 2026-09-14(요청사항: "구글 로그인 구글 바탕색상으로 변경해줘" →
-                         "모든 버튼이 스타일이 딱딱한데 약간의 그라데이션을 주든해서 이쁘면 좋겠어") —
-                         평면 bg-[색상]을 대각선 그라데이션 + 그림자로 교체. -->
-                    <a
-                      href="/api/auth/google"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#5a9cf8] to-[#4285F4] hover:from-[#4285F4] hover:to-[#3367d6] text-white text-sm font-medium shadow-sm hover:shadow-md transition"
-                    >
-                      <span class="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[#4285F4] text-xs font-bold">G</span>
-                      구글 로그인
+                <!-- 소셜 로그인 — 2026-09-22(요청사항: "구글/네이버/카카오 로그인 버튼 스타일, 한 줄에, 로고 표시") — 세 버튼을 같은 너비로 한 줄에 놓고 각 서비스 로고를 넣었다.
+                     구글은 흰 바탕+테두리(구글 가이드), 네이버·카카오는 브랜드색 바탕. 좁은 폰에서도 한 줄에 들어가도록 글자는 짧게(구글/네이버/카카오). -->
+                <div class="social-login mt-6">
+                  <div class="mb-2.5 text-center text-[0.78rem] text-gray-400">간편 로그인</div>
+                  <div class="grid grid-cols-3 gap-2">
+                    <a href="/api/auth/google" aria-label="구글 로그인" title="구글 로그인" class="sl-btn border border-solid border-[#dadce0] bg-white text-[#3c4043] hover:bg-[#f8f9fa]">
+                      <svg class="h-[18px] w-[18px] shrink-0" viewBox="0 0 48 48" aria-hidden="true">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                      </svg>
+                      <span>구글</span>
                     </a>
-                    <a
-                      href="/api/auth/naver"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#2ed769] to-[#03C75A] hover:from-[#03C75A] hover:to-[#02b350] text-white text-sm font-medium shadow-sm hover:shadow-md transition"
-                    >
-                      <span class="w-5 h-5 rounded flex items-center justify-center text-[#03C75A] bg-white text-[10px] font-bold">N</span>
-                      네이버 로그인
+                    <a href="/api/auth/naver" aria-label="네이버 로그인" title="네이버 로그인" class="sl-btn border border-solid border-[#03c75a] bg-[#03c75a] text-white hover:bg-[#02b350]">
+                      <svg class="h-[15px] w-[15px] shrink-0" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.27 12.85 7.44 0H0v24h7.73V11.15L16.56 24H24V0h-7.73z" /></svg>
+                      <span>네이버</span>
                     </a>
-                    <a
-                      href="/api/auth/kakao"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-transparent bg-gradient-to-br from-[#FFEB6E] to-[#FEE500] hover:from-[#FEE500] hover:to-[#f5d900] text-[#191919] text-sm font-medium shadow-sm hover:shadow-md transition"
-                    >
-                      <span class="w-5 h-5 rounded flex items-center justify-center text-[12px] font-bold">K</span>
-                      카카오 로그인
+                    <a href="/api/auth/kakao" aria-label="카카오 로그인" title="카카오 로그인" class="sl-btn border border-solid border-[#fee500] bg-[#fee500] text-[#191919] hover:bg-[#f5dc00]">
+                      <svg class="h-[18px] w-[18px] shrink-0" viewBox="0 0 24 24" aria-hidden="true"><path fill="#191919" d="M12 3C6.48 3 2 6.58 2 11c0 2.83 1.86 5.32 4.66 6.74-.2.73-.74 2.64-.85 3.05-.13.5.18.5.39.36.16-.11 2.6-1.77 3.65-2.49.7.1 1.42.15 2.15.15 5.52 0 10-3.58 10-8S17.52 3 12 3z" /></svg>
+                      <span>카카오</span>
                     </a>
                   </div>
                 </div>
@@ -171,3 +166,24 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
   }
 };
 </script>
+
+<style scoped>
+.sl-btn {
+  display: inline-flex;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.15s, transform 0.15s, background-color 0.15s;
+}
+.sl-btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+  transform: translateY(-1px);
+}
+</style>

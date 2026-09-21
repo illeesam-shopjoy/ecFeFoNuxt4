@@ -3,15 +3,15 @@
     <Transition name="wpm-fade">
       <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/60 backdrop-blur-[3px]" role="dialog" aria-modal="true" aria-labelledby="wpm-title" @click.self="finish(null)" @keydown.esc="finish(null)">
         <div class="w-full max-w-[380px] rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)] p-6">
-          <div class="-mx-6 -mt-6 mb-4 rounded-t-2xl border-b border-[#f0e2cf] bg-[#faf3ea] px-6 pb-3 pt-5">
+          <div class="-mx-6 -mt-6 mb-4 rounded-t-2xl border-b border-[#f0e2cf] bg-gradient-to-b from-[#fcf5e9] to-[#f8ecd9] px-6 pb-3 pt-5">
             <h3 id="wpm-title" class="text-[1.05rem] font-bold text-gray-900 m-0 mb-1">🔒 글 비밀번호 확인</h3>
             <p class="text-[0.84rem] text-gray-500 m-0">{{ message }}</p>
           </div>
           <input ref="inputRef" v-model="pwd" type="password" maxlength="20" autocomplete="off" placeholder="글 비밀번호" class="w-full px-[13px] py-[10px] border-[1.5px] border-[#e5e7eb] rounded-lg text-[0.9rem] outline-none focus:border-[#bc8246]" @keydown.enter.prevent="submit" />
           <p v-if="error" class="text-[0.78rem] text-red-500 mt-2 mb-0">{{ error }}</p>
           <div class="flex justify-end gap-2 mt-5">
-            <button type="button" class="px-4 py-2 rounded-lg border border-[#c9ced6] bg-[#f3f4f6] text-[0.85rem] font-semibold text-gray-700 cursor-pointer shadow-sm hover:bg-[#e5e7eb] transition" @click="finish(null)">취소</button>
-            <button type="button" class="px-4 py-2 rounded-lg border-0 bg-gray-900 text-white text-[0.85rem] font-bold cursor-pointer" @click="submit">확인</button>
+            <button type="button" class="mbtn mbtn-ghost" @click="finish(null)">취소</button>
+            <button type="button" class="mbtn mbtn-primary min-w-[96px]" @click="submit">확인</button>
           </div>
         </div>
       </div>

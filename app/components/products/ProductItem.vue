@@ -33,7 +33,7 @@
           <i :class="[isWishlisted ? 'fas fa-heart !text-pink-500' : 'fal fa-heart']"></i>
         </a>
         <a @click.prevent="compareState.addStCompareProduct(item)" href="#" title="비교하기">
-          <i class="fal fa-sliders-h"></i>
+          <i :class="['fa-sliders-h', isCompared ? 'fas !text-theme' : 'fal']"></i>
         </a>
         <a @click.prevent="openQuickView" href="#">
           <i class="fal fa-search"></i>
@@ -107,6 +107,8 @@ const compareState = useCompareStore();
 const { formatPrice } = usePrice();
 // 2026-09-14(요청사항: "좋아요 클릭했는데 하드 좀더 분홍색으로 변경해줘")
 const isWishlisted = computed(() => wishlistState.wishlists.some((p) => p.prodId === props.item.prodId));
+// 2026-09-22(요청사항: "비교도 이미 추가되어 있다면 선택된 것처럼 아이콘 표시") — 비교 목록에 담긴 상품은 아이콘을 진하게(fas) + 테마색으로
+const isCompared = computed(() => compareState.compare.some((p) => p.prodId === props.item.prodId));
 const productModalRef = ref<(InstanceType<typeof ProductModal> & { show(): void }) | null>(null);
 function openQuickView() {
   store.initialStOrderQuantity();

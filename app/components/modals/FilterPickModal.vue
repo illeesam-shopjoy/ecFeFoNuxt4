@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
     <Transition name="fpm-fade">
-      <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" :aria-label="title" @click.self="cancel" @keydown.esc="cancel">
-        <div class="relative flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+      <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#1a1410]/55 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" :aria-label="title" @click.self="cancel" @keydown.esc="cancel">
+        <div class="relative flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
           <div class="flex items-center justify-between border-b border-[#f0e2cf] bg-[#faf3ea] px-5 py-4">
             <h3 class="m-0 text-[1.05rem] font-bold text-gray-900">{{ title }} 선택 <span class="text-[0.8rem] font-normal text-gray-500">(여러 개 선택 가능)</span></h3>
             <button type="button" class="h-8 w-8 cursor-pointer rounded-full border-0 bg-white/70 hover:bg-white" aria-label="닫기" @click="cancel"><i class="fal fa-times"></i></button>
@@ -23,8 +23,8 @@
           <div class="flex items-center gap-2 border-t border-[#eee] px-5 py-3">
             <button type="button" class="cursor-pointer border-0 bg-transparent p-0 text-[0.8rem] text-gray-500 underline" @click="picked = []">선택 해제</button>
             <span class="ml-1 text-[0.8rem] text-gray-500">{{ picked.length }}개 선택</span>
-            <button type="button" class="ml-auto cursor-pointer rounded-lg border border-[#c9ced6] bg-[#f3f4f6] px-4 py-2 text-[0.85rem] font-semibold text-gray-700 shadow-sm hover:bg-[#e5e7eb]" @click="cancel">취소</button>
-            <button type="button" class="cursor-pointer rounded-lg border-0 bg-gray-900 px-5 py-2 text-[0.85rem] font-bold text-white" @click="apply">적용</button>
+            <button type="button" class="mbtn mbtn-ghost ml-auto !h-10" @click="cancel">취소</button>
+            <button type="button" class="mbtn mbtn-primary !h-10 min-w-[84px]" @click="apply">적용</button>
           </div>
         </div>
       </div>

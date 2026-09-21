@@ -6,7 +6,7 @@
           <i class="fal fa-times"></i>
         </button>
 
-        <div class="-mx-7 -mt-7 mb-5 rounded-t-xl border-b border-[#f0e2cf] bg-[#faf3ea] px-7 pb-4 pt-6">
+        <div class="-mx-7 -mt-7 mb-5 rounded-t-2xl border-b border-[#f0e2cf] bg-gradient-to-b from-[#fcf5e9] to-[#f8ecd9] px-7 pb-4 pt-6">
           <h3 id="profile-edit-title" class="text-[1.2rem] font-extrabold text-gray-900 m-0"><i class="fas fa-pen text-theme mr-2 text-base"></i>프로필 수정</h3>
           <div class="text-[0.8rem] text-gray-400 mt-1">회원 정보를 수정하세요</div>
         </div>
@@ -49,8 +49,8 @@
             <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 bg-red-50 rounded-md">{{ errorMsg }}</div>
 
             <div class="flex gap-2.5 mt-3">
-              <button type="button" class="flex-1 py-3 border border-[#c9ced6] rounded-lg bg-[#f3f4f6] text-gray-700 text-[0.88rem] font-semibold cursor-pointer shadow-sm hover:bg-[#e5e7eb] transition" @click="handleBtnAction('modal-close')">취소</button>
-              <button type="submit" class="flex-[2] py-3 border-0 rounded-lg bg-gray-900 text-white text-[0.88rem] font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" :disabled="!f.memberNm.trim() || saving">
+              <button type="button" class="mbtn mbtn-ghost flex-1" @click="handleBtnAction('modal-close')">취소</button>
+              <button type="submit" class="mbtn mbtn-primary flex-[2]" :disabled="!f.memberNm.trim() || saving">
                 {{ saving ? "저장 중..." : "저장" }}
               </button>
             </div>

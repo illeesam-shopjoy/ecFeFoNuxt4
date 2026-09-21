@@ -7,7 +7,7 @@
          헤더가 sticky로 전환되면 헤더가 모달 위로 올라와 보였다. z-[1000]으로 항상 헤더보다
          위에 오도록 하고, 아예 모달이 열려있는 동안 배경 스크롤 자체를 막아(아래 lockScroll)
          헤더가 sticky로 전환될 일이 없게 한다. -->
-    <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50" :id="`${list ? `productModalListId-${item.prodId}` : `productModalId-${item.prodId}`}`" role="dialog" aria-hidden="true" @click.self="close">
+    <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/55 backdrop-blur-[2px]" :id="`${list ? `productModalListId-${item.prodId}` : `productModalId-${item.prodId}`}`" role="dialog" aria-hidden="true" @click.self="close">
       <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto product-modal rounded-lg bg-white shadow-xl">
         <!-- 2026-09-14(요청사항: "마우스스크롤 아래로내리면 최상단 [X] 버튼도 숨겨지는데
              [X] 버튼란은 고정으로 있어야 해") — 기존엔 이 absolute 닫기버튼이 overflow-y-auto인
