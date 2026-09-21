@@ -92,6 +92,7 @@
 </template>
 
 <script setup lang="ts">
+import { BIZ_INFO } from "~/conts/bizInfo";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
@@ -126,15 +127,7 @@ const history = [
   { date: "2026년 01월", title: "50개 상품 라인업 완성", desc: "다양한 카테고리에 걸쳐 50가지 상품 구비" },
   { date: "2026년 04월", title: "리뉴얼 오픈", desc: "새로운 UI/UX로 전면 리뉴얼. 더 편리한 쇼핑 경험 제공" },
 ];
-const bizInfo = [
-  { label: "상호명", value: "ShopJoy (쇼핑조이)" },
-  { label: "대표자", value: "송성일" },
-  { label: "사업자번호", value: "123-45-67890" },
-  { label: "통신판매업", value: "제2024-성남중원-0001호" },
-  { label: "주소", value: "경기도 성남시 중원구 성남대로 997번길 49-14 201호" },
-  { label: "고객센터", value: "010-3805-0206" },
-  { label: "이메일", value: "illeesam@gmail.com" },
-];
+const bizInfo = BIZ_INFO; // conts/bizInfo.ts — 푸터와 공용
 
 // 오시는 길 — Location 화면과 동일 좌표/주소
 // 성남대로 997번길 49-14 실제 좌표(OSM 지오코딩) — 이전 값(37.4407,127.1468)은 신흥역 부근이라 어긋났음

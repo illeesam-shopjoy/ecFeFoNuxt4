@@ -1,134 +1,67 @@
 <template>
+  <!-- 2026-09-22(요청사항: "footer 너무 지저분 — 불필요한 것 제거하고 깔끔하게 정렬, 회사명·사업자번호 표시") — 로고+공유 / 안내 / 고객센터 3열 + 사업자 정보 + 저작권.
+       예전의 템플릿 샘플 소개문, 아무 데도 연결 안 된 링크(#)·중복 링크, 동작 안 하는 SNS(Facebook/Behance/Dribbble) 링크는 뺐다. -->
   <section v-if="!hideFooter" :class="`footer__area footer-bg ${box_style ? 'box-m-15' : ''}`">
-    <div class="footer__top pt-100 pb-60">
-      <div class="max-w-7xl mx-auto px-4">
-        <!-- 푸터 3열 레이아웃: Outstock(50%) | 안내(25%) | 고객센터(25%) -->
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 2rem;">
-          <!-- 1열: Outstock 로고 + 연락처 -->
-          <div>
-            <div class="footer__widget mb-30">
-              <div class="footer__widget-title mb-25">
-                <nuxt-link href="/">
-                  <img src="/logo/shopjoy-logo-tan.svg" alt="shopjoy" />
-                </nuxt-link>
-              </div>
-              <div class="footer__widget-content">
-                <p>{{ footerData.introText }}</p>
-                <div class="footer__contact">
-                  <ul>
-                    <li v-for="(item, i) in footerData.contactInfo" :key="i">
-                      <div class="icon">
-                        <i :class="item.icon"></i>
-                      </div>
-                      <div class="text">
-                        <span>{{ item.label }}: {{ item.value }}</span>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+    <div class="max-w-7xl mx-auto px-4 pt-10 pb-6 md:pt-14">
+      <div class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1.6fr_1fr_1.2fr]">
+        <!-- 로고 + 한 줄 소개 + 공유 -->
+        <div class="col-span-2 md:col-span-1">
+          <nuxt-link href="/" class="inline-block"><img src="/logo/shopjoy-logo-tan.svg" alt="shopjoy" class="h-8 w-auto" /></nuxt-link>
+          <p class="mt-3 mb-4 text-[0.85rem] leading-relaxed text-[#a3a3a3]">쇼핑의 즐거움, ShopJoy</p>
+          <div class="flex items-center gap-2" aria-label="공유하기">
+            <a href="#" title="Twitter에 공유" class="fs-btn" style="color: #1da1f2" @click.prevent="shareTwitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" title="카카오톡으로 공유" class="fs-btn" style="color: #fae100" @click.prevent="shareKakao"><i class="fas fa-comment-dots"></i></a>
+            <a href="#" title="이메일로 공유" class="fs-btn" style="color: #ea4335" @click.prevent="shareMail"><i class="fas fa-envelope"></i></a>
+            <a href="#" title="문자(MMS)로 공유" class="fs-btn" style="color: #10b981" @click.prevent="shareMMS"><i class="fas fa-mobile-alt"></i></a>
+            <a href="#" title="링크 복사 / 공유하기" class="fs-btn" style="color: #bc8246" @click.prevent="shareLink"><i class="fas fa-share-alt"></i></a>
           </div>
-          <!-- 2열~3열: 안내/고객센터 -->
-          <div v-for="(section, i) in footerData.sections" :key="i">
-            <div class="footer__widget mb-30">
-              <div :class="i === 0 ? 'footer__widget-title' : 'footer__widget-title mb-25'">
-                <h5>{{ section.title }}</h5>
-              </div>
-              <div class="footer__widget-content">
-                <div class="footer__links">
-                  <ul>
-                    <li v-for="(link, j) in section.links" :key="j"><a :href="link.href">{{ link.label }}</a></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+        </div>
+
+        <!-- 안내 -->
+        <div>
+          <h5 class="mb-3 text-[0.95rem] font-bold text-white">안내</h5>
+          <ul class="m-0 flex list-none flex-col gap-2 p-0 text-[0.85rem]">
+            <li><nuxt-link href="/about" class="ft-link">회사 소개</nuxt-link></li>
+            <li><nuxt-link href="/location" class="ft-link">오시는 길</nuxt-link></li>
+            <li><nuxt-link href="/faq" class="ft-link">자주 묻는 질문</nuxt-link></li>
+          </ul>
+        </div>
+
+        <!-- 고객센터 -->
+        <div>
+          <h5 class="mb-3 text-[0.95rem] font-bold text-white">고객센터</h5>
+          <ul class="m-0 flex list-none flex-col gap-2 p-0 text-[0.85rem]">
+            <li><a :href="`tel:${bizValue('고객센터').replace(/-/g, '')}`" class="ft-link text-[1.05rem] font-semibold !text-white">{{ bizValue("고객센터") }}</a></li>
+            <li><a :href="`mailto:${bizValue('이메일')}`" class="ft-link">{{ bizValue("이메일") }}</a></li>
+            <li><nuxt-link href="/contact" class="ft-link">1:1 문의하기</nuxt-link></li>
+          </ul>
         </div>
       </div>
-    </div>
-    <div class="footer__bottom">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex flex-wrap items-center justify-center">
-          <div class="w-full lg:w-7/12">
-            <div class="footer__copyright">
-              <p>저작권권 {{ new Date().getFullYear() }} © <nuxt-link href="/">shopjoy</nuxt-link> 모든 권리 보유. <nuxt-link href="/">shopjoy</nuxt-link> 제작</p>
-            </div>
-          </div>
-          <div class="w-full lg:w-5/12">
-            <!-- 2026-09-14(요청사항: "하단 링크 아이콘 흑백아이콘으로 보이는데 컬러 아이콘으로 표시해줘") —
-                 카카오(이미 #FAE100 인라인)처럼 각 아이콘에 브랜드/서비스 색을 인라인으로 지정. -->
-            <div class="footer__social ml-auto">
-              <ul>
-                <li><a href="https://facebook.com" target="_blank" title="Facebook" style="color: #1877F2;"><i class="fab fa-facebook-f"></i></a></li>
-                <li><a href="#" title="Twitter에 공유" @click.prevent="shareTwitter" style="color: #1DA1F2;"><i class="fab fa-twitter"></i></a></li>
-                <li><a href="https://www.behance.net/" target="_blank" title="Behance" style="color: #1769FF;"><i class="fab fa-behance"></i></a></li>
-                <li><a href="https://dribbble.com/" target="_blank" title="Dribbble" style="color: #EA4C89;"><i class="fab fa-dribbble"></i></a></li>
-                <li><a href="#" title="카카오톡으로 공유" @click.prevent="shareKakao" style="color: #FAE100;"><i class="fas fa-comment-dots"></i></a></li>
-                <li><a href="#" title="이메일로 공유" @click.prevent="shareMail" style="color: #EA4335;"><i class="fas fa-envelope"></i></a></li>
-                <li><a href="#" title="문자(MMS)로 공유" @click.prevent="shareMMS" style="color: #10B981;"><i class="fas fa-mobile-alt"></i></a></li>
-                <li><a href="#" title="링크 복사 / 공유하기" @click.prevent="shareLink" style="color: #bc8246;"><i class="fas fa-share-alt"></i></a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
+
+      <!-- 사업자 정보 -->
+      <div class="mt-8 border-t border-[#2b2b2b] pt-5 text-[0.78rem] leading-relaxed text-[#8c8c8c]">
+        <ul class="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
+          <li v-for="info in bizLine" :key="info.label"><span class="text-[#6f6f6f]">{{ info.label }}</span> {{ info.value }}</li>
+        </ul>
+        <p class="mt-3 mb-0 text-[#6f6f6f]">© {{ new Date().getFullYear() }} ShopJoy. All rights reserved.</p>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import type { DpFooterDataType } from "~/types/dp/dpFooterType";
+import { BIZ_INFO, bizValue } from "~/conts/bizInfo";
 
 // 2026-09-20(요청사항: "상세화면에서는 footer 가 안 보이면 된다") — 상품/블로그/이벤트 상세에서는 푸터를 렌더링하지 않는다
 const route = useRoute();
 const hideFooter = computed(() => /^\/(prod|blog|event)-dtl(\/|$)/.test(route.path));
-import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 defineProps({
   box_style: { type: Boolean, default: false },
 });
 
-// 전시 위젯(area_cd=FOOTER_LINKS_MAIN)에서 로드 — 미등록/조회실패 시 기본값 폴백
-// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
-const DEFAULT_FOOTER_DATA: DpFooterDataType = {
-  introText: "shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.",
-  contactInfo: [
-    { icon: "fal fa-map-marker-alt", label: "주소", value: "성남시 중원구 성남대로 997 (여수동)" },
-    { icon: "fal fa-envelope-open-text", label: "이메일", value: "illeesam@gmail.com" },
-    { icon: "fal fa-phone-alt", label: "연락처", value: "(010) 3805 0206" },
-  ],
-  sections: [
-    {
-      title: "안내",
-      links: [
-        { href: "#", label: "회사 소개" },
-        { href: "#", label: "채용" },
-        { href: "#", label: "배송 안내" },
-        { href: "#", label: "개인정보처리방침" },
-        { href: "#", label: "이용약관" },
-      ],
-    },
-    {
-      title: "고객센터",
-      links: [
-        { href: "#", label: "배송 정책" },
-        { href: "#", label: "도움말 및 문의" },
-        { href: "#", label: "반품 및 환불" },
-        { href: "#", label: "온라인 스토어" },
-        { href: "#", label: "이용약관" },
-      ],
-    },
-  ],
-};
-// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
-// 늦게 도착한 데이터가 footerData에 반영되게 한다.
-const { data: fetchedFooterData } = useAsyncData<DpFooterDataType | null>(
-  "dp-footer-links-main",
-  () => dpAreaSvc.getFirstWidgetConfig<DpFooterDataType>("FOOTER_LINKS_MAIN"),
-  { lazy: true, server: false } // 2026-09-20: 푸터는 SEO 본문이 아니라 서버 렌더에서 뺀다(브라우저가 ecBeBo 직접 호출)
-);
-const footerData = computed<DpFooterDataType>(() => fetchedFooterData.value ?? DEFAULT_FOOTER_DATA);
+// 사업자 정보(상호명·대표자·사업자번호·통신판매업·주소) — 주소/고객센터/이메일은 아래 칸에 따로 있어 줄에서는 뺀다
+const bizLine = BIZ_INFO.filter((i) => !["고객센터", "이메일"].includes(i.label));
 
 const currentUrl = computed(() =>
   import.meta.client ? window.location.href : ""
@@ -178,3 +111,28 @@ async function shareLink() {
   }
 }
 </script>
+
+<style scoped>
+.ft-link {
+  color: #b5b5b5;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.ft-link:hover {
+  color: #bc8246;
+}
+.fs-btn {
+  display: inline-flex;
+  height: 32px;
+  width: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #262626;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+.fs-btn:hover {
+  background: #333;
+}
+</style>

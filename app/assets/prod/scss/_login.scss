@@ -6,25 +6,25 @@
 
 
 .basic-login {
-    padding: 90px;
+    padding: 48px 56px; /* 2026-09-22(요청사항: 로그인 내용 위아래 불필요한 공백) 90px → 48/56px */
     border: 2px solid #eaedff;
   }
   
   @media only screen and (min-width: 992px) and (max-width: 1200px) {
     .basic-login {
-      padding: 50px;
+      padding: 40px;
     }
   }
   
   @media only screen and (min-width: 768px) and (max-width: 991px) {
     .basic-login {
-      padding: 40px;
+      padding: 32px;
     }
   }
   
   @media (max-width: 767px) {
     .basic-login {
-      padding: 30px;
+      padding: 20px 18px;
     }
   }
   

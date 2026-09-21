@@ -6,23 +6,24 @@
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-6 col-lg-6">
+            <!-- 2026-09-22(요청사항: "찾아오시는 길 아래 주소·이메일·연락처 영역이 너무 많이 차지") — 큰 네모 아이콘+줄마다 35px 간격을 작은 아이콘 + 한 줄(라벨: 값)로 줄이고,
+                 템플릿 샘플 문구("프리미엄 템플릿 테마입니다…")는 뺐다. -->
             <div class="contact__info">
-              <h3>찾아오시는 길</h3>
-              <ul class="mb-55">
-                <li v-for="(item, i) in contactInfo" :key="i" class="d-flex mb-35">
-                  <div class="contact__info-icon mr-20">
-                    <i :class="item.icon"></i>
+              <h3 class="!mb-4">찾아오시는 길</h3>
+              <ul class="mb-4 list-none p-0">
+                <li v-for="(item, i) in contactInfo" :key="i" class="flex items-start gap-3 mb-2.5">
+                  <div class="contact__info-icon shrink-0">
+                    <i :class="item.icon" class="!flex !h-8 !w-8 !items-center !justify-center !rounded-full !border !text-[13px] !leading-none"></i>
                   </div>
-                  <div class="contact__info-content">
-                    <h6>{{ item.title }}:</h6>
-                    <span>{{ item.subtitle }}</span>
+                  <div class="contact__info-content min-w-0 text-[0.9rem] leading-snug pt-1.5">
+                    <h6 class="!mb-0 inline !text-[0.85rem]">{{ item.title }}:</h6>
+                    <span class="ml-1 break-words">{{ item.subtitle }}</span>
                   </div>
                 </li>
               </ul>
-              <p>shopjoy은 고급 관리 기능을 갖춘 프리미엄 템플릿 테마입니다. It’s 맞춤 설정이 쉽고, 반응형이며 레티나 디스플레이를 지원합니다.</p>
 
-              <div class="contact__social">
-                <ul>
+              <div class="contact__social mb-6 lg:mb-0">
+                <ul class="m-0 p-0">
                   <social colored />
                 </ul>
               </div>
@@ -55,7 +56,7 @@
                 </template>
                 <template #actions>
                   <div class="flex justify-end mt-2">
-                    <button type="submit" class="px-6 py-3 bg-gray-900 text-white border-0 rounded-lg text-[0.88rem] font-bold cursor-pointer disabled:opacity-60" :disabled="submitting">{{ submitting ? "접수 중…" : "문의 접수하기" }}</button>
+                    <button type="submit" class="px-6 py-3 bg-gray-900 text-white border-0 rounded-lg text-[0.88rem] font-bold cursor-pointer disabled:opacity-60" :disabled="submitting">{{ submitting ? "신청 중…" : "문의 신청하기" }}</button>
                   </div>
                 </template>
               </fo-form>
@@ -183,10 +184,10 @@ async function onSubmit() {
     });
     Object.assign(form, { name: form.name, email: form.email, tel: form.tel, orderNo: "", inquiryType: "", desc: "" });
     attachFiles.value = [];
-    await useAlert().openAlert("문의가 접수되었습니다. 빠르게 답변드리겠습니다!");
+    await useAlert().openAlert("문의 신청이 완료되었습니다. 빠르게 답변드리겠습니다!");
   } catch (e) {
     const err = e as { data?: { message?: string }; statusMessage?: string };
-    await useAlert().openAlert(err?.data?.message || err?.statusMessage || "문의 접수 중 오류가 발생했습니다.");
+    await useAlert().openAlert(err?.data?.message || err?.statusMessage || "문의 신청 중 오류가 발생했습니다.");
   } finally {
     submitting.value = false;
   }

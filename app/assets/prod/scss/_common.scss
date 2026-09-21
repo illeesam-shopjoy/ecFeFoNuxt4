@@ -812,6 +812,25 @@ p {
   }
 }
 
+/* 2026-09-22(요청사항: "배너와 그 아래 내용 사이 공백이 너무 커 — 다른 화면도") — 배너(.page__title) 바로 아래 첫 영역은 화면마다 pt-100/pt-120 이 제각각이라
+   본문이 한참 아래에서 시작했다. 폰/태블릿은 20px, 넓은 화면은 48px 로 통일(선택자 특이도가 .pt-100 등 유틸 클래스보다 높아 그대로 덮는다). */
+.page__title + section,
+.page__title + div,
+.page__title + main {
+  padding-top: 20px;
+  @media (min-width: 768px) {
+    padding-top: 48px;
+  }
+}
+
+/* 2026-09-22(요청사항: "footer 란도 불필요한 공백") — 푸터 바로 위 본문 영역이 pb-100 등 큰 아래 여백을 그대로 가져 푸터 앞이 한참 비어 보였다. 푸터 바로 앞 영역만 줄인다. */
+:is(.pb-70, .pb-90, .pb-100, .pb-110, .pb-120):has(+ .footer__area) {
+  padding-bottom: 32px;
+  @media (min-width: 768px) {
+    padding-bottom: 56px;
+  }
+}
+
 /* scroll to top */
 /* 2026-09-15(요청사항: "최상위버튼과, 채팅버튼이 겹치는네 최하단에 바가 들어올수 있으니
    약간 공백을둬줘") — ChatWidget.vue의 채팅 플로팅 버튼(right:24px, bottom:40px, 54px 원)과

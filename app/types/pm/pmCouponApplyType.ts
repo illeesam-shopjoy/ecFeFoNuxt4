@@ -19,5 +19,20 @@ export interface PmCouponApplyType {
   validTo?: string; // 유효기간 종료 (yyyy-mm-dd) — 종료가 빠른 쿠폰을 우선 적용
 }
 
-/** category별로 적용된(또는 미적용=null) 쿠폰 */
-export type AppliedCoupons = Record<CouponCategory, PmCouponApplyType | null>;
+/**
+ * 적용된(또는 미적용=null) 쿠폰.
+ * 주문할인·배송비할인은 주문당 최대 1개, **상품할인은 상품(주문 줄)별로 1개씩** — product 는 줄 키(lineKey) → 그 줄에 적용한 쿠폰.
+ * (2026-09-22 요청사항: "상품할인쿠폰은 최대 1개가 아니라 상품별 1개")
+ */
+export interface AppliedCoupons {
+  order: PmCouponApplyType | null;
+  shipping: PmCouponApplyType | null;
+  product: Record<string, PmCouponApplyType | null>;
+}
+
+/** 상품할인쿠폰을 적용할 주문 줄 — key 는 mapCoupon.couponLineKey */
+export interface CouponLine {
+  key: string;
+  name: string; // 상품명
+  amount: number; // 그 줄 금액(단가 × 수량) — 정률 쿠폰·최소주문금액 판단 기준
+}

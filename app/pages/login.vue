@@ -10,7 +10,7 @@
         <div class="row flex justify-center">
           <div class="col-lg-8 col-12 mx-auto">
             <div class="basic-login">
-              <h3 class="text-center mb-60">로그인</h3>
+              <h3 class="text-center mb-6 md:mb-8">로그인</h3>
               <!-- 폼 시작 -->
               <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — vee-validate <Form>/<Field> 를 <fo-form> + yup(useFoValidate)로 교체.
                    입력칸은 fo-form 이 그리고, 그 아래 로그인 유지/버튼/소셜/회원가입 영역은 #actions 슬롯(같은 form 안)에 둔다. -->
