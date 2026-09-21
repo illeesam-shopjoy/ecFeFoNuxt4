@@ -154,14 +154,14 @@ const linkOf = computed(() => {
   });
   return m;
 });
-// 색상을 고르면 그 색상 이미지를 맨 앞에, 그다음 기본(색상 미연결) 이미지, 마지막에 다른 색상 이미지
+// 색상을 고르면 그 색상 이미지를 맨 앞에, 그다음 기본(색상 미연결) 이미지만 보여준다 — 다른 색상 이미지는 뺀다(2026-09-22 요청사항: "색상선택된 이미지와 기본이미지들만")
 const images = computed<string[]>(() => {
   const base = baseImages.value;
   const sel = props.colorOptId;
   if (!sel) return base;
   const isSel = (u: string) => linkOf.value.get(u) === sel;
   const isDefault = (u: string) => !linkOf.value.has(u);
-  return [...base.filter(isSel), ...base.filter(isDefault), ...base.filter((u) => !isSel(u) && !isDefault(u))];
+  return [...base.filter(isSel), ...base.filter(isDefault)];
 });
 const defaultUrl = computed(() => props.item.bigImg || props.item.img || "");
 

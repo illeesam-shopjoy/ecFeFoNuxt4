@@ -5,46 +5,46 @@
          · 수정 화면에서 기존(initialFiles) 첨부를 지우면 → { attachId, rowStatus: 'D' }
        이번에 올렸다가 지운 파일은 아직 연계 전이므로 서버에서도 바로 삭제한다.
        2026-09-20: 동영상(파일당 100MB)·여러 종류 파일 지원 — 유형별 용량 한도는 서버(FileUploadUtil)와 동일하게 적용한다. -->
-  <div class="rounded-lg border border-[#e5e7eb] bg-[#fafafa] p-3">
-    <div v-if="title" class="flex items-center gap-2 text-[0.75rem] text-gray-500 mb-2 bg-white border border-[#eee] rounded px-2.5 py-1.5">
-      <span class="font-semibold text-gray-700">📁 {{ title }}</span>
-      <template v-if="showGrp">
-        <span class="text-gray-300">|</span>
-        <span>분류</span>
-        <code class="px-1.5 py-px rounded bg-[#eef2ff] text-[#4338ca] text-[0.7rem]">{{ grpCode }}</code>
+  <!-- 2026-09-22(요청사항: "파일첨부란 지저분 — 깔끔하게, 핸드폰에서 사진 찍기/동영상 올리기") — 제목 박스·분류코드·"첨부된 파일이 없습니다" 안내를 없애고
+       버튼 한 줄 + (있을 때만) 파일 목록 + 한 줄 안내로 줄였다. 터치 기기(폰/태블릿)에서는 카메라로 바로 찍는 [사진 촬영]/[동영상 촬영] 버튼이 더 나온다.
+       (title/showGrp 속성은 호출부 호환을 위해 남겨두되 더는 그리지 않는다.) -->
+  <div class="rounded-lg border border-dashed border-[#d5dae1] bg-[#fcfcfd] px-3 py-2.5">
+    <div class="flex flex-wrap items-center gap-1.5">
+      <button type="button" class="attach-btn" :disabled="uploading || rows.length >= maxCount" @click="picker?.click()">
+        <i class="fas fa-paperclip text-[0.72rem]"></i>{{ uploading ? "업로드중…" : "파일 선택" }}
+      </button>
+      <template v-if="touchDevice">
+        <button v-if="canPhoto" type="button" class="attach-btn" :disabled="uploading || rows.length >= maxCount" @click="camPhoto?.click()"><i class="fas fa-camera text-[0.72rem]"></i>사진 촬영</button>
+        <button v-if="canVideo" type="button" class="attach-btn" :disabled="uploading || rows.length >= maxCount" @click="camVideo?.click()"><i class="fas fa-video text-[0.72rem]"></i>동영상 촬영</button>
       </template>
+      <span class="ml-auto text-[0.72rem] text-gray-400">{{ rows.length }} / {{ maxCount }}</span>
+      <input ref="picker" type="file" multiple class="hidden" :accept="accept.map((e) => '.' + e).join(',')" @change="onPick" />
+      <input ref="camPhoto" type="file" accept="image/*" capture="environment" class="hidden" @change="onPick" />
+      <input ref="camVideo" type="file" accept="video/*" capture="environment" class="hidden" @change="onPick" />
     </div>
 
-    <ul v-if="rows.length" class="list-none m-0 p-0 mb-2 flex flex-col gap-1.5">
-      <li v-for="f in rows" :key="f.attachId" class="flex items-center gap-2 bg-white border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-[0.82rem]">
-        <img v-if="f.thumb" :src="f.thumb" alt="" class="w-8 h-8 rounded object-cover shrink-0" />
-        <span v-else class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-400 shrink-0"><i :class="f.isVideo ? 'far fa-file-video' : 'far fa-file'"></i></span>
+    <ul v-if="rows.length" class="list-none m-0 mt-2 p-0 flex flex-col gap-1">
+      <li v-for="f in rows" :key="f.attachId" class="flex items-center gap-2 rounded-md bg-[#f6f7f9] px-2 py-1 text-[0.8rem]">
+        <img v-if="f.thumb" :src="f.thumb" alt="" class="w-7 h-7 rounded object-cover shrink-0" />
+        <span v-else class="w-7 h-7 rounded bg-white flex items-center justify-center text-gray-400 shrink-0"><i :class="f.isVideo ? 'far fa-file-video' : 'far fa-file'"></i></span>
         <span class="flex-1 min-w-0 truncate text-gray-800">{{ f.name }}</span>
-        <span v-if="f.existing" class="text-[0.68rem] text-gray-400 shrink-0">기존</span>
-        <span class="text-[0.72rem] text-gray-400 shrink-0">{{ fmtSize(f.size) }}</span>
-        <button type="button" class="w-6 h-6 rounded-full border-0 bg-transparent text-gray-400 hover:bg-red-50 hover:text-red-500 cursor-pointer" aria-label="삭제" @click="remove(f)"><i class="fal fa-times"></i></button>
+        <span class="text-[0.7rem] text-gray-400 shrink-0">{{ fmtSize(f.size) }}</span>
+        <button type="button" class="w-6 h-6 rounded-full border-0 bg-transparent text-gray-400 hover:bg-red-50 hover:text-red-500 cursor-pointer shrink-0" aria-label="삭제" @click="remove(f)"><i class="fal fa-times"></i></button>
       </li>
     </ul>
-    <div v-else class="text-[0.8rem] text-gray-400 px-1 mb-2">📂 첨부된 파일이 없습니다.</div>
 
-    <div v-if="uploading" class="mb-2">
+    <div v-if="uploading" class="mt-2">
       <div class="h-1.5 rounded bg-gray-200 overflow-hidden"><div class="h-full bg-theme transition-[width] duration-150" :style="{ width: progress + '%' }"></div></div>
       <div class="text-[0.72rem] text-gray-500 mt-1">업로드중… {{ progress }}%<template v-if="progress >= 100"> (서버에서 처리 중 — 동영상은 시간이 걸릴 수 있습니다)</template></div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-      <button type="button" class="px-3 py-1.5 rounded-md border border-[#d1d5db] bg-white text-[0.8rem] font-semibold text-gray-700 cursor-pointer hover:border-theme hover:text-theme disabled:opacity-50" :disabled="uploading || rows.length >= maxCount" @click="picker?.click()">
-        {{ uploading ? "업로드중…" : "📎 파일첨부" }}
-      </button>
-      <span class="text-[0.72rem] text-gray-400">{{ rows.length }} / {{ maxCount }}개 <span class="mx-1">|</span> {{ limitText }}</span>
-      <input ref="picker" type="file" multiple class="hidden" :accept="accept.map((e) => '.' + e).join(',')" @change="onPick" />
-    </div>
-    <div v-if="msg" class="text-[0.78rem] leading-snug mt-2 mb-0" :class="msgErr ? 'text-red-500' : 'text-green-600'">{{ msg }}</div>
+    <div class="mt-1.5 text-[0.7rem] leading-snug text-gray-400">{{ limitText }}</div>
+    <div v-if="msg" class="text-[0.78rem] leading-snug mt-1.5 mb-0" :class="msgErr ? 'text-red-500' : 'text-green-600'">{{ msg }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
 import { isImageExt, isVideoExt } from "~/utils/mapProduct";
 import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
@@ -86,6 +86,14 @@ const emit = defineEmits<{ (e: "update:modelValue", v: SyAttachChangeType[]): vo
 
 const cdnBase = useRuntimeConfig().public.prodCdnBase as string;
 const picker = ref<HTMLInputElement | null>(null);
+const camPhoto = ref<HTMLInputElement | null>(null);
+const camVideo = ref<HTMLInputElement | null>(null);
+// 폰/태블릿(터치 기기)에서만 카메라 촬영 버튼을 보인다 — 데스크톱에선 capture 가 무시돼 일반 파일 선택과 같아지므로 굳이 안 보인다
+const touchDevice = ref(false);
+onMounted(() => { touchDevice.value = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches === true; });
+// 허용 확장자에 이미지/동영상이 있을 때만 해당 촬영 버튼
+const canPhoto = computed(() => props.accept.some(isImageExt));
+const canVideo = computed(() => props.accept.some(isVideoExt));
 const uploading = ref(false);
 const progress = ref(0);
 const msg = ref("");
@@ -197,3 +205,28 @@ async function remove(f: AttachRow) {
   try { await coUploadSvc.deleteAttach(f.attachId); } catch { /* 미연계 고아 파일은 서버 정리 대상 — 화면 동작에는 영향 없음 */ }
 }
 </script>
+
+<style scoped>
+.attach-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.attach-btn:hover:not(:disabled) {
+  border-color: #bc8246;
+  color: #bc8246;
+}
+.attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>

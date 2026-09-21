@@ -817,10 +817,12 @@ p {
    약간 공백을둬줘") — ChatWidget.vue의 채팅 플로팅 버튼(right:24px, bottom:40px, 54px 원)과
    같은 우측 하단에 겹쳐 있었다. 채팅 버튼 위로 띄우고, 화면 맨 아래엔 결제하기 같은 고정
    바가 올라올 수 있는 여유 공간을 남긴다(기존 bottom:30px → 106px). */
+/* 2026-09-22(요청사항: "최상위/채팅 아이콘 정렬이 안 맞고 최대한 우측, 위치는 서로 반대로") — 맨 위로(40px)를 맨 아래, 채팅(54px)을 그 위로 바꾸고
+   두 버튼의 가운데 세로선을 맞춘다(채팅 right:12px+27 = 맨 위로 right:19px+20 = 우측에서 39px). */
 #scroll a {
   position: fixed;
-  right: 30px;
-  bottom: calc(106px + var(--fab-lift, 0px)); /* 상품상세 하단 구매바가 나오면 그만큼 위로(ProdBuyBar.vue) */
+  right: 19px;
+  bottom: calc(40px + var(--fab-lift, 0px)); /* 상품상세 하단 구매바가 나오면 그만큼 위로(ProdBuyBar.vue) */
   transition: bottom 0.2s ease;
   width: 40px;
   height: 40px;
@@ -830,7 +832,7 @@ p {
   color: $white;
   list-style-type: none;
   background: $theme-color;
-  margin-right: 20px;
+  margin-right: 0;
   border: 1px solid $theme-color;
   z-index: 999;
 }
