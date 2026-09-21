@@ -61,7 +61,7 @@
               @click="selectedColor = optKey(opt)"
             >
               <i v-if="selectedColor === optKey(opt)" class="fas fa-check absolute inset-0 flex items-center justify-center text-[11px] text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.85)]"></i>
-              <!-- 품절: 대각선 -->
+              <!-- 품절/판매중지: 대각선 -->
               <span v-if="soldOut(opt, 'color')" class="pointer-events-none absolute left-1/2 top-1/2 h-[2px] w-[130%] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded bg-[#c0392b]"></span>
             </button>
             <button
@@ -102,7 +102,7 @@
                   :style="{ '--swatch-color': swatchColor(opt) }"
                 ></span>
                 <span class="truncate" :class="{ 'line-through': soldOut(opt, 'color') }">{{ opt.prodOptNm }}</span>
-                <span v-if="soldOut(opt, 'color')" class="shrink-0 text-[11px] font-semibold text-[#c0392b]">품절</span>
+                <span v-if="soldOut(opt, 'color')" class="shrink-0 text-[11px] font-semibold text-[#c0392b]">{{ stateLabel(opt, 'color') }}</span>
                 <span v-else-if="optAdd(opt, 'color') > 0" class="shrink-0 text-[11px] font-semibold text-[#c0392b]">+{{ formatPrice(optAdd(opt, 'color')) }}</span>
               </button>
             </div>
@@ -125,7 +125,7 @@
               :disabled="soldOut(opt, 'size')"
               @click="selectedSize = optKey(opt)"
             >
-              <span :class="{ 'line-through': soldOut(opt, 'size') }">{{ opt.prodOptNm }}</span><span v-if="soldOut(opt, 'size')" class="ml-1 text-[11px] font-semibold text-[#c0392b]">품절</span><span v-else-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
+              <span :class="{ 'line-through': soldOut(opt, 'size') }">{{ opt.prodOptNm }}</span><span v-if="soldOut(opt, 'size')" class="ml-1 text-[11px] font-semibold text-[#c0392b]">{{ stateLabel(opt, 'size') }}</span><span v-else-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
             </button>
             <button
               v-if="hasMoreSizes"
@@ -158,7 +158,7 @@
                 :disabled="soldOut(opt, 'size')"
                 @click="pickSize(opt)"
               >
-                <span :class="{ 'line-through': soldOut(opt, 'size') }">{{ opt.prodOptNm }}</span><span v-if="soldOut(opt, 'size')" class="ml-1 text-[11px] font-semibold text-[#c0392b]">품절</span><span v-else-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold text-[#c0392b]">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
+                <span :class="{ 'line-through': soldOut(opt, 'size') }">{{ opt.prodOptNm }}</span><span v-if="soldOut(opt, 'size')" class="ml-1 text-[11px] font-semibold text-[#c0392b]">{{ stateLabel(opt, 'size') }}</span><span v-else-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold text-[#c0392b]">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
               </button>
             </div>
           </div>
@@ -333,11 +333,22 @@ function skusOf(opt: OptionItem, kind: "color" | "size"): SkuItem[] {
   const other = kind === "color" ? sizes.value.find((o) => optKey(o) === selectedSize.value) : selectedColorOpt.value;
   return (props.item.prodSkus ?? []).filter((s) => skuOptOf(opt.prodOptTypeLevel, s) === opt.prodOptId && (!other || skuOptOf(other.prodOptTypeLevel, s) === other.prodOptId));
 }
-/** 품절 — 해당 SKU 가 있고 전부 (판매종료 useYn=N 이거나 재고 0). SKU 정보가 없으면 품절로 보지 않는다 */
-function soldOut(opt: OptionItem, kind: "color" | "size"): boolean {
+/**
+ * 옵션 상태 (2026-09-22 요청사항: "색상을 선택하면 사이즈가 품절 또는 판매중지 여부 표시 — 상품 조회 때 받은 정보로 화면 조작 시 반영")
+ *  - "soldout" 품절: 이 옵션(반대편 옵션을 골랐다면 그 조합)의 판매 가능한 SKU 가 전부 재고 0
+ *  - "stopped" 판매중지: 판매하는 SKU 가 없다(SKU 가 아예 없거나 전부 useYn=N)
+ *  - "" 구매 가능. 상품에 SKU 정보 자체가 없으면 판단하지 않는다.
+ */
+type OptState = "" | "soldout" | "stopped";
+function optState(opt: OptionItem, kind: "color" | "size"): OptState {
+  if (!(props.item.prodSkus ?? []).length) return "";
   const skus = skusOf(opt, kind);
-  return skus.length > 0 && skus.every((s) => s.useYn === "N" || (s.stockQty != null && s.stockQty <= 0));
+  const sellable = skus.filter((s) => s.useYn !== "N");
+  if (!sellable.length) return "stopped";
+  return sellable.every((s) => s.stockQty != null && s.stockQty <= 0) ? "soldout" : "";
 }
+const soldOut = (opt: OptionItem, kind: "color" | "size"): boolean => optState(opt, kind) !== "";
+const stateLabel = (opt: OptionItem, kind: "color" | "size"): string => (optState(opt, kind) === "stopped" ? "판매중지" : "품절");
 /** 추가금액 — 판매 가능한 SKU 중 가장 낮은 추가금액(없으면 0) */
 function optAdd(opt: OptionItem, kind: "color" | "size"): number {
   const adds = skusOf(opt, kind)
@@ -345,7 +356,7 @@ function optAdd(opt: OptionItem, kind: "color" | "size"): number {
     .map((s) => Number(s.addPrice ?? 0));
   return adds.length ? Math.min(...adds) : 0;
 }
-const optTitle = (opt: OptionItem, kind: "color" | "size") => `${opt.prodOptNm}${soldOut(opt, kind) ? " (품절)" : optAdd(opt, kind) > 0 ? ` (+${formatPrice(optAdd(opt, kind))})` : ""}`;
+const optTitle = (opt: OptionItem, kind: "color" | "size") => `${opt.prodOptNm}${soldOut(opt, kind) ? ` (${stateLabel(opt, kind)})` : optAdd(opt, kind) > 0 ? ` (+${formatPrice(optAdd(opt, kind))})` : ""}`;
 
 // 반대편 옵션을 바꿔서 이미 고른 옵션이 품절이 되면 선택을 푼다
 watch([selectedColor, selectedSize], () => {
@@ -383,10 +394,15 @@ function resolveSelection(): { prodSkuId?: string } | null {
   }
   const matchedSku = findMatchedSku();
   if (props.item.prodSkus?.length && !matchedSku) {
-    useNuxtApp().$toast.error("선택한 옵션 조합의 재고 정보를 찾을 수 없습니다.");
+    // 화면에서는 이런 조합이 "판매중지"로 표시되지만, 표시 전에 눌렀거나 상품 데이터가 어긋난 경우의 안전장치
+    useNuxtApp().$toast.error("선택한 옵션 조합은 현재 판매하지 않습니다(판매중지).");
     return null;
   }
-  if (matchedSku?.useYn === "N" || (matchedSku?.stockQty != null && matchedSku.stockQty <= 0)) {
+  if (matchedSku?.useYn === "N") {
+    useNuxtApp().$toast.error("선택한 옵션은 판매가 중지되었습니다.");
+    return null;
+  }
+  if (matchedSku?.stockQty != null && matchedSku.stockQty <= 0) {
     useNuxtApp().$toast.error("선택한 옵션은 품절되었습니다.");
     return null;
   }
