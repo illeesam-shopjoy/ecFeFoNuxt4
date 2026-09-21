@@ -3,7 +3,8 @@
        메인 이미지(우상단 확대 버튼, 마우스를 올리면 좌우 화살표) + 하단 가로 썸네일(첫 번째=기본이미지 뱃지) + 확대 라이트박스. -->
   <div class="flex flex-col gap-2.5 min-w-0">
     <div class="group relative">
-      <div class="relative rounded-xl border border-[#e0e0e0] overflow-hidden bg-[#f4f5f5] cursor-zoom-in" @click="openZoom">
+      <!-- 2026-09-22: 마우스/손가락으로 좌우로 밀면 이전·다음 이미지(touch-action: pan-y — 세로 스크롤은 그대로) -->
+      <div class="relative touch-pan-y select-none rounded-xl border border-[#e0e0e0] overflow-hidden bg-[#f4f5f5] cursor-zoom-in" @click="onMainClick" @pointerdown="swDown" @pointerup="swUp" @pointercancel="swCancel" @dragstart.prevent>
         <app-image :src="current" :alt="item.prodNm" wrap-class="w-full" :skeleton-style="{ width: '100%', aspectRatio: '3/4' }" />
         <!-- 배지: 신상품 / 할인율 (실제 값만 — 예전엔 "new / -16%" 가 고정 문구였다) -->
         <div v-if="item.isNew || item.saleDiscntRate" class="absolute top-3.5 left-3.5 flex gap-1.5 pointer-events-none">
@@ -93,13 +94,36 @@
     <!-- 확대 라이트박스 -->
     <Teleport to="body">
       <div v-if="zoomOpen" class="fixed inset-0 z-[9500] flex items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-label="이미지 확대 보기" @click.self="closeZoom">
-        <button type="button" class="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-white/15 text-2xl text-white cursor-pointer hover:bg-white/30" aria-label="닫기" @click="closeZoom">×</button>
-        <button v-if="images.length > 1" type="button" class="absolute left-4 top-[calc(50%-40px)] -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full border-0 bg-white/15 text-white cursor-pointer hover:bg-white/30" aria-label="이전 이미지" @click="move(-1)">
-          <i class="fas fa-chevron-left"></i>
+        <button type="button" class="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-white/20 text-2xl text-white cursor-pointer hover:bg-white/35" aria-label="닫기" @click="closeZoom">×</button>
+        <!-- 왼쪽 위: 돋보기(확대/축소) — 확대하면 이미지를 2배로 키우고 스크롤/드래그로 구석구석 볼 수 있다 -->
+        <button
+          type="button"
+          class="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border-0 text-white cursor-pointer hover:bg-white/35"
+          :class="zoomedIn ? 'bg-[#bc8246]' : 'bg-white/20'"
+          :aria-label="zoomedIn ? '축소' : '확대'"
+          :title="zoomedIn ? '축소' : '확대'"
+          @click="zoomedIn = !zoomedIn"
+        >
+          <i class="fas" :class="zoomedIn ? 'fa-search-minus' : 'fa-search-plus'"></i>
         </button>
-        <img :src="current" :alt="item.prodNm" class="h-[calc(100vh-190px)] max-w-[92vw] select-none object-contain" draggable="false" />
-        <button v-if="images.length > 1" type="button" class="absolute right-4 top-[calc(50%-40px)] -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full border-0 bg-white/15 text-white cursor-pointer hover:bg-white/30" aria-label="다음 이미지" @click="move(1)">
-          <i class="fas fa-chevron-right"></i>
+        <!-- 이전/다음: 어두운 배경에서도 잘 보이도록 흰 원 + 짙은 화살표 -->
+        <button v-if="images.length > 1" type="button" class="absolute left-3 top-[calc(50%-40px)] z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border-0 bg-white text-[#222] shadow-[0_2px_12px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-[#f0f0f0]" aria-label="이전 이미지" @click="move(-1)">
+          <i class="fas fa-chevron-left text-lg"></i>
+        </button>
+        <!-- 이미지 영역: 마우스로 끌거나 손가락으로 좌우로 밀면 이전/다음 이미지(확대 중에는 스크롤/드래그로 이동) -->
+        <div
+          class="flex h-[calc(100vh-190px)] w-full max-w-[92vw] select-none justify-center"
+          :class="zoomedIn ? 'overflow-auto touch-auto cursor-grab' : 'overflow-hidden touch-pan-y'"
+          @pointerdown="swDown"
+          @pointerup="swUp"
+          @pointercancel="swCancel"
+          @click.self="onBackdropClick"
+          @dragstart.prevent
+        >
+          <img :src="current" :alt="item.prodNm" class="m-auto select-none object-contain" :class="zoomedIn ? 'h-[200%] max-w-none' : 'h-full max-w-full'" draggable="false" />
+        </div>
+        <button v-if="images.length > 1" type="button" class="absolute right-3 top-[calc(50%-40px)] z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border-0 bg-white text-[#222] shadow-[0_2px_12px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-[#f0f0f0]" aria-label="다음 이미지" @click="move(1)">
+          <i class="fas fa-chevron-right text-lg"></i>
         </button>
         <!-- 하단: 페이지 번호 + 썸네일 목록 (지금 보는 이미지 강조) -->
         <div class="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-6" @click.stop>
@@ -223,6 +247,37 @@ watch(index, () => {
 });
 
 const zoomOpen = ref(false);
+const zoomedIn = ref(false); // 라이트박스 돋보기(2배 확대)
+watch([index, zoomOpen], () => { zoomedIn.value = false; });
+
+// ── 좌우로 밀어서 이미지 넘기기 (마우스 드래그 · 터치) ─────────────────────
+let swipeX: number | null = null;
+let swipeY = 0;
+let justSwiped = false;
+function swDown(e: PointerEvent) {
+  if (zoomedIn.value && zoomOpen.value) return; // 확대 중에는 스크롤/드래그가 우선
+  swipeX = e.clientX;
+  swipeY = e.clientY;
+}
+function swUp(e: PointerEvent) {
+  if (swipeX == null) return;
+  const dx = e.clientX - swipeX;
+  const dy = e.clientY - swipeY;
+  swipeX = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    move(dx < 0 ? 1 : -1); // 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전
+    justSwiped = true;
+    setTimeout(() => (justSwiped = false), 80); // 밀고 난 뒤 이어지는 click 으로 라이트박스가 열리지 않게
+  }
+}
+const swCancel = () => (swipeX = null);
+function onBackdropClick() {
+  if (!justSwiped && !zoomedIn.value) closeZoom(); // 이미지 옆 빈 곳을 누르면 닫기(밀기 직후의 click 은 무시)
+}
+function onMainClick() {
+  if (justSwiped) return;
+  openZoom();
+}
 const zoomStripRef = ref<HTMLElement | null>(null);
 const zoomThumbRefs = ref<HTMLElement[]>([]);
 // 라이트박스에서 이미지가 바뀌면 그 썸네일이 목록 안에 보이도록 가운데로 스크롤
