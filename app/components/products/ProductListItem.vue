@@ -40,15 +40,17 @@
             <!-- 2026-09-13(요청사항: "평가도 보여야 하고") — item.rating은 목록 조회에서는
                  리뷰 요약을 따로 안 불러와 항상 0이지만(상세 페이지에서만 채워짐), 별점 UI
                  구조 자체는 데모와 맞춰 노출해둔다. -->
-            <div class="mb-10 flex items-center gap-1 text-[13px]" :title="`평점 ${Number(item.rating || 0).toFixed(1)} (${item.reviewCnt ?? 0}개 리뷰)`">
+            <div v-if="hasRating" class="mb-10 flex items-center gap-1 text-[13px]" :title="`평점 ${Number(item.rating || 0).toFixed(1)} (${item.reviewCnt ?? 0}개 리뷰)`">
               <span class="text-[#f5a623]"><i v-for="n in 5" :key="n" :class="n <= Math.round(item.rating || 0) ? 'fas fa-star' : 'fal fa-star'"></i></span>
               <span class="text-[#999]">{{ Number(item.rating || 0).toFixed(1) }} ({{ item.reviewCnt ?? 0 }})</span>
             </div>
             <p>{{ item.smDesc }}</p>
           </div>
-          <div class="add-cart-list flex flex-wrap items-center">
-            <a @click.prevent="store.addStCartProduct(item)" href="#" class="add-cart-btn mr-10">+ 장바구니 추가</a>
-            <div class="product__action-2 transition-3 mr-20">
+          <!-- 2026-09-22(요청사항: "장바구니추가와 우측 아이콘 정렬이 맞지 않아") — _shop.scss 의 .product__action-2 가 모바일(<576px)에서 margin-top:15px 를
+               줘서 아이콘 묶음만 아래로 밀렸다. !mt-0 + flex 로 버튼과 같은 높이(48px) 한 줄에 맞추고, 좁은 폰에선 버튼 좌우 여백을 줄여 한 줄에 들어가게 함 -->
+          <div class="add-cart-list flex flex-nowrap items-center">
+            <a @click.prevent="store.addStCartProduct(item)" href="#" class="add-cart-btn mr-10 max-sm:!px-5 max-sm:flex-1 max-sm:min-w-0 max-sm:whitespace-nowrap">+ 장바구니 추가</a>
+            <div class="product__action-2 transition-3 mr-20 flex items-center !mt-0 shrink-0 max-sm:mr-0">
               <!-- 2026-09-14(요청사항: "좋아요 클릭했는데 하드 좀더 분홍색으로 변경해줘") -->
               <a @click.prevent="wishlistState.addStWishlistProduct(item)" href="#" title="위시리스트에 담기">
                 <i :class="[isWishlisted ? 'fas fa-heart !text-pink-500' : 'fal fa-heart']"></i>
@@ -88,6 +90,8 @@ const props = defineProps<{
   item: PdProdType;
 }>();
 const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
+// 2026-09-22(요청사항: "평가가 없으면 평가점수 보여주지 않게") — 리뷰/평점이 없으면 별점 줄 자체를 숨긴다
+const hasRating = computed(() => (props.item.reviewCnt ?? 0) > 0 || Number(props.item.rating || 0) > 0);
 const store = useCartStore();
 const compareState = useCompareStore();
 const wishlistState = useWishlistStore();
