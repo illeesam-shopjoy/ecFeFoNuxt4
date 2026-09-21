@@ -2,8 +2,8 @@
   <!-- 2026-09-22(요청사항: "사이즈 라벨 우측에 사이즈 도움말 아이콘 — 클릭하면 모달로 사이즈 가이드 및 세계 각국 표준") — 상품상세/빠른보기의 사이즈 옆 (?) 에서 연다.
        탭 2개: 사이즈 가이드(이 쇼핑몰 실측표) / 세계 사이즈 표준(한·미·영·유럽·일본 환산). 표는 참고용 일반 기준이라 브랜드·제품마다 다를 수 있다. -->
   <Teleport to="body">
-    <div v-if="open" class="fixed inset-0 z-[9600] flex items-end justify-center bg-black/60 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="사이즈 안내" @click.self="hide">
-      <div class="flex max-h-[88vh] w-full max-w-[640px] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+    <div v-if="open" class="fixed inset-0 z-[9600] flex items-center justify-center bg-[#1a1410]/60 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="사이즈 안내" @click.self="hide">
+      <div class="flex max-h-[85vh] w-full max-w-[640px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.3)]">
         <div class="flex items-center justify-between border-b border-[#eceef1] px-5 py-3.5">
           <h3 class="m-0 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span aria-hidden="true">📏</span> 사이즈 안내</h3>
           <button type="button" class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-[#f1f2f4] text-xl leading-none text-gray-600 hover:bg-[#e4e6ea]" aria-label="닫기" @click="hide">×</button>

@@ -514,6 +514,15 @@ watch(catLoaded, (ok) => {
   openSelectedGroups();
   refresh();
 });
+// 상품목록 화면 안에서 헤더 검색창으로 검색하면(?q= 만 바뀜) 검색어도 따라 바꾼다
+watch(
+  () => route.query.q,
+  (q) => {
+    const kw = typeof q === "string" ? q : "";
+    nameInput.value = kw;
+    keyword.value = kw;
+  }
+);
 // 상품목록 화면 안에서 ?category= 가 바뀌면(헤더/배너 링크) 선택도 따라 바꾼다
 watch(
   () => route.query.category,
