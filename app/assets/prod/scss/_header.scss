@@ -19,7 +19,9 @@
 .header {
   &__area {
     @media #{$xs} {
-      padding-top: 15px;
+      // 2026-09-21(요청사항: "핸드폰으로 볼때 최상단바 height 너무 작아 보여") — 위 15px만 있고 아래 여백이 없어 바(약 55px)가 답답했다. 위 12 + 아래 12로 높이를 ~64px 로.
+      padding-top: 12px;
+      padding-bottom: 12px;
     }
   }
   &__row {
