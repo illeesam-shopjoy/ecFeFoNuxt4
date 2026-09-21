@@ -2,10 +2,10 @@
   <!-- 2026-09-20(요청사항: "상단정보 알림, 로그인정보, 좋아요, 장바구니, 테마, 설정 — 첨부이미지 참고하여 적용") —
        헤더 우측 액션 영역 공통 컴포넌트: [검색] [로그인정보▾] [♡좋아요(n)] [🛒장바구니(n)] [🔔알림] [🌙테마] [⚙설정].
        2026-09-21(요청사항: "화면 줄이면 상단에 지금 보이는건 다 보여주고, 종 아이콘은 장바구니 우측") — 알림 종을 장바구니 오른쪽으로 옮기고,
-       좁은 화면(<sm)에서도 검색/좋아요/테마를 숨기지 않는다(대신 버튼을 32px로 줄여 한 줄에 다 들어가게 함).
+       좁은 화면(<sm)에서도 검색/좋아요/테마를 숨기지 않는다(대신 버튼을 28px로 줄여 한 줄에 다 들어가게 함).
        모든 헤더(Header/HeaderTwo/Three/Four)가 이 컴포넌트 하나를 쓴다. 로그인/좋아요/장바구니 수량은 localStorage 기반이라 client-only. -->
-  <div class="inline-flex flex-nowrap justify-end items-center gap-1 sm:gap-2">
-    <a href="#" class="inline-flex w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl items-center justify-center bg-white border border-[#e5e7eb] text-gray-600 hover:border-gray-400 transition" aria-label="검색" title="검색" @click.prevent="emit('search')">
+  <div class="inline-flex flex-nowrap justify-end items-center gap-0.5 sm:gap-2">
+    <a href="#" class="inline-flex w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl items-center justify-center bg-white border border-[#e5e7eb] text-gray-600 hover:border-gray-400 transition" aria-label="검색" title="검색" @click.prevent="emit('search')">
       <i class="fas fa-search text-[14px]"></i>
     </a>
 
@@ -37,7 +37,7 @@
       <noti-bell />
 
       <!-- 테마 -->
-      <button type="button" class="inline-flex w-8 h-8 sm:w-10 sm:h-10 rounded-full items-center justify-center bg-[#f3ede4] border border-[#e5e7eb] cursor-pointer text-[16px] hover:border-gray-400 transition" :title="theme.dark.value ? '라이트 모드로 전환' : '다크 모드로 전환'" :aria-label="theme.dark.value ? '라이트 모드로 전환' : '다크 모드로 전환'" @click="theme.toggle()">
+      <button type="button" class="inline-flex w-7 h-7 sm:w-10 sm:h-10 rounded-full items-center justify-center bg-[#f3ede4] border border-[#e5e7eb] cursor-pointer text-[16px] hover:border-gray-400 transition" :title="theme.dark.value ? '라이트 모드로 전환' : '다크 모드로 전환'" :aria-label="theme.dark.value ? '라이트 모드로 전환' : '다크 모드로 전환'" @click="theme.toggle()">
         {{ theme.dark.value ? "☀️" : "🌙" }}
       </button>
 
@@ -66,8 +66,8 @@ const theme = useTheme();
 <style scoped>
 .hta-btn {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 10px;
   display: inline-flex;
   align-items: center;

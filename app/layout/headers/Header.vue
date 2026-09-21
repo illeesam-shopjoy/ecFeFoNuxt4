@@ -13,7 +13,7 @@
         :class="`header__area ${transparent ? 'header__transparent' : ''} ${header_big ? 'box-25' : !white_bg ? 'grey-bg' : ''} 
         ${isSticky ? 'sticky' : ''}`"
       >
-        <div :class="`${header_big ? 'w-full px-4' : 'max-w-7xl mx-auto px-4 header__inner'}`">
+        <div :class="`${header_big ? 'w-full px-2 sm:px-4' : 'max-w-7xl mx-auto px-2 sm:px-4 header__inner'}`">
           <div class="flex flex-wrap sm:flex-nowrap items-center header__row">
             <div :class="`${header_big ? 'flex-1 lg:w-7/12 md:w-1/6 sm:w-1/12 w-1/6' : 'flex-1 min-w-0 header__menu-col'}`" style="order: 2;">
               <div class="header__right relative flex justify-center items-center">

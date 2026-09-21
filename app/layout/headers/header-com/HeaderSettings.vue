@@ -4,7 +4,7 @@
   <div ref="wrapRef" class="relative inline-flex">
     <button
       type="button"
-      class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl inline-flex items-center justify-center border cursor-pointer transition"
+      class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl inline-flex items-center justify-center border cursor-pointer transition"
       :class="open ? 'bg-[#fdf6ee] border-theme text-theme' : 'bg-white border-[#e5e7eb] text-gray-500 hover:border-gray-400'"
       aria-label="설정"
       :aria-expanded="open"
