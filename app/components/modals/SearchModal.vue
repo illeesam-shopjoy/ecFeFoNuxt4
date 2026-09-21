@@ -31,7 +31,7 @@
 
               <!-- 2026-09-22(요청사항: "검색란 아래에 최근검색, 인기검색어, 추천검색") — 클릭하면 바로 그 검색어로 검색 -->
               <div class="mx-auto mt-6 max-w-[760px] text-left">
-                <section v-if="recent.length" class="mb-5">
+                <section v-if="recent.length" class="mb-6">
                   <div class="mb-2 flex items-center justify-between">
                     <h4 class="m-0 text-[0.9rem] font-bold text-gray-800">최근 검색어</h4>
                     <button type="button" class="cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-400 hover:text-gray-700" @click="clearRecent">전체 삭제</button>
@@ -43,7 +43,7 @@
                     </span>
                   </div>
                 </section>
-                <section class="mb-5">
+                <section class="mb-6">
                   <h4 class="mb-2 mt-0 text-[0.9rem] font-bold text-gray-800">인기 검색어</h4>
                   <div class="flex flex-wrap gap-2">
                     <button v-for="(kw, i) in POPULAR_KEYWORDS" :key="kw" type="button" class="kw-chip kw-chip-btn" @click="searchWith(kw)"><b class="mr-1.5 text-[#bc8246]">{{ i + 1 }}</b>{{ kw }}</button>
