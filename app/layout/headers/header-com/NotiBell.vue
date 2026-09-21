@@ -1,10 +1,10 @@
 <template>
   <!-- 2026-09-19(요청사항: "최상단 알림기능도 추가해줘") — ecFeBo CoNotiBell 이식. 로그인 회원에게 온 알림(ecBeBo /api/fo/my/noti)을
-       종 아이콘 + 안읽음 배지 + 팝오버 목록으로 보여준다. UserDropdown 안에서 로그인 상태일 때만 렌더링된다. -->
+       종 아이콘 + 안읽음 배지 + 팝오버 목록으로 보여준다. HeaderTopActions 가 장바구니 오른쪽에 둔다(비로그인도 종은 보이고 로그인 안내를 보여준다). -->
   <div ref="wrapRef" class="relative inline-flex items-center">
     <button
       type="button"
-      class="relative flex items-center justify-center w-10 h-10 rounded-xl border border-[#e5e7eb] bg-white text-gray-600 cursor-pointer hover:border-gray-400 transition"
+      class="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl border border-[#e5e7eb] bg-white text-gray-600 cursor-pointer hover:border-gray-400 transition"
       :class="{ 'noti-shake': shake }"
       :aria-label="`알림 ${unread}건`"
       :aria-expanded="open"
@@ -14,7 +14,7 @@
       <span v-if="unread > 0" class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[0.65rem] font-bold flex items-center justify-center leading-none">{{ unread > 99 ? "99+" : unread }}</span>
     </button>
 
-    <div v-show="open" class="absolute top-[calc(100%+14px)] right-0 w-[340px] max-w-[92vw] bg-white rounded-lg shadow-[0_10px_35px_rgba(0,0,0,0.16)] border border-[#e5e7eb] z-[9999] text-gray-800" @click.stop>
+    <div v-show="open" class="absolute top-[calc(100%+14px)] right-0 w-[340px] max-w-[92vw] max-sm:fixed max-sm:top-[64px] max-sm:left-2 max-sm:right-2 max-sm:w-auto max-sm:max-w-none bg-white rounded-lg shadow-[0_10px_35px_rgba(0,0,0,0.16)] border border-[#e5e7eb] z-[9999] text-gray-800" @click.stop>
       <!-- 비로그인: 알림 종은 항상 보이되 로그인 안내만 보여준다 -->
       <div v-if="!isLoggedIn" class="px-5 py-8 text-center">
         <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#faf3ea] text-[1.2rem] text-theme"><i class="fas fa-bell"></i></div>

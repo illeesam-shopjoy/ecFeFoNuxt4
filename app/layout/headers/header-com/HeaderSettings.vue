@@ -4,7 +4,7 @@
   <div ref="wrapRef" class="relative inline-flex">
     <button
       type="button"
-      class="w-10 h-10 rounded-xl inline-flex items-center justify-center border cursor-pointer transition"
+      class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl inline-flex items-center justify-center border cursor-pointer transition"
       :class="open ? 'bg-[#fdf6ee] border-theme text-theme' : 'bg-white border-[#e5e7eb] text-gray-500 hover:border-gray-400'"
       aria-label="설정"
       :aria-expanded="open"
@@ -14,7 +14,6 @@
     </button>
 
     <div v-show="open" class="absolute top-[calc(100%+10px)] right-0 w-[248px] bg-white rounded-xl border border-[#eee] shadow-[0_10px_35px_rgba(0,0,0,0.14)] py-2 z-[9999] text-left" @click="onMenuClick">
-      <nuxt-link href="/wishlist" class="hs-item sm:!hidden"><span class="hs-ico">♡</span>위시리스트</nuxt-link>
       <nuxt-link href="/compare" class="hs-item"><span class="hs-ico">⚖️</span>상품비교</nuxt-link>
       <button type="button" class="hs-item" data-keep-open @click="theme.toggle()"><span class="hs-ico">{{ theme.dark.value ? "☀️" : "🌙" }}</span>{{ theme.dark.value ? "라이트 모드로 전환" : "다크 모드로 전환" }}</button>
 
