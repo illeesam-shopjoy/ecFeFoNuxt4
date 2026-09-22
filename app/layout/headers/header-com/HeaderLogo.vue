@@ -6,7 +6,8 @@
       <!-- <img> 로 둬야 다크모드(html invert 필터, assets/theme-dark.css)에서 img 규칙으로 색이 되돌려진다 -->
       <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-7 h-7 sm:w-9 sm:h-9" />
       <span class="flex flex-col min-w-0 leading-[1.1] text-left">
-        <span class="text-[0.85rem] sm:text-[0.95rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy</span>
+        <!-- 2026-09-22(요청사항: "ShopJoy 글씨 더 작게 — width 최소한으로") — 폭을 최대한 덜 차지하도록 더 줄임 -->
+        <span class="text-[0.68rem] sm:text-[0.8rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy</span>
         <span class="flex flex-wrap items-center gap-1 text-[0.6rem] font-medium tracking-[0.08em] text-[#8a8a8a]">
           <!-- 2026-09-21(요청사항: 폰에서 로고 폭 줄이기) — 좁은 화면(<sm)에선 "쇼핑의 즐거움" 문구를 빼고 그 자리에 환경 배지(prod)만 보인다 -->
           <span class="max-sm:hidden">쇼핑의 즐거움</span>
