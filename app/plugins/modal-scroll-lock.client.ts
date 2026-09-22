@@ -52,7 +52,31 @@ export default defineNuxtPlugin(() => {
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(() => (anyModalOpen() ? lock() : unlock()));
   };
-  new MutationObserver(sync).observe(body, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class", "role", "aria-modal"] });
+
+  // 2026-09-22(요청사항: "단품 클릭 후 옵션상품 클릭하면 ... 왜 이리 차이가 나?") — subtree:true라 상품 목록
+  // 카드 교체처럼 모달과 전혀 무관한 DOM 변화에도 매번 콜백이 불렸고, 그때마다 sync()→anyModalOpen()이
+  // getClientRects()(강제 동기 레이아웃)를 호출해 카드 수십 개가 오가는 순간마다 리플로우를 반복시켰다.
+  // 이 배치에 실제로 모달과 관련된 변화(대상이 MODAL_SELECTOR에 해당하거나, 추가/제거된 노드 중 하나가
+  // 해당하거나 그 안에 포함된 경우)가 하나도 없으면 레이아웃을 강제하지 않고 그냥 건너뛴다.
+  // matches()/querySelector()는 구조만 보고 레이아웃을 강제하지 않아 훨씬 싸다.
+  function isModalRelevant(records: MutationRecord[]): boolean {
+    for (const r of records) {
+      const target = r.target as Element;
+      if (target.nodeType === 1 && target.matches?.(MODAL_SELECTOR)) return true;
+      if (r.type !== "childList") continue;
+      for (const list of [r.addedNodes, r.removedNodes]) {
+        for (const n of Array.from(list)) {
+          const el = n as Element;
+          if (el.nodeType !== 1) continue;
+          if (el.matches?.(MODAL_SELECTOR) || el.querySelector?.(MODAL_SELECTOR)) return true;
+        }
+      }
+    }
+    return false;
+  }
+  new MutationObserver((records) => {
+    if (isModalRelevant(records)) sync();
+  }).observe(body, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class", "role", "aria-modal"] });
   sync();
 
   // ── iOS: 오버레이/모달 안의 "더 스크롤할 곳 없는" 터치 이동은 막는다 ──
