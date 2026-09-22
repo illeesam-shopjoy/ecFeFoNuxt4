@@ -104,6 +104,8 @@
                       @click="prodTypeCd = t.value"
                     >{{ t.label }}</button>
                   </div>
+                  <!-- 2026-09-22(요청사항: "상품유형 바로 아래 약간흐리게 595/12 전체개수중 몇번 표시해줘") -->
+                  <p class="mt-2 mb-0 text-[0.74rem] text-gray-400">{{ totalCount }}개 중 {{ rawCount }}개 표시</p>
                 </div>
               </div>
 
@@ -348,12 +350,16 @@
               <!-- 2026-09-14(요청사항: "하단에 더보기 버튼 추가해줘") — 자동 스크롤 로딩은
                    그대로 두되, 스크롤이 아직 센티넬까지 닿지 않았거나 자동 로딩을 못 미더워하는
                    사용자를 위해 눌러서도 다음 페이지를 부를 수 있는 버튼을 추가. -->
+              <!-- 2026-09-22(요청사항: "모바일에서는 [더보기] 말고 스크롤 어느정도 내려가면 자동 Next 조회 하도록") —
+                   자동 스크롤 로딩(위 IntersectionObserver, rootMargin 200px로 미리 트리거)은 이미 있었지만 버튼이 항상
+                   같이 보여서 자동으로 되는 느낌이 안 났다. 모바일(<sm)에서는 버튼을 숨겨 자동 로딩만 보이게 하고,
+                   데스크톱은 그대로 버튼도 함께 둔다(자동 로딩을 못 미더워하는 사용자용). -->
               <div ref="loadMoreSentinel" class="shop__load-more-area mt-40 text-center">
                 <span v-if="loadingMore" class="text-gray-400">불러오는 중…</span>
                 <button
                   v-else-if="hasMore && displayItems.length"
                   type="button"
-                  class="os-btn os-btn-black"
+                  class="os-btn os-btn-black hidden sm:inline-block"
                   @click="loadMore"
                 >
                   더보기

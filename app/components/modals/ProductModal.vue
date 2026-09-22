@@ -45,7 +45,7 @@
                 </div>
               </div>
               <div style="min-width: 0;">
-                <product-details-content :item="item" />
+                <product-details-content :item="detailItem" />
               </div>
             </div>
           </div>
@@ -64,6 +64,7 @@ import { ref, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import AppImage from "~/components/ui/AppImage.vue";
+import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 
 const props = defineProps<{
   item: PdProdType;
@@ -72,6 +73,12 @@ const props = defineProps<{
 const visible = ref(false);
 const active_img = ref(props.item.img);
 watch(() => props.item.img, (v) => { active_img.value = v; });
+
+// 2026-09-22(요청사항: "상품목록에서의 상품별전문은 좀 굳이 필요없는건 안내려줘도 될거 같아") — 목록 응답에서
+// prodSkus(옵션조합별 가격/재고)가 빠졌다. 빠른보기(색상/사이즈 선택)는 SKU가 있어야 해서, 열 때만
+// 이 한 상품의 전체 상세(getById)를 따로 조회해 채운다 — 목록 전체가 아니라 지금 연 1건만 조회하므로
+// 평소 목록 조회 자체는 가벼워지고, 빠른보기를 실제로 여는 순간만 조금 더 조회한다.
+const detailItem = ref<PdProdType>(props.item);
 
 function handleActiveImg(img: string) {
   active_img.value = img;
@@ -86,7 +93,12 @@ function handleActiveImg(img: string) {
 // 이제 body 잠금은 그 플러그인 하나만 담당한다(이 role="dialog" 엘리먼트를 자동으로 감시함).
 function show() {
   active_img.value = props.item.img;
+  detailItem.value = props.item; // 조회 전까지는 목록에서 이미 가진 값으로 먼저 보여준다
   visible.value = true;
+  pdProductSvc
+    .getById(props.item.prodId)
+    .then((full) => { if (visible.value) detailItem.value = full; })
+    .catch((err) => console.error("[ProductModal] 상세 조회 실패:", err));
 }
 function close() {
   visible.value = false;
