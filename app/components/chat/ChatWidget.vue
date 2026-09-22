@@ -148,7 +148,7 @@
          같은 고정 바가 올라올 여유를 두려고 bottom을 28px→40px로 올림. -->
     <button
       type="button"
-      class="fixed z-[8801] w-[54px] h-[54px] rounded-full text-white text-2xl flex items-center justify-center shadow-lg transition-[bottom,transform] duration-200 hover:scale-110"
+      class="fixed z-[8801] w-10 h-10 rounded-full text-white text-lg flex items-center justify-center shadow-lg transition-[bottom,transform] duration-200 hover:scale-110"
       style="right: 12px; bottom: calc(92px + var(--fab-lift, 0px)); background: linear-gradient(135deg, #ff8fab, #e8587a); box-shadow: 0 4px 20px rgba(232, 88, 122, 0.45)"
       :title="chatState.open ? '채팅 닫기' : '채팅 상담 열기'"
       @click="toggleChat"
