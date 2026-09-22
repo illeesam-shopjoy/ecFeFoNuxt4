@@ -5,9 +5,14 @@
          최상위가 되어야 해") — 헤더의 스크롤 고정용 .sticky 클래스가 z-index:999(!important,
          _header.scss)라 기존 z-50/z-[100]보다 높아, 모달이 떠 있는 동안 뒤 페이지가 스크롤돼
          헤더가 sticky로 전환되면 헤더가 모달 위로 올라와 보였다. z-[1000]으로 항상 헤더보다
-         위에 오도록 하고, 아예 모달이 열려있는 동안 배경 스크롤 자체를 막아(아래 lockScroll)
-         헤더가 sticky로 전환될 일이 없게 한다. -->
-    <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/55 backdrop-blur-[2px]" :id="`${list ? `productModalListId-${item.prodId}` : `productModalId-${item.prodId}`}`" role="dialog" aria-hidden="true" @click.self="close">
+         위에 오도록 하고, 아예 모달이 열려있는 동안 배경 스크롤 자체를 막는다(전역
+         modal-scroll-lock.client.ts 플러그인이 이 role="dialog"를 감시해 처리). -->
+    <!-- 2026-09-22(요청사항: "단품 클릭 후 옵션상품 클릭하면 ... 왜 이리 차이가 나?") — 목록 카드마다 이 모달이 하나씩
+         v-show로 항상 마운트돼 있어, 실제로 한 번도 열지 않아도 안의 ProductDetailsContent(색상/사이즈 선택기 등,
+         옵션상품일수록 훨씬 무겁다)까지 카드 수만큼 숨겨진 채 렌더링되고 있었다. 필터를 바꿔 카드 목록이 통째로
+         교체될 때마다 그 무게가 그대로 다시 만들어져 저성능 모바일에서 특히 크게 느려졌다. exit 트랜지션이 없어
+         v-if로 바꿔도 안전하다 — 실제로 빠른보기를 연 적 있는 카드만 DOM에 만들어진다. -->
+    <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/55 backdrop-blur-[2px]" :id="`${list ? `productModalListId-${item.prodId}` : `productModalId-${item.prodId}`}`" role="dialog" aria-hidden="true" @click.self="close">
       <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto product-modal rounded-lg bg-white shadow-xl">
         <!-- 2026-09-14(요청사항: "마우스스크롤 아래로내리면 최상단 [X] 버튼도 숨겨지는데
              [X] 버튼란은 고정으로 있어야 해") — 기존엔 이 absolute 닫기버튼이 overflow-y-auto인
