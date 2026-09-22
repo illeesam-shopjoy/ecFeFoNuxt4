@@ -45,10 +45,15 @@
         <div v-if="isOptionProd" class="mb-5">
         <div class="mb-3 border-b border-[#e5e7eb] pb-2 text-[0.9rem] font-bold text-gray-800">옵션선택 : <span class="font-medium text-gray-600">색상, 사이즈</span></div>
         <div class="product__modal-input color mb-20 relative after:!hidden">
-          <label>색상 <i class="fas fa-star-of-life"></i>
-            <!-- 2026-09-22(요청사항: "색상 우측에 색상상태도움말 아이콘") — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명하는 모달. 사이즈의
-                 "?"(사이즈 가이드)와 헷갈리지 않도록 채워진 원 + i 아이콘으로 다르게 표시. -->
-            <button type="button" class="status-help-badge" aria-label="색상 상태 안내" title="색상 상태 안내" @click.stop.prevent="colorStatusHelpRef?.show()"><i class="fas fa-info text-[9px]"></i></button>
+          <label class="!flex !items-center !justify-between">
+            <span class="inline-flex items-center">
+              색상 <i class="fas fa-star-of-life"></i>
+              <!-- 2026-09-22(요청사항: "색상상태도움말 — 좀더 의미있는 아이콘으로") — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명하는 모달.
+                   사이즈의 "?"(사이즈 가이드)와 헷갈리지 않도록 채워진 원 뱃지로 다르게 표시, 아이콘은 표식/태그를 뜻하는 fa-tag. -->
+              <button type="button" class="status-help-badge" aria-label="색상 상태 안내" title="색상 상태 안내" @click.stop.prevent="colorStatusHelpRef?.show()"><i class="fas fa-tag text-[9px]"></i></button>
+            </span>
+            <!-- 2026-09-22(요청사항: "필수 입력항목 글씨를 색상·사이즈 우측 빈란에") — 맨 아래 있던 공용 안내문 대신 각 라벨 줄 오른쪽에 표시 -->
+            <span class="text-[0.72rem] font-semibold text-theme">필수</span>
           </label>
           <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
             <button
@@ -114,11 +119,15 @@
         </div>
         <!-- 사이즈 선택 (아래) -->
         <div class="product__modal-input size mb-20 relative after:!hidden">
-          <label>사이즈 <i class="fas fa-star-of-life"></i>
-            <!-- 2026-09-22(요청사항: "사이즈 라벨 우측에 도움말 아이콘 — 클릭하면 모달로 사이즈 안내") — 사이즈표(가이드/세계 사이즈 표준) -->
-            <button type="button" class="ml-1.5 inline-flex h-[19px] w-[19px] cursor-pointer items-center justify-center rounded-full border border-solid border-[#b8b8b8] bg-white p-0 align-middle text-[11px] font-bold leading-none text-[#666] hover:border-[#bc8246] hover:text-[#bc8246]" aria-label="사이즈 안내" title="사이즈 안내" @click.stop.prevent="sizeGuideRef?.show()">?</button>
-            <!-- 위 "?"(사이즈 가이드/표준)와 헷갈리지 않게 다른 뱃지 — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명 -->
-            <button type="button" class="status-help-badge" aria-label="사이즈 상태 안내" title="사이즈 상태 안내" @click.stop.prevent="sizeStatusHelpRef?.show()"><i class="fas fa-info text-[9px]"></i></button>
+          <label class="!flex !items-center !justify-between">
+            <span class="inline-flex items-center">
+              사이즈 <i class="fas fa-star-of-life"></i>
+              <!-- 2026-09-22(요청사항: "사이즈상태도움말 — 좀더 의미있는 아이콘, (?)는 뒤로") — 색상과 같은 뱃지(fa-tag)를 먼저,
+                   사이즈 가이드/세계 표준을 보여주는 "?"는 그 뒤로 옮겼다. -->
+              <button type="button" class="status-help-badge" aria-label="사이즈 상태 안내" title="사이즈 상태 안내" @click.stop.prevent="sizeStatusHelpRef?.show()"><i class="fas fa-tag text-[9px]"></i></button>
+              <button type="button" class="ml-1.5 inline-flex h-[19px] w-[19px] cursor-pointer items-center justify-center rounded-full border border-solid border-[#b8b8b8] bg-white p-0 align-middle text-[11px] font-bold leading-none text-[#666] hover:border-[#bc8246] hover:text-[#bc8246]" aria-label="사이즈 안내" title="사이즈 안내" @click.stop.prevent="sizeGuideRef?.show()">?</button>
+            </span>
+            <span class="text-[0.72rem] font-semibold text-theme">필수</span>
           </label>
           <div class="flex flex-wrap items-center gap-2 mt-2.5">
             <span v-if="!sizes.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
@@ -178,9 +187,6 @@
         <size-guide-modal ref="sizeGuideRef" />
         <option-status-help-modal ref="colorStatusHelpRef" title="색상" />
         <option-status-help-modal ref="sizeStatusHelpRef" title="사이즈" />
-        <div class="product__modal-required mb-5">
-          <span>필수 입력 항목 *</span>
-        </div>
         </div>
         <!-- 2026-09-13(요청사항: "모바일로 보기에서 [장바구니추가] 버튼이 커서 우측에 숨겨진거 같아") —
              기존 flex-nowrap이 좁은 화면에서도 한 줄을 강제해 버튼이 화면 밖으로 밀려나갔다.

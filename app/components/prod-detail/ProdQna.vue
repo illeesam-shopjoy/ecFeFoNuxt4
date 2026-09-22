@@ -80,7 +80,8 @@
       <div v-if="formError" class="mb-0 mt-3 text-[0.82rem] leading-snug text-red-500">{{ formError }}</div>
       <div class="mt-4 flex justify-center gap-2">
         <button v-if="editingId" type="button" class="rounded-md border border-[#d1d5db] bg-white px-4 py-2 text-[0.82rem] font-semibold text-gray-700" @click="cancelEdit">취소</button>
-        <button type="submit" class="rounded-md border-0 bg-gray-900 px-5 py-2 text-[0.82rem] font-bold text-white disabled:opacity-60" :disabled="saving">{{ saving ? "저장 중…" : editingId ? "수정 저장" : "Q&A 등록" }}</button>
+        <!-- 2026-09-22(요청사항: "수정저장을 저장으로, 버튼 색은 검정(담기 버튼) 말고 다른 색으로") -->
+        <button type="submit" class="rounded-md border-0 bg-[#bc8246] px-5 py-2 text-[0.82rem] font-bold text-white hover:bg-[#a06a35] disabled:opacity-60" :disabled="saving">{{ saving ? "저장 중…" : editingId ? "저장" : "Q&A 등록" }}</button>
       </div>
     </form>
 

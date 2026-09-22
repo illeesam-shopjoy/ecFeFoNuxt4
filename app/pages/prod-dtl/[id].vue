@@ -242,8 +242,9 @@
                       <!-- 2026-09-14(요청사항: "리뷰등록 가운데 정렬해줘") -->
                       <div class="col-xl-12 text-center">
                         <button v-if="editingReviewId || replyingToReviewId" class="os-btn mr-2 !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="button" @click="cancelReviewForm">취소</button>
-                        <button class="os-btn os-btn-black !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="submit" :disabled="reviewFormLoading">
-                          {{ reviewFormLoading ? "저장 중..." : (replyingToReviewId ? "답글 등록" : editingReviewId ? "수정 저장" : "상품평 등록") }}
+                        <!-- 2026-09-22(요청사항: "수정저장을 저장으로, 버튼 색은 검정(담기 버튼과 같은 색) 말고 다른 색으로") -->
+                        <button class="os-btn !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight !text-white" style="background: linear-gradient(135deg, #c9955f 0%, #a06a35 100%); border-color: #a06a35" type="submit" :disabled="reviewFormLoading">
+                          {{ reviewFormLoading ? "저장 중..." : (replyingToReviewId ? "답글 등록" : editingReviewId ? "저장" : "상품평 등록") }}
                         </button>
                       </div>
                     </div>

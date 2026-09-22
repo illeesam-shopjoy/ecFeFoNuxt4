@@ -1,5 +1,6 @@
 <template>
-  <div :class="`blog__item mb-60 ${style_2 ? '' : 'blog__border-bottom pb-60'}`">
+  <!-- 2026-09-22(요청사항: "블로그 카드항목간 간격이 너무 커") — mb-60(카드 사이) + pb-60(구분선 위 여백)이 겹쳐 카드 사이가 120px나 벌어졌다. 30px씩으로 줄임. -->
+  <div :class="`blog__item mb-30 ${style_2 ? '' : 'blog__border-bottom pb-30'}`">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="blog__thumb fix">
       <nuxt-link :to="`/blog-dtl/${blog.blogId}`" class="w-img">
