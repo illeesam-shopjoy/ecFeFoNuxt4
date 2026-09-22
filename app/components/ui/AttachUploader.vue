@@ -145,6 +145,32 @@ const sync = () => emit("update:modelValue", [
   ...removedIds.value.map((id) => ({ attachId: id, rowStatus: "D" as const })),
 ]);
 
+// 2026-09-22(요청사항: "이미지도 고용량파일 화질은 안 떨어지면서도 저용량으로 저장할수 있는
+// 포함으로 가능해 가능하면 해주고") — 원본 해상도는 그대로 두고(다운스케일 없음) WebP로 다시
+// 인코딩해 용량만 줄인다. 캔버스 재인코딩이라 진짜 무손실은 아니지만 quality 0.88이면 원본과
+// 눈으로 구분하기 어려운 수준을 유지하면서 대체로 30~70% 작아진다. 애니메이션(gif)은 첫 프레임만
+// 남으므로 건너뛴다. 실패하거나 오히려 커지면 원본 파일을 그대로 쓴다(안전 fallback).
+const COMPRESSIBLE_IMG_EXT = new Set(["jpg", "jpeg", "png", "webp"]);
+async function compressImageFile(file: File, ext: string): Promise<File> {
+  if (!COMPRESSIBLE_IMG_EXT.has(ext) || typeof createImageBitmap === "undefined") return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close?.();
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.88));
+    if (!blob || blob.size <= 0 || blob.size >= file.size) return file; // 압축 효과 없으면 원본 유지
+    const newName = file.name.replace(/\.[^.]+$/, "") + ".webp";
+    return new File([blob], newName, { type: "image/webp", lastModified: file.lastModified });
+  } catch {
+    return file; // 디코딩 실패 등 — 원본 그대로 업로드(흐름 차단하지 않음)
+  }
+}
+
 async function onPick(e: Event) {
   const input = e.target as HTMLInputElement;
   const picked = [...(input.files ?? [])];
@@ -153,10 +179,13 @@ async function onPick(e: Event) {
   say("");
   const valid: File[] = [];
   const skipped: string[] = []; // 거부된 파일 안내 — 이후 업로드 결과 메시지와 합쳐서 보여준다(덮어쓰지 않게)
-  for (const f of picked) {
-    const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+  for (let f of picked) {
+    const extOrig = f.name.split(".").pop()?.toLowerCase() ?? "";
+    if (!props.accept.includes(extOrig)) { skipped.push(`${f.name}: 허용되지 않는 형식`); continue; }
+    // 용량 제한 검사 전에 먼저 압축 — 압축 후 용량으로 제한을 판단해야 "고용량 원본이라 거절"되는 일이 줄어든다
+    if (isImageExt(extOrig)) f = await compressImageFile(f, extOrig);
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? extOrig;
     const limit = limitMbOf(ext);
-    if (!props.accept.includes(ext)) { skipped.push(`${f.name}: 허용되지 않는 형식`); continue; }
     if (f.size > limit * 1048576) { skipped.push(`${f.name}: ${isVideoExt(ext) ? "동영상 " : ""}${limit}MB 초과`); continue; }
     if (rows.value.length + valid.length >= props.maxCount) { skipped.push(`${f.name}: 최대 ${props.maxCount}개 초과`); continue; }
     valid.push(f);

@@ -55,7 +55,9 @@
                 </template>
                 <template #attach>
                   <label class="block text-[0.78rem] text-gray-500 mb-1">첨부파일</label>
-                  <attach-uploader v-model="attachFiles" />
+                  <!-- 2026-09-22(요청사항: "문의하기에서도 사진촬영, 동영상촬영 기능 추가해줘") — 기본 accept(이미지만)에는
+                       동영상 확장자가 없어 "동영상 촬영" 버튼이 안 보였다. 상품평/Q&A와 같은 목록으로 맞춘다. -->
+                  <attach-uploader v-model="attachFiles" :accept="CONTACT_ATTACH_ACCEPT" />
                 </template>
                 <template #actions>
                   <div class="flex justify-end mt-2">
@@ -144,6 +146,8 @@ const schema = yup.object({
 
 const form = reactive({ name: "", email: "", tel: "", orderNo: "", inquiryType: "", desc: "" });
 const attachFiles = ref<{ attachId: string; rowStatus: "I" | "D" }[]>([]);
+// 서버 허용 확장자(FileUploadUtil) — 상품평/Q&A(REVIEW_ATTACH_ACCEPT/ATTACH_ACCEPT)와 동일 목록
+const CONTACT_ATTACH_ACCEPT = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"];
 const submitting = ref(false);
 const orderPickRef = ref<InstanceType<typeof OrderPickModal> | null>(null);
 
