@@ -65,7 +65,8 @@ export const useCartStore = defineStore("cart", {
     // remover_cart_products
     removerStCartProducts(payload: OdCartItemType) {
       this.cartProducts = this.cartProducts.filter((p) => !(p.prodId === payload.prodId && p.selectedProdSkuId === payload.selectedProdSkuId));
-      useNuxtApp().$toast.error(`${payload.prodNm} 장바구니에서 제거됨`);
+      // 2026-09-22(요청사항: "제거될때 toast 아이콘 빨강 대신 오렌지/분홍") — 제거는 오류가 아니라서 error() 대신 warning() 사용(색은 main.scss에서 핑크로 재정의)
+      useNuxtApp().$toast.warning(`${payload.prodNm} 장바구니에서 제거됨`);
       localStorage.setItem("cart_products", JSON.stringify(this.cartProducts));
     },
     async clearStCart() {

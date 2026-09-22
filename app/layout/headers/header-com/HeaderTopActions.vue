@@ -36,10 +36,8 @@
       <!-- 알림 종 — 장바구니 오른쪽 -->
       <noti-bell />
 
-      <!-- 테마 -->
-      <button type="button" class="inline-flex w-7 h-7 sm:w-10 sm:h-10 rounded-full items-center justify-center bg-[#f3ede4] border border-[#e5e7eb] cursor-pointer text-[16px] hover:border-gray-400 transition" :title="theme.dark.value ? '라이트 모드로 전환' : '다크 모드로 전환'" :aria-label="theme.dark.value ? '라이트 모드로 전환' : '다크 모드로 전환'" @click="theme.toggle()">
-        {{ theme.dark.value ? "☀️" : "🌙" }}
-      </button>
+      <!-- 2026-09-22(요청사항: "다크모드로 전환 아이콘 표시하지 말아줘") — 상단 상시 노출 테마 버튼을 없앤다.
+           전환 기능 자체는 ⚙설정(HeaderSettings.vue) 드롭다운 안의 "다크 모드로 전환" 메뉴로 계속 쓸 수 있다. -->
 
       <!-- 설정 -->
       <header-settings />
@@ -60,7 +58,6 @@ const emit = defineEmits<{ (e: "search"): void }>();
 const authStore = useAuthStore();
 const cart = useCartStore();
 const wishlist = useWishlistStore();
-const theme = useTheme();
 </script>
 
 <style scoped>

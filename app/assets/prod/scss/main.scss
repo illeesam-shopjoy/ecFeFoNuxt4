@@ -18,6 +18,17 @@
 @use 'grid';
 @import '../css/fontAwesome5Pro.css';
 
+// 2026-09-22(요청사항: "제거될때 toast 표시 아이콘 빨강이 아닌 오렌지색이나, 분홍색이면 좋겠어 — 오류처럼 느껴져") —
+// 장바구니/위시리스트/비교 "제거됨" 토스트는 $toast.error() 대신 $toast.warning()을 쓰도록 바꾸고(각 store 파일),
+// vue3-toastify의 기본 warning색(#f1c40f, 노랑)을 브랜드 핑크로 덮어써 "제거"가 오류처럼 보이지 않게 한다.
+// :root가 아니라 .Toastify__toast--warning 위에서 재정의해 — 로드 순서와 무관하게(자손이 참조하는 커스텀
+// 프로퍼티는 가장 가까운 조상의 값을 쓴다) 항상 이 값이 이긴다.
+.Toastify__toast--warning {
+  --toastify-color-warning: #e8587a;
+  --toastify-icon-color-warning: #e8587a;
+  --toastify-color-progress-warning: #e8587a;
+}
+
 
 
 

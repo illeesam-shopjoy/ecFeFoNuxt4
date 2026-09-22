@@ -2,7 +2,8 @@
   <!-- 2026-09-20(요청사항: "shopjoy 로고부분 글씨 작게하고 ecFeBo 처럼 로고 표시") — ecFeBo(foAppHeader.js)의 로고와 같은 구성:
        야자수 아이콘 + 이름 + 태그라인 + 환경(prod/dev/local) 배지 + api/cdn 호스트. 예전 EnvModeBadge(로고 아래 2줄)를 이 컴포넌트가 대신한다. -->
   <div class="flex" :class="align === 'center' ? 'justify-center' : 'justify-start'">
-    <nuxt-link href="/" class="inline-flex items-center gap-1 sm:gap-2 min-w-0 no-underline" aria-label="ShopJoy 홈">
+    <!-- 2026-09-22(요청사항: "ShopJoy 좌측 CI 쪽으로 공백줄이고 더 붙여줘") — 아이콘과 글자 사이 gap을 줄여 더 붙임 -->
+    <nuxt-link href="/" class="inline-flex items-center gap-0.5 min-w-0 no-underline" aria-label="ShopJoy 홈">
       <!-- <img> 로 둬야 다크모드(html invert 필터, assets/theme-dark.css)에서 img 규칙으로 색이 되돌려진다 -->
       <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-7 h-7 sm:w-9 sm:h-9" />
       <span class="flex flex-col min-w-0 leading-[1.1] text-left">

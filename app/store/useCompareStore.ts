@@ -15,7 +15,7 @@ export const useCompareStore = defineStore("compare", {
       const isAdded = this.compare.findIndex((p) => p.prodId === payload.prodId);
       if (isAdded !== -1) {
         this.compare = this.compare.filter((p) => p.prodId !== payload.prodId);
-        useNuxtApp().$toast.error(`${payload.prodNm} 비교에서 제거됨`);
+        useNuxtApp().$toast.warning(`${payload.prodNm} 비교에서 제거됨`);
       } else {
         this.compare.unshift(payload);
         useNuxtApp().$toast.success(`${payload.prodNm} 비교에 추가됨`);
@@ -25,7 +25,7 @@ export const useCompareStore = defineStore("compare", {
     removeStCompare(payload: PdProdType) {
       // 해당 상품을 비교 목록에서 제거
       this.compare = this.compare.filter((p) => p.prodId !== payload.prodId);
-      useNuxtApp().$toast.error(`${payload.prodNm} 비교에서 제거됨`);
+      useNuxtApp().$toast.warning(`${payload.prodNm} 비교에서 제거됨`);
       localStorage.setItem("compare_products", JSON.stringify(this.compare));
     },
   },
