@@ -92,12 +92,14 @@
                   <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="prodTypeCd = ''">초기화</button>
                 </div>
                 <div class="sidebar__widget-content">
-                  <div class="flex flex-wrap gap-2">
+                  <!-- 2026-09-22(요청사항: "나머지 5개를 한 줄에") — 패딩/글자를 줄이고 한 줄 고정(flex-nowrap), 그래도 화면이 아주 좁으면
+                       줄바꿈 대신 가로로만 스크롤(스크롤바는 숨김)해서 다섯 개가 한 줄 흐름을 유지한다. -->
+                  <div class="flex flex-nowrap gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <button
                       v-for="t in PROD_TYPE_FILTER_OPTIONS"
                       :key="t.value"
                       type="button"
-                      class="cursor-pointer rounded-full border px-3.5 py-1.5 text-[0.82rem] transition-colors"
+                      class="shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.76rem] transition-colors"
                       :class="prodTypeCd === t.value ? 'border-[#222] bg-[#222] font-semibold text-white' : 'border-[#e5e7eb] bg-white text-gray-600 hover:border-[#999]'"
                       @click="prodTypeCd = t.value"
                     >{{ t.label }}</button>
@@ -482,8 +484,8 @@ const isInitialLoading = computed(() => pending.value && !firstPage.value);
 // 스캔이 아니라 상품 자체 필드라 서버에서 바로 IN 필터링된다.
 const SIZE_OPTIONS = ["FREE", "XS", "S", "M", "L", "XL"];
 
-// 상품유형 필터 선택지 — 전체 + PROD_TYPE_LABEL(conts/pdConst.ts) 순서대로 (2026-09-22)
-const PROD_TYPE_FILTER_OPTIONS = [{ value: "", label: "전체" }, ...Object.entries(PROD_TYPE_LABEL).map(([value, label]) => ({ value, label }))];
+// 상품유형 필터 선택지 — 전체 + PROD_TYPE_LABEL(conts/pdConst.ts) 순서대로, 사은품(GIFT)은 뺀다(2026-09-22 요청사항: "사은품은 빼줘")
+const PROD_TYPE_FILTER_OPTIONS = [{ value: "", label: "전체" }, ...Object.entries(PROD_TYPE_LABEL).filter(([value]) => value !== "GIFT").map(([value, label]) => ({ value, label }))];
 
 // ── 사이드바: 상품 카테고리 (옛 ProductCategory) ─────────────────────────────
 const { data: catData } = useAsyncData<PdCategoryTreeResType>(
