@@ -93,14 +93,15 @@
                   <div v-if="totalAttachmentCount > 0" class="flex flex-nowrap items-center gap-2 mb-20">
                     <div class="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-hidden">
                       <button
-                        v-for="(url, i) in shownAttachments"
-                        :key="url"
+                        v-for="(f, i) in shownAttachments"
+                        :key="f.url"
                         type="button"
-                        class="h-7 w-7 shrink-0 cursor-pointer overflow-hidden rounded border border-gray-200 bg-gray-100 p-0"
+                        class="relative h-7 w-7 shrink-0 cursor-pointer overflow-hidden rounded border border-gray-200 bg-gray-100 p-0"
                         @click="openAllMedia(i)"
                       >
-                        <img v-if="!isVideoUrl(url)" :src="url" alt="" class="h-full w-full object-cover" />
-                        <span v-else class="flex h-full w-full items-center justify-center bg-gray-600"><i class="fa fa-play text-[10px] text-white"></i></span>
+                        <img v-if="f.thumb" :src="f.thumb" alt="" class="h-full w-full object-cover" />
+                        <span v-else class="flex h-full w-full items-center justify-center bg-gray-600"></span>
+                        <span v-if="isVideoUrl(f.url)" class="absolute inset-0 flex items-center justify-center bg-black/25"><i class="fa fa-play text-[10px] text-white"></i></span>
                       </button>
                       <span v-if="totalAttachmentCount > shownAttachments.length" class="shrink-0 text-sm tracking-widest text-gray-400">…</span>
                     </div>
