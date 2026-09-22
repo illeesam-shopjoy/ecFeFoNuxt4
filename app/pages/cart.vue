@@ -3,7 +3,7 @@
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="장바구니" subtitle="장바구니" />
     <client-only>
-      <section class="cart-area pt-100 pb-100">
+      <section class="cart-area pt-[16px] md:pt-[100px] pb-100">
         <div class="max-w-7xl mx-auto px-4">
           <div class="row">
             <div class="col-12">

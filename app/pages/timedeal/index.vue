@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <breadcrumb-area title="타임딜" subtitle="타임딜" />
-    <section class="pt-60 pb-100">
+    <section class="pt-[16px] md:pt-[60px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div v-if="loading" class="text-center py-60 text-gray-500">타임딜 상품을 불러오고 있습니다...</div>
         <div v-else-if="!items.length" class="text-center py-60 text-gray-500">현재 진행중인 타임딜이 없습니다.</div>

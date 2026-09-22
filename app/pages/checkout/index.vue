@@ -3,12 +3,12 @@
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="주문/결제" subtitle="주문/결제" />
     <client-only>
-      <div v-if="state.cartProducts.length === 0" class="text-center pt-100 pb-100">
+      <div v-if="state.cartProducts.length === 0" class="text-center pt-[16px] md:pt-[100px] pb-100">
         <h3>주문할 장바구니 상품이 없습니다</h3>
         <nuxt-link class="os-btn os-btn-black mt-15" to="/shop"> Shop Now </nuxt-link>
       </div>
       <div v-if="state.cartProducts.length > 0">
-        <section class="coupon-area pt-100 pb-30">
+        <section class="coupon-area pt-[16px] md:pt-[100px] pb-30">
           <div class="max-w-7xl mx-auto px-4">
             <div class="row">
               <div class="col-md-6">

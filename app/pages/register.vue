@@ -2,7 +2,7 @@
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="회원가입" subtitle="회원가입" />
-    <section class="login-area pt-100 pb-100">
+    <section class="login-area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row flex justify-center">
           <div class="col-lg-8 col-12 mx-auto">

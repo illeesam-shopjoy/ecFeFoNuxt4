@@ -2,7 +2,7 @@
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="비교" subtitle="비교" />
-    <section class="compare__area pt-120 pb-120">
+    <section class="compare__area pt-[16px] md:pt-[120px] pb-120">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-12">

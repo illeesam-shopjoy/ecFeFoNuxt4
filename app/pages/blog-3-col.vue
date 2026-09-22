@@ -2,7 +2,7 @@
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="블로그 3단" subtitle="블로그 3단" />
-    <section class="blog__area pt-100 pb-100">
+    <section class="blog__area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <!-- 로딩 중 스켈레톤 -->
         <div v-if="pending" class="row">

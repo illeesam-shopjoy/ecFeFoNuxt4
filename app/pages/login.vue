@@ -5,7 +5,7 @@
          404/오류 페이지와 같은 compact(얇은 브레드크럼) 배너로 변경. -->
     <!-- 2026-09-21(요청사항: "로그인도 배너 넣어줘") — 다른 화면처럼 큰 배너(제목 + 경로)를 다시 보여준다. -->
     <breadcrumb-area title="로그인" subtitle="로그인" />
-    <section class="login-area pt-100 pb-100">
+    <section class="login-area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row flex justify-center">
           <div class="col-lg-8 col-12 mx-auto">

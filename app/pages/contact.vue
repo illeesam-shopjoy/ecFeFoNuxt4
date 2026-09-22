@@ -2,7 +2,7 @@
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="문의하기" subtitle="문의하기" />
-    <section class="contact__area pb-100 pt-95">
+    <section class="contact__area pb-100 pt-[16px] md:pt-[95px]">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-6 col-lg-6">

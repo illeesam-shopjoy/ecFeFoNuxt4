@@ -11,7 +11,7 @@
       <section class="shop__area pb-[110px]">
         <!-- 2026-09-22(요청사항: "배너와 상품 이미지 사이 공백이 커 — 줄여줘") — 이 div 의 pt-60(60px)이 배너 바로 아래(.page__title + section) 이미
              줄여둔 여백 위에 또 더해져 폰에서 유난히 크게 벌어졌다. 폰에서만 더 줄인다. -->
-        <div class="shop__top bg-white pt-[16px] pb-60 md:pt-60">
+        <div class="shop__top bg-white pt-[16px] pb-60 md:pt-[60px]">
           <div class="max-w-7xl mx-auto px-4">
             <div class="row">
               <div class="col-xl-6 col-lg-6">

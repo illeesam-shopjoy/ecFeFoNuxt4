@@ -2,7 +2,7 @@
   <layout :transparent="true">
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="블로그 2단 메이슨리" subtitle="블로그 2단 메이슨리" />
-    <section class="blog__area pt-100 pb-100">
+    <section class="blog__area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <!-- 로딩 중 스켈레톤 (최초 1페이지) -->
         <div v-if="pending" class="row">

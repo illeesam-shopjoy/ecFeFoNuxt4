@@ -1,7 +1,7 @@
 <template>
   <layout :transparent="true">
     <breadcrumb-area title="아이디 · 비밀번호 찾기" subtitle="아이디 · 비밀번호 찾기" />
-    <section class="login-area pt-100 pb-100">
+    <section class="login-area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
         <div class="mx-auto max-w-[560px]">
           <div class="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-[#f3f4f6] p-1">

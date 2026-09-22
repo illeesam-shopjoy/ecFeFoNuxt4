@@ -7,7 +7,7 @@
     <skeleton-blog-detail v-if="pending" />
 
     <!-- 블로그 상세 -->
-    <section v-else-if="item" class="blog__area pt-100">
+    <section v-else-if="item" class="blog__area pt-[16px] md:pt-[100px]">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
           <div class="col-xl-9 col-lg-8">
