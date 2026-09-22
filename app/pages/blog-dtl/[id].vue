@@ -110,8 +110,10 @@
               </div>
             </div>
 
-            <div class="postbox__line mt-65"></div>
-            <div class="postbox__comments pt-90">
+            <!-- 2026-09-22(요청사항: "컨텐츠 영역과의 사이의 공백란이 너무 커 좀 줄여줘") — mt-65+pt-90(총 155px)이 겹쳐 모바일에서
+                 공백이 과했다. 모바일은 16px로 줄이고 데스크톱 원래 값은 유지(다른 페이지와 동일 패턴). -->
+            <div class="postbox__line mt-[16px] md:mt-[65px]"></div>
+            <div class="postbox__comments pt-[16px] md:pt-[90px]">
               <div class="postbox__comment-title mb-30">
                 <h3>댓글 (32)</h3>
               </div>
