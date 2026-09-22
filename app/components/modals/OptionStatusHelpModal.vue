@@ -44,19 +44,19 @@ const open = ref(false);
 function onKey(e: KeyboardEvent) {
   if (e.key === "Escape") hide();
 }
+// 2026-09-22 버그수정(요청사항: "상품상세 탭이 고정 안되는게 있던데") — 여기서 직접 body.style.overflow를
+// 잠그던 코드가 전역 modal-scroll-lock.client.ts 플러그인(role="dialog"인 이 모달도 자동 감시)의 저장값을
+// 오염시켜, 닫은 뒤에도 body가 "hidden"으로 복원돼 position:sticky가 깨졌다. 이제 body 잠금은 그 플러그인만 담당.
 function show() {
   open.value = true;
-  document.body.style.overflow = "hidden";
   window.addEventListener("keydown", onKey);
 }
 function hide() {
   open.value = false;
-  document.body.style.overflow = "";
   window.removeEventListener("keydown", onKey);
 }
 onBeforeUnmount(() => {
   if (import.meta.client) {
-    document.body.style.overflow = "";
     window.removeEventListener("keydown", onKey);
   }
 });

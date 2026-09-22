@@ -55,7 +55,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('상품 모달');
-import { ref, watch, onBeforeUnmount } from "vue";
+import { ref, watch } from "vue";
 import ProductDetailsContent from "~/components/shop-details/ProductDetailsContent.vue";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import AppImage from "~/components/ui/AppImage.vue";
@@ -73,24 +73,18 @@ function handleActiveImg(img: string) {
 }
 // 2026-09-14(요청사항: "상세보기시 부모화면의 최상단이 위로 보여 모달에서는 모달이
 // 최상위가 되어야 해") — 모달이 열려있는 동안 배경(body) 자체가 스크롤되지 않게 막는다.
-// 배경이 스크롤되면 헤더의 스크롤 고정 기능(Header.vue isSticky)이 켜져 z-index:999로
-// 모달(z-[1000]) 밑에서 위로 올라와 보이는 게 근본 원인이라, 아예 배경 스크롤을 없애 둘 다
-// 예방한다.
-function lockScroll() {
-  if (typeof document !== "undefined") document.body.style.overflow = "hidden";
-}
-function unlockScroll() {
-  if (typeof document !== "undefined") document.body.style.overflow = "";
-}
+// 2026-09-22 버그수정(요청사항: "상품상세 탭이 고정 안되는게 있던데") — 여기서 직접
+// body.style.overflow를 잠그던 코드가, 같은 날 추가된 전역 modal-scroll-lock.client.ts
+// 플러그인(role="dialog"인 이 모달도 감시 대상)의 "열기 전 원래 값 저장" 시점과 경쟁해
+// 잘못된 값("hidden")을 원래값으로 저장하게 만들었다 — 이 모달을 닫아도 plugin이 body를
+// "hidden"으로 복원해버려, 이후 페이지의 position:sticky(상품상세 탭 등)가 영구히 깨졌다.
+// 이제 body 잠금은 그 플러그인 하나만 담당한다(이 role="dialog" 엘리먼트를 자동으로 감시함).
 function show() {
   active_img.value = props.item.img;
   visible.value = true;
-  lockScroll();
 }
 function close() {
   visible.value = false;
-  unlockScroll();
 }
-onBeforeUnmount(unlockScroll);
 defineExpose({ show, close });
 </script>
