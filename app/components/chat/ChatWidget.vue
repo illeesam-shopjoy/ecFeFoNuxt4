@@ -4,7 +4,7 @@
     <div
       v-if="chatState.open"
       class="fixed z-[8800] flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl border border-[#ffe4ec]"
-      style="right: 12px; bottom: calc(156px + var(--fab-lift, 0px)); transition: bottom 0.2s ease; width: min(340px, calc(100vw - 24px)); height: 480px"
+      style="right: 19px; bottom: calc(156px + var(--fab-lift, 0px)); transition: bottom 0.2s ease; width: min(340px, calc(100vw - 38px)); height: 480px"
     >
       <!-- 패널 헤더 -->
       <div class="border-b border-[#ffc9d6]" style="background: linear-gradient(135deg, #fff0f4 0%, #ffe4ec 60%, #ffd5e1 100%)">
@@ -149,7 +149,7 @@
     <button
       type="button"
       class="fixed z-[8801] w-10 h-10 rounded-full text-white text-lg flex items-center justify-center shadow-lg transition-[bottom,transform] duration-200 hover:scale-110"
-      style="right: 12px; bottom: calc(92px + var(--fab-lift, 0px)); background: linear-gradient(135deg, #ff8fab, #e8587a); box-shadow: 0 4px 20px rgba(232, 88, 122, 0.45)"
+      style="right: 19px; bottom: calc(92px + var(--fab-lift, 0px)); background: linear-gradient(135deg, #ff8fab, #e8587a); box-shadow: 0 2px 8px rgba(232, 88, 122, 0.4)"
       :title="chatState.open ? '채팅 닫기' : '채팅 상담 열기'"
       @click="toggleChat"
     >
