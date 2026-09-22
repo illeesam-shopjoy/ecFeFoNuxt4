@@ -10,7 +10,7 @@ export interface BizInfoItem {
 export const BIZ_INFO: BizInfoItem[] = [
   { label: "상호명", value: "모두누리" },
   { label: "대표자", value: "송성일" },
-  { label: "사업자번호", value: "123-45-67890" },
+  { label: "사업자번호", value: "298-06-01947" }, // 2026-09-22: 사업자등록증명(성남세무서 발급) 기준 실제 값으로 교체
   { label: "통신판매업", value: "제2024-성남중원-0001호" },
   { label: "주소", value: "경기도 성남시 중원구 성남대로 997번길 49-14 201호" },
   { label: "고객센터", value: "010-3805-0206" },
