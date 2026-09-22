@@ -86,6 +86,10 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: false, // 명시한 목록만 — 링크를 따라가며 예상 못한 페이지(관리자 도구 등)까지 굽지 않는다
+      // autoSubfolderIndex 기본값(true)은 /about 을 about/index.html 로 구워서, Netlify가 "디렉터리는 슬래시로 끝나야 한다"며
+      // /about → /about/ 301 리다이렉트를 먼저 보낸 뒤에야 실제 내용을 준다(왕복 1회 추가 — 느려지는 원인 그대로 남음).
+      // false로 두면 about.html(파일)로 구워져 리다이렉트 없이 /about 요청에 바로 그 파일이 매칭된다.
+      autoSubfolderIndex: false,
       routes: [
         "/",
         "/about",
