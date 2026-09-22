@@ -76,75 +76,9 @@ export default defineNuxtConfig({
     "/shop-4-col": { redirect: { to: "/shop", statusCode: 301 } },
     "/account": { redirect: { to: "/my/profile", statusCode: 302 } }, // 옛 마이페이지 주소
   },
-  // 2026-09-22(요청사항: "F5 새로고침 시 1초 정도 걸리는데 더 줄일 수 없을까") — CSR(ssr:false) 페이지는 지금까지도 매번 서버(Netlify Function,
-  // dist/.netlify/functions-internal/server)가 "내용 없는 SPA 껍데기 HTML"을 새로 만들어 내려줬다(id 없는 정적 페이지인데도 콜드스타트+매 요청
-  // 함수 실행 비용이 들었던 이유). 이 배포(Nitro netlify preset)가 만드는 Netlify Function 은 v2 설정(`.netlify/functions-internal/server/server.mjs`
-  // 의 `export const config = { path: "/*", preferStatic: true, ... }`)으로 등록돼 있어, 같은 경로에 정적 파일이 있으면 Netlify 가
-  // 함수를 부르지 않고 그 파일을 그대로 CDN 에서 내려준다 — 그래서 아래 정적 페이지들만 빌드할 때 미리 HTML로 구워두면(prerender) 그
-  // 정적 파일이 우선돼 함수를 거치지 않는다(리다이렉트 설정 불필요, redeploy 시 항상 로컬에서 `pnpm build` 로 실제 동작 확인함).
-  // id 로 내용이 달라지는 상품상세/블로그상세/이벤트상세, 그리고 항상 최신 목록이어야 하는 /shop 은 그대로 SSR(매 요청 렌더)로 남긴다.
+  // CDN: app/assets 폴더 전체(prod/{css,fonts,img,scss})를 /cdn 경로로 정적 서빙 (절대경로로 해석 보장)
+  // 예: app/assets/prod/img/logo.png → /cdn/prod/img/logo.png
   nitro: {
-    prerender: {
-      crawlLinks: false, // 명시한 목록만 — 링크를 따라가며 예상 못한 페이지(관리자 도구 등)까지 굽지 않는다
-      // autoSubfolderIndex 기본값(true)은 /about 을 about/index.html 로 구워서, Netlify가 "디렉터리는 슬래시로 끝나야 한다"며
-      // /about → /about/ 301 리다이렉트를 먼저 보낸 뒤에야 실제 내용을 준다(왕복 1회 추가 — 느려지는 원인 그대로 남음).
-      // false로 두면 about.html(파일)로 구워져 리다이렉트 없이 /about 요청에 바로 그 파일이 매칭된다.
-      autoSubfolderIndex: false,
-      routes: [
-        "/",
-        "/about",
-        "/blog",
-        "/blog-2-col",
-        "/blog-2-col-mas",
-        "/blog-3-col",
-        "/blog-dtl",
-        "/blog-left-sidebar",
-        "/blog-no-sidebar",
-        "/cart",
-        "/checkout",
-        "/checkout/fail",
-        "/checkout/success",
-        "/compare",
-        "/contact",
-        "/dev/env-settings",
-        "/dp/panels",
-        "/event",
-        "/faq",
-        "/find-account",
-        "/home-2",
-        "/home-3",
-        "/home-4",
-        "/home-5",
-        "/home-6",
-        "/home-7",
-        "/location",
-        "/login",
-        "/login/oauth-link",
-        "/login/oauth-success",
-        "/my",
-        "/my/addr",
-        "/my/cache",
-        "/my/card",
-        "/my/charge",
-        "/my/charge-success",
-        "/my/chatt",
-        "/my/claim",
-        "/my/contact",
-        "/my/coupon",
-        "/my/order",
-        "/my/profile",
-        "/my/qna",
-        "/my/review",
-        "/prod-dtl",
-        "/register",
-        "/timedeal",
-        "/wishlist",
-        "/xdev-open-comp",
-        "/404",
-      ],
-    },
-    // CDN: app/assets 폴더 전체(prod/{css,fonts,img,scss})를 /cdn 경로로 정적 서빙 (절대경로로 해석 보장)
-    // 예: app/assets/prod/img/logo.png → /cdn/prod/img/logo.png
     publicAssets: [
       {
         dir: fileURLToPath(new URL("app/assets", import.meta.url)),
