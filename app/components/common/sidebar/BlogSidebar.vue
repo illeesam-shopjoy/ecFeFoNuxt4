@@ -93,8 +93,9 @@
                 <app-image
                   :src="`${CDN_URL}/cdn/prod/img/blog/comments/avater-3.png`"
                   alt="김민수"
-                  :img-style="{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }"
-                  :skeleton-style="{ width: '40px', height: '40px', borderRadius: '50%' }"
+                  wrap-class="shrink-0"
+                  :img-style="{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }"
+                  :skeleton-style="{ width: '40px', height: '40px', borderRadius: '8px' }"
                 />
               </div>
               <div class="rc__comments-content">
@@ -108,8 +109,9 @@
                 <app-image
                   :src="`${CDN_URL}/cdn/prod/img/blog/comments/avater-3.png`"
                   alt="이영희"
-                  :img-style="{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }"
-                  :skeleton-style="{ width: '40px', height: '40px', borderRadius: '50%' }"
+                  wrap-class="shrink-0"
+                  :img-style="{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }"
+                  :skeleton-style="{ width: '40px', height: '40px', borderRadius: '8px' }"
                 />
               </div>
               <div class="rc__comments-content">
