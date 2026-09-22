@@ -327,27 +327,31 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* 2026-09-22(요청사항: "상품 큰이미지 모달 — 좌/우로 이동시 좌로/우로 이미지 효과") — 다음(gal-next)은 이전 이미지가 왼쪽으로,
-   새 이미지가 오른쪽에서 오는 느낌으로, 이전(gal-prev)은 반대 방향으로 살짝 슬라이드+페이드된다. */
-.gal-next-enter-active,
+   새 이미지가 오른쪽에서 오는 느낌으로, 이전(gal-prev)은 반대 방향으로 살짝 슬라이드+페이드된다.
+   2026-09-22 보강(요청사항: "딜레이 많이 줄여줘, 빠릿빠릿하게") — mode="out-in"이라 leave+enter가 이어져서 느려 보였다.
+   leave는 아주 짧게 끝내고(0.08s) enter만 조금 더 줘서(0.14s) 총 이동 시간을 절반 이하로 줄였다. */
 .gal-next-leave-active,
-.gal-prev-enter-active,
 .gal-prev-leave-active {
-  transition: transform 0.28s ease, opacity 0.28s ease;
+  transition: transform 0.08s ease-in, opacity 0.08s ease-in;
+}
+.gal-next-enter-active,
+.gal-prev-enter-active {
+  transition: transform 0.14s ease-out, opacity 0.14s ease-out;
 }
 .gal-next-enter-from {
-  transform: translateX(40px);
+  transform: translateX(24px);
   opacity: 0;
 }
 .gal-next-leave-to {
-  transform: translateX(-40px);
+  transform: translateX(-24px);
   opacity: 0;
 }
 .gal-prev-enter-from {
-  transform: translateX(-40px);
+  transform: translateX(-24px);
   opacity: 0;
 }
 .gal-prev-leave-to {
-  transform: translateX(40px);
+  transform: translateX(24px);
   opacity: 0;
 }
 </style>

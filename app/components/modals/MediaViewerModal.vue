@@ -247,27 +247,31 @@ function nextPage() {
 .media-viewer-fade-leave-to {
   opacity: 0;
 }
-/* 2026-09-22 — 다음(mv-next)/이전(mv-prev) 방향에 따라 살짝 좌우로 슬라이드+페이드 */
-.mv-next-enter-active,
+/* 2026-09-22 — 다음(mv-next)/이전(mv-prev) 방향에 따라 살짝 좌우로 슬라이드+페이드.
+   2026-09-22 보강(요청사항: "딜레이 많이 줄여줘, 빠릿빠릿하게") — mode="out-in"이라 leave+enter가 이어져서 느려 보였다.
+   leave는 아주 짧게(0.08s), enter만 조금 더(0.14s) — ProdGallery(상품 큰이미지)와 같은 속도로 통일. */
 .mv-next-leave-active,
-.mv-prev-enter-active,
 .mv-prev-leave-active {
-  transition: transform 0.28s ease, opacity 0.28s ease;
+  transition: transform 0.08s ease-in, opacity 0.08s ease-in;
+}
+.mv-next-enter-active,
+.mv-prev-enter-active {
+  transition: transform 0.14s ease-out, opacity 0.14s ease-out;
 }
 .mv-next-enter-from {
-  transform: translateX(40px);
+  transform: translateX(24px);
   opacity: 0;
 }
 .mv-next-leave-to {
-  transform: translateX(-40px);
+  transform: translateX(-24px);
   opacity: 0;
 }
 .mv-prev-enter-from {
-  transform: translateX(-40px);
+  transform: translateX(-24px);
   opacity: 0;
 }
 .mv-prev-leave-to {
-  transform: translateX(40px);
+  transform: translateX(24px);
   opacity: 0;
 }
 </style>
