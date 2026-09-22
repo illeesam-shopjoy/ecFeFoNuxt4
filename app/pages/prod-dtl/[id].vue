@@ -202,8 +202,17 @@
                   </div>
                 </div>
                 <div class="post-comments-form mb-100">
+                  <!-- 2026-09-23(요청사항: "상품평쓰기 Q&A는 [작성] 버튼 클릭시 신규등록란 펼쳐주면 좋겠는데") —
+                       평소엔 닫아두고 [작성] 버튼으로만 펼친다. 수정/답글은 그 즉시 자동으로 펼쳐진다(showReviewForm과 무관하게). -->
+                  <!-- 2026-09-23(요청사항: "상품평쓰기 Q&A쓰기 타이틀들의 폰트가 다르네 — 너무 커보여") — 전역 h3(27px)를
+                       그대로 쓰면 Q&A쓰기(text-[1.05rem]≈16.8px)보다 훨씬 크게 보였다. 같은 크기로 명시. -->
+                  <div v-if="!showReviewForm && !editingReviewId && !replyingToReviewId" class="post-comments-title mb-30 flex items-center justify-between">
+                    <h3 class="mb-0 text-[1.05rem] font-bold text-gray-900">상품평 쓰기</h3>
+                    <button type="button" class="os-btn !h-auto !px-[18px] !py-[8px] !text-[13px] !leading-tight" @click="showReviewForm = true"><i class="fal fa-pen mr-1"></i>작성</button>
+                  </div>
+                  <template v-else>
                   <div class="post-comments-title mb-30">
-                    <h3>{{ replyingToReviewId ? '답글 쓰기' : editingReviewId ? '상품평 수정' : '상품평 쓰기' }}</h3>
+                    <h3 class="text-[1.05rem] font-bold text-gray-900">{{ replyingToReviewId ? '답글 쓰기' : editingReviewId ? '상품평 수정' : '상품평 쓰기' }}</h3>
                     <div v-if="!replyingToReviewId" class="post-rating">
                       <ul>
                         <li v-for="n in 5" :key="n">
@@ -224,7 +233,7 @@
                         <div class="mb-3 grid gap-3 sm:grid-cols-2">
                           <label class="block">
                             <span class="mb-1 block text-[0.78rem] text-gray-500">이름<span class="ml-0.5 text-theme">*</span></span>
-                            <input v-model="guestNm" type="text" maxlength="20" placeholder="이름 (2~20자)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': guestNmError }" @input="guestNmError = ''" />
+                            <input v-model="guestNm" type="text" maxlength="20" autocomplete="name" placeholder="이름 (2~20자)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': guestNmError }" @input="guestNmError = ''" />
                             <span v-if="guestNmError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ guestNmError }}</span>
                           </label>
                           <label class="block">
@@ -257,7 +266,7 @@
                       <div v-if="reviewFormError" class="col-xl-12 mb-3 text-[0.82rem] leading-snug text-red-500">{{ reviewFormError }}</div>
                       <!-- 2026-09-14(요청사항: "리뷰등록 가운데 정렬해줘") -->
                       <div class="col-xl-12 text-center">
-                        <button v-if="editingReviewId || replyingToReviewId" class="os-btn mr-2 !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="button" @click="cancelReviewForm">취소</button>
+                        <button class="os-btn mr-2 !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight" type="button" @click="cancelReviewForm">취소</button>
                         <!-- 2026-09-22(요청사항: "수정저장을 저장으로, 버튼 색은 검정(담기 버튼과 같은 색) 말고 다른 색으로") -->
                         <button class="os-btn !h-auto !px-[22px] !py-[9px] !text-[13px] !leading-tight !text-white" style="background: linear-gradient(135deg, #c9955f 0%, #a06a35 100%); border-color: #a06a35" type="submit" :disabled="reviewFormLoading">
                           {{ reviewFormLoading ? "저장 중..." : (replyingToReviewId ? "답글 등록" : editingReviewId ? "저장" : "상품평 등록") }}
@@ -265,6 +274,7 @@
                       </div>
                     </div>
                   </Form>
+                  </template>
                 </div>
                 <writer-pwd-modal ref="pwdModal" />
                 <media-viewer-modal
@@ -601,6 +611,8 @@ function openAllMedia(index = 0) {
 const reviewRating = ref(0);
 const galleryColorId = ref(""); // 선택한 색상 옵션ID — 갤러리가 그 색상 이미지를 먼저 보여준다
 const replyingToReviewId = ref<string | null>(null);
+// 2026-09-23(요청사항: "상품평쓰기 Q&A는 [작성] 버튼 클릭시 신규등록란 펼쳐주면 좋겠는데") — 평소 접어두고 [작성]으로만 펼친다
+const showReviewForm = ref(false);
 
 // ── 작성자 판정 / 비회원 작성·수정 (2026-09-20: "상품평/Q&A 에 아무나 등록, 비로그인은 글 비밀번호로 수정·삭제") ──
 const authStore = useAuthStore();
@@ -648,6 +660,7 @@ function cancelReviewForm() {
   reviewAttachChanges.value = [];
   reviewFormError.value = "";
   reviewTitleInput.value = "";
+  showReviewForm.value = false;
   reviewFormRef.value?.resetForm();
 }
 
@@ -774,6 +787,7 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
         reviewTitleInput.value = "";
         reviewAttachChanges.value = [];
         reviewRating.value = 0;
+        showReviewForm.value = false;
         await refreshItem(); // 새로고침 대신 최신 상품·상품평을 직접 재조회(SSR CDN 캐시 우회, 열린 탭 유지)
       }
     }

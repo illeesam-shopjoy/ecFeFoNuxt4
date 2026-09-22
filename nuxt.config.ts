@@ -53,6 +53,17 @@ export default defineNuxtConfig({
           innerHTML: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">`,
         },
       ],
+      // 2026-09-23(요청사항: "핸드폰에서 netlify FO 열때 흰백색이 1~2.5초 보이고 오픈되 — 은은한 배경효과나
+      // 이미지 보여주면 좋겠는데") — 앱 CSS/JS가 로드·하이드레이션되기 전까지는 브라우저 기본 흰 배경만
+      // 보인다. 외부 리소스 요청 없이(추가 지연 없이) 문서 자체에 즉시 적용되는 인라인 <style>로 html/body에
+      // 브랜드 톤 옅은 그라디언트를 깔아둔다 — 앱 CSS가 로드되면 자연스럽게 실제 배경(흰색)으로 바뀐다.
+      // ⚠ !important 를 쓰지 않는다 — 앱 CSS(main.scss 등)가 로드되면 나중에 실린 규칙이 자연스럽게
+      // 이 임시 배경을 덮어써야 한다(로딩 중에만 보이고 로드 후엔 원래 배경으로 돌아가야 하므로).
+      style: [
+        {
+          innerHTML: `html,body{background:linear-gradient(135deg,#fdf8f0 0%,#f8ecd9 50%,#fdf8f0 100%);}`,
+        },
+      ],
     },
   },
   future: {

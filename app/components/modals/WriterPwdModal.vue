@@ -7,12 +7,17 @@
             <h3 id="wpm-title" class="text-[1.05rem] font-bold text-gray-900 m-0 mb-1">🔒 글 비밀번호 확인</h3>
             <p class="text-[0.84rem] text-gray-500 m-0">{{ message }}</p>
           </div>
-          <input ref="inputRef" v-model="pwd" type="password" maxlength="20" autocomplete="off" placeholder="글 비밀번호" class="w-full px-[13px] py-[10px] border-[1.5px] border-[#e5e7eb] rounded-lg text-[0.9rem] outline-none focus:border-[#bc8246]" @keydown.enter.prevent="submit" />
-          <p v-if="error" class="text-[0.78rem] text-red-500 mt-2 mb-0">{{ error }}</p>
-          <div class="flex justify-end gap-2 mt-5">
-            <button type="button" class="mbtn mbtn-ghost" @click="finish(null)">취소</button>
-            <button type="button" class="mbtn mbtn-primary min-w-[96px]" @click="submit">확인</button>
-          </div>
+          <!-- 2026-09-23(요청사항: "화면 오픈하다보면 노란색 표시되는데 개선할수 있으면") — 크롬 DevTools
+               "[DOM] Password field is not contained in a form" 경고 — 이 password input이 <form> 안에
+               없어서였다. <form>으로 감싸고 확인 버튼을 submit으로 바꿔 자연스러운 Enter 제출도 같이 해결. -->
+          <form @submit.prevent="submit">
+            <input ref="inputRef" v-model="pwd" type="password" maxlength="20" autocomplete="off" placeholder="글 비밀번호" class="w-full px-[13px] py-[10px] border-[1.5px] border-[#e5e7eb] rounded-lg text-[0.9rem] outline-none focus:border-[#bc8246]" />
+            <p v-if="error" class="text-[0.78rem] text-red-500 mt-2 mb-0">{{ error }}</p>
+            <div class="flex justify-end gap-2 mt-5">
+              <button type="button" class="mbtn mbtn-ghost" @click="finish(null)">취소</button>
+              <button type="submit" class="mbtn mbtn-primary min-w-[96px]">확인</button>
+            </div>
+          </form>
         </div>
       </div>
     </Transition>

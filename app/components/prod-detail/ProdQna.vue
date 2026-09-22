@@ -53,12 +53,18 @@
     </div>
 
     <!-- 작성 / 수정 폼 -->
-    <form ref="formEl" class="mt-6 rounded-xl border border-[#e5e7eb] bg-white p-5" @submit.prevent="submit">
+    <!-- 2026-09-23(요청사항: "Q&A쓰기의 경우 이것만 박스안에 구성했는데 박스안에 구성 안해도 되 공간이 너무 좁아보여서" /
+         "[작성] 버튼 클릭시 신규등록란 펼쳐주면 좋겠는데") — 상품평쓰기와 같이 박스 없이, 평소엔 접어두고 [작성]으로 펼친다. -->
+    <div v-if="!showForm && !editingId" class="mt-6 flex items-center justify-between">
+      <h3 class="m-0 text-[1.05rem] font-bold text-gray-900">Q&amp;A 쓰기</h3>
+      <button type="button" class="rounded-md border-0 bg-[#bc8246] px-4 py-2 text-[0.82rem] font-bold text-white hover:bg-[#a06a35]" @click="showForm = true"><i class="fal fa-pen mr-1"></i>작성</button>
+    </div>
+    <form v-else ref="formEl" class="mt-6" @submit.prevent="submit">
       <h3 class="m-0 mb-3 text-[1.05rem] font-bold text-gray-900">{{ editingId ? "Q&A 수정" : "Q&A 쓰기" }}</h3>
       <div v-if="!isLoggedIn && !editingId" class="mb-3 grid gap-3 sm:grid-cols-2">
         <label class="block">
           <span class="mb-1 block text-[0.78rem] text-gray-500">이름<span class="ml-0.5 text-theme">*</span></span>
-          <input v-model="writerNm" type="text" maxlength="20" placeholder="이름 (2~20자)" class="w-full rounded-md border border-[#e5e7eb] px-[10px] py-[6px] text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': nmError }" @input="nmError = ''" />
+          <input v-model="writerNm" type="text" maxlength="20" autocomplete="name" placeholder="이름 (2~20자)" class="w-full rounded-md border border-[#e5e7eb] px-[10px] py-[6px] text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': nmError }" @input="nmError = ''" />
           <span v-if="nmError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ nmError }}</span>
         </label>
         <label class="block">
@@ -79,7 +85,7 @@
       </div>
       <div v-if="formError" class="mb-0 mt-3 text-[0.82rem] leading-snug text-red-500">{{ formError }}</div>
       <div class="mt-4 flex justify-center gap-2">
-        <button v-if="editingId" type="button" class="rounded-md border border-[#d1d5db] bg-white px-4 py-2 text-[0.82rem] font-semibold text-gray-700" @click="cancelEdit">취소</button>
+        <button type="button" class="rounded-md border border-[#d1d5db] bg-white px-4 py-2 text-[0.82rem] font-semibold text-gray-700" @click="cancelEdit">취소</button>
         <!-- 2026-09-22(요청사항: "수정저장을 저장으로, 버튼 색은 검정(담기 버튼) 말고 다른 색으로") -->
         <button type="submit" class="rounded-md border-0 bg-[#bc8246] px-5 py-2 text-[0.82rem] font-bold text-white hover:bg-[#a06a35] disabled:opacity-60" :disabled="saving">{{ saving ? "저장 중…" : editingId ? "저장" : "Q&A 등록" }}</button>
       </div>
@@ -158,6 +164,8 @@ const titleInput = ref(""); // 제목(2026-09-22: 필수, 2자 이상)
 const nmError = ref(""); // 이름/글 비밀번호 검증 오류는 각 입력란 아래에 보여준다
 const pwdError = ref("");
 const titleError = ref("");
+// 2026-09-23(요청사항: "[작성] 버튼 클릭시 신규등록란 펼쳐주면 좋겠는데") — 평소 접어두고 [작성]으로만 펼친다
+const showForm = ref(false);
 
 const errMsg = (e: unknown, fallback: string) => {
   const err = e as { data?: { message?: string }; message?: string };
@@ -179,8 +187,10 @@ function resetForm() {
   editingId.value = null;
   editingFiles.value = [];
   formError.value = "";
+  showForm.value = false;
 }
 function startEdit(q: PdProdQnaType) {
+  showForm.value = true;
   editingId.value = q.prodQnaId;
   content.value = q.prodQnaContent ?? "";
   titleInput.value = isAutoTitle(q) ? "" : (q.prodQnaTitle ?? "");
