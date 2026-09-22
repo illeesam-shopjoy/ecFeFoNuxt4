@@ -9,7 +9,7 @@
        버튼 한 줄 + (있을 때만) 파일 목록 + 한 줄 안내로 줄였다. 터치 기기(폰/태블릿)에서는 카메라로 바로 찍는 [사진 촬영]/[동영상 촬영] 버튼이 더 나온다.
        (title/showGrp 속성은 호출부 호환을 위해 남겨두되 더는 그리지 않는다.) -->
   <div class="rounded-lg border border-dashed border-[#d5dae1] bg-[#fcfcfd] px-3 py-2.5">
-    <div class="flex flex-wrap items-center gap-1.5">
+    <div class="flex flex-wrap items-center gap-1">
       <button type="button" class="attach-btn" :disabled="uploading || rows.length >= maxCount" @click="picker?.click()">
         <i class="fas fa-paperclip text-[0.72rem]"></i>{{ uploading ? "업로드중…" : "파일 선택" }}
       </button>
@@ -210,15 +210,17 @@ async function remove(f: AttachRow) {
 .attach-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  gap: 4px;
+  /* 2026-09-22(요청사항: "파일선택/사진촬영/동영상촬영 한 줄에 보이도록 좌우공백이든 폰트든 줄여줘") — 좁은 화면에서 3개가 한 줄에 다 들어가도록 패딩·글자 축소 */
+  padding: 6px 9px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   background: #fff;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: #374151;
   cursor: pointer;
+  white-space: nowrap;
   transition: border-color 0.15s, color 0.15s;
 }
 .attach-btn:hover:not(:disabled) {

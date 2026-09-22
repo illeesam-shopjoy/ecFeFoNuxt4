@@ -85,6 +85,26 @@
                 </div>
               </div>
 
+              <!-- 상품유형 (2026-09-22 요청사항: "상품 카테고리 아래 상품유형 조건 넣어줘") — 단일선택, ecBeBo prodTypeCd 필터 그대로 -->
+              <div class="sidebar__widget mb-30">
+                <div class="sidebar__widget-title mb-25 flex items-center justify-between">
+                  <h3>상품유형</h3>
+                  <button type="button" class="text-[0.78rem] text-[#999] bg-transparent border-0 cursor-pointer p-0 hover:text-theme hover:underline" @click="prodTypeCd = ''">초기화</button>
+                </div>
+                <div class="sidebar__widget-content">
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="t in PROD_TYPE_FILTER_OPTIONS"
+                      :key="t.value"
+                      type="button"
+                      class="cursor-pointer rounded-full border px-3.5 py-1.5 text-[0.82rem] transition-colors"
+                      :class="prodTypeCd === t.value ? 'border-[#222] bg-[#222] font-semibold text-white' : 'border-[#e5e7eb] bg-white text-gray-600 hover:border-[#999]'"
+                      @click="prodTypeCd = t.value"
+                    >{{ t.label }}</button>
+                  </div>
+                </div>
+              </div>
+
               <!-- 2026-09-21(요청사항: "기본은 카테고리·상품명 검색만 두고 나머지는 숨김 + 펼치기 기능") — 아래 나머지 조건들은 기본 접힘.
                    접힌 채로 조건이 걸려 있으면 버튼에 걸린 개수를 보여준다(v-show 라 값은 접어도 그대로 유지). -->
               <button
@@ -277,9 +297,11 @@
                     <span>전체 {{ totalCount }}개 중 {{ rawCount }}개 표시</span>
                   </div>
                 </div>
-                <div class="shop__header-right flex items-center justify-between sm:justify-end">
+                <!-- 2026-09-22(요청사항: "기본정렬 우측에 그리드/행 보기 아이콘 붙여줘") — mr-30(정렬창과 아이콘 사이 간격)을 없애고
+                     ml-3(아이콘 쪽 최소 간격)만 둬서 항상 정렬 select 바로 오른쪽에 붙게 한다(justify-between 이면 좁은 화면에서 서로 떨어져 보였다). -->
+                <div class="shop__header-right flex items-center justify-end">
                   <!-- 2026-09-13: 정렬은 ecBeBo가 지원하는 컬럼(prodNm/regDate/salePrice)만 -->
-                  <div class="sort-wrapper mr-30 pr-25 relative">
+                  <div class="sort-wrapper pr-25 relative">
                     <select :value="sort" @change="setSort(($event.target as HTMLSelectElement).value)">
                       <option value="">기본 정렬(최신순)</option>
                       <option value="prodNm asc">이름순</option>
@@ -289,7 +311,7 @@
                   </div>
                   <!-- 2026-09-13(요청사항: "아이콘 좀 기네 정사각형으로") — 버튼이 아이콘
                        폭에 따라 늘어나 보여서 width/height를 고정해 정사각형으로 만듦. -->
-                  <ul class="flex items-center gap-2" role="tablist">
+                  <ul class="ml-3 flex items-center gap-2" role="tablist">
                     <li>
                       <button type="button" :class="['w-9 h-9 p-0 rounded flex items-center justify-center', viewMode === 'grid' ? 'bg-theme text-white' : 'bg-gray-200']" @click="viewMode = 'grid'" aria-label="그리드 보기"><i class="fas fa-th"></i></button>
                     </li>
@@ -366,6 +388,7 @@ import type { PdProdPageParamsType } from "~/types/pd/pdProdPageParamsType";
 import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import { axiosSsr } from "~/utils/axiosSsr";
 import { type PdProdType } from "~/types/pd/pdProdType";
+import { PROD_TYPE_LABEL } from "~/conts/pdConst";
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from "vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -407,6 +430,7 @@ function fetchProducts(params: PdProdPageParamsType): Promise<CoPagedResultType<
   if (params.priceMax != null) q.priceMax = params.priceMax;
   if (params.sort) q.sort = params.sort;
   if (params.keyword) q.keyword = params.keyword;
+  if (params.prodTypeCd) q.prodTypeCd = params.prodTypeCd;
   return axiosSsr.get<CoPagedResultType<PdProdType>>("/api/fo/ec/pd/prod/page", { params: q }).then((r) => r.data);
 }
 const toggleIn = (arr: string[], value: string): string[] => (arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]);
@@ -426,6 +450,7 @@ const sort = ref(""); // "" = 기본(등록일 최신순)
 const keyword = ref(initialQuery);
 const priceRange = ref<[number, number]>([0, 500000]);
 const colorCds = ref<string[]>([]); // 색상만 서버 필터가 없어 클라이언트 보조필터로 남김(멀티선택, 하나라도 일치하면 노출)
+const prodTypeCd = ref(""); // 상품유형 단일선택 — "" = 전체 (2026-09-22)
 
 const viewMode = ref<"grid" | "list">("grid");
 
@@ -457,6 +482,9 @@ const isInitialLoading = computed(() => pending.value && !firstPage.value);
 // 스캔이 아니라 상품 자체 필드라 서버에서 바로 IN 필터링된다.
 const SIZE_OPTIONS = ["FREE", "XS", "S", "M", "L", "XL"];
 
+// 상품유형 필터 선택지 — 전체 + PROD_TYPE_LABEL(conts/pdConst.ts) 순서대로 (2026-09-22)
+const PROD_TYPE_FILTER_OPTIONS = [{ value: "", label: "전체" }, ...Object.entries(PROD_TYPE_LABEL).map(([value, label]) => ({ value, label }))];
+
 // ── 사이드바: 상품 카테고리 (옛 ProductCategory) ─────────────────────────────
 const { data: catData } = useAsyncData<PdCategoryTreeResType>(
   "category-tree",
@@ -486,6 +514,7 @@ function buildParams(pageNo: number) {
   if (priceRange.value[1] < 500000) params.priceMax = priceRange.value[1];
   if (sort.value) params.sort = sort.value;
   if (keyword.value) params.keyword = keyword.value;
+  if (prodTypeCd.value) params.prodTypeCd = prodTypeCd.value;
   return params;
 }
 
@@ -534,7 +563,7 @@ watch(
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 watch(
-  [categoryIds, brandIds, vendorIds, mdUserIds, siteId, ratingRange, sizeCds, sort, keyword, priceRange],
+  [categoryIds, brandIds, vendorIds, mdUserIds, siteId, ratingRange, sizeCds, sort, keyword, priceRange, prodTypeCd],
   () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -637,6 +666,7 @@ function resetAll() {
   keyword.value = "";
   priceRange.value = [0, 500000];
   colorCds.value = [];
+  prodTypeCd.value = "";
 }
 
 const parentCategories = computed(() => {

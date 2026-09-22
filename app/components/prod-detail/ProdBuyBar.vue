@@ -4,7 +4,7 @@
        우하단 채팅 버튼(z-[8801])과 겹치지 않게 오른쪽 여백을 둔다. -->
   <div
     ref="barRef"
-    class="fixed inset-x-0 bottom-0 z-[900] border-t-[3px] border-solid border-[#bc8246] bg-[#fffaf3]/95 backdrop-blur-md shadow-[0_-6px_22px_rgba(60,40,10,0.16)] transition-transform duration-200 pl-4 pr-20 py-2.5 sm:px-6"
+    class="fixed inset-x-0 bottom-0 z-[900] border-t border-solid border-[#bc8246] bg-[#fffaf3]/95 backdrop-blur-md shadow-[0_-6px_22px_rgba(60,40,10,0.16)] transition-transform duration-200 pl-4 pr-20 py-2.5 sm:px-6"
     :class="show ? 'translate-y-0' : 'translate-y-full pointer-events-none'"
     :aria-hidden="!show"
   >

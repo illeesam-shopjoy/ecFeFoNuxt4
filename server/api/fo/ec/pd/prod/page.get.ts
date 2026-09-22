@@ -42,6 +42,7 @@ export default defineEventHandler(async (event) => {
     beQuery.searchType = "prodNm";
     beQuery.searchValue = query.keyword;
   }
+  if (query.prodTypeCd) beQuery.prodTypeCd = query.prodTypeCd; // 상품유형 단일선택(2026-09-22)
 
   const page = await beApi.get<BePage<PdProdRawType>>("/fo/ec/pd/prod/page", beQuery);
   const out = {

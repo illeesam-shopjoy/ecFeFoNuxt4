@@ -683,7 +683,11 @@
     width: 0;
     max-width: 90vw;
     height: 100%;
-    overflow: hidden;
+    /* 2026-09-22(요청사항: "전체 펼치기 할때 제일 아래 넘어가는데 스크롤 나오게") — 서브메뉴를 전부 펼치면 패널 높이를 넘어가는데
+       overflow:hidden 이라 넘친 부분이 아예 숨어서 스크롤할 방법이 없었다. 세로만 스크롤 가능하게 하고 가로는 그대로 막는다
+       (패널 폭이 0→350px 로 변하는 트랜지션 중에는 세로 스크롤이 필요 없어 보통은 안 보인다). */
+    overflow-x: hidden;
+    overflow-y: auto;
     visibility: hidden;
     background: $white;
     -webkit-transition: width 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), padding 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86), visibility 0s linear 0.3s;

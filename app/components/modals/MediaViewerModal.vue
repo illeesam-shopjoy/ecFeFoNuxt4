@@ -31,22 +31,33 @@
           >
             <i class="fa fa-chevron-left"></i>
           </button>
-          <div class="flex-1 flex items-center justify-center max-w-4xl max-h-full">
-            <template v-if="currentItem">
+          <!-- 2026-09-22(요청사항: "이 모달도 좌/우 제스처로 이미지 이동, 이동 시 좌로/우로 이미지 효과") — 마우스 드래그·손가락 스와이프로도 넘기고,
+               다음/이전 모두 살짝 슬라이드+페이드 되는 방향성 있는 전환을 준다(동영상 재생 중엔 스와이프로 컨트롤 조작이 씹히지 않게 건드리지 않음). -->
+          <div
+            class="flex-1 flex items-center justify-center max-w-4xl max-h-full overflow-hidden select-none"
+            @pointerdown="swDown"
+            @pointerup="swUp"
+            @pointercancel="swCancel"
+            @dragstart.prevent
+          >
+            <Transition :name="dir > 0 ? 'mv-next' : 'mv-prev'" mode="out-in">
               <img
-                v-if="currentItem.type === 'image'"
+                v-if="currentItem?.type === 'image'"
+                :key="currentIndex"
                 :src="currentItem.url"
                 :alt="`첨부 ${currentIndex + 1}`"
                 class="max-w-full max-h-[60vh] object-contain"
+                draggable="false"
               />
               <video
-                v-else
+                v-else-if="currentItem"
+                :key="'v' + currentIndex"
                 :src="currentItem.url"
                 controls
                 class="max-w-full max-h-[60vh]"
                 @click.stop
               />
-            </template>
+            </Transition>
           </div>
           <button
             v-if="normalizedItems.length > 1"
@@ -179,17 +190,43 @@ watch(
 onUnmounted(() => {
   if (hasDocument) document.removeEventListener('keydown', onKeydown);
 });
+// 2026-09-22(요청사항: "좌/우 이동시 좌로/우로 이미지 효과") — 이동 방향(1=다음→왼쪽으로 슬라이드, -1=이전→오른쪽으로 슬라이드)
+const dir = ref<1 | -1>(1);
 function prev() {
   if (normalizedItems.value.length <= 1) return;
+  dir.value = -1;
   currentIndex.value = currentIndex.value <= 0 ? normalizedItems.value.length - 1 : currentIndex.value - 1;
 }
 function next() {
   if (normalizedItems.value.length <= 1) return;
+  dir.value = 1;
   currentIndex.value = currentIndex.value >= normalizedItems.value.length - 1 ? 0 : currentIndex.value + 1;
 }
 function goTo(i: number) {
+  if (i === currentIndex.value) return;
+  dir.value = i > currentIndex.value ? 1 : -1;
   currentIndex.value = i;
 }
+
+// ── 좌우로 밀어서 넘기기 (마우스 드래그 · 터치) — 동영상 재생 컨트롤과 겹치지 않게 비디오는 건드리지 않음 ──
+let swipeX: number | null = null;
+let swipeY = 0;
+function swDown(e: PointerEvent) {
+  if (currentItem.value?.type === 'video') return;
+  swipeX = e.clientX;
+  swipeY = e.clientY;
+}
+function swUp(e: PointerEvent) {
+  if (swipeX == null) return;
+  const dx = e.clientX - swipeX;
+  const dy = e.clientY - swipeY;
+  swipeX = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    if (dx < 0) next();
+    else prev();
+  }
+}
+const swCancel = () => (swipeX = null);
 function prevPage() {
   if (currentPage.value > 0) currentIndex.value = (currentPage.value - 1) * thumbPerPage;
 }
@@ -208,6 +245,29 @@ function nextPage() {
 }
 .media-viewer-fade-enter-from,
 .media-viewer-fade-leave-to {
+  opacity: 0;
+}
+/* 2026-09-22 — 다음(mv-next)/이전(mv-prev) 방향에 따라 살짝 좌우로 슬라이드+페이드 */
+.mv-next-enter-active,
+.mv-next-leave-active,
+.mv-prev-enter-active,
+.mv-prev-leave-active {
+  transition: transform 0.28s ease, opacity 0.28s ease;
+}
+.mv-next-enter-from {
+  transform: translateX(40px);
+  opacity: 0;
+}
+.mv-next-leave-to {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+.mv-prev-enter-from {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+.mv-prev-leave-to {
+  transform: translateX(40px);
   opacity: 0;
 }
 </style>

@@ -9,7 +9,9 @@
     <!-- 상품 상세 -->
     <template v-else-if="item">
       <section class="shop__area pb-[110px]">
-        <div class="shop__top bg-white pt-60 pb-60">
+        <!-- 2026-09-22(요청사항: "배너와 상품 이미지 사이 공백이 커 — 줄여줘") — 이 div 의 pt-60(60px)이 배너 바로 아래(.page__title + section) 이미
+             줄여둔 여백 위에 또 더해져 폰에서 유난히 크게 벌어졌다. 폰에서만 더 줄인다. -->
+        <div class="shop__top bg-white pt-[16px] pb-60 md:pt-60">
           <div class="max-w-7xl mx-auto px-4">
             <div class="row">
               <div class="col-xl-6 col-lg-6">
@@ -118,25 +120,24 @@
                     <ul>
                       <template v-for="review in sortedReviews" :key="review.reviewId">
                         <li>
-                          <div class="flex items-start gap-4">
-                            <div class="comments-avatar">
+                          <!-- 2026-09-22(요청사항: "상품평 글이 찌그러져 보여 — 좌측에 빈 공백, 별표도 2줄") — 첨부 썸네일이 있으면 그 열(최대 5장 × 48px)이
+                               고정폭을 차지하는데, min-w-0인 가운데 열이 그걸 위해 계속 줄어들다 90px까지 짜부라져서 이름·버튼·별점이 한 글자씩 줄바꿈됐다.
+                               flex-wrap을 켜고 가운데 열에 실질적인 min-width를 줘서, 자리가 부족하면 첨부열이 통째로 다음 줄로 내려가게 한다(짜부라지지 않음). -->
+                          <div class="flex flex-wrap items-start gap-4">
+                            <div class="comments-avatar shrink-0">
                               <app-image :src="review.img" :alt="review.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                             </div>
-                            <div class="flex-1 min-w-0">
-                              <div class="avatar-name">
-                                <h5>{{ review.writerNm }}</h5>
-                                <span class="inline-flex gap-2 ml-1">
-                                  <button v-if="isLoggedIn" type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
-                                  <button v-if="canModifyReview(review)" type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startEditReview(review)">수정</button>
-                                  <button v-if="canModifyReview(review)" type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(review.reviewId, false, !review.memberId)">삭제</button>
+                            <div class="min-w-[200px] flex-1">
+                              <div class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                <h5 class="m-0">{{ review.writerNm }}</h5>
+                                <span class="inline-flex flex-wrap gap-2">
+                                  <button v-if="isLoggedIn" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
+                                  <button v-if="canModifyReview(review)" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startEditReview(review)">수정</button>
+                                  <button v-if="canModifyReview(review)" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(review.reviewId, false, !review.memberId)">삭제</button>
                                 </span>
                               </div>
-                              <div class="user-rating">
-                                <ul>
-                                  <li v-for="s in 5" :key="s">
-                                    <span><i class="text-[#f5a623]" :class="s <= review.rating ? 'fas fa-star' : 'fal fa-star'"></i></span>
-                                  </li>
-                                </ul>
+                              <div class="mb-1 flex items-center gap-0.5 text-[0.9rem]">
+                                <i v-for="s in 5" :key="s" class="text-[#f5a623]" :class="s <= review.rating ? 'fas fa-star' : 'fal fa-star'"></i>
                               </div>
                               <div v-if="!isAutoTitle(review.reviewTitle, review.reviewContent)" class="mb-1 text-[0.95rem] font-bold text-gray-900">{{ review.reviewTitle }}</div>
                               <client-only><div class="he-view" v-html="toSafeHtml(review.reviewContent) || '내용 없음'"></div></client-only>
@@ -146,8 +147,8 @@
                                 </li>
                               </ul>
                             </div>
-                            <div v-if="(review.attachments?.length ?? 0) > 0" class="shrink-0 flex flex-col items-end">
-                              <div class="flex flex-wrap gap-1.5 justify-end">
+                            <div v-if="(review.attachments?.length ?? 0) > 0" class="ml-[76px] flex w-full flex-col items-start sm:ml-0 sm:w-auto sm:shrink-0 sm:items-end">
+                              <div class="flex flex-wrap gap-1.5 sm:justify-end">
                                 <template v-for="(url, i) in (review.attachments ?? []).slice(0, 5)" :key="url">
                                   <button type="button" class="w-12 h-12 rounded overflow-hidden border border-gray-200 p-0 cursor-pointer bg-gray-100 shrink-0 hover:opacity-90" @click="openMedia(review.attachments ?? [], i)">
                                     <img v-if="!isVideoUrl(url)" :src="url" :alt="`첨부 ${i + 1}`" class="w-full h-full object-cover" />
@@ -167,14 +168,14 @@
                           </div>
                         </li>
                         <li v-for="reply in (review.replies ?? [])" :key="reply.reviewId" class="children">
-                          <div class="flex items-start gap-4">
-                            <div class="comments-avatar">
+                          <div class="flex flex-wrap items-start gap-4">
+                            <div class="comments-avatar shrink-0">
                               <app-image :src="reply.img" :alt="reply.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                             </div>
-                            <div class="flex-1 min-w-0">
-                              <div class="avatar-name">
-                                <h5>{{ reply.writerNm }}</h5>
-                                <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(reply.reviewId, true)">삭제</button>
+                            <div class="min-w-[160px] flex-1">
+                              <div class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                <h5 class="m-0">{{ reply.writerNm }}</h5>
+                                <button type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(reply.reviewId, true)">삭제</button>
                               </div>
                               <client-only><div class="he-view" v-html="toSafeHtml(reply.reviewContent)"></div></client-only>
                             </div>

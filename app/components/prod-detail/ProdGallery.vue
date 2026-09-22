@@ -61,7 +61,7 @@
             'relative m-0 h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg border-2 bg-[#f4f5f5] p-0 cursor-pointer transition-all duration-150',
             i === index ? 'border-[#222] opacity-100 shadow-[0_2px_8px_rgba(0,0,0,0.3)] scale-[1.04]' : 'border-[#e5e7eb] opacity-55 hover:opacity-100 hover:border-[#bbb]',
           ]"
-          @click="index = i"
+          @click="setIndex(i)"
         >
           <img :src="src" :alt="`${item.prodNm} 썸네일 ${i + 1}`" class="block h-full w-full object-cover" loading="lazy" />
           <span v-if="src === defaultUrl" class="absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#e8587a] shadow-[0_1px_3px_rgba(0,0,0,0.25)]" aria-label="기본이미지">
@@ -120,7 +120,10 @@
           @click.self="onBackdropClick"
           @dragstart.prevent
         >
-          <img :src="current" :alt="item.prodNm" class="m-auto select-none object-contain" :class="zoomedIn ? 'h-[200%] max-w-none' : 'h-full max-w-full'" draggable="false" />
+          <img v-if="zoomedIn" :src="current" :alt="item.prodNm" class="m-auto h-[200%] max-w-none select-none object-contain" draggable="false" />
+          <Transition v-else :name="dir > 0 ? 'gal-next' : 'gal-prev'" mode="out-in">
+            <img :key="index" :src="current" :alt="item.prodNm" class="m-auto h-full max-w-full select-none object-contain" draggable="false" />
+          </Transition>
         </div>
         <button v-if="images.length > 1" type="button" class="absolute right-3 top-[calc(50%-40px)] z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border-0 bg-white text-[#222] shadow-[0_2px_12px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-[#f0f0f0]" aria-label="다음 이미지" @click="move(1)">
           <i class="fas fa-chevron-right text-lg"></i>
@@ -139,7 +142,7 @@
                 'relative m-0 h-[56px] w-[56px] shrink-0 overflow-hidden rounded-md border-2 bg-[#222] p-0 cursor-pointer transition',
                 i === index ? 'border-white opacity-100' : 'border-transparent opacity-60 hover:opacity-100',
               ]"
-              @click="index = i"
+              @click="setIndex(i)"
             >
               <img :src="src" :alt="`${item.prodNm} ${i + 1}`" class="block h-full w-full object-cover" loading="lazy" />
               <span v-if="colorDot(src)" class="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-[1.5px] border-white" :style="{ background: colorDot(src)!.color }"></span>
@@ -203,10 +206,18 @@ watch(() => props.item.prodId, () => { index.value = 0; });
 watch(() => props.colorOptId, () => { index.value = 0; }); // 색상을 바꾸면 그 색상의 첫 이미지부터
 watch(images, (list) => { if (index.value >= list.length) index.value = 0; });
 
+// 2026-09-22(요청사항: "좌/우로 이동 시 좌로/우로 이미지 효과") — 이동 방향(1=다음→왼쪽으로 슬라이드, -1=이전→오른쪽으로 슬라이드)
+const dir = ref<1 | -1>(1);
 function move(step: number) {
   const n = images.value.length;
   if (n < 2) return;
+  dir.value = step > 0 ? 1 : -1;
   index.value = (index.value + step + n) % n;
+}
+function setIndex(i: number) {
+  if (i === index.value) return;
+  dir.value = i > index.value ? 1 : -1;
+  index.value = i;
 }
 
 // ── 썸네일 스트립: 좌/우 화살표 + 선택 썸네일 자동 노출 ─────────────────────
@@ -313,3 +324,30 @@ onBeforeUnmount(() => {
   }
 });
 </script>
+
+<style scoped>
+/* 2026-09-22(요청사항: "상품 큰이미지 모달 — 좌/우로 이동시 좌로/우로 이미지 효과") — 다음(gal-next)은 이전 이미지가 왼쪽으로,
+   새 이미지가 오른쪽에서 오는 느낌으로, 이전(gal-prev)은 반대 방향으로 살짝 슬라이드+페이드된다. */
+.gal-next-enter-active,
+.gal-next-leave-active,
+.gal-prev-enter-active,
+.gal-prev-leave-active {
+  transition: transform 0.28s ease, opacity 0.28s ease;
+}
+.gal-next-enter-from {
+  transform: translateX(40px);
+  opacity: 0;
+}
+.gal-next-leave-to {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+.gal-prev-enter-from {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+.gal-prev-leave-to {
+  transform: translateX(40px);
+  opacity: 0;
+}
+</style>

@@ -45,7 +45,11 @@
         <div v-if="isOptionProd" class="mb-5">
         <div class="mb-3 border-b border-[#e5e7eb] pb-2 text-[0.9rem] font-bold text-gray-800">옵션선택 : <span class="font-medium text-gray-600">색상, 사이즈</span></div>
         <div class="product__modal-input color mb-20 relative after:!hidden">
-          <label>색상 <i class="fas fa-star-of-life"></i></label>
+          <label>색상 <i class="fas fa-star-of-life"></i>
+            <!-- 2026-09-22(요청사항: "색상 우측에 색상상태도움말 아이콘") — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명하는 모달. 사이즈의
+                 "?"(사이즈 가이드)와 헷갈리지 않도록 채워진 원 + i 아이콘으로 다르게 표시. -->
+            <button type="button" class="status-help-badge" aria-label="색상 상태 안내" title="색상 상태 안내" @click.stop.prevent="colorStatusHelpRef?.show()"><i class="fas fa-info text-[9px]"></i></button>
+          </label>
           <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
             <button
               v-for="opt in visibleColors"
@@ -61,8 +65,8 @@
               @click="selectedColor = optKey(opt)"
             >
               <i v-if="selectedColor === optKey(opt)" class="fas fa-check absolute inset-0 flex items-center justify-center text-[11px] text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.85)]"></i>
-              <!-- 품절/판매중지: 대각선 -->
-              <span v-if="soldOut(opt, 'color')" class="pointer-events-none absolute left-1/2 top-1/2 h-[2px] w-[130%] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded bg-[#c0392b]"></span>
+              <!-- 재고없음/판매중지: 대각선(색상으로 구분 — 빨강:재고없음, 회색:판매중지). 색상·사이즈에 동일하게 적용(표식 통일). -->
+              <span v-if="soldOut(opt, 'color')" class="pointer-events-none absolute left-1/2 top-1/2 h-[2px] w-[130%] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded" :style="{ background: strikeColor(opt, 'color') }"></span>
             </button>
             <button
               v-if="hasMoreColors"
@@ -111,8 +115,10 @@
         <!-- 사이즈 선택 (아래) -->
         <div class="product__modal-input size mb-20 relative after:!hidden">
           <label>사이즈 <i class="fas fa-star-of-life"></i>
-            <!-- 2026-09-22(요청사항: "사이즈 라벨 우측에 도움말 아이콘 — 클릭하면 모달로 사이즈 안내") -->
+            <!-- 2026-09-22(요청사항: "사이즈 라벨 우측에 도움말 아이콘 — 클릭하면 모달로 사이즈 안내") — 사이즈표(가이드/세계 사이즈 표준) -->
             <button type="button" class="ml-1.5 inline-flex h-[19px] w-[19px] cursor-pointer items-center justify-center rounded-full border border-solid border-[#b8b8b8] bg-white p-0 align-middle text-[11px] font-bold leading-none text-[#666] hover:border-[#bc8246] hover:text-[#bc8246]" aria-label="사이즈 안내" title="사이즈 안내" @click.stop.prevent="sizeGuideRef?.show()">?</button>
+            <!-- 위 "?"(사이즈 가이드/표준)와 헷갈리지 않게 다른 뱃지 — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명 -->
+            <button type="button" class="status-help-badge" aria-label="사이즈 상태 안내" title="사이즈 상태 안내" @click.stop.prevent="sizeStatusHelpRef?.show()"><i class="fas fa-info text-[9px]"></i></button>
           </label>
           <div class="flex flex-wrap items-center gap-2 mt-2.5">
             <span v-if="!sizes.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
@@ -125,7 +131,13 @@
               :disabled="soldOut(opt, 'size')"
               @click="selectedSize = optKey(opt)"
             >
-              <span :class="{ 'line-through': soldOut(opt, 'size') }">{{ opt.prodOptNm }}</span><span v-if="soldOut(opt, 'size')" class="ml-1 text-[11px] font-semibold text-[#c0392b]">{{ stateLabel(opt, 'size') }}</span><span v-else-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
+              <!-- 2026-09-22(요청사항: "사이즈 아래 판매중지 이런 설명은 안 넣어도 되고 사이즈상태도움말에 표시 — 색상·사이즈 표식 통일") —
+                   글자 라벨 대신 색상 스와치와 같은 대각선 표식만(빨강:재고없음, 회색:판매중지). 의미는 위 ⓘ 도움말에서 설명. -->
+              <span class="relative inline-flex items-center">
+                {{ opt.prodOptNm }}
+                <span v-if="soldOut(opt, 'size')" class="pointer-events-none absolute left-1/2 top-1/2 h-[2px] w-[130%] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded" :style="{ background: strikeColor(opt, 'size') }"></span>
+              </span>
+              <span v-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
             </button>
             <button
               v-if="hasMoreSizes"
@@ -164,6 +176,8 @@
           </div>
         </div>
         <size-guide-modal ref="sizeGuideRef" />
+        <option-status-help-modal ref="colorStatusHelpRef" title="색상" />
+        <option-status-help-modal ref="sizeStatusHelpRef" title="사이즈" />
         <div class="product__modal-required mb-5">
           <span>필수 입력 항목 *</span>
         </div>
@@ -244,6 +258,7 @@ import { useWishlistStore } from "~/store/useWishlistStore";
 import { prodTypeLabel } from "~/conts/pdConst";
 import { prodOptSwatchColor } from "~/utils/prodOptColor";
 import SizeGuideModal from "~/components/modals/SizeGuideModal.vue";
+import OptionStatusHelpModal from "~/components/modals/OptionStatusHelpModal.vue";
 
 const props = defineProps<{
   item: PdProdType;
@@ -264,6 +279,8 @@ const buyEl = ref<HTMLElement | null>(null); // 구매 버튼 영역 — 하단 
 const { formatPrice } = usePrice();
 
 const sizeGuideRef = ref<InstanceType<typeof SizeGuideModal> | null>(null);
+const colorStatusHelpRef = ref<InstanceType<typeof OptionStatusHelpModal> | null>(null);
+const sizeStatusHelpRef = ref<InstanceType<typeof OptionStatusHelpModal> | null>(null);
 const selectedColor = ref("");
 const selectedSize = ref("");
 // 선택한 색상 옵션ID 를 상세 갤러리에 알린다 — 그 색상의 이미지를 먼저 보여주기 위해(선택 해제 시 "")
@@ -349,6 +366,8 @@ function optState(opt: OptionItem, kind: "color" | "size"): OptState {
 }
 const soldOut = (opt: OptionItem, kind: "color" | "size"): boolean => optState(opt, kind) !== "";
 const stateLabel = (opt: OptionItem, kind: "color" | "size"): string => (optState(opt, kind) === "stopped" ? "판매중지" : "품절");
+// 2026-09-22(요청사항: "색상·사이즈에 판매중지/재고없음 표식 통일") — 대각선 표식 색: 재고없음(soldout)=빨강, 판매중지(stopped)=회색
+const strikeColor = (opt: OptionItem, kind: "color" | "size"): string => (optState(opt, kind) === "stopped" ? "#9ca3af" : "#c0392b");
 /** 추가금액 — 판매 가능한 SKU 중 가장 낮은 추가금액(없으면 0) */
 function optAdd(opt: OptionItem, kind: "color" | "size"): number {
   const adds = skusOf(opt, kind)
@@ -436,3 +455,27 @@ defineExpose({ addToCart: handleAddToCart, buyNow: handleBuyNow, getBuyEl: () =>
 
 const swatchColor = (opt: OptionItem) => prodOptSwatchColor(opt.prodOptStdCd);
 </script>
+
+<style scoped>
+/* 2026-09-22(요청사항: "색상/사이즈 상태 도움말 아이콘 — 사이즈의 '?'와는 다른 뱃지로") — 사이즈 가이드의 흰 바탕 외곽선 "?" 원과
+   구분되도록 채워진 테마색 원 + i 아이콘으로 만든다. */
+.status-help-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  margin-left: 5px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: #bc8246;
+  color: #fff;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background-color 0.15s;
+}
+.status-help-badge:hover {
+  background: #a06a35;
+}
+</style>
