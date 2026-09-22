@@ -45,15 +45,12 @@
         <div v-if="isOptionProd" class="mb-5">
         <div class="mb-3 border-b border-[#e5e7eb] pb-2 text-[0.9rem] font-bold text-gray-800">옵션선택 : <span class="font-medium text-gray-600">색상, 사이즈</span></div>
         <div class="product__modal-input color mb-20 relative after:!hidden">
-          <label class="!flex !items-center !justify-between">
-            <span class="inline-flex items-center">
-              색상 <i class="fas fa-star-of-life"></i>
-              <!-- 2026-09-22(요청사항: "색상상태도움말 — 좀더 의미있는 아이콘으로") — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명하는 모달.
-                   사이즈의 "?"(사이즈 가이드)와 헷갈리지 않도록 채워진 원 뱃지로 다르게 표시, 아이콘은 표식/태그를 뜻하는 fa-tag. -->
-              <button type="button" class="status-help-badge" aria-label="색상 상태 안내" title="색상 상태 안내" @click.stop.prevent="colorStatusHelpRef?.show()"><i class="fas fa-tag text-[9px]"></i></button>
-            </span>
-            <!-- 2026-09-22(요청사항: "필수 입력항목 글씨를 색상·사이즈 우측 빈란에") — 맨 아래 있던 공용 안내문 대신 각 라벨 줄 오른쪽에 표시 -->
-            <span class="text-[0.72rem] font-semibold text-theme">필수</span>
+          <!-- 2026-09-22(요청사항: "필수 마킹이 라벨에 바로 붙어있어야, '필수' 글자는 필요없음") — 별표(*)만 라벨에 바로 붙이고 별도 "필수" 문구는 뺐다. -->
+          <label>
+            색상<i class="fas fa-star-of-life ml-1"></i>
+            <!-- 2026-09-22(요청사항: "색상상태도움말 — 좀더 의미있는 아이콘으로") — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명하는 모달.
+                 사이즈의 "?"(사이즈 가이드)와 헷갈리지 않도록 채워진 원 뱃지로 다르게 표시, 아이콘은 표식/태그를 뜻하는 fa-tag. -->
+            <button type="button" class="status-help-badge" aria-label="색상 상태 안내" title="색상 상태 안내" @click.stop.prevent="colorStatusHelpRef?.show()"><i class="fas fa-tag text-[9px]"></i></button>
           </label>
           <div class="flex flex-wrap items-center gap-2.5 mt-2.5 mb-2">
             <button
@@ -119,15 +116,12 @@
         </div>
         <!-- 사이즈 선택 (아래) -->
         <div class="product__modal-input size mb-20 relative after:!hidden">
-          <label class="!flex !items-center !justify-between">
-            <span class="inline-flex items-center">
-              사이즈 <i class="fas fa-star-of-life"></i>
-              <!-- 2026-09-22(요청사항: "사이즈상태도움말 — 좀더 의미있는 아이콘, (?)는 뒤로") — 색상과 같은 뱃지(fa-tag)를 먼저,
-                   사이즈 가이드/세계 표준을 보여주는 "?"는 그 뒤로 옮겼다. -->
-              <button type="button" class="status-help-badge" aria-label="사이즈 상태 안내" title="사이즈 상태 안내" @click.stop.prevent="sizeStatusHelpRef?.show()"><i class="fas fa-tag text-[9px]"></i></button>
-              <button type="button" class="ml-1.5 inline-flex h-[19px] w-[19px] cursor-pointer items-center justify-center rounded-full border border-solid border-[#b8b8b8] bg-white p-0 align-middle text-[11px] font-bold leading-none text-[#666] hover:border-[#bc8246] hover:text-[#bc8246]" aria-label="사이즈 안내" title="사이즈 안내" @click.stop.prevent="sizeGuideRef?.show()">?</button>
-            </span>
-            <span class="text-[0.72rem] font-semibold text-theme">필수</span>
+          <label>
+            사이즈<i class="fas fa-star-of-life ml-1"></i>
+            <!-- 2026-09-22(요청사항: "사이즈상태도움말 — 좀더 의미있는 아이콘, (?)는 뒤로") — 색상과 같은 뱃지(fa-tag)를 먼저,
+                 사이즈 가이드/세계 표준을 보여주는 "?"는 그 뒤로 옮겼다. -->
+            <button type="button" class="status-help-badge" aria-label="사이즈 상태 안내" title="사이즈 상태 안내" @click.stop.prevent="sizeStatusHelpRef?.show()"><i class="fas fa-tag text-[9px]"></i></button>
+            <button type="button" class="ml-1.5 inline-flex h-[19px] w-[19px] cursor-pointer items-center justify-center rounded-full border border-solid border-[#b8b8b8] bg-white p-0 align-middle text-[11px] font-bold leading-none text-[#666] hover:border-[#bc8246] hover:text-[#bc8246]" aria-label="사이즈 안내" title="사이즈 안내" @click.stop.prevent="sizeGuideRef?.show()">?</button>
           </label>
           <div class="flex flex-wrap items-center gap-2 mt-2.5">
             <span v-if="!sizes.length" class="text-[13px] text-[#aaa]">사이즈 없음</span>
@@ -148,10 +142,12 @@
               </span>
               <span v-if="optAdd(opt, 'size') > 0" class="ml-1 text-[11px] font-semibold" :class="selectedSize === optKey(opt) ? 'text-[#ffd9a0]' : 'text-[#c0392b]'">+{{ formatPrice(optAdd(opt, 'size')) }}</span>
             </button>
+            <!-- 2026-09-22(요청사항: "사이즈의 ... 표시 개행되어 보여지면 안 됨") — ml-auto 는 줄이 안 넘칠 때만 오른쪽으로 붙고, 사이즈 칩이 넘쳐 줄바꿈되면
+                 혼자 뚝 떨어진 새 줄로 밀려나 어색했다. ml-auto 를 빼서 다른 칩들처럼 바로 이어 붙게 한다. -->
             <button
               v-if="hasMoreSizes"
               type="button"
-              class="ml-auto px-3 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
+              class="px-3 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[#666] flex items-center justify-center cursor-pointer hover:border-[#888] hover:bg-[#f0f0f0]"
               :title="`사이즈 전체 보기 (${sizes.length})`"
               :aria-label="`사이즈 전체 보기 (${sizes.length})`"
               aria-haspopup="true"
@@ -217,8 +213,8 @@
               </button>
               <button type="button" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border-0 bg-[#FEE500] p-0 text-xl leading-none text-[#191919] cursor-pointer" title="카카오톡 공유" aria-label="카카오톡 공유" @click.prevent="shareTools.shareKakao()">💬</button>
             </div>
+            <!-- 2026-09-22(요청사항: "상품문의하기 링크는 없어도 되") -->
             <button type="button" class="h-12 w-full cursor-pointer rounded-[10px] border-2 border-solid border-[#222] bg-white text-[0.95rem] font-semibold text-[#222] transition-colors hover:bg-[#222] hover:text-white" @click.prevent="handleBuyNow">⚡ 바로구매</button>
-            <button type="button" class="cursor-pointer border-0 bg-transparent py-1 text-center text-[0.8rem] text-[#9ca3af] underline" @click.prevent="emit('inquiry')">상품 문의하기</button>
           </div>
           <div class="flex flex-col gap-1.5 border-t border-[#e5e7eb] pt-3.5 text-[0.8rem] text-[#555]">
             <div class="flex gap-2"><span aria-hidden="true">🚚</span><span>결제 확인 후 <strong>1~2 영업일</strong> 내 출고</span></div>
