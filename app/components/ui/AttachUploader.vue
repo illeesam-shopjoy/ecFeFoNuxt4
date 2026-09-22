@@ -75,10 +75,10 @@ const props = withDefaults(
     maxCount: 5,
     accept: () => ["jpg", "jpeg", "png", "gif", "pdf", "xlsx", "docx", "zip"],
     initialFiles: () => [],
-    // 서버 FileUploadUtil 기본 한도와 같은 값 — 이미지 5MB / 문서 20MB / 동영상 100MB / 그 외 10MB
-    imageMaxMb: 5,
+    // 서버 FileUploadUtil 한도와 같은 값(2026-09-22: 이미지 5→15MB, 동영상 100→150MB로 상향) — 문서 20MB / 그 외 10MB
+    imageMaxMb: 15,
     docMaxMb: 20,
-    videoMaxMb: 100,
+    videoMaxMb: 150,
     etcMaxMb: 10,
   }
 );

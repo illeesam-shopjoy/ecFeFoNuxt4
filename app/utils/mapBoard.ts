@@ -1,6 +1,8 @@
 /**
  * mapBoard.ts — 상품평/Q&A 작성·수정 요청 본문 조립 + 입력 검증 (svc 는 이 결과를 그대로 전송만 한다).
- * 서버 규칙: reviewTitle 필수(작성 폼에 제목 입력란이 없어 내용 앞 30자로 자동 생성), Q&A 제목은 서버가 생성.
+ * 서버 규칙: reviewTitle 필수. 2026-09-22(요청사항: "제목만 2자 이상 필수, 내용은 필수 아니어도 됨") — 제목은
+ * 화면(prod-dtl/[id].vue, ProdQna.vue)에서 이미 2자 이상 입력을 강제하므로 여기서는 다시 막지 않고,
+ * 혹시 비어 오면(방어적으로만) 내용 앞부분으로 대신 채운다. 내용(content)은 더 이상 필수가 아니다.
  */
 import type { CoWriteResultType } from "~/types/co/coWriteResultType";
 import type { PdProdQnaCreateType, PdProdQnaUpdateType } from "~/types/pd/pdProdQnaWriteType";
@@ -20,9 +22,8 @@ const checkRating = (v: unknown): number => {
 export function buildReviewCreatePayload(body: PdReviewCreateType): Record<string, unknown> {
   const reviewContent = String(body.content ?? "").trim();
   if (!body.prodId) badRequest("상품 ID가 필요합니다.");
-  if (!reviewContent) badRequest("상품평 내용을 입력해 주세요.");
   const rating = checkRating(body.rating);
-  const reviewTitle = String(body.reviewTitle ?? "").trim() || firstLine(reviewContent);
+  const reviewTitle = String(body.reviewTitle ?? "").trim() || firstLine(reviewContent) || "상품평";
   const payload: Record<string, unknown> = { prodId: body.prodId, reviewTitle, reviewContent, rating };
   if (body.writerNm) payload.writerNm = body.writerNm.trim();
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
@@ -33,9 +34,8 @@ export function buildReviewCreatePayload(body: PdReviewCreateType): Record<strin
 /** PUT /fo/ec/pd/review/{id} 본문 */
 export function buildReviewUpdatePayload(body: PdReviewUpdateType): Record<string, unknown> {
   const reviewContent = String(body.content ?? "").trim();
-  if (!reviewContent) badRequest("상품평 내용을 입력해 주세요.");
   const rating = checkRating(body.rating);
-  const payload: Record<string, unknown> = { reviewTitle: String(body.reviewTitle ?? "").trim() || firstLine(reviewContent), reviewContent, rating };
+  const payload: Record<string, unknown> = { reviewTitle: String(body.reviewTitle ?? "").trim() || firstLine(reviewContent) || "상품평", reviewContent, rating };
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.attachFiles?.length) payload.attachFiles = body.attachFiles;
   return payload;
@@ -53,8 +53,7 @@ export function buildReviewCommentPayload(body: PdReviewCommentCreateType): Reco
 export function buildQnaCreatePayload(body: PdProdQnaCreateType): Record<string, unknown> {
   const prodQnaContent = String(body.content ?? "").trim();
   if (!body.prodId) badRequest("상품 ID가 필요합니다.");
-  if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
-  const payload: Record<string, unknown> = { prodId: body.prodId, prodQnaContent, prodQnaTitle: body.title?.trim() || firstLine(prodQnaContent) || "이미지 문의" };
+  const payload: Record<string, unknown> = { prodId: body.prodId, prodQnaContent, prodQnaTitle: body.title?.trim() || firstLine(prodQnaContent) || "문의" };
   if (body.writerNm) payload.writerNm = body.writerNm.trim();
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.scrtYn) payload.scrtYn = body.scrtYn;
@@ -65,8 +64,7 @@ export function buildQnaCreatePayload(body: PdProdQnaCreateType): Record<string,
 /** PUT /fo/ec/pd/qna/{id} 본문 */
 export function buildQnaUpdatePayload(body: PdProdQnaUpdateType): Record<string, unknown> {
   const prodQnaContent = String(body.content ?? "").trim();
-  if (!prodQnaContent) badRequest("문의 내용을 입력해 주세요.");
-  const payload: Record<string, unknown> = { prodQnaContent, prodQnaTitle: body.title?.trim() || firstLine(prodQnaContent) || "이미지 문의" };
+  const payload: Record<string, unknown> = { prodQnaContent, prodQnaTitle: body.title?.trim() || firstLine(prodQnaContent) || "문의" };
   if (body.writerPwd) payload.writerPwd = body.writerPwd;
   if (body.attachFiles?.length) payload.attachFiles = body.attachFiles;
   return payload;

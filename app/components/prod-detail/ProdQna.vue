@@ -67,11 +67,13 @@
           <span v-if="pwdError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ pwdError }}</span>
         </label>
       </div>
+      <!-- 2026-09-22(요청사항: "제목만 2자 이상 필수, 내용은 필수 아니어도 됨") -->
       <label class="mb-3 block">
-        <span class="mb-1 block text-[0.78rem] text-gray-500">제목</span>
-        <input v-model="titleInput" type="text" maxlength="100" placeholder="제목 (선택 · 비우면 내용 앞부분)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" />
+        <span class="mb-1 block text-[0.78rem] text-gray-500">제목<span class="ml-0.5 text-theme">*</span></span>
+        <input v-model="titleInput" type="text" maxlength="100" placeholder="제목 (2자 이상)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': titleError }" @input="titleError = ''" />
+        <span v-if="titleError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ titleError }}</span>
       </label>
-      <html-editor v-model="content" height="170px" placeholder="문의 내용을 입력해 주세요 (이미지는 붙여넣기/삽입 가능)" upload-code="PROD_QNA_CONTENT_IMG" />
+      <html-editor v-model="content" height="170px" placeholder="문의 내용을 입력해 주세요 (선택 · 이미지는 붙여넣기/삽입 가능)" upload-code="PROD_QNA_CONTENT_IMG" />
       <div class="mt-3">
         <attach-uploader v-model="attachChanges" :initial-files="editingFiles" :title="'첨부파일'" :show-grp="false" grp-code="PROD_QNA" :max-count="10" :accept="ATTACH_ACCEPT" />
       </div>
@@ -97,7 +99,7 @@ import { isImageExt, isVideoExt } from "~/utils/mapProduct";
 import type { SyAttachType } from "~/types/sy/syAttachType";
 import AttachUploader from "~/components/ui/AttachUploader.vue";
 import HtmlEditor from "~/components/ui/HtmlEditor.vue";
-import { htmlToText, isEmptyHtml, toSafeHtml } from "~/utils/htmlSafe";
+import { htmlToText, toSafeHtml } from "~/utils/htmlSafe";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
 import MediaViewerModal from "~/components/modals/MediaViewerModal.vue";
@@ -151,9 +153,10 @@ const editingFiles = ref<SyAttachType[]>([]);
 const saving = ref(false);
 const busyId = ref<string | null>(null);
 const formError = ref("");
-const titleInput = ref(""); // 제목(선택)
+const titleInput = ref(""); // 제목(2026-09-22: 필수, 2자 이상)
 const nmError = ref(""); // 이름/글 비밀번호 검증 오류는 각 입력란 아래에 보여준다
 const pwdError = ref("");
+const titleError = ref("");
 
 const errMsg = (e: unknown, fallback: string) => {
   const err = e as { data?: { message?: string }; message?: string };
@@ -191,8 +194,10 @@ function cancelEdit() {
 
 async function submit() {
   formError.value = "";
+  titleError.value = "";
+  // 2026-09-22(요청사항: "제목만 2자 이상 필수, 내용은 필수 아니어도 됨")
+  if (titleInput.value.trim().length < 2) return void (titleError.value = "제목을 2자 이상 입력해 주세요.");
   const text = content.value.trim();
-  if (isEmptyHtml(text) || (htmlToText(text).length < 2 && !/<img\b/i.test(text))) return void (formError.value = "문의 내용을 2자 이상 입력해 주세요.");
   if (!editingId.value && !isLoggedIn.value) {
     const nm = writerNm.value.trim();
     nmError.value = nm.length < 2 || nm.length > 20 ? "이름을 2~20자로 입력해 주세요." : "";

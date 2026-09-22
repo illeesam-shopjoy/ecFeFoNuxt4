@@ -218,17 +218,18 @@
                           </label>
                         </div>
                       </div>
-                      <!-- 제목(선택) — 비우면 내용 앞부분이 제목이 된다 -->
+                      <!-- 2026-09-22(요청사항: "제목만 2자 이상 필수, 내용은 필수 아니어도 됨") -->
                       <div v-if="!replyingToReviewId" class="col-xl-12 mb-3">
                         <label class="block">
-                          <span class="mb-1 block text-[0.78rem] text-gray-500">제목</span>
-                          <input v-model="reviewTitleInput" type="text" maxlength="100" placeholder="제목 (선택 · 비우면 내용 앞부분)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" />
+                          <span class="mb-1 block text-[0.78rem] text-gray-500">제목<span class="ml-0.5 text-theme">*</span></span>
+                          <input v-model="reviewTitleInput" type="text" maxlength="100" placeholder="제목 (2자 이상)" class="!h-[34px] w-full rounded-md border border-[#e5e7eb] !px-[10px] !py-0 !text-[0.82rem] outline-none focus:border-[#bc8246]" :class="{ '!border-red-400': reviewTitleError }" @input="reviewTitleError = ''" />
+                          <span v-if="reviewTitleError" class="mt-1 block text-[0.75rem] leading-snug text-red-500">{{ reviewTitleError }}</span>
                         </label>
                       </div>
                       <div class="col-xl-12">
                         <div class="contact-icon relative contacts-message">
                           <Field name="comments" v-slot="{ value, handleChange }">
-                            <html-editor id="comments" :model-value="(value as string) ?? ''" height="170px" placeholder="내용을 입력하세요 (이미지는 붙여넣기/삽입 가능)" upload-code="REVIEW_CONTENT_IMG" @update:model-value="handleChange" />
+                            <html-editor id="comments" :model-value="(value as string) ?? ''" height="170px" placeholder="내용을 입력하세요 (선택 · 이미지는 붙여넣기/삽입 가능)" upload-code="REVIEW_CONTENT_IMG" @update:model-value="handleChange" />
                           </Field>
                           <ErrorMessage name="comments" class="text-danger" />
                         </div>
@@ -334,7 +335,7 @@ import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import { useAuthStore } from "~/store/useAuthStore";
 import AttachUploader from "~/components/ui/AttachUploader.vue";
 import HtmlEditor from "~/components/ui/HtmlEditor.vue";
-import { htmlToText, isEmptyHtml, toSafeHtml } from "~/utils/htmlSafe";
+import { htmlToText, toSafeHtml } from "~/utils/htmlSafe";
 import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
 import type { PdReviewType } from "~/types/pd/pdReviewType";
 import type { SyAttachType } from "~/types/sy/syAttachType";
@@ -675,14 +676,13 @@ async function deleteReview(reviewId: string, isReply: boolean, guest = false) {
 
 // ── 리뷰/답글 등록 폼 (옛 ReviewForm) ─────────────────────────────
 // 2026-09-14(요청사항: "리뷰작성 에도 yup 적용해줘") — login/register/contact와 동일한 스키마 방식.
+// 2026-09-22(요청사항: "제목만 2자 이상 필수, 내용은 필수 아니어도 됨") — comments(내용)는 더 이상 필수가 아니다. 제목(reviewTitleInput)은
+// vee-validate Field 로 안 묶인 일반 입력이라 이름/비밀번호와 같은 방식(reviewTitleError)으로 직접 검사한다(답글은 제목 없음, 검사 제외).
 const reviewSchema = yup.object({
-  comments: yup
-    .string()
-    .test("has-content", "내용을 입력해 주세요", (v) => !isEmptyHtml(v))
-    .test("min-text", "내용은 2자 이상이어야 합니다", (v) => isEmptyHtml(v) || htmlToText(v).length >= 2 || /<img\b/i.test(v ?? ""))
-    .label("내용"),
+  comments: yup.string().label("내용"),
 });
 const reviewFormLoading = ref(false);
+const reviewTitleError = ref("");
 
 async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { resetForm: () => void }) {
   const values = rawValues as { comments: string }; // vee-validate 는 값 타입을 GenericObject 로만 알려줌
@@ -690,6 +690,11 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
   reviewFormError.value = "";
   guestNmError.value = "";
   guestPwdError.value = "";
+  reviewTitleError.value = "";
+  if (!replyingToReviewId.value && reviewTitleInput.value.trim().length < 2) {
+    reviewTitleError.value = "제목을 2자 이상 입력해 주세요.";
+    return;
+  }
   if (!replyingToReviewId.value && (reviewRating.value < 0.5 || !item.value?.prodId)) {
     $toast?.error?.("별점을 선택해 주세요.");
     return;
