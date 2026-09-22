@@ -12,7 +12,8 @@
               <div :class="`slider__content ${item.isDark ? 'slider__content-black' : ''} slider__content-3`" style="text-align: left; padding-left: 40px;">
                 <h2 data-animation="fadeInUp" data-delay=".2s" v-html="item.title"></h2>
                 <p data-animation="fadeInUp" data-delay=".4s" v-html="item.subtile"></p>
-                <a href="#" :class="`os-btn ${item.isDark ? 'os-btn-white' : 'os-btn-2'} hero-slider-btn`" data-animation="fadeInUp" data-delay=".6s"> 바로 보기 </a>
+                <!-- 2026-09-23(요청사항: "바로보기 버튼 여러 home 배너 화면에 있는데 상품목록으로 이동하면되") — href="#"라 아무 데도 안 갔다. 다른 히어로(HomeHeroSlider 등)와 같이 /shop으로. -->
+                <nuxt-link href="/shop" :class="`os-btn ${item.isDark ? 'os-btn-white' : 'os-btn-2'} hero-slider-btn`" data-animation="fadeInUp" data-delay=".6s"> 바로 보기 </nuxt-link>
               </div>
             </div>
           </div>

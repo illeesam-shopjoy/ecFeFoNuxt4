@@ -10,7 +10,8 @@
                 <div class="slider__content slider__content-4">
                   <h2 v-html="item.title"></h2>
                   <p>{{ item.subtile }}</p>
-                  <a href="#" class="os-btn os-btn-2 hero-slider-btn">둘러보기</a>
+                  <!-- 2026-09-23(요청사항: "바로보기 버튼 여러 home 배너 화면에 있는데 상품목록으로 이동하면되") -->
+                  <nuxt-link href="/shop" class="os-btn os-btn-2 hero-slider-btn">둘러보기</nuxt-link>
                 </div>
               </div>
             </div>
