@@ -87,10 +87,24 @@
                   <div class="block mb-20">
                     <h3 class="m-0 text-[1.35rem] font-bold text-gray-900 pb-3 border-b-2 border-[#e5e7eb]">상품평 <span class="ml-2 inline-flex min-w-[24px] items-center justify-center rounded-full px-2 py-px align-middle text-[0.8rem] font-bold leading-[1.4]" :class="totalReviewCount > 0 ? 'bg-[#e8587a] text-white' : 'bg-[#e5e7eb] text-gray-500'">{{ totalReviewCount }}</span></h3>
                   </div>
-                  <!-- 첨부·모아보기는 그 아래 줄 -->
+                  <!-- 2026-09-22(요청사항: "모아보기시 해당줄에 이미지, 동영상 목록 나열해주고 한줄에 안들어가는 나머지는 ...으로,
+                       모아보기 버튼은 제일 우측면에") — 텍스트 대신 실제 썸네일을 한 줄로 나열하고, DOM 측정 없이(성능) 고정
+                       개수만 보여준 뒤 넘치면 "…"만 붙인다. 버튼은 ml-auto로 항상 줄 맨 끝에 붙는다. -->
                   <div v-if="totalAttachmentCount > 0" class="flex flex-nowrap items-center gap-2 mb-20">
-                    <span class="whitespace-nowrap text-sm text-gray-600">첨부 이미지·동영상 {{ totalAttachmentCount }}개</span>
-                    <button type="button" class="os-btn os-btn-black whitespace-nowrap !text-sm !px-3 !py-1 !h-auto" @click="openAllMedia">모아보기</button>
+                    <div class="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-hidden">
+                      <button
+                        v-for="(url, i) in shownAttachments"
+                        :key="url"
+                        type="button"
+                        class="h-7 w-7 shrink-0 cursor-pointer overflow-hidden rounded border border-gray-200 bg-gray-100 p-0"
+                        @click="openAllMedia(i)"
+                      >
+                        <img v-if="!isVideoUrl(url)" :src="url" alt="" class="h-full w-full object-cover" />
+                        <span v-else class="flex h-full w-full items-center justify-center bg-gray-600"><i class="fa fa-play text-[10px] text-white"></i></span>
+                      </button>
+                      <span v-if="totalAttachmentCount > shownAttachments.length" class="shrink-0 text-sm tracking-widest text-gray-400">…</span>
+                    </div>
+                    <button type="button" class="os-btn os-btn-black ml-auto shrink-0 whitespace-nowrap !text-sm !px-3 !py-1 !h-auto" @click="openAllMedia(0)">모아보기</button>
                   </div>
                   <!-- 2026-09-20: 평점 요약(평균 + 별점 분포)과 정렬 — ecFeBo 상품평 -->
                   <div v-if="reviewList.length" class="mb-5 flex flex-wrap items-center gap-8 rounded-xl border border-[#e5e7eb] bg-white p-6">
@@ -147,22 +161,23 @@
                                 </li>
                               </ul>
                             </div>
-                            <div v-if="(review.attachments?.length ?? 0) > 0" class="ml-[76px] flex w-full flex-col items-start sm:ml-0 sm:w-auto sm:shrink-0 sm:items-end">
+                            <div v-if="mediaFilesOf(review).length > 0" class="ml-[76px] flex w-full flex-col items-start sm:ml-0 sm:w-auto sm:shrink-0 sm:items-end">
                               <div class="flex flex-wrap gap-1.5 sm:justify-end">
-                                <template v-for="(url, i) in (review.attachments ?? []).slice(0, 5)" :key="url">
-                                  <button type="button" class="w-12 h-12 rounded overflow-hidden border border-gray-200 p-0 cursor-pointer bg-gray-100 shrink-0 hover:opacity-90" @click="openMedia(review.attachments ?? [], i)">
-                                    <img v-if="!isVideoUrl(url)" :src="url" :alt="`첨부 ${i + 1}`" class="w-full h-full object-cover" />
-                                    <span v-else class="w-full h-full flex items-center justify-center bg-gray-500"><i class="fa fa-play text-white"></i></span>
+                                <template v-for="(f, i) in mediaFilesOf(review).slice(0, 5)" :key="f.url">
+                                  <button type="button" class="relative w-12 h-12 rounded overflow-hidden border border-gray-200 p-0 cursor-pointer bg-gray-100 shrink-0 hover:opacity-90" @click="openMedia(mediaFilesOf(review), i)">
+                                    <img v-if="f.thumb" :src="f.thumb" :alt="`첨부 ${i + 1}`" class="w-full h-full object-cover" />
+                                    <span v-else class="w-full h-full flex items-center justify-center bg-gray-500"></span>
+                                    <span v-if="isVideoUrl(f.url)" class="absolute inset-0 flex items-center justify-center bg-black/25"><i class="fa fa-play text-[11px] text-white"></i></span>
                                   </button>
                                 </template>
                               </div>
                               <button
-                                v-if="(review.attachments?.length ?? 0) > 5"
+                                v-if="mediaFilesOf(review).length > 5"
                                 type="button"
                                 class="bg-transparent border-0 cursor-pointer text-sm text-gray-500 hover:underline mt-1"
-                                @click="openMedia(review.attachments ?? [], 5)"
+                                @click="openMedia(mediaFilesOf(review), 5)"
                               >
-                                외 {{ (review.attachments?.length ?? 0) - 5 }}개
+                                외 {{ mediaFilesOf(review).length - 5 }}개
                               </button>
                             </div>
                           </div>
@@ -556,26 +571,29 @@ const sortedReviews = computed(() => {
 
 const allAttachmentsList = computed(() => {
   const list = item.value?.reviews ?? [];
-  const urls: string[] = [];
+  const out: { url: string; thumb?: string }[] = [];
   for (const r of list) {
-    urls.push(...(r.attachments ?? []));
+    out.push(...mediaFilesOf(r));
   }
-  return urls;
+  return out;
 });
 const totalAttachmentCount = computed(() => allAttachmentsList.value.length);
+// 헤더 줄에 미리보기로 보여줄 개수 — DOM 폭 측정 없이 고정 개수만(성능), 넘치면 "…"만 표시
+const ATTACH_PREVIEW_COUNT = 8;
+const shownAttachments = computed(() => allAttachmentsList.value.slice(0, ATTACH_PREVIEW_COUNT));
 
 const mediaViewerOpen = ref(false);
-const mediaViewerItems = ref<string[]>([]);
+const mediaViewerItems = ref<{ url: string; thumb?: string }[]>([]);
 const mediaViewerInitialIndex = ref(0);
 
-function openMedia(items: string[], index: number) {
+function openMedia(items: { url: string; thumb?: string }[], index: number) {
   mediaViewerItems.value = items;
   mediaViewerInitialIndex.value = index;
   mediaViewerOpen.value = true;
 }
-function openAllMedia() {
+function openAllMedia(index = 0) {
   mediaViewerItems.value = [...allAttachmentsList.value];
-  mediaViewerInitialIndex.value = 0;
+  mediaViewerInitialIndex.value = index;
   mediaViewerOpen.value = true;
 }
 
@@ -590,6 +608,13 @@ const myMemberId = computed(() => authStore.user?.memberId ?? "");
 // 회원 글은 본인만, 비회원 글(memberId 없음)은 누구에게나 버튼을 보이고 글 비밀번호로 서버가 판정한다
 const canModifyReview = (r: PdReviewType) => !r.memberId || (isLoggedIn.value && r.memberId === myMemberId.value);
 const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.cdnImgUrl && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
+// 2026-09-22(요청사항: "동영상배경이미지로 썸네일이 표시되어야 해") — attachments(평평한 URL 목록)는 어떤 파일이 동영상인지만
+// 구분할 뿐 그 동영상의 실제 프레임 썸네일(ecBeBo가 이미 ffmpeg로 만들어 thumbCdnUrl에 내려줌)은 버렸다. attachFiles(원본,
+// thumbCdnUrl 포함)에서 다시 {url, thumb}쌍으로 만들어 실제 썸네일을 쓸 수 있게 한다.
+const mediaFilesOf = (r: PdReviewType): { url: string; thumb?: string }[] =>
+  (r.attachFiles ?? [])
+    .filter((f) => f.cdnImgUrl && (isImageExt(f.fileExt) || isVideoExt(f.fileExt)))
+    .map((f) => ({ url: f.cdnImgUrl as string, thumb: f.thumbCdnUrl || (isImageExt(f.fileExt) ? f.cdnImgUrl : undefined) }));
 // 서버 허용 확장자(FileUploadUtil) 중 이미지·문서·압축·동영상 — 동영상은 파일당 100MB(AttachUploader 기본)
 const REVIEW_ATTACH_ACCEPT = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "mp4", "mov", "avi", "mkv", "webm", "m4v", "wmv", "flv"];
 const guestNm = ref("");

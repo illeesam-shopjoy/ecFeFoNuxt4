@@ -89,8 +89,11 @@
                 :alt="`${i + 1}`"
                 class="w-full h-full object-cover"
               />
-              <div v-else class="w-full h-full bg-gray-700 flex items-center justify-center text-white text-lg">
-                <i class="fa fa-play"></i>
+              <!-- 2026-09-22(요청사항: "동영상배경이미지로 썸네일이 표시되어야 해") — item.thumb(ecBeBo가 ffmpeg로 만든 실제 프레임)이 있으면 배경으로, 없으면 기존 회색 박스로 폴백 -->
+              <div v-else class="relative w-full h-full bg-gray-700 flex items-center justify-center text-white text-lg">
+                <img v-if="item.thumb" :src="item.thumb" :alt="`${i + 1}`" class="absolute inset-0 w-full h-full object-cover" />
+                <span v-if="item.thumb" class="absolute inset-0 bg-black/25"></span>
+                <i class="fa fa-play relative"></i>
               </div>
             </button>
           </div>
@@ -133,8 +136,8 @@ function mediaType(url: string): 'image' | 'video' {
 const props = withDefaults(
   defineProps<{
     open: boolean;
-    /** URL 목록 (이미지/동영상 구분은 확장자로 자동) */
-    items: string[];
+    /** URL 목록(이미지/동영상 구분은 확장자로 자동) 또는 {url, thumb} 목록 — thumb이 있으면(동영상 실제 프레임 등) 썸네일 줄에 그걸 쓴다 */
+    items: (string | { url: string; thumb?: string })[];
     /** 처음 열 때 보여줄 인덱스 */
     initialIndex?: number;
   }>(),
@@ -147,7 +150,11 @@ const currentIndex = ref(0);
 const thumbPerPage = 10;
 
 const normalizedItems = computed(() =>
-  props.items.map((url) => ({ url, type: mediaType(url) as 'image' | 'video' }))
+  props.items.map((it) => {
+    const url = typeof it === 'string' ? it : it.url;
+    const thumb = typeof it === 'string' ? undefined : it.thumb;
+    return { url, thumb, type: mediaType(url) as 'image' | 'video' };
+  })
 );
 
 const currentItem = computed(() => normalizedItems.value[currentIndex.value] ?? null);

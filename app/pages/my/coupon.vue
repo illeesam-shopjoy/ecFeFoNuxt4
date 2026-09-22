@@ -1,18 +1,21 @@
 <template>
   <!-- 2026-09-20 ecFeBo 화면 구조로 통일 / 2026-09-19 — 마이페이지 > 쿠폰 (/my/coupon). ecFeBo MyCoupon.js 이식. 등록 폼(<fo-form>) + 미사용/사용 탭(클라이언트 필터) + 쿠폰 목록(<fo-grid>).
-       쿠폰 코드 등록 API 는 ecBeBo FO 쪽에 없어 등록은 "준비 중" 안내만 한다(ecFeBo 도 동일). -->
+       2026-09-22(요청사항: "쿠폰발급번호 제시해줘 ... 쿠폰 프로모션에 해당 쿠폰들 미리 만들어줘") — 코드 등록이 "준비 중"이던 걸
+       실제 오프라인 쿠폰(무료등록쿠폰) API로 연결하고, 코드를 몰라도 목록에서 바로 고를 수 있는 등록 모달 버튼을 추가했다. -->
   <my-page-frame tab="coupon" :my="my" :file-path="currentFilePath" empty-text="사용 가능한 쿠폰이 없습니다." :count="shown().length" :shown="shown().length" @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="p-4 mb-4 bg-white border border-[#e5e7eb] rounded-lg">
         <fo-form :columns="regCols" :form="regForm" :cols="1" :gap="8" @submit="handleBtnAction('coupon-register')">
           <template #reg="{ form }">
-            <div class="flex gap-2">
-              <input v-model="form.couponCode" class="fo-my-in flex-1" placeholder="쿠폰 코드 입력 (예: SPRING5000)" />
+            <div class="flex flex-wrap gap-2">
+              <input v-model="form.couponCode" class="fo-my-in flex-1 min-w-[160px]" placeholder="쿠폰 코드 입력 (예: ORDER2000)" />
               <button type="submit" class="h-10 px-5 bg-gray-900 text-white border-0 rounded-md text-[0.85rem] font-bold cursor-pointer">쿠폰 등록</button>
+              <button type="button" class="h-10 px-4 bg-white text-theme border border-theme rounded-md text-[0.85rem] font-bold cursor-pointer hover:bg-[#faf6f1]" @click="offlineModalRef?.show()">🎁 오프라인 쿠폰 신규등록</button>
             </div>
           </template>
         </fo-form>
       </div>
+      <offline-coupon-register-modal ref="offlineModalRef" @claimed="handleSearchList" />
       <div class="flex border-b border-[#e5e7eb] mb-2">
         <button v-for="c in COUPON_TABS" :key="c.key" type="button" class="px-6 py-3 bg-transparent border-0 border-b-2 -mb-px cursor-pointer text-[0.88rem]" :class="uiState.couponTab === c.key ? 'border-gray-900 text-gray-900 font-bold' : 'border-transparent text-gray-400'" @click="handleSelectAction('coupons-tab', c.key)">
           {{ c.label }} <span class="font-normal">({{ countOf(c.key) }})</span>
@@ -30,12 +33,16 @@
 import MyPageFrame from "~/components/my/MyPageFrame.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
 import FoForm from "~/components/fo/FoForm.vue";
+import OfflineCouponRegisterModal from "~/components/modals/OfflineCouponRegisterModal.vue";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, ymd } from "~/composables/useMyList";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
+import { offlineCouponSvc } from "~/svc/fo/ec/pm/offlineCouponSvc";
 import type { PmCouponType } from "~/types/pm/pmCouponType";
 import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
+
+const offlineModalRef = ref<InstanceType<typeof OfflineCouponRegisterModal> | null>(null);
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
@@ -111,9 +118,9 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
     // 검색조건 초기화
   } else if (cmd === "searchParam-reset") {
     return my.resetSearch();
-    // 쿠폰 코드 등록 — ecBeBo FO 쪽 등록 API 가 없어 안내만 (ecFeBo 도 동일)
+    // 쿠폰 코드 등록 — 오프라인 쿠폰(무료등록쿠폰) claim API
   } else if (cmd === "coupon-register") {
-    useNuxtApp().$toast.info("쿠폰 코드 등록 기능은 준비 중입니다.");
+    return handleCouponRegister();
   } else {
     console.warn("[handleBtnAction] unknown cmd:", cmd);
   }
@@ -146,6 +153,20 @@ const fnLoadCodes = async () => {};
 
 /* handleSearchList — 서버 페이징 조회 (등록기간) */
 const handleSearchList = () => my.load();
+
+/* handleCouponRegister — 코드 입력창으로 오프라인 쿠폰 등록(claim). 중복/소진은 서버 메시지 그대로 안내 */
+async function handleCouponRegister() {
+  const code = regForm.couponCode.trim();
+  if (!code) return useNuxtApp().$toast.error("쿠폰 코드를 입력해 주세요.");
+  try {
+    await offlineCouponSvc.claim(code);
+    await useAlert().openAlert("쿠폰이 등록되었습니다.");
+    regForm.couponCode = "";
+    await handleSearchList();
+  } catch (err) {
+    useNuxtApp().$toast.error((err as Error)?.message || "등록에 실패했습니다.");
+  }
+}
 
 /* initPage — 화면 로드 시퀀스: 로그인 확인 → 코드 로딩 → 초기 조회 */
 const initPage = async () => {

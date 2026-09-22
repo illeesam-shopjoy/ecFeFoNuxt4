@@ -22,7 +22,9 @@
               </td>
             </template>
             <template #cell-prodNm="{ row }">
+              <!-- 2026-09-22(요청사항: "위시리스트,장바구니목록,상품비교 옵션상품의 경우도 있으면 표시해주고") -->
               <td class="text-left">
+                <span v-if="prodTypeLabel(row.prodTypeCd)" class="mr-1.5 rounded-full bg-[#f1f1f1] px-2 py-px text-[11px] font-medium leading-tight text-[#525252]">{{ prodTypeLabel(row.prodTypeCd) }}</span>
                 <nuxt-link :to="`/prod-dtl/${row.prodId}`"><span v-html="row.prodNm"></span></nuxt-link>
               </td>
             </template>
@@ -101,6 +103,7 @@ import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
 import { useCartStore } from "~/store/useCartStore";
 import AppImage from "~/components/ui/AppImage.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
+import { prodTypeLabel } from "~/conts/pdConst";
 import type { FoGridColumn } from "~/types/fo/foCompType";
 
 import { usePageTitle } from "~/composables/usePageTitle";

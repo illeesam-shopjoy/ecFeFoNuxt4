@@ -3,7 +3,9 @@
        예전의 템플릿 샘플 소개문, 아무 데도 연결 안 된 링크(#)·중복 링크, 동작 안 하는 SNS(Facebook/Behance/Dribbble) 링크는 뺐다. -->
   <section v-if="!hideFooter" :class="`footer__area footer-bg ${box_style ? 'box-m-15' : ''}`">
     <div class="max-w-7xl mx-auto px-4 pt-10 pb-6 md:pt-14">
-      <div class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1.6fr_1fr_1.2fr]">
+      <!-- 2026-09-22(요청사항: "안내, 고객센터 5:5로 되니 우측란이 안 이쁘네 — 3:7 정도로") — 고객센터 칸(전화번호·이메일)이
+           줄바꿈되며 답답해 보여서, 모바일(2열)에서만 3:7로 — 데스크톱(3열)은 그대로 둔다. -->
+      <div class="grid grid-cols-[3fr_7fr] gap-x-6 gap-y-8 md:grid-cols-[1.6fr_1fr_1.2fr]">
         <!-- 로고 + 한 줄 소개 + 공유 -->
         <div class="col-span-2 md:col-span-1">
           <nuxt-link href="/" class="inline-block"><img src="/logo/shopjoy-logo-tan.svg" alt="shopjoy" class="h-8 w-auto" /></nuxt-link>
