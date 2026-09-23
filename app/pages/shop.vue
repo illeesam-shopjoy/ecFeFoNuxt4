@@ -375,6 +375,8 @@
 </template>
 
 <script setup lang="ts">
+// 2026-09-23: nuxt.config.ts app.keepalive.include 매칭용 이름 (뒤로가기 시 필터·불러온 페이지·스크롤 복원)
+defineOptions({ name: "ShopPage" });
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
@@ -397,7 +399,7 @@ import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import { axiosSsr } from "~/utils/axiosSsr";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import { PROD_TYPE_LABEL } from "~/conts/pdConst";
-import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated } from "vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useSeoMeta({
@@ -772,9 +774,12 @@ const resetMd = () => (mdUserIds.value = []);
 // (2026-09-21: 사이드바 "추천 상품" 위젯 제거 — 이 화면에서만 쓰던 useCacheProducts 호출도 함께 뺌)
 
 // ── 더보기 자동 스크롤(IntersectionObserver) ─────────────────────────────
+// 2026-09-23: 이 페이지가 KeepAlive 대상(nuxt.config.ts app.keepalive)이 되면서, 뒤로가기로
+// 다시 보일 때는 onMounted가 아니라 onActivated가 불린다 — 그때도 observer를 다시 연결해야
+// "더 스크롤하면 계속 불러오기"가 이어진다. 숨겨질 때(onDeactivated)는 정리해 중복 관찰을 막는다.
 const loadMoreSentinel = ref<HTMLElement | null>(null);
 let observer: IntersectionObserver | null = null;
-onMounted(() => {
+function connectLoadMoreObserver() {
   if (typeof IntersectionObserver === "undefined" || !loadMoreSentinel.value) return;
   observer = new IntersectionObserver(
     (entries) => {
@@ -783,8 +788,15 @@ onMounted(() => {
     { rootMargin: "200px" }
   );
   observer.observe(loadMoreSentinel.value);
-});
-onBeforeUnmount(() => observer?.disconnect());
+}
+function disconnectLoadMoreObserver() {
+  observer?.disconnect();
+  observer = null;
+}
+onMounted(connectLoadMoreObserver);
+onBeforeUnmount(disconnectLoadMoreObserver);
+onActivated(connectLoadMoreObserver);
+onDeactivated(disconnectLoadMoreObserver);
 </script>
 
 <style scoped>

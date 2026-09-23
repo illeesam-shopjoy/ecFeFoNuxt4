@@ -27,7 +27,17 @@ export default defineNuxtConfig({
       },
     ],
   ],
+  // 2026-09-23(요청사항: "홈에서 상품상세/상품목록에서 상품상세/블로그에서 블로그상세 등 상세화면
+  // 오픈하고 뒤로가기할때 기존 조건의 화면정보가 그대로 보였으면 해 — 페이징이면 그 페이지, 스크롤
+  // 위치도") — 목록 컴포넌트를 KeepAlive로 감싸 뒤로가기 시 다시 조회하지 않고 그대로(불러온 페이지
+  // 수·스크롤 위치 포함) 복원한다. include는 컴포넌트 이름(defineOptions name)으로 매칭 — 상세/기타
+  // 페이지는 이 목록에 없어 평소처럼 매번 새로 마운트되고, 그 사이 목록 쪼의 캐시만 유지된다(글로벌
+  // app.keepalive라 <NuxtPage> 자체는 항상 켜져 있고, include에 없는 라우트를 오가도 캐시가 안 깨짐 —
+  // definePageMeta({keepalive:true})를 개별 페이지에만 주면 그 라우트를 벗어나는 순간 KeepAlive 래퍼
+  // 자체가 트리에서 사라져 캐시가 통째로 날아간다). 스크롤 위치 자체는 Nuxt 기본 scrollBehavior가
+  // savedPosition으로 이미 복원해준다(별도 설정 불필요) — 여기서는 "복원할 데이터"만 살려두면 된다.
   app: {
+    keepalive: { include: ["HomePage", "ShopPage", "BlogListPage"] },
     head: {
       title: "shopjoy",
       link: [

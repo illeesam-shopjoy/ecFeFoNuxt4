@@ -7,6 +7,8 @@
 </template>
 
 <script setup lang="ts">
+// 2026-09-23: nuxt.config.ts app.keepalive.include 매칭용 이름 (뒤로가기 시 스크롤·상태 복원)
+defineOptions({ name: "BlogListPage" });
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/Layout.vue";
