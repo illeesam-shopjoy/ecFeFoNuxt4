@@ -38,6 +38,13 @@ body {
 body {
   background: #fff;
 }
+// 2026-09-23(요청사항: "백지화면대신 움직이는 별효과 이런거가 보였으면 좋겠어") — 위 인라인 <style>이
+// body::before 가상요소로 반짝이는 별을 깔아뒀는데, 이 앱 CSS가 로드된 뒤에는 그 가상요소 자체를
+// content:none 으로 없애 완전히 사라지게 한다(로딩 중에만 보여야 하므로 — z-index가 최상단이라
+// 없애지 않으면 로드 후에도 실제 화면 위에 계속 떠 있게 된다).
+body::before {
+  content: none;
+}
 body {
   font-family: $font-kr;
   font-size: 14px;

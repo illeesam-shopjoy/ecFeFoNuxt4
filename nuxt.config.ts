@@ -54,16 +54,14 @@ export default defineNuxtConfig({
         },
       ],
       // 2026-09-23(요청사항: "핸드폰에서 netlify FO 열때 흰백색이 1~2.5초 보이고 오픈되 — 은은한 배경효과나
-      // 이미지 보여주면 좋겠는데") — 앱 CSS/JS가 로드·하이드레이션되기 전까지는 브라우저 기본 흰 배경만
-      // 보인다. 외부 리소스 요청 없이(추가 지연 없이) 문서 자체에 즉시 적용되는 인라인 <style>로 html/body에
-      // 브랜드 톤 옅은 그라디언트를 깔아둔다 — 앱 CSS가 로드되면 자연스럽게 실제 배경(흰색)으로 바뀐다.
-      // ⚠ !important 를 쓰지 않는다 — 앱 CSS(main.scss 등)가 로드되면 나중에 실린 규칙이 자연스럽게
-      // 이 임시 배경을 덮어써야 한다(로딩 중에만 보이고 로드 후엔 원래 배경으로 돌아가야 하므로).
-      style: [
-        {
-          innerHTML: `html,body{background:linear-gradient(135deg,#fdf8f0 0%,#f8ecd9 50%,#fdf8f0 100%);}`,
-        },
-      ],
+      // 이미지 보여주면 좋겠는데" / "백지화면대신 움직이는 별효과 이런거가 보였으면 좋겠어") — 이 로딩용
+      // 배경+별 효과는 nuxt.config의 app.head가 아니라 server/plugins/2.boot-loading-style.ts 의
+      // Nitro render:html 훅에서 직접 HTML에 심는다. 이유: unhead가 app.head의 style을 SSR 전용
+      // (mode:"server")으로 등록해서, 클라이언트 JS가 부팅되는 즉시(=CSS 로드 완료와 무관하게, 실제로는
+      // CSS보다 훨씬 먼저) 그 <style> 태그를 DOM에서 제거해버린다 — 정작 느린 CSS 다운로드가 끝나기도
+      // 전에 사라져서 "잠깐 반짝 보였다가 그냥 흰 화면"이 되는 문제를 헤드리스 브라우저로 직접 재현해
+      // 확인했다(로컬에서도 400ms대에 이미 사라짐). render:html 훅으로 넣으면 unhead가 관여하지 않는
+      // 순수 정적 마크업이라 앱 CSS가 실제로 로드될 때까지 그대로 남아있는다.
     },
   },
   future: {
