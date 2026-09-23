@@ -28,6 +28,11 @@ animation:shopjoyBootSparkleDrift 40s linear infinite,shopjoyBootSparkleTwinkle 
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook("render:html", (html) => {
-    html.head.push(BOOT_LOADING_STYLE);
+    // unshift(맨 앞) — push로 넣으면 이 <style>이 entry.css(<link rel=stylesheet>)보다 뒤에 위치하게 되고,
+    // 동일 우선순위(specificity)에서는 "문서상 더 나중에 나온 규칙"이 이긴다 — entry.css가 다운로드를
+    // 끝내고 적용돼도(즉 _common.scss의 body::before{content:none}이 살아나도) 그보다 더 뒤에 있는 이
+    // 별 효과가 계속 이겨서 홈페이지 진입 후에도 별이 안 사라지는 버그였다. 맨 앞에 둬야 entry.css가
+    // 로드된 뒤 정상적으로 이 효과를 덮어쓴다.
+    html.head.unshift(BOOT_LOADING_STYLE);
   });
 });
