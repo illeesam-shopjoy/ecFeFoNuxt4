@@ -8,4 +8,7 @@ import type { PmCashChargeReqType, PmCashChargeResType } from "~/types/pm/pmCash
 export const myCashChargeSvc = {
   /** POST /fo/ec/my/cache/charge */
   charge: (body: PmCashChargeReqType): Promise<PmCashChargeResType> => csrPost<PmCashChargeResType>("/fo/ec/my/cache/charge", body, authCfg()),
+
+  /** POST /fo/ec/my/cache/free-charge — 실 결제 없이 잔액 직접 조정(테스트용). 양수=무료충전(최대 10,000원), 음수=강제차감 */
+  freeCharge: (amount: number): Promise<PmCashChargeResType> => csrPost<PmCashChargeResType>("/fo/ec/my/cache/free-charge", { amount }, authCfg()),
 };

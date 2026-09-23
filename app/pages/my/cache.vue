@@ -1,26 +1,17 @@
 <template>
-  <!-- 2026-09-20 ecFeBo 화면 구조로 통일 / 2026-09-19 — 마이페이지 > 캐쉬 (/my/cache). ecFeBo MyCache.js 이식. 보유 캐쉬 + 충전 폼(<fo-form>) + 적립/사용 이력(<fo-grid>, 서버 페이징).
-       충전 API 는 ecBeBo FO 쪽에 없어 "준비 중" 안내만 한다(ecFeBo 도 입력칸만 있음). -->
+  <!-- 2026-09-20 ecFeBo 화면 구조로 통일 / 2026-09-19 — 마이페이지 > 캐쉬 (/my/cache). ecFeBo MyCache.js 이식. 보유 캐쉬 + 적립/사용 이력(<fo-grid>, 서버 페이징).
+       2026-09-23(요청사항: "캐시란에 캐시충전하기 기능넣어줘 캐시충전 버튼 클릭하면 모달로 캐시충전화면 띄워주고
+       하단에 무료충전 란 넣어줘") — 충전 UI를 CashChargeModal 모달로 분리(실 결제 이동 + 무료충전/강제차감 테스트). -->
   <my-page-frame tab="cache" :my="my" :file-path="currentFilePath" empty-text="캐쉬 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="rounded-xl px-6 py-5 mb-4 text-gray-900" style="background: linear-gradient(135deg, #fbbf24, #f59e0b)">
         <div class="text-[0.85rem] font-semibold opacity-80">보유 캐쉬</div>
         <div class="text-[2rem] font-black mt-1">{{ formatPrice(balance) }}</div>
-      </div>
-      <div class="p-4 mb-2 bg-white border border-[#e5e7eb] rounded-lg">
-        <fo-form :columns="chargeCols" :form="chargeForm" :cols="1" :gap="8" @submit="handleBtnAction('cash-charge')">
-          <template #charge="{ form }">
-            <div class="flex gap-2">
-              <input v-model="form.amount" class="fo-my-in flex-1" inputmode="numeric" placeholder="충전 금액 입력 (최소 1,000원)" />
-              <button type="submit" class="h-10 px-5 bg-gray-900 text-white border-0 rounded-md text-[0.85rem] font-bold cursor-pointer">충전하기</button>
-            </div>
-          </template>
-        </fo-form>
-      </div>
-      <div class="flex flex-wrap gap-2 mb-4">
-        <button v-for="a in [5000, 10000, 30000, 50000]" :key="a" type="button" class="px-4 py-2 rounded-full border border-[#e5e7eb] bg-white text-[0.82rem] font-semibold text-gray-700 cursor-pointer hover:border-gray-400" @click="handleBtnAction('cash-chargeAdd', a)">+{{ a.toLocaleString() }}원</button>
+        <button type="button" class="mt-3 rounded-md border-0 bg-white/90 px-4 py-2 text-[0.85rem] font-bold text-[#92400e] cursor-pointer hover:bg-white" @click="chargeModal?.show()">💰 캐시 충전하기</button>
       </div>
     </template>
+
+    <CashChargeModal ref="chargeModal" :balance="balance" @charged="handleSearchList" />
 
     <div class="bg-white border border-[#e5e7eb] rounded-lg overflow-hidden">
       <fo-grid bare :columns="columns" :rows="my.rows" row-key="cashId" :loading="my.loading" />
@@ -31,7 +22,7 @@
 <script setup lang="ts">
 import MyPageFrame from "~/components/my/MyPageFrame.vue";
 import FoGrid from "~/components/fo/FoGrid.vue";
-import FoForm from "~/components/fo/FoForm.vue";
+import CashChargeModal from "~/components/modals/CashChargeModal.vue";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
@@ -39,7 +30,7 @@ import { useCodeStore } from "~/store/useCodeStore";
 import type { SyCodeType } from "~/types/sy/syCodeType";
 import { myCashSvc } from "~/svc/fo/my/myCashSvc";
 import type { PmCacheType } from "~/types/pm/pmCacheType";
-import type { FoFormColumn, FoGridColumn } from "~/types/fo/foCompType";
+import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
@@ -50,8 +41,7 @@ usePageTitle("마이페이지 - 캐쉬");
 
 const codes = reactive({ cache_types: [] as SyCodeType[] });
 const balance = ref(0);
-const chargeForm = reactive({ amount: "" });
-const chargeCols: FoFormColumn[] = [{ key: "charge", type: "slot" }];
+const chargeModal = ref<InstanceType<typeof CashChargeModal> | null>(null);
 
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptCash). 구분 라벨: 서버 한글명 → 공통코드(CACHE_TYPE_CD) — 조회 시점에 1회 변환
 function adapt(h: PmCacheType) {
@@ -95,15 +85,6 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
     // 검색조건 초기화
   } else if (cmd === "searchParam-reset") {
     return my.resetSearch();
-    // 캐쉬 충전 — ecBeBo FO 쪽 충전 API 가 없어 안내만 (ecFeBo 도 입력칸만 있음)
-  } else if (cmd === "cash-charge") {
-    const amt = Math.floor(Number(String(chargeForm.amount).replace(/[^0-9]/g, "")));
-    if (!amt || amt < 1000) return void useNuxtApp().$toast.error("충전 금액은 1,000원 이상 입력해 주세요.");
-    if (amt > 1000000) return void useNuxtApp().$toast.error("1회 충전은 1,000,000원까지 가능합니다.");
-    return navigateTo({ path: "/my/charge", query: { amount: String(amt) } });
-    // 충전 금액 빠른 추가 (param: 더할 금액)
-  } else if (cmd === "cash-chargeAdd") {
-    chargeForm.amount = String(Number(chargeForm.amount || 0) + (param as number));
   } else {
     console.warn("[handleBtnAction] unknown cmd:", cmd);
   }
