@@ -178,8 +178,16 @@ function close() {
   emit('close');
 }
 
+// 2026-09-23(요청사항: "모아보기에서 왼쪽 오른쪽 방향키로 이미지이동 안되네 적용해주고") —
+// ProdGallery.vue(상품 큰이미지 확대보기)는 이미 ArrowLeft/ArrowRight로 이동했는데 이 모달만
+// Escape만 처리하고 있었다. next()/prev()는 기존 전환(mv-next/mv-prev, ProdGallery와 동일한
+// 0.08s/0.14s 빠른 슬라이드+페이드)을 그대로 타므로, 방향키를 연결하면 "화면 전환도 큰이미지
+// 보기처럼 빠릿하게" 요청도 같이 해결된다(전환 자체는 이미 같은 속도였고, 방향키가 아예 안
+// 먹어서 "느리다"고 느껴진 것).
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') close();
+  else if (e.key === 'ArrowLeft') prev();
+  else if (e.key === 'ArrowRight') next();
 }
 const hasDocument = typeof document !== 'undefined';
 watch(
