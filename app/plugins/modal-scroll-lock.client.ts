@@ -9,10 +9,18 @@
  *     (스크롤바가 사라지며 화면이 밀리지 않게 그 너비만큼 padding-right 보정). 모두 닫히면 원래대로 되돌린다. MutationObserver 로 열림/닫힘을 감지한다.
  *  2) 잠긴 동안 터치로 끌 때, 모달 안에서 실제로 더 스크롤할 수 있는 영역(내용이 넘치고 끝에 안 닿음)이 아니면 touchmove 를 막는다(iOS 대응).
  *  3) 전역 CSS(assets/prod/scss/_common.scss)에서 모달 내부 스크롤 영역에 overscroll-behavior: contain 을 준다.
+ *
+ * 2026-09-23(요청사항: "큰이미지 모달등 모달 화면이 오픈되고있을때 핸드폰 뒤로가기 누르면 모달닫는걸 해줘 —
+ * 현재증상은 이전페이지로 이동하고있네") — 모달이 열릴 때 히스토리에 더미 항목을 하나 밀어넣어두고(같은
+ * URL), 뒤로가기가 그 항목을 소비하게 만든다. popstate 가 오면(=뒤로가기가 눌렸다는 뜻) 실제 페이지
+ * 이동은 이미 일어나지 않고(같은 URL을 밀어뒀으므로), 그 대신 지금 열려 있는 모달의 백드롭에 직접
+ * click(대부분 @click.self="close" 패턴)과 Escape keydown(.esc 리스너가 있는 모달)을 흉내내 쏴서
+ * 모달 자신의 닫기 로직을 그대로 타게 한다 — 개별 모달 코드를 하나도 손대지 않는다.
  */
 import { defineNuxtPlugin } from "#app";
 
 const MODAL_SELECTOR = '[role="dialog"], [role="alertdialog"], [aria-modal="true"], .body-overlay.opened';
+const MODAL_GUARD_STATE = { __modalGuard: true } as const;
 
 export default defineNuxtPlugin(() => {
   const html = document.documentElement;
@@ -30,6 +38,8 @@ export default defineNuxtPlugin(() => {
     });
   }
 
+  let guardPushed = false;
+
   function lock() {
     if (locked) return;
     locked = true;
@@ -38,6 +48,9 @@ export default defineNuxtPlugin(() => {
     if (sbw > 0) body.style.paddingRight = `${sbw}px`;
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
+    // 뒤로가기가 "이전 페이지 이동" 대신 "모달 닫기"가 되도록, 같은 URL로 더미 히스토리 항목을 하나 밀어둔다.
+    history.pushState(MODAL_GUARD_STATE, "", location.href);
+    guardPushed = true;
   }
   function unlock() {
     if (!locked) return;
@@ -45,7 +58,26 @@ export default defineNuxtPlugin(() => {
     html.style.overflow = saved.htmlOverflow;
     body.style.overflow = saved.bodyOverflow;
     body.style.paddingRight = saved.bodyPaddingRight;
+    // 사용자가 X 버튼 등으로 "정상적으로" 닫은 경우 — 아직 우리가 밀어둔 더미 항목 위에 있다면(뒤로가기로
+    // 닫힌 게 아니라는 뜻) 그 항목을 되돌려 히스토리 스택에 흔적을 남기지 않는다(두 번 뒤로가기 눌러야
+    // 하는 상황 방지). 이미 popstate 로 소비된 뒤라면(history.state 가 더 이상 guard 가 아님) 손대지 않는다.
+    if (guardPushed && (history.state as typeof MODAL_GUARD_STATE | null)?.__modalGuard) history.back();
+    guardPushed = false;
   }
+
+  /** 뒤로가기(popstate)가 왔을 때 지금 열려 있는 모달(들)의 자체 닫기 로직을 흉내내 호출한다.
+   *  대부분 오버레이 루트에 @click.self="close" 패턴이 있어 자기 자신에게 click 을 쏘면 닫히고,
+   *  .esc 리스너가 있는 모달은 Escape keydown 으로 닫힌다 — 개별 모달 코드는 건드리지 않는다. */
+  function closeOpenModals() {
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>(MODAL_SELECTOR))) {
+      if (!el.getClientRects().length) continue;
+      el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    }
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true, cancelable: true }));
+  }
+  window.addEventListener("popstate", () => {
+    if (locked) closeOpenModals();
+  });
 
   let raf = 0;
   const sync = () => {
