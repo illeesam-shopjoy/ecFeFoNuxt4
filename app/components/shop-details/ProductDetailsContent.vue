@@ -46,7 +46,8 @@
         <div class="mb-3 border-b border-[#e5e7eb] pb-2 text-[0.9rem] font-bold text-gray-800">옵션선택 : <span class="font-medium text-gray-600">색상, 사이즈</span></div>
         <div class="product__modal-input color mb-20 relative after:!hidden">
           <!-- 2026-09-22(요청사항: "필수 마킹이 라벨에 바로 붙어있어야, '필수' 글자는 필요없음") — 별표(*)만 라벨에 바로 붙이고 별도 "필수" 문구는 뺐다. -->
-          <label>
+          <!-- 2026-09-23(요청사항: "색상, 사이즈 폰트가 너무 작은거 같긴하네") — 기본 상속(14px)보다 크게 명시 -->
+          <label class="text-[0.95rem] font-semibold text-gray-800">
             색상<i class="fas fa-star-of-life ml-1"></i>
             <!-- 2026-09-22(요청사항: "색상상태도움말 — 좀더 의미있는 아이콘으로") — 재고없음/판매중지/추가금액 표식이 뭘 뜻하는지 설명하는 모달.
                  사이즈의 "?"(사이즈 가이드)와 헷갈리지 않도록 채워진 원 뱃지로 다르게 표시, 아이콘은 표식/태그를 뜻하는 fa-tag. -->
@@ -116,7 +117,7 @@
         </div>
         <!-- 사이즈 선택 (아래) -->
         <div class="product__modal-input size mb-20 relative after:!hidden">
-          <label>
+          <label class="text-[0.95rem] font-semibold text-gray-800">
             사이즈<i class="fas fa-star-of-life ml-1"></i>
             <!-- 2026-09-22(요청사항: "사이즈상태도움말 — 좀더 의미있는 아이콘, (?)는 뒤로") — 색상과 같은 뱃지(fa-tag)를 먼저,
                  사이즈 가이드/세계 표준을 보여주는 "?"는 그 뒤로 옮겼다. -->
@@ -129,7 +130,7 @@
               v-for="opt in visibleSizes"
               :key="opt.prodOptStdCd ?? opt.prodOptId"
               type="button"
-              class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-[#d0d0d0] disabled:hover:bg-[#fafafa]"
+              class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[14px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-[#d0d0d0] disabled:hover:bg-[#fafafa]"
               :class="{ '!border-[#222] !bg-[#222] !text-white shadow-[0_2px_8px_rgba(0,0,0,0.18)]': selectedSize === optKey(opt) }"
               :disabled="soldOut(opt, 'size')"
               @click="selectedSize = optKey(opt)"
@@ -170,7 +171,7 @@
                 v-for="opt in sizes"
                 :key="opt.prodOptStdCd ?? opt.prodOptId"
                 type="button"
-                class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[13px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222] disabled:cursor-not-allowed disabled:opacity-50"
+                class="px-4 py-1.5 rounded-full border-[1.5px] border-[#d0d0d0] bg-[#fafafa] text-[14px] font-medium text-[#444] cursor-pointer transition-colors tracking-wide hover:border-[#888] hover:bg-[#f0f0f0] hover:text-[#222] disabled:cursor-not-allowed disabled:opacity-50"
                 :class="{ '!border-[#222] !bg-[#222] !text-white': selectedSize === optKey(opt) }"
                 :disabled="soldOut(opt, 'size')"
                 @click="pickSize(opt)"

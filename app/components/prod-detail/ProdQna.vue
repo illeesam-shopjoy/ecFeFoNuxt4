@@ -57,7 +57,8 @@
          "[작성] 버튼 클릭시 신규등록란 펼쳐주면 좋겠는데") — 상품평쓰기와 같이 박스 없이, 평소엔 접어두고 [작성]으로 펼친다. -->
     <div v-if="!showForm && !editingId" class="mt-6 flex items-center justify-between">
       <h3 class="m-0 text-[1.05rem] font-bold text-gray-900">Q&amp;A 쓰기</h3>
-      <button type="button" class="rounded-md border-0 bg-[#bc8246] px-4 py-2 text-[0.82rem] font-bold text-white hover:bg-[#a06a35]" @click="showForm = true"><i class="fal fa-pen mr-1"></i>작성</button>
+      <!-- 2026-09-23(요청사항: "2개 버튼 스타일 다른데 흰색으로 통일시켜줘") — 상품평 쓰기의 [작성] 버튼과 동일한 os-btn(흰 배경+테두리) -->
+      <button type="button" class="os-btn !h-auto !px-[18px] !py-[8px] !text-[13px] !leading-tight" @click="showForm = true"><i class="fal fa-pen mr-1"></i>작성</button>
     </div>
     <form v-else ref="formEl" class="mt-6" @submit.prevent="submit">
       <h3 class="m-0 mb-3 text-[1.05rem] font-bold text-gray-900">{{ editingId ? "Q&A 수정" : "Q&A 쓰기" }}</h3>

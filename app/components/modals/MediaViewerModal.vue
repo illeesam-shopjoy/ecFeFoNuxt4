@@ -78,7 +78,7 @@
               :key="item.url"
               type="button"
               :class="[
-                'flex-shrink-0 w-14 h-14 rounded overflow-hidden border-2 transition',
+                'flex-shrink-0 w-20 h-20 rounded overflow-hidden border-2 transition',
                 i === currentIndex ? 'border-white ring-2 ring-white/50' : 'border-transparent opacity-70 hover:opacity-100',
               ]"
               @click="goTo(i)"

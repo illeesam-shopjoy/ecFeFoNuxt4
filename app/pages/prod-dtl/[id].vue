@@ -201,11 +201,14 @@
                     </ul>
                   </div>
                 </div>
-                <div class="post-comments-form mb-100">
+                <div class="post-comments-form" :class="showReviewForm || editingReviewId || replyingToReviewId ? 'mb-100' : 'mb-30'">
                   <!-- 2026-09-23(요청사항: "상품평쓰기 Q&A는 [작성] 버튼 클릭시 신규등록란 펼쳐주면 좋겠는데") —
                        평소엔 닫아두고 [작성] 버튼으로만 펼친다. 수정/답글은 그 즉시 자동으로 펼쳐진다(showReviewForm과 무관하게). -->
                   <!-- 2026-09-23(요청사항: "상품평쓰기 Q&A쓰기 타이틀들의 폰트가 다르네 — 너무 커보여") — 전역 h3(27px)를
                        그대로 쓰면 Q&A쓰기(text-[1.05rem]≈16.8px)보다 훨씬 크게 보였다. 같은 크기로 명시. -->
+                  <!-- 2026-09-23(요청사항: "[작성] 아래로 공백이 좀 많네 줄여줘") — 이 바깥 래퍼의 mb-100(다음
+                       섹션과의 여백)은 폼이 실제로 펼쳐졌을 때만 필요하다. 접혀서 타이틀+버튼 한 줄만 보일 땐
+                       mb-30으로 줄인다(펼쳤을 땐 원래대로 mb-100 유지). -->
                   <div v-if="!showReviewForm && !editingReviewId && !replyingToReviewId" class="post-comments-title mb-30 flex items-center justify-between">
                     <h3 class="mb-0 text-[1.05rem] font-bold text-gray-900">상품평 쓰기</h3>
                     <button type="button" class="os-btn !h-auto !px-[18px] !py-[8px] !text-[13px] !leading-tight" @click="showReviewForm = true"><i class="fal fa-pen mr-1"></i>작성</button>
@@ -213,12 +216,15 @@
                   <template v-else>
                   <div class="post-comments-title mb-30">
                     <h3 class="text-[1.05rem] font-bold text-gray-900">{{ replyingToReviewId ? '답글 쓰기' : editingReviewId ? '상품평 수정' : '상품평 쓰기' }}</h3>
+                    <!-- 2026-09-23(요청사항: "상품평 별점 0.5 단위로 입력가능하게 해줘") — 별 하나를 좌/우 반쪽 클릭
+                         영역으로 나눠, 왼쪽 반을 누르면 n-0.5점, 오른쪽 반을 누르면 n점이 된다(검증 로직은
+                         이미 0.5 단위를 받고 있었다 — handleReviewSubmit의 `rating < 0.5` 체크 참고). -->
                     <div v-if="!replyingToReviewId" class="post-rating">
                       <ul>
-                        <li v-for="n in 5" :key="n">
-                          <button type="button" class="bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] hover:opacity-85" :aria-label="`${n}점`" @click.prevent="setReviewRating(n)">
-                            <i class="text-[#f5a623]" :class="n <= reviewRating ? 'fas fa-star' : 'fal fa-star'"></i>
-                          </button>
+                        <li v-for="n in 5" :key="n" class="relative inline-block text-[length:inherit]">
+                          <i class="pointer-events-none text-[#f5a623]" :class="reviewStarClass(n)"></i>
+                          <button type="button" class="absolute inset-y-0 left-0 w-1/2 border-0 bg-transparent p-0 cursor-pointer" :aria-label="`${n - 0.5}점`" @click.prevent="setReviewRating(n - 0.5)"></button>
+                          <button type="button" class="absolute inset-y-0 right-0 w-1/2 border-0 bg-transparent p-0 cursor-pointer" :aria-label="`${n}점`" @click.prevent="setReviewRating(n)"></button>
                         </li>
                       </ul>
                     </div>
@@ -672,6 +678,12 @@ const isAutoTitle = (title: string | undefined, content: string | undefined) => 
 
 function setReviewRating(n: number) {
   reviewRating.value = n;
+}
+/** 별 n의 아이콘 상태 — 가득/반/빈 (0.5 단위 입력 지원용) */
+function reviewStarClass(n: number): string {
+  if (reviewRating.value >= n) return "fas fa-star";
+  if (reviewRating.value >= n - 0.5) return "fas fa-star-half-alt";
+  return "fal fa-star";
 }
 function startReply(reviewId: string) {
   replyingToReviewId.value = reviewId;

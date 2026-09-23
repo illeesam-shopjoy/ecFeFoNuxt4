@@ -356,10 +356,13 @@
                    데스크톱은 그대로 버튼도 함께 둔다(자동 로딩을 못 미더워하는 사용자용). -->
               <div ref="loadMoreSentinel" class="shop__load-more-area mt-40 text-center">
                 <span v-if="loadingMore" class="text-gray-400">불러오는 중…</span>
+                <!-- 2026-09-23(요청사항: "핸드폰에서 상품목록 페이지 하단에 [더보기] 버튼이 보이네 모바일
+                     무한스크롤 적용해줘야해") — hidden(display:none)이 .os-btn 자체 규칙(display:inline-block,
+                     _common.scss)과 소스 순서상 져서 모바일에도 계속 보이고 있었다. !hidden으로 강제. -->
                 <button
                   v-else-if="hasMore && displayItems.length"
                   type="button"
-                  class="os-btn os-btn-black hidden sm:inline-block"
+                  class="os-btn os-btn-black !hidden sm:!inline-block"
                   @click="loadMore"
                 >
                   더보기
