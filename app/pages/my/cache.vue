@@ -9,9 +9,8 @@
         <div class="text-[2rem] font-black mt-1">{{ formatPrice(balance) }}</div>
         <button type="button" class="mt-3 rounded-md border-0 bg-white/90 px-4 py-2 text-[0.85rem] font-bold text-[#92400e] cursor-pointer hover:bg-white" @click="chargeModal?.show()">💰 캐시 충전하기</button>
       </div>
+      <CashChargeModal ref="chargeModal" :balance="balance" @charged="handleSearchList" />
     </template>
-
-    <CashChargeModal ref="chargeModal" :balance="balance" @charged="handleSearchList" />
 
     <div class="bg-white border border-[#e5e7eb] rounded-lg overflow-hidden">
       <fo-grid bare :columns="columns" :rows="my.rows" row-key="cashId" :loading="my.loading" />
