@@ -41,7 +41,7 @@
       </div>
       <div class="pointer-events-none absolute left-2 top-2 z-[2] flex items-center gap-1.5">
         <span v-if="prodTypeNm" class="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium leading-none text-white backdrop-blur-[2px]">{{ prodTypeNm }}</span>
-        <span v-if="rowNo" class="text-[11px] font-medium leading-none text-white/70 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">#{{ rowNo }}/{{ total }}</span>
+        <span v-if="rowNo" class="rounded-full bg-black/45 px-2 py-1 text-[11px] font-medium leading-none text-white/90 backdrop-blur-[2px]">#{{ rowNo }}/{{ total }}</span>
       </div>
       <prod-opt-chips :item="item" />
       <div v-if="item.saleDiscntRate || item.isNew" class="product__sale">
