@@ -219,7 +219,9 @@
                     <!-- 2026-09-23(요청사항: "상품평 별점 0.5 단위로 입력가능하게 해줘") — 별 하나를 좌/우 반쪽 클릭
                          영역으로 나눠, 왼쪽 반을 누르면 n-0.5점, 오른쪽 반을 누르면 n점이 된다(검증 로직은
                          이미 0.5 단위를 받고 있었다 — handleReviewSubmit의 `rating < 0.5` 체크 참고). -->
-                    <div v-if="!replyingToReviewId" class="post-rating">
+                    <!-- 2026-09-23(요청사항: "상품평 쓰기에서 별표가 너무 작은데 좀 크게해줘") — text-[length:inherit]로
+                         li/버튼/아이콘이 이 폰트크기를 그대로 물려받는다(기본은 상속된 14px라 작아 보였음). -->
+                    <div v-if="!replyingToReviewId" class="post-rating text-[1.6rem]">
                       <ul>
                         <li v-for="n in 5" :key="n" class="relative inline-block text-[length:inherit]">
                           <i class="pointer-events-none text-[#f5a623]" :class="reviewStarClass(n)"></i>
