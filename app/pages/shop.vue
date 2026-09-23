@@ -336,10 +336,10 @@
               <div id="pills-tabContent">
                 <Transition name="view-fade" mode="out-in">
                   <TransitionGroup v-if="viewMode === 'grid'" key="grid" tag="div" id="pills-grid" role="tabpanel" name="product-fade">
-                    <product-item v-for="item in displayItems" :key="item.prodId" :item="item" />
+                    <product-item v-for="(item, i) in displayItems" :key="item.prodId" :item="item" :row-no="i + 1" :total="totalCount" />
                   </TransitionGroup>
                   <TransitionGroup v-else key="list" tag="div" id="pills-list" role="tabpanel" name="product-fade">
-                    <product-list-item v-for="item in displayItems" :key="item.prodId" :item="item" />
+                    <product-list-item v-for="(item, i) in displayItems" :key="item.prodId" :item="item" :row-no="i + 1" :total="totalCount" />
                   </TransitionGroup>
                 </Transition>
                 <p v-if="!pending && !awaitingCategory && !displayItems.length" class="text-center py-40 text-gray-400">조건에 맞는 상품이 없습니다.</p>

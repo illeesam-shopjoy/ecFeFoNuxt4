@@ -39,7 +39,10 @@
           <i class="fal fa-search"></i>
         </a>
       </div>
-      <span v-if="prodTypeNm" class="pointer-events-none absolute left-2 top-2 z-[2] rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium leading-none text-white backdrop-blur-[2px]">{{ prodTypeNm }}</span>
+      <div class="pointer-events-none absolute left-2 top-2 z-[2] flex items-center gap-1.5">
+        <span v-if="prodTypeNm" class="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium leading-none text-white backdrop-blur-[2px]">{{ prodTypeNm }}</span>
+        <span v-if="rowNo" class="text-[11px] font-medium leading-none text-white/70 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">#{{ rowNo }}/{{ total }}</span>
+      </div>
       <prod-opt-chips :item="item" />
       <div v-if="item.saleDiscntRate || item.isNew" class="product__sale">
         <span v-if="item.isNew || item.saleDiscntRate" class="new">신상품</span>
@@ -98,6 +101,10 @@ import { prodTypeLabel } from "~/conts/pdConst";
 
 const props = defineProps<{
   item: PdProdType;
+  /** 2026-09-23(요청사항: "상품목록에 행정보에 행번호 표시해주면좋겠어 — 상품유형 우측에 #1/631 이런식으로, 흐리게")
+   *  목록 화면(shop.vue)에서만 넘겨준다 — 슬라이더 등 다른 곳에서 쓸 땐 비워두면 배지가 아예 안 보인다. */
+  rowNo?: number;
+  total?: number;
 }>();
 const prodTypeNm = computed(() => prodTypeLabel(props.item.prodTypeCd));
 const hasRating = computed(() => (props.item.reviewCnt ?? 0) > 0 || Number(props.item.rating || 0) > 0);
