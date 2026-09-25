@@ -19,6 +19,6 @@ export default defineEventHandler((event) => {
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
   const scope = "openid email profile";
   const state = Buffer.from(Date.now().toString(36) + Math.random().toString(36)).toString("base64url");
-  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}&access_type=offline&prompt=consent`;
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}&access_type=offline&prompt=${link ? "select_account%20consent" : "consent"}`; // 연동 흐름은 계정 선택을 다시 받는다
   return sendRedirect(event, url, 302);
 });

@@ -14,6 +14,6 @@ export default defineEventHandler((event) => {
   // 요청 동의항목 — 카카오 콘솔에서 승인된 항목만 넣어야 한다(미승인 항목을 넣으면 KOE205). 승인 후 KAKAO_SCOPE 환경변수로 늘린다.
   const scope = (config.kakaoScope as string) || "account_email profile_nickname";
   const state = Buffer.from(Date.now().toString(36) + Math.random().toString(36)).toString("base64url");
-  const url = `https://kauth.kakao.com/oauth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${state}&scope=${encodeURIComponent(scope)}`;
+  const url = `https://kauth.kakao.com/oauth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${state}&scope=${encodeURIComponent(scope)}${link ? "&prompt=login" : ""}`; // 연동 흐름은 카카오 재로그인을 강제
   return sendRedirect(event, url, 302);
 });

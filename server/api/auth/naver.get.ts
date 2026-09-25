@@ -12,6 +12,6 @@ export default defineEventHandler((event) => {
   const baseUrl = getRequestURL(event).origin;
   const redirectUri = `${baseUrl}/api/auth/naver/callback`;
   const state = Buffer.from(Date.now().toString(36) + Math.random().toString(36)).toString("base64url");
-  const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+  const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}${link ? "&auth_type=reprompt" : ""}`; // 연동 흐름은 네이버 재로그인을 강제
   return sendRedirect(event, url, 302);
 });
