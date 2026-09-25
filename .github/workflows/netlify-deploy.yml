@@ -55,6 +55,8 @@ jobs:
           TOSSPAYMENTS_SECRET_KEY: ${{ secrets.TOSSPAYMENTS_SECRET_KEY }}
           # 구글 로그인 웹 클라이언트 시크릿(2026-09-25) — 저장소 파일이 아니라 Actions 시크릿으로만 보관
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          # 네이버 로그인 클라이언트 시크릿(2026-09-25, 앱 illeesam_netlify)
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
 
       - name: Deploy to Netlify
         run: |
