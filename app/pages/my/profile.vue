@@ -79,9 +79,9 @@ const rows = computed(() => [
 const consents = computed(() => {
   const on = (k: keyof typeof p.value) => p.value[k] === "Y";
   return [
-    { label: "필수 · 주문/문의", items: [{ label: "휴대폰", on: on("recvPhoneYn") }, { label: "카카오", on: on("recvKakaoYn") }, { label: "SMS", on: on("recvSmsYn") }, { label: "이메일", on: on("recvEmailYn") }] },
-    { label: "선택 · 마케팅(이벤트/기획전)", items: [{ label: "카카오", on: on("recvMktKakaoYn") }, { label: "SMS", on: on("recvMktSmsYn") }, { label: "이메일", on: on("recvMktEmailYn") }] },
-    { label: "선택 · 광고", items: [{ label: "카카오", on: on("recvAdKakaoYn") }, { label: "SMS", on: on("recvAdSmsYn") }, { label: "이메일", on: on("recvAdEmailYn") }] },
+    { label: "필수 · 주문/문의", items: [{ label: "SMS", on: on("recvSmsYn") }, { label: "이메일", on: on("recvEmailYn") }, { label: "카카오", on: on("recvKakaoYn") }] },
+    { label: "선택 · 마케팅(이벤트/기획전)", items: [{ label: "SMS", on: on("recvMktSmsYn") }, { label: "이메일", on: on("recvMktEmailYn") }, { label: "카카오", on: on("recvMktKakaoYn") }] },
+    { label: "선택 · 마케팅 광고", items: [{ label: "SMS", on: on("recvAdSmsYn") }, { label: "이메일", on: on("recvAdEmailYn") }, { label: "카카오", on: on("recvAdKakaoYn") }] },
   ];
 });
 
