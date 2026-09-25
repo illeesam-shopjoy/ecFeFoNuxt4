@@ -260,7 +260,8 @@
 
 <script setup lang="ts">
 import PayMethodSelect from "~/components/pay/PayMethodSelect.vue";
-import { DEFAULT_PAY_METHOD, loadLastPayMethod, saveLastPayMethod, type PayMethodCd } from "~/conts/payMethods";
+import { DEFAULT_PAY_METHOD, loadLastPayMethod, payMethodFromDbCd, saveLastPayMethod, type PayMethodCd } from "~/conts/payMethods";
+import { myPaySvc } from "~/svc/fo/ec/my/myPaySvc";
 import { getPayProvider } from "~/utils/payProvider";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
@@ -613,8 +614,13 @@ const payMethod = ref<PayMethodCd>(DEFAULT_PAY_METHOD); // 기본 카드, 이전
 const agreeTerms = ref(true);
 const publicCfg = useRuntimeConfig().public as { tossPayClientKey?: string; mode?: string };
 const isTestPay = computed(() => (publicCfg.tossPayClientKey ?? "").startsWith("test_"));
-onMounted(() => {
+onMounted(async () => {
   payMethod.value = loadLastPayMethod();
+  // 로그인 회원은 서버에 기록된 마지막 결제수단이 있으면 그것을 기본으로(다른 기기에서 결제한 수단까지 반영)
+  if (loggedIn.value) {
+    const last = payMethodFromDbCd(await myPaySvc.getLastPayMethod().catch(() => null));
+    if (last) payMethod.value = last;
+  }
 });
 
 const payErrMsg = (e: unknown) => {

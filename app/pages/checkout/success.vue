@@ -97,9 +97,9 @@ onMounted(async () => {
     } catch {
       /* 무시 */
     }
-    await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: ctx.totalAmt ?? amount.value, couponId: ctx.couponId, items });
+    const created = await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: ctx.totalAmt ?? amount.value, couponId: ctx.couponId, items });
 
-    pay.value = await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value, keyType: "pay" });
+    pay.value = await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value, keyType: "pay", orderRefId: created?.orderId });
     status.value = "success";
     try {
       sessionStorage.removeItem("checkout_ctx");

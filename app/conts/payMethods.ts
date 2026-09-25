@@ -14,19 +14,20 @@ export interface PayMethodDef {
   cd: PayMethodCd;
   nm: string; // 화면에 보이는 이름
   mark: string; // 아이콘 원 안의 글자
-  markCls: string; // 아이콘 색(Tailwind)
+  markBg: string; // 아이콘 배경색
+  markFg: string; // 아이콘 글자색
   desc: string; // 한 줄 설명
   notes: string[]; // 선택했을 때 보이는 안내
 }
 
 /** 화면 표시 순서 */
 export const PAY_METHODS: PayMethodDef[] = [
-  { cd: "TRANSFER", nm: "실시간 계좌이체", mark: "₩", markCls: "bg-[#0067ff] text-white", desc: "내 은행 계좌에서 바로 이체", notes: ["은행 앱/계좌 비밀번호로 간편하게 인증하고, 결제 즉시 완료됩니다.", "은행 점검 시간(보통 23:30~00:30)에는 이용이 제한될 수 있습니다.", "현금영수증(소득공제)을 결제창에서 신청할 수 있습니다."] },
-  { cd: "VIRTUAL_ACCOUNT", nm: "무통장입금 (가상계좌)", mark: "입", markCls: "bg-[#6b7280] text-white", desc: "주문 후 발급되는 계좌로 입금", notes: ["주문하면 가상계좌가 발급됩니다. 입금기한(3일) 안에 입금해 주세요.", "입금이 확인되면 주문이 처리됩니다. 기한 안에 입금하지 않으면 주문이 자동 취소됩니다.", "입금자명과 관계없이 발급된 계좌·금액 그대로 입금하면 됩니다."] },
-  { cd: "KAKAOPAY", nm: "카카오페이", mark: "K", markCls: "bg-[#FEE500] text-[#3c1e1e]", desc: "카카오페이 앱·QR로 간편 결제", notes: ["PC에서는 QR코드가 표시됩니다. 카카오톡/카카오페이 앱으로 스캔해 결제하세요.", "모바일에서는 카카오페이 앱이 실행됩니다.", "카카오페이에 등록한 카드·계좌·머니로 결제할 수 있습니다."] },
-  { cd: "NAVERPAY", nm: "네이버페이", mark: "N", markCls: "bg-[#03C75A] text-white", desc: "네이버페이로 간편 결제", notes: ["네이버 로그인 후 등록한 카드·계좌로 결제합니다.", "네이버페이 포인트를 사용할 수 있습니다(보유·조건에 따라 다름)."] },
-  { cd: "TOSSPAY", nm: "토스페이", mark: "T", markCls: "bg-[#0064ff] text-white", desc: "토스 앱으로 간편 결제", notes: ["토스 앱에서 비밀번호/생체 인증으로 결제합니다.", "토스에 등록한 카드·계좌·토스머니로 결제할 수 있습니다."] },
-  { cd: "CARD", nm: "카드 (신용·체크)", mark: "카", markCls: "bg-[#1a1410] text-white", desc: "국내 신용·체크카드", notes: ["카드사별 무이자 할부·즉시할인 혜택은 결제창에서 확인할 수 있습니다.", "할부는 결제 금액 5만원 이상부터 선택할 수 있습니다.", "본인 명의 카드로 결제해 주세요."] },
+  { cd: "TRANSFER", nm: "실시간 계좌이체", mark: "₩", markBg: "#0067ff", markFg: "#ffffff", desc: "내 은행 계좌에서 바로 이체", notes: ["은행 앱/계좌 비밀번호로 간편하게 인증하고, 결제 즉시 완료됩니다.", "은행 점검 시간(보통 23:30~00:30)에는 이용이 제한될 수 있습니다.", "현금영수증(소득공제)을 결제창에서 신청할 수 있습니다."] },
+  { cd: "VIRTUAL_ACCOUNT", nm: "무통장입금 (가상계좌)", mark: "입", markBg: "#6b7280", markFg: "#ffffff", desc: "주문 후 발급되는 계좌로 입금", notes: ["주문하면 가상계좌가 발급됩니다. 입금기한(3일) 안에 입금해 주세요.", "입금이 확인되면 주문이 처리됩니다. 기한 안에 입금하지 않으면 주문이 자동 취소됩니다.", "입금자명과 관계없이 발급된 계좌·금액 그대로 입금하면 됩니다."] },
+  { cd: "KAKAOPAY", nm: "카카오페이", mark: "K", markBg: "#FEE500", markFg: "#3c1e1e", desc: "카카오페이 앱·QR로 간편 결제", notes: ["PC에서는 QR코드가 표시됩니다. 카카오톡/카카오페이 앱으로 스캔해 결제하세요.", "모바일에서는 카카오페이 앱이 실행됩니다.", "카카오페이에 등록한 카드·계좌·머니로 결제할 수 있습니다."] },
+  { cd: "NAVERPAY", nm: "네이버페이", mark: "N", markBg: "#03C75A", markFg: "#ffffff", desc: "네이버페이로 간편 결제", notes: ["네이버 로그인 후 등록한 카드·계좌로 결제합니다.", "네이버페이 포인트를 사용할 수 있습니다(보유·조건에 따라 다름)."] },
+  { cd: "TOSSPAY", nm: "토스페이", mark: "T", markBg: "#0064ff", markFg: "#ffffff", desc: "토스 앱으로 간편 결제", notes: ["토스 앱에서 비밀번호/생체 인증으로 결제합니다.", "토스에 등록한 카드·계좌·토스머니로 결제할 수 있습니다."] },
+  { cd: "CARD", nm: "카드 (신용·체크)", mark: "카", markBg: "#1a1410", markFg: "#ffffff", desc: "국내 신용·체크카드", notes: ["카드사별 무이자 할부·즉시할인 혜택은 결제창에서 확인할 수 있습니다.", "할부는 결제 금액 5만원 이상부터 선택할 수 있습니다.", "본인 명의 카드로 결제해 주세요."] },
 ];
 
 /** 기본 선택 결제수단(이전에 쓴 수단이 없을 때) */
@@ -60,5 +61,10 @@ export function saveLastPayMethod(cd: PayMethodCd) {
   } catch {
     /* 저장소를 못 써도 결제는 진행 */
   }
+}
+/** 서버(od_pay.pay_method_cd, PAY_METHOD 코드) → 화면 결제수단. 화면에 없는 수단(무통장 등)은 null */
+export function payMethodFromDbCd(cd: string | null | undefined): PayMethodCd | null {
+  const m: Record<string, PayMethodCd> = { CARD: "CARD", TRANSFER: "TRANSFER", VBANK: "VIRTUAL_ACCOUNT", KAKAO: "KAKAOPAY", NAVER: "NAVERPAY", TOSS: "TOSSPAY" };
+  return (cd && m[cd]) || null;
 }
 export const payMethodOf = (cd: string): PayMethodDef | undefined => PAY_METHODS.find((m) => m.cd === cd);

@@ -128,6 +128,8 @@ export default defineNuxtConfig({
     tossPaymentsSecretKey: process.env.TOSSPAYMENTS_SECRET_KEY ?? "",
     /** 토스 결제창(API 개별 연동) 시크릿 키 — 주문 화면 결제수단 선택 방식의 승인용(서버 전용). 위젯 키(tossPaymentsSecretKey)와 짝이 다르다 */
     tossPaymentsPaySecretKey: process.env.TOSSPAYMENTS_PAY_SECRET_KEY ?? "",
+    /** 결제 결과를 ecBeBo 에 기록할 때 쓰는 서버 간 공유 키(백엔드 app.pay.sync-key 와 같은 값) — 서버 전용 */
+    paySyncKey: process.env.PAY_SYNC_KEY ?? "",
     /** 본인인증(PASS) — 포트원(PortOne) V2 본인인증 API 시크릿 (서버 전용). 비회원 결제 전 PASS 인증 결과를 서버에서 검증한다. */
     portoneApiSecret: process.env.PORTONE_API_SECRET ?? "",
     /** 포트원 API 주소 (테스트용으로 바꿀 수 있음) */

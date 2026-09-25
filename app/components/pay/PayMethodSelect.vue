@@ -1,20 +1,21 @@
 <template>
-  <!-- 결제수단 선택 — 카드형 라디오. 고른 수단의 안내를 아래에 보여준다. 실제 결제창은 [주문하기]를 눌러야 열린다. -->
+  <!-- 결제수단 선택 — 토글 버튼형. 고른 수단은 어두운 채움 + 눌린(inset) 느낌으로 표시하고 나머지는 흰 버튼. 실제 결제창은 [주문하기]를 눌러야 열린다. -->
   <div>
-    <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+    <div class="grid grid-cols-2 gap-2.5">
       <label
         v-for="m in PAY_METHODS"
         :key="m.cd"
-        class="m-0 flex cursor-pointer items-center gap-2.5 rounded-xl border-[1.5px] bg-white px-3 py-3 transition"
-        :class="model === m.cd ? 'border-[#1a1410] shadow-sm' : 'border-[#e5e7eb] hover:border-gray-400'"
+        class="pm-btn m-0 flex cursor-pointer items-center gap-2.5 rounded-xl border-[1.5px] px-3 py-3"
+        :class="model === m.cd ? 'pm-on' : 'pm-off'"
+        :aria-pressed="model === m.cd"
       >
         <input v-model="model" type="radio" name="pay-method" :value="m.cd" class="sr-only" />
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[0.85rem] font-extrabold" :class="m.markCls">{{ m.mark }}</span>
-        <span class="min-w-0 leading-tight">
-          <span class="block truncate text-[0.85rem] font-bold text-gray-900">{{ m.nm }}</span>
-          <span class="block truncate text-[0.72rem] text-gray-500">{{ m.desc }}</span>
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.9rem] font-extrabold" :style="{ background: m.markBg, color: m.markFg }">{{ m.mark }}</span>
+        <span class="min-w-0 flex-1 leading-tight">
+          <span class="block break-keep text-[0.86rem] font-bold">{{ m.nm }}</span>
+          <span class="pm-desc mt-0.5 block break-keep text-[0.72rem]">{{ m.desc }}</span>
         </span>
-        <i v-if="model === m.cd" class="fas fa-check-circle ml-auto shrink-0 text-[#1a1410]"></i>
+        <i v-if="model === m.cd" class="fas fa-check-circle shrink-0 text-[1.05rem]"></i>
       </label>
     </div>
     <ul v-if="selected" class="m-0 mt-3 list-none rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.8rem] leading-relaxed text-gray-600">
@@ -30,3 +31,15 @@ import { PAY_METHODS, type PayMethodCd } from "~/conts/payMethods";
 const model = defineModel<PayMethodCd>({ required: true });
 const selected = computed(() => PAY_METHODS.find((m) => m.cd === model.value));
 </script>
+
+<style scoped>
+.pm-btn { transition: background-color 0.15s, box-shadow 0.15s, border-color 0.15s, transform 0.1s; }
+/* 안 눌린 버튼 */
+.pm-off { background: #fff; border-color: #e5e7eb; color: #1f2937; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06); }
+.pm-off .pm-desc { color: #6b7280; }
+.pm-off:hover { border-color: #9ca3af; }
+/* 눌린(선택된) 버튼 — 어두운 채움 + 안쪽 그림자로 눌린 느낌 */
+.pm-on { background: #1a1410; border-color: #1a1410; color: #fff; box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45); transform: translateY(1px); }
+.pm-on .pm-desc { color: #d6cfc6; }
+.pm-on .fa-check-circle { color: #f5c26b; }
+</style>
