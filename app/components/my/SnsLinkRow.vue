@@ -16,7 +16,7 @@
           <span class="text-[0.75rem] font-semibold" :class="isLinked(p.cd) ? 'text-gray-800' : 'text-gray-400'">{{ p.nm }}</span>
           <span class="text-[0.7rem]" :class="isLinked(p.cd) ? 'text-[#15803d]' : 'text-gray-400 group-hover:text-gray-600'">{{ isLinked(p.cd) ? "연동됨" : "인증하기" }}</span>
           <span v-if="isLinked(p.cd) && linkedDate(p.cd)" class="text-[0.68rem] text-gray-400">연동일 {{ linkedDate(p.cd) }}</span>
-          <span v-if="isLinked(p.cd) && authDate(p.cd)" class="text-[0.68rem] text-gray-400">인증일 {{ authDate(p.cd) }}</span>
+          <span v-if="isLinked(p.cd) && authDate(p.cd)" class="text-[0.68rem] text-gray-400">최근 인증 {{ authDate(p.cd) }}</span>
         </button>
         <button
           v-if="isLinked(p.cd)"
@@ -66,7 +66,7 @@ const rowOf = (cd: string) => list.value.find((s) => s.snsChannelCd.toUpperCase(
 /** 연동일(YYYY-MM-DD) — 등록일시(regDate)의 날짜 부분 */
 const linkedDate = (cd: string) => rowOf(cd)?.regDate?.slice(0, 10) ?? "";
 /** SNS 인증일(YYYY-MM-DD) — 마지막 SNS 인증(로그인/연동) 성공일 */
-const authDate = (cd: string) => rowOf(cd)?.snsAuthDate?.slice(0, 10) ?? "";
+const authDate = (cd: string) => rowOf(cd)?.snsLinkDate?.slice(0, 10) ?? "";
 const providerNm = (cd: string) => PROVIDERS.find((p) => p.cd === cd.toUpperCase())?.nm ?? cd;
 
 const SCOPE_NM: Record<string, string> = {
@@ -78,7 +78,7 @@ const mask = (v: string) => (v.length <= 4 ? v : `${v.slice(0, v.length - 4).rep
 function detailRows(s: MbMemberSnsType): [string, string][] {
   const rows: [string, string | undefined][] = [
     ["연동일", s.regDate?.replace("T", " ").slice(0, 16)],
-    ["인증일", s.snsAuthDate?.replace("T", " ").slice(0, 16)],
+    ["최근 인증", s.snsLinkDate?.replace("T", " ").slice(0, 16)],
     ["닉네임", s.snsNickNm],
     ["이름", s.snsName],
     ["이메일", s.snsEmail],

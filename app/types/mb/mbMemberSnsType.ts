@@ -5,9 +5,9 @@ export interface MbMemberSnsType {
   snsChannelCd: string; // SNS채널코드 — SNS_CHANNEL_CD {KAKAO, NAVER, GOOGLE}
   snsChannelCdNm?: string; // SNS채널 코드 라벨
   regDate?: string; // 연동일시
-  linkYn?: string; // 연동여부 Y/N (FO 목록은 Y 만 내려옴)
-  unlinkDate?: string; // 연동 해제일시
-  snsAuthDate?: string; // SNS 인증일시 — 마지막으로 SNS 인증(로그인/연동)에 성공한 시각
+  snsLinkYn?: string; // 연동여부 Y/N (FO 목록은 Y 만 내려옴)
+  snsUnlinkDate?: string; // 연동 해제일시
+  snsLinkDate?: string; // SNS 연동일시 — 연동(재연동)하거나 SNS 인증(로그인/연동)에 성공할 때마다 갱신
   snsEmail?: string; // SNS 이메일
   snsNickNm?: string; // SNS 닉네임(alias)
   snsName?: string; // SNS 이름
@@ -18,6 +18,7 @@ export interface MbMemberSnsType {
   snsPhoneNo?: string; // SNS 휴대폰
   snsProfileImgUrl?: string; // SNS 프로필 이미지 URL
   snsScope?: string; // SNS 가 제공한 항목 목록(콤마 구분: email,nickname,...)
+  snsAppId?: string; // 인증에 쓴 SNS 앱 ID
   snsAppNm?: string; // 인증에 쓴 SNS 앱 이름
   // snsCi(CI)·snsUserId·snsClientKey 는 서버가 FO 응답에서 제거한다
 }
