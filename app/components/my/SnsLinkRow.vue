@@ -15,6 +15,7 @@
           <span class="flex h-9 w-9 items-center justify-center rounded-full text-[1rem] font-extrabold transition" :class="isLinked(p.cd) ? p.on : 'bg-[#e5e7eb] text-[#9ca3af] grayscale'">{{ p.ch }}</span>
           <span class="text-[0.75rem] font-semibold" :class="isLinked(p.cd) ? 'text-gray-800' : 'text-gray-400'">{{ p.nm }}</span>
           <span class="text-[0.7rem]" :class="isLinked(p.cd) ? 'text-[#15803d]' : 'text-gray-400 group-hover:text-gray-600'">{{ isLinked(p.cd) ? "연동됨" : "인증하기" }}</span>
+          <span v-if="isLinked(p.cd) && linkedDate(p.cd)" class="text-[0.68rem] text-gray-400">연동일 {{ linkedDate(p.cd) }}</span>
         </button>
         <button
           v-if="isLinked(p.cd)"
@@ -47,6 +48,8 @@ const busy = ref(false);
 const msg = ref("");
 const linked = computed(() => new Set(list.value.map((s) => s.snsChannelCd.toUpperCase())));
 const isLinked = (cd: string) => linked.value.has(cd);
+/** 연동일(YYYY-MM-DD) — 서버가 내려주는 등록일시(regDate)의 날짜 부분 */
+const linkedDate = (cd: string) => list.value.find((s) => s.snsChannelCd.toUpperCase() === cd)?.regDate?.slice(0, 10) ?? "";
 
 async function load() {
   try {
