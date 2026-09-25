@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import type { MbMemberSnsType } from "~/types/mb/mbMemberSnsType";
 
@@ -101,10 +101,54 @@ async function load() {
 }
 onMounted(load);
 
-/** 미연동 소셜 — 그 소셜의 인증 페이지로 이동 → 돌아와서 /login/oauth-link 가 연동을 마무리한다 */
+let popup: Window | null = null;
+let popupTimer: ReturnType<typeof setInterval> | null = null;
+function endPopup() {
+  if (popupTimer) clearInterval(popupTimer);
+  popupTimer = null;
+  popup = null;
+  busy.value = false;
+}
+
+/** 소셜 인증 결과 — 팝업(/login/oauth-link)이 연동을 마치고 BroadcastChannel 로 알려 준다 */
+let channel: BroadcastChannel | null = null;
+async function onLinkMessage(e: MessageEvent) {
+  const d = e.data as { type?: string; ok?: boolean; provider?: string; message?: string } | null;
+  if (d?.type !== "sns-link") return;
+  endPopup();
+  if (d.ok) {
+    await load();
+    useNuxtApp().$toast.success(`${providerNm(d.provider ?? "")} 연동이 완료되었습니다.`);
+  } else {
+    msg.value = d.message || "연동에 실패했습니다.";
+  }
+}
+onMounted(() => {
+  channel = new BroadcastChannel("sns-link");
+  channel.onmessage = onLinkMessage;
+});
+onBeforeUnmount(() => {
+  channel?.close();
+  if (popupTimer) clearInterval(popupTimer);
+});
+
+/** 미연동 소셜 — 소셜 인증 요청 팝업을 띄운다(프로필 수정 화면은 그대로 유지). 팝업이 차단되면 페이지 이동으로 대체 */
 function link(p: (typeof PROVIDERS)[number]) {
   msg.value = "";
-  window.location.href = `/api/auth/${p.path}?link=1`;
+  const w = 520;
+  const h = 720;
+  const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - w) / 2));
+  const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - h) / 2));
+  popup = window.open(`/api/auth/${p.path}?link=1&popup=1`, "sns-auth", `width=${w},height=${h},left=${left},top=${top}`);
+  if (!popup) {
+    window.location.href = `/api/auth/${p.path}?link=1`;
+    return;
+  }
+  busy.value = true;
+  // 인증 도중 사용자가 팝업을 그냥 닫은 경우 — 대기 상태 해제
+  popupTimer = setInterval(() => {
+    if (popup?.closed) endPopup();
+  }, 500);
 }
 
 /** 연동 취소 — 마지막 연동이면 로그인 수단이 없어질 수 있어 경고한다(소셜로 가입한 회원의 비밀번호는 임의값이라 "비밀번호 찾기"로 설정해야 함) */
