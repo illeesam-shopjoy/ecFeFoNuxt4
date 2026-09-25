@@ -29,13 +29,9 @@ export interface MbMemberType {
   recvKakaoYn?: string; // 카카오 수신 동의 Y/N
   recvSmsYn?: string; // SMS 수신 동의 Y/N
   recvEmailYn?: string; // 이메일 수신 동의 Y/N
-  recvAdYn?: string; // 광고 수신 요약 Y/N (광고 채널이 하나라도 Y)
-  recvMktKakaoYn?: string; // 마케팅(이벤트/기획전) 카카오 수신 Y/N
-  recvMktSmsYn?: string; // 마케팅 SMS 수신 Y/N
-  recvMktEmailYn?: string; // 마케팅 이메일 수신 Y/N
-  recvAdKakaoYn?: string; // 광고 카카오 수신 Y/N
-  recvAdSmsYn?: string; // 광고 SMS 수신 Y/N
-  recvAdEmailYn?: string; // 광고 이메일 수신 Y/N
+  recvAdYn?: string; // 마케팅 광고 수신 Y/N
+  recvMktEventYn?: string; // 마케팅 이벤트 수신 Y/N
+  recvMktPlanYn?: string; // 마케팅 기획전 수신 Y/N
   recvAgreeDate?: string; // 수신 동의 변경 일시
   passVerifiedDate?: string; // PASS 본인인증 일시
   addrs?: MbMemberAddrType[]; // 배송지 목록

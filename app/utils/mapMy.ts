@@ -28,7 +28,7 @@ export function buildJoinPayload(name: string, email: string, password: string, 
   const loginPwdHash = String(password ?? "");
   if (!memberNm || !loginId || !loginPwdHash) badRequest("이름, 이메일, 비밀번호를 모두 입력해 주세요.");
   // extra: 프로필 이미지 URL · 수신 동의(recv*Yn) 등 가입 화면이 함께 보내는 선택 항목(Y/N·URL 만 허용)
-  const safe = Object.fromEntries(Object.entries(extra).filter(([k, v]) => (k === "profileImgUrl" && typeof v === "string") || (/^recv(Phone|Kakao|Sms|Email|Ad|MktKakao|MktSms|MktEmail|AdKakao|AdSms|AdEmail)Yn$/.test(k) && (v === "Y" || v === "N"))));
+  const safe = Object.fromEntries(Object.entries(extra).filter(([k, v]) => (k === "profileImgUrl" && typeof v === "string") || (/^recv(Phone|Kakao|Sms|Email|Ad|MktEvent|MktPlan)Yn$/.test(k) && (v === "Y" || v === "N"))));
   return { memberNm, loginId, loginPwdHash, ...(passVerifyId ? { passVerifyId } : {}), ...safe };
 }
 
@@ -52,12 +52,8 @@ export const mapProfile = (m: MbMemberType): MbMemberProfileType => ({
   recvSmsYn: m.recvSmsYn ?? "N",
   recvEmailYn: m.recvEmailYn ?? "N",
   recvAdYn: m.recvAdYn ?? "N",
-  recvMktKakaoYn: m.recvMktKakaoYn ?? "N",
-  recvMktSmsYn: m.recvMktSmsYn ?? "N",
-  recvMktEmailYn: m.recvMktEmailYn ?? "N",
-  recvAdKakaoYn: m.recvAdKakaoYn ?? "N",
-  recvAdSmsYn: m.recvAdSmsYn ?? "N",
-  recvAdEmailYn: m.recvAdEmailYn ?? "N",
+  recvMktEventYn: m.recvMktEventYn ?? "N",
+  recvMktPlanYn: m.recvMktPlanYn ?? "N",
 });
 /** PUT /fo/ec/my/info 본문 — 이름 필수, 성별은 M/F 만 */
 export function buildProfileUpdatePayload(body: Partial<MbMemberProfileType>) {
@@ -76,12 +72,8 @@ export function buildProfileUpdatePayload(body: Partial<MbMemberProfileType>) {
     recvSmsYn: body.recvSmsYn === "Y" ? "Y" : "N",
     recvEmailYn: body.recvEmailYn === "Y" ? "Y" : "N",
     recvAdYn: body.recvAdYn === "Y" ? "Y" : "N",
-    recvMktKakaoYn: body.recvMktKakaoYn === "Y" ? "Y" : "N",
-    recvMktSmsYn: body.recvMktSmsYn === "Y" ? "Y" : "N",
-    recvMktEmailYn: body.recvMktEmailYn === "Y" ? "Y" : "N",
-    recvAdKakaoYn: body.recvAdKakaoYn === "Y" ? "Y" : "N",
-    recvAdSmsYn: body.recvAdSmsYn === "Y" ? "Y" : "N",
-    recvAdEmailYn: body.recvAdEmailYn === "Y" ? "Y" : "N",
+    recvMktEventYn: body.recvMktEventYn === "Y" ? "Y" : "N",
+    recvMktPlanYn: body.recvMktPlanYn === "Y" ? "Y" : "N",
   };
 }
 /** 저장 응답 → 헤더/드롭다운에 즉시 반영할 이름·연락처 (응답이 비면 보낸 값) */

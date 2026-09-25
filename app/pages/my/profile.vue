@@ -80,8 +80,7 @@ const consents = computed(() => {
   const on = (k: keyof typeof p.value) => p.value[k] === "Y";
   return [
     { label: "필수 · 주문/문의", items: [{ label: "SMS", on: on("recvSmsYn") }, { label: "이메일", on: on("recvEmailYn") }, { label: "카카오", on: on("recvKakaoYn") }] },
-    { label: "선택 · 마케팅(이벤트/기획전)", items: [{ label: "SMS", on: on("recvMktSmsYn") }, { label: "이메일", on: on("recvMktEmailYn") }, { label: "카카오", on: on("recvMktKakaoYn") }] },
-    { label: "선택 · 마케팅 광고", items: [{ label: "SMS", on: on("recvAdSmsYn") }, { label: "이메일", on: on("recvAdEmailYn") }, { label: "카카오", on: on("recvAdKakaoYn") }] },
+    { label: "선택 · 마케팅", items: [{ label: "이벤트", on: on("recvMktEventYn") }, { label: "기획전", on: on("recvMktPlanYn") }, { label: "광고", on: on("recvAdYn") }] },
   ];
 });
 

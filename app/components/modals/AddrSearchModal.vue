@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/55 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-labelledby="addr-search-title" @click.self="close">
+    <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/55 backdrop-blur-[2px]" :style="zIndex ? { zIndex } : undefined" role="dialog" aria-modal="true" aria-labelledby="addr-search-title" @click.self="close">
       <div class="relative w-full max-w-[520px] rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)] overflow-hidden flex flex-col" style="height: 540px">
         <div class="flex items-center justify-between border-b border-[#f0e2cf] bg-gradient-to-b from-[#fcf5e9] to-[#f8ecd9] px-4 py-3 flex-shrink-0">
           <h3 id="addr-search-title" class="text-base font-semibold text-gray-900">주소 검색</h3>
@@ -47,6 +47,7 @@ declare global {
 const SDK_ID = "daum-postcode-sdk";
 const SDK_SRC = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
 
+defineProps<{ zIndex?: number }>(); // 다른 모달 위에 띄울 때(주소 관리 모달 등)
 const emit = defineEmits<{ (e: "select", result: SyAddrSearchResultType): void }>();
 
 const visible = ref(false);

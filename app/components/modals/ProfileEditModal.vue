@@ -15,16 +15,23 @@
         <div v-if="loading" class="py-10 text-center text-gray-400 text-[0.9rem]">불러오는 중...</div>
         <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체(주소/성별은 슬롯) -->
         <fo-form v-else :columns="formCols" :form="f" :cols="2" :gap="12" min-col-width="140px" @submit="handleBtnAction('form-save')">
-          <template #addr="{ form }">
-            <span class="block text-[0.78rem] text-gray-500 mb-1">주소</span>
-            <div class="flex gap-2 mb-1.5">
-              <input v-model="form.memberZipCode" class="pf-input !w-[110px] shrink-0 bg-[#f9fafb] cursor-default" placeholder="우편번호" readonly />
-              <button type="button" class="px-3.5 border-[1.5px] border-theme rounded-lg bg-[#fdf6ee] text-theme text-[0.82rem] font-bold cursor-pointer whitespace-nowrap" @click="handleBtnAction('addr-search')">
-                <i class="fas fa-search mr-1"></i>주소 검색
-              </button>
+          <!-- 주소 — 기본 배송지 1개를 보여주고, 여러 개 관리는 [주소 관리] 모달에서 -->
+          <template #addr>
+            <div class="mb-1 flex items-center justify-between">
+              <span class="block text-[0.78rem] text-gray-500">주소 <span class="text-gray-400">(기본 배송지)</span></span>
+              <button type="button" class="cursor-pointer rounded-lg border-[1.5px] border-theme bg-[#fdf6ee] px-3 py-1 text-[0.78rem] font-bold text-theme" @click="addrManageRef?.show()"><i class="fas fa-map-marker-alt mr-1"></i>주소 관리</button>
             </div>
-            <input v-model="form.memberAddr" class="pf-input bg-[#f9fafb] cursor-default mb-1.5" placeholder="도로명 주소" readonly />
-            <input v-model="form.memberAddrDetail" class="pf-input" placeholder="상세 주소 (동/호수 등)" maxlength="100" />
+            <div class="rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3.5 py-3 text-[0.85rem]">
+              <template v-if="defaultAddr">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-gray-900">{{ defaultAddr.addrNm || "기본 배송지" }}</span>
+                  <span class="rounded-full bg-[#faf3ea] px-2 py-px text-[0.7rem] font-bold text-[#8a5a25]">기본</span>
+                </div>
+                <div class="mt-0.5 text-gray-700">{{ defaultAddr.recvNm }} · {{ defaultAddr.recvPhone }}</div>
+                <div class="text-gray-500">({{ defaultAddr.zipCode }}) {{ defaultAddr.addr }} {{ defaultAddr.addrDetail }}</div>
+              </template>
+              <p v-else class="m-0 text-gray-400">등록된 배송지가 없습니다. [주소 관리]에서 추가해 주세요.</p>
+            </div>
           </template>
 
           <!-- 본인인증(PASS) — 휴대폰 아래 -->
@@ -49,10 +56,8 @@
           </template>
         </fo-form>
         <recv-consent-row v-if="!loading" v-model="consent" class="mt-4" />
-        <!-- 소셜 계정 연동 — 수신 동의 아래 -->
-        <sns-link-row v-if="!loading" class="mt-4" />
 
-        <!-- 맨 아래: 오류 + [취소][저장] -->
+        <!-- 오류 + [취소][저장] — 소셜 계정 연동 위 -->
         <div v-if="!loading" class="mt-5">
           <div v-if="errorMsg" class="mb-2 rounded-md bg-red-50 px-3 py-2 text-[0.82rem] text-red-500">{{ errorMsg }}</div>
           <div class="flex gap-2.5">
@@ -62,11 +67,14 @@
             </button>
           </div>
         </div>
+
+        <!-- 소셜 계정 연동 -->
+        <sns-link-row v-if="!loading" class="mt-6" />
       </div>
     </div>
   </Teleport>
-  <!-- 카카오(다음) 우편번호 검색 — 자체 Teleport 모달 -->
-  <addr-search-modal ref="addrRef" @select="onAddr" />
+  <!-- 주소 관리 — 배송지 여러 개 관리(자체 Teleport 모달) -->
+  <addr-manage-modal ref="addrManageRef" @changed="onAddrChanged" />
 </template>
 
 <script setup lang="ts">
@@ -76,13 +84,14 @@
  * 열릴 때 내 정보를 새로 조회해 채우고, 저장 성공 시 로그인 스토어의 이름/휴대폰(헤더 표시값)도 갱신한다.
  */
 import { reactive, ref, watch } from "vue";
-import AddrSearchModal from "~/components/modals/AddrSearchModal.vue";
-import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
+import AddrManageModal from "~/components/modals/AddrManageModal.vue";
+import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
+import type { MbMemberAddrType } from "~/types/mb/mbMemberAddrType";
 import FoForm from "~/components/fo/FoForm.vue";
 import type { FoFormColumn } from "~/types/fo/foCompType";
 import PassVerifyRow from "~/components/my/PassVerifyRow.vue";
 import SnsLinkRow from "~/components/my/SnsLinkRow.vue";
-import { isRequiredRecvOk, REQUIRED_RECV_MESSAGE, withAdSummary, withRequiredDefault } from "~/utils/recvConsent";
+import { isRequiredRecvOk, REQUIRED_RECV_MESSAGE, withRequiredDefault } from "~/utils/recvConsent";
 import ProfileImgUpload from "~/components/my/ProfileImgUpload.vue";
 import RecvConsentRow from "~/components/my/RecvConsentRow.vue";
 import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
@@ -96,7 +105,8 @@ const emit = defineEmits<{ (e: "saved"): void }>();
 const visible = ref(false);
 
 const authStore = useAuthStore();
-const addrRef = ref<InstanceType<typeof AddrSearchModal> | null>(null);
+const addrManageRef = ref<InstanceType<typeof AddrManageModal> | null>(null);
+const defaultAddr = ref<MbMemberAddrType | null>(null); // 프로필에 보여줄 기본 배송지
 const loading = ref(false);
 const saving = ref(false);
 const errorMsg = ref("");
@@ -120,12 +130,8 @@ const f = reactive({
   recvSmsYn: "N",
   recvEmailYn: "N",
   recvAdYn: "N",
-  recvMktKakaoYn: "N",
-  recvMktSmsYn: "N",
-  recvMktEmailYn: "N",
-  recvAdKakaoYn: "N",
-  recvAdSmsYn: "N",
-  recvAdEmailYn: "N",
+  recvMktEventYn: "N",
+  recvMktPlanYn: "N",
   memberZipCode: "",
   memberAddr: "",
   memberAddrDetail: "",
@@ -133,7 +139,7 @@ const f = reactive({
 
 // 수신 동의(체크박스 묶음) — f 의 recv*Yn 과 양방향으로 맞춘다
 const consent = computed<MbRecvConsentType>({
-  get: () => ({ recvPhoneYn: f.recvPhoneYn, recvKakaoYn: f.recvKakaoYn, recvSmsYn: f.recvSmsYn, recvEmailYn: f.recvEmailYn, recvMktKakaoYn: f.recvMktKakaoYn, recvMktSmsYn: f.recvMktSmsYn, recvMktEmailYn: f.recvMktEmailYn, recvAdKakaoYn: f.recvAdKakaoYn, recvAdSmsYn: f.recvAdSmsYn, recvAdEmailYn: f.recvAdEmailYn, recvAdYn: f.recvAdYn }),
+  get: () => ({ recvPhoneYn: f.recvPhoneYn, recvKakaoYn: f.recvKakaoYn, recvSmsYn: f.recvSmsYn, recvEmailYn: f.recvEmailYn, recvMktEventYn: f.recvMktEventYn, recvMktPlanYn: f.recvMktPlanYn, recvAdYn: f.recvAdYn }),
   set: (v) => Object.assign(f, v),
 });
 
@@ -167,6 +173,8 @@ watch(
     try {
       Object.assign(f, await myInfoSvc.getProfile());
       Object.assign(f, withRequiredDefault(consent.value)); // 필수(주문/문의)를 정한 적 없으면 휴대폰·이메일 초기 체크
+      const addrs = await myAddrSvc.getMyAddrs().catch(() => [] as MbMemberAddrType[]);
+      applyDefaultAddr(addrs.find((a) => a.defaultYn === "Y") ?? addrs[0] ?? null);
     } catch (e) {
       errorMsg.value = errMsg(e, "회원 정보를 불러오지 못했습니다.");
     } finally {
@@ -175,9 +183,17 @@ watch(
   }
 );
 
-function onAddr(r: SyAddrSearchResultType) {
-  f.memberZipCode = r.zonecode;
-  f.memberAddr = r.address;
+/** 기본 배송지를 프로필에 반영 — 저장 시 mb_member 의 우편번호/주소도 이 값으로 맞춘다(주소가 없으면 기존 값 유지) */
+function applyDefaultAddr(a: MbMemberAddrType | null) {
+  defaultAddr.value = a;
+  if (a) {
+    f.memberZipCode = a.zipCode ?? "";
+    f.memberAddr = a.addr ?? "";
+    f.memberAddrDetail = a.addrDetail ?? "";
+  }
+}
+function onAddrChanged(a: MbMemberAddrType | null) {
+  applyDefaultAddr(a);
 }
 
 function show() {
@@ -210,13 +226,9 @@ async function save() {
       recvKakaoYn: f.recvKakaoYn,
       recvSmsYn: f.recvSmsYn,
       recvEmailYn: f.recvEmailYn,
-      recvAdYn: withAdSummary(consent.value).recvAdYn,
-      recvMktKakaoYn: f.recvMktKakaoYn,
-      recvMktSmsYn: f.recvMktSmsYn,
-      recvMktEmailYn: f.recvMktEmailYn,
-      recvAdKakaoYn: f.recvAdKakaoYn,
-      recvAdSmsYn: f.recvAdSmsYn,
-      recvAdEmailYn: f.recvAdEmailYn,
+      recvAdYn: f.recvAdYn,
+      recvMktEventYn: f.recvMktEventYn,
+      recvMktPlanYn: f.recvMktPlanYn,
     });
     // 헤더/드롭다운에 보이는 이름·휴대폰을 즉시 반영(localStorage 캐시 프로필도 함께 갱신)
     if (authStore.token && authStore.user) authStore.setSession(authStore.token, { ...authStore.user, userNm: saved.memberNm, userPhone: saved.memberPhone });
@@ -239,9 +251,6 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
   // 모달 닫기
   } else if (cmd === "modal-close") {
     return close();
-  // 주소 검색 모달 열기
-  } else if (cmd === "addr-search") {
-    addrRef.value?.show();
   } else {
     console.warn("[handleBtnAction] unknown cmd:", cmd);
   }

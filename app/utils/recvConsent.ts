@@ -10,12 +10,8 @@ export const defaultRecvConsent = (): MbRecvConsentType => ({
   recvKakaoYn: N,
   recvSmsYn: Y,
   recvEmailYn: Y,
-  recvMktKakaoYn: N,
-  recvMktSmsYn: N,
-  recvMktEmailYn: N,
-  recvAdKakaoYn: N,
-  recvAdSmsYn: N,
-  recvAdEmailYn: N,
+  recvMktEventYn: N,
+  recvMktPlanYn: N,
   recvAdYn: N,
 });
 
@@ -26,11 +22,6 @@ export const REQUIRED_RECV_MESSAGE = "수신 동의(필수·주문/문의)는 SM
 /** 필수 그룹이 전부 N(아직 정한 적 없음)이면 초기값(SMS·이메일 체크)으로 채운다 — 기존 회원의 수정 화면용 */
 export function withRequiredDefault(c: MbRecvConsentType): MbRecvConsentType {
   return isRequiredRecvOk(c) ? c : { ...c, recvSmsYn: Y, recvEmailYn: Y };
-}
-
-/** 광고 수신 요약값(recvAdYn) 채우기 — 광고 채널이 하나라도 Y 면 Y */
-export function withAdSummary(c: MbRecvConsentType): MbRecvConsentType {
-  return { ...c, recvAdYn: c.recvAdKakaoYn === Y || c.recvAdSmsYn === Y || c.recvAdEmailYn === Y ? Y : N };
 }
 
 /** 서버 응답의 Y/N 정리(없으면 N) */
