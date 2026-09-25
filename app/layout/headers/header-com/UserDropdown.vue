@@ -8,12 +8,13 @@
       <button class="h-7 sm:h-10 pl-0.5 sm:pl-1.5 pr-1 sm:pr-3 rounded-full bg-white border border-[#e5e7eb] shadow-sm cursor-pointer inline-flex items-center gap-2 text-[0.88rem] text-[#1a1a1a] font-semibold whitespace-nowrap hover:border-gray-400 transition" @click.stop="open = !open">
         <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-900 text-white inline-flex items-center justify-center text-[0.75rem] font-bold">{{ (authStore.user?.userNm || "?").slice(0, 1) }}</span>
         <span class="hidden sm:inline max-w-[110px] truncate">{{ authStore.user?.userNm }}</span>
+        <sns-provider-icon :provider="authStore.user?.loginSns" :size="16" />
         <i :class="`max-sm:!hidden fas fa-chevron-${open ? 'up' : 'down'} text-[0.6rem] text-gray-500`"></i>
       </button>
 
       <div v-show="open" class="absolute top-[calc(100%+14px)] max-sm:right-auto max-sm:left-0 right-0 bg-white shadow-[0_10px_35px_rgba(0,0,0,0.12)] px-6 py-5 min-w-[200px] z-[9999] border-t-2 border-theme">
         <div class="pb-3.5 mb-3.5 border-b border-[#f0f0f0]">
-          <p class="font-bold text-[0.95rem] text-[#1a1a1a] m-0">{{ authStore.user?.userNm }}</p>
+          <p class="font-bold text-[0.95rem] text-[#1a1a1a] m-0 inline-flex items-center gap-1.5">{{ authStore.user?.userNm }}<sns-provider-icon :provider="authStore.user?.loginSns" :size="18" /></p>
           <p class="text-[0.78rem] text-[#999] mt-[3px] mb-0">{{ authStore.user?.userEmail }}</p>
         </div>
         <ul class="list-none p-0 m-0">
@@ -47,6 +48,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useAuthStore } from "~/store/useAuthStore";
 import { useRouter } from "vue-router";
 import ProfileEditModal from "~/components/modals/ProfileEditModal.vue";
+import SnsProviderIcon from "~/components/my/SnsProviderIcon.vue";
 import PasswordChangeModal from "~/components/modals/PasswordChangeModal.vue";
 
 const authStore = useAuthStore();

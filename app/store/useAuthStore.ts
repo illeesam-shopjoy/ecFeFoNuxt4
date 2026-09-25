@@ -82,7 +82,7 @@ export const useAuthStore = defineStore("auth", {
     async socialLogin(provider: string, accessToken: string): Promise<{ ok: boolean; message?: string }> {
       try {
         const res = await authSvc.socialLogin(provider, accessToken);
-        this.setSession(res.token, res.user);
+        this.setSession(res.token, { ...res.user, loginSns: provider.toUpperCase() }); // 이름 옆에 로그인한 소셜 아이콘을 보이기 위해 기억
         return { ok: true };
       } catch (err: unknown) {
         const e = err as { data?: { message?: string }; response?: { data?: { message?: string } } };
