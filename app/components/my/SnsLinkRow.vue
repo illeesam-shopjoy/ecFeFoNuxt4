@@ -54,7 +54,7 @@ import type { MbMemberSnsType } from "~/types/mb/mbMemberSnsType";
 const PROVIDERS = [
   { cd: "KAKAO", nm: "카카오", path: "kakao", ch: "K", on: "bg-[#FEE500] text-[#3c1e1e]" },
   { cd: "NAVER", nm: "네이버", path: "naver", ch: "N", on: "bg-[#03C75A] text-white" },
-  { cd: "GOOGLE", nm: "구글", path: "google", ch: "G", on: "bg-white text-[#4285F4] border border-[#e5e7eb]" },
+  { cd: "GOOGLE", nm: "구글", path: "google", ch: "G", on: "bg-[#EA4335] text-white" },
 ] as const;
 
 const list = ref<MbMemberSnsType[]>([]);

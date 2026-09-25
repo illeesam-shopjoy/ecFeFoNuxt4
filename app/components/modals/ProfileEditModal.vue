@@ -11,9 +11,7 @@
           <div class="text-[0.8rem] text-gray-400 mt-1">회원 정보를 수정하세요</div>
         </div>
 
-        <pass-verify-row v-if="!loading" class="mb-4" :verified="f.passVerifiedYn === 'Y'" :verified-date="f.passVerifiedDate" @verified="onPassVerified" />
         <profile-img-upload v-if="!loading" v-model="f.profileImgUrl" class="mb-4" />
-        <sns-link-row v-if="!loading" class="mb-4" />
         <div v-if="loading" class="py-10 text-center text-gray-400 text-[0.9rem]">불러오는 중...</div>
         <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — 입력칸을 <fo-form> 으로 교체(주소/성별은 슬롯) -->
         <fo-form v-else :columns="formCols" :form="f" :cols="2" :gap="12" min-col-width="140px" @submit="handleBtnAction('form-save')">
@@ -27,6 +25,11 @@
             </div>
             <input v-model="form.memberAddr" class="pf-input bg-[#f9fafb] cursor-default mb-1.5" placeholder="도로명 주소" readonly />
             <input v-model="form.memberAddrDetail" class="pf-input" placeholder="상세 주소 (동/호수 등)" maxlength="100" />
+          </template>
+
+          <!-- 본인인증(PASS) — 주소 아래 -->
+          <template #pass>
+            <pass-verify-row :verified="f.passVerifiedYn === 'Y'" :verified-date="f.passVerifiedDate" @verified="onPassVerified" />
           </template>
 
           <template #gender="{ form }">
@@ -44,19 +47,21 @@
               </button>
             </div>
           </template>
-
-          <template #actions>
-            <div v-if="errorMsg" class="text-[0.82rem] text-red-500 px-3 py-2 bg-red-50 rounded-md">{{ errorMsg }}</div>
-
-            <div class="flex gap-2.5 mt-3">
-              <button type="button" class="mbtn mbtn-ghost flex-1" @click="handleBtnAction('modal-close')">취소</button>
-              <button type="submit" class="mbtn mbtn-primary flex-[2]" :disabled="!f.memberNm.trim() || saving">
-                {{ saving ? "저장 중..." : "저장" }}
-              </button>
-            </div>
-          </template>
         </fo-form>
         <recv-consent-row v-if="!loading" v-model="consent" class="mt-4" />
+        <!-- 소셜 계정 연동 — 수신 동의 아래 -->
+        <sns-link-row v-if="!loading" class="mt-4" />
+
+        <!-- 맨 아래: 오류 + [취소][저장] -->
+        <div v-if="!loading" class="mt-5">
+          <div v-if="errorMsg" class="mb-2 rounded-md bg-red-50 px-3 py-2 text-[0.82rem] text-red-500">{{ errorMsg }}</div>
+          <div class="flex gap-2.5">
+            <button type="button" class="mbtn mbtn-ghost flex-1" @click="handleBtnAction('modal-close')">취소</button>
+            <button type="button" class="mbtn mbtn-primary flex-[2]" :disabled="!f.memberNm.trim() || saving" @click="handleBtnAction('form-save')">
+              {{ saving ? "저장 중..." : "저장" }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </Teleport>
@@ -130,6 +135,7 @@ const formCols: FoFormColumn[] = [
   { key: "memberEmail", label: "이메일", type: "readonly", colSpan: 2, fmt: (v, form) => String(v || form.loginId || "-") },
   { key: "memberPhone", label: "휴대폰", type: "tel", placeholder: "010-0000-0000", maxlength: 20, colSpan: 2 },
   { key: "addr", type: "slot", colSpan: 2 },
+  { key: "pass", type: "slot", colSpan: 2 },
   { key: "birthDate", label: "생년월일", type: "date" },
   { key: "gender", type: "slot" },
 ];
