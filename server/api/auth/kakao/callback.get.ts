@@ -1,7 +1,6 @@
 /**
  * 카카오 OAuth 2.0 콜백: code로 액세스 토큰 교환 후 사용자 정보 조회, 앱 토큰 발급.
  */
-import { createOAuthToken } from "~~/server/utils/oauthToken";
 import { consumeLinkMode, linkErrorUrl, linkSuccessUrl } from "~~/server/utils/oauthLink";
 
 export default defineEventHandler(async (event) => {
@@ -62,10 +61,8 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     return fail("user_info");
   }
-  const email = userRes?.kakao_account?.email || "";
-  const name = userRes?.properties?.nickname || email || "User";
 
   if (link) return sendRedirect(event, linkSuccessUrl("kakao", tokenRes.access_token), 302);
-  const token = createOAuthToken({ provider: "kakao", id, email, name });
-  return sendRedirect(event, `/login/oauth-success?token=${encodeURIComponent(token)}`, 302);
+  // 카카오 accessToken 을 URL 해시(#, 서버 로그·Referer 에 안 남음)로 넘기면 브라우저가 ecBeBo /co/fo-auth/social-login 으로 교환해 자체 세션을 만든다.
+  return sendRedirect(event, `/login/oauth-success#provider=kakao&accessToken=${encodeURIComponent(tokenRes.access_token)}`, 302);
 });

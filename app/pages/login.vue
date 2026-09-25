@@ -122,7 +122,7 @@ const termsModalRef = ref<InstanceType<typeof TermsAgreementModal> | null>(null)
 onMounted(() => {
   const err = route.query.error as string;
   if (err === "no_code") errorMsg.value = "인증이 취소되었거나 코드를 받지 못했습니다.";
-  else if (err.startsWith("token_exchange")) errorMsg.value = `토큰 교환에 실패했습니다.${err.length > "token_exchange".length ? ` (${err.slice("token_exchange_".length)})` : ""}`;
+  else if (err?.startsWith("token_exchange")) errorMsg.value = `토큰 교환에 실패했습니다.${err.length > "token_exchange".length ? ` (${err.slice("token_exchange_".length)})` : ""}`;
   else if (err === "user_info") errorMsg.value = "사용자 정보를 가져오지 못했습니다.";
   else if (err === "config") errorMsg.value = "소셜 로그인 설정이 없습니다.";
   else if (err) errorMsg.value = decodeURIComponent(err);

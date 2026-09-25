@@ -78,6 +78,18 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    /** 소셜 로그인(카카오 등) — 제공자 accessToken 을 ecBeBo 가 검증해 회원 매칭/가입 후 자체 토큰 발급 */
+    async socialLogin(provider: string, accessToken: string): Promise<{ ok: boolean; message?: string }> {
+      try {
+        const res = await authSvc.socialLogin(provider, accessToken);
+        this.setSession(res.token, res.user);
+        return { ok: true };
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string }; response?: { data?: { message?: string } } };
+        return { ok: false, message: String(e?.data?.message ?? e?.response?.data?.message ?? "소셜 로그인에 실패했습니다.").split("::")[0]! };
+      }
+    },
+
     /** PASS 본인인증을 마친 비회원을 임시회원으로 로그인시킨다(같은 이름·휴대폰·생년월일이면 같은 임시회원) */
     async passGuestLogin(identityVerificationId: string): Promise<{ ok: boolean; message?: string }> {
       try {
