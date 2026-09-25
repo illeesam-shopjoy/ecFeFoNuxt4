@@ -25,6 +25,11 @@ onMounted(async () => {
     const res = await authStore.socialLogin(provider, providerToken);
     if (res.ok) {
       router.replace("/");
+    } else if (res.message?.includes("KAKAO_RECONSENT") && Date.now() - Number(sessionStorage.getItem("kakao_reconsent") ?? 0) > 60_000) {
+      // 연동을 취소했던 카카오 계정 — 서버가 카카오 쪽 동의를 지웠으니 카카오 인증을 다시 시작해 동의 화면(필수/선택)을 띄운다(무한 반복 방지: 60초에 한 번)
+      sessionStorage.setItem("kakao_reconsent", String(Date.now()));
+      message.value = "카카오 동의 화면으로 이동합니다...";
+      window.location.replace(`/api/auth/${provider}`);
     } else {
       message.value = res.message ?? "소셜 로그인에 실패했습니다.";
       router.replace(`/login?error=${encodeURIComponent(message.value)}`);
