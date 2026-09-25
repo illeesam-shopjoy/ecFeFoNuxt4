@@ -140,7 +140,7 @@ const payRows = computed(() => {
     { label: "입금 기한", value: fmtDateTime(p?.virtualAccount?.dueDate), strong: false },
     { label: "응답코드", value: p?.failure?.code ?? (p?.status ? `${p.status} (정상)` : ""), strong: false },
     { label: "거래시간", value: fmtDateTime(p?.approvedAt || p?.requestedAt), strong: false },
-    { label: "결제 금액", value: formatPrice(p?.totalAmount ?? amount.value), strong: true },
+    { label: "결제금액", value: formatPrice(p?.totalAmount ?? amount.value), strong: true },
   ];
   return rows.filter((r) => r.value);
 });

@@ -148,23 +148,27 @@
                           </template>
                           <template #tfoot>
                             <tr class="cart-subtotal">
-                              <th>상품 소계</th>
+                              <th>{{ AMT.item }}</th>
                               <td><span class="amount">{{ formatPrice(state.getStTotalPriceQuantity.total) }}</span></td>
                             </tr>
                             <tr class="shipping">
-                              <th>배송비</th>
+                              <th>{{ AMT.ship }}</th>
                               <td>
                                 <ul>
                                   <li>
                                     <input v-model="ship_cost" :value="7000" id="flat-rate" name="ship-cost" type="radio" />
-                                    <label for="flat-rate">배송비: <span class="amount">{{ formatPrice(7000) }}</span></label>
+                                    <label for="flat-rate">유료 배송: <span class="amount">{{ formatPrice(7000) }}</span></label>
                                   </li>
                                   <li>
                                     <input v-model="ship_cost" id="free" value="free" name="ship-cost" type="radio" />
-                                    <label for="free">무료 배송:</label>
+                                    <label for="free">무료 배송</label>
                                   </li>
                                 </ul>
                               </td>
+                            </tr>
+                            <tr class="order-total">
+                              <th>{{ AMT.order }}</th>
+                              <td><strong><span class="amount">{{ formatPrice(subtotalRef + baseShip) }}</span></strong></td>
                             </tr>
                           </template>
                         </fo-grid>
@@ -202,8 +206,9 @@
                       </div>
 
                       <dl class="m-0 mt-3 border-t border-dashed border-[#e5e7eb] pt-3 text-[0.88rem]">
-                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">쿠폰 할인</dt><dd class="m-0 font-semibold" :class="couponDiscountTotal > 0 ? 'text-danger' : 'text-gray-400'">{{ couponDiscountTotal > 0 ? "-" : "" }}{{ formatPrice(couponDiscountTotal) }}</dd></div>
-                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">캐시 사용</dt><dd class="m-0 font-semibold" :class="cashUse > 0 ? 'text-danger' : 'text-gray-400'">{{ cashUse > 0 ? "-" : "" }}{{ formatPrice(cashUse) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.coupon }}</dt><dd class="m-0 font-semibold" :class="couponDiscountTotal > 0 ? 'text-danger' : 'text-gray-400'">{{ couponDiscountTotal > 0 ? "-" : "" }}{{ formatPrice(couponDiscountTotal) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.cash }}</dt><dd class="m-0 font-semibold" :class="cashUse > 0 ? 'text-danger' : 'text-gray-400'">{{ cashUse > 0 ? "-" : "" }}{{ formatPrice(cashUse) }}</dd></div>
+                        <div class="mt-1 flex justify-between border-t border-[#e5e7eb] pt-1.5"><dt class="font-bold text-gray-900">{{ AMT.discount }}</dt><dd class="m-0 font-bold" :class="couponDiscountTotal + cashUse > 0 ? 'text-danger' : 'text-gray-400'">{{ couponDiscountTotal + cashUse > 0 ? "-" : "" }}{{ formatPrice(couponDiscountTotal + cashUse) }}</dd></div>
                       </dl>
                     </div>
 
@@ -211,11 +216,9 @@
                     <div class="rounded-xl border border-[#e5e7eb] bg-white p-5">
                       <h3 class="m-0 mb-3 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-[0.75rem] text-white">3</span>결제 정보</h3>
                       <dl class="m-0 mb-4 rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.88rem]">
-                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">상품 금액</dt><dd class="m-0">{{ formatPrice(subtotalRef) }}</dd></div>
-                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">배송비</dt><dd class="m-0">{{ formatPrice(baseShip) }}</dd></div>
-                        <div v-if="couponDiscountTotal > 0" class="flex justify-between py-0.5"><dt class="text-gray-500">쿠폰 할인</dt><dd class="m-0 text-danger">-{{ formatPrice(couponDiscountTotal) }}</dd></div>
-                        <div v-if="cashUse > 0" class="flex justify-between py-0.5"><dt class="text-gray-500">캐시 사용</dt><dd class="m-0 text-danger">-{{ formatPrice(cashUse) }}</dd></div>
-                        <div class="mt-1.5 flex items-baseline justify-between border-t border-[#e5e7eb] pt-2"><dt class="font-bold text-gray-900">최종 결제 금액</dt><dd class="m-0 text-[1.25rem] font-extrabold text-[#bc8246]">{{ formatPrice(orderTotalRef) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.order }} <span class="text-[0.72rem] text-gray-400">({{ AMT.item }} + {{ AMT.ship }})</span></dt><dd class="m-0">{{ formatPrice(subtotalRef + baseShip) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.discount }} <span class="text-[0.72rem] text-gray-400">({{ AMT.coupon }} + {{ AMT.cash }})</span></dt><dd class="m-0" :class="couponDiscountTotal + cashUse > 0 ? 'text-danger' : 'text-gray-400'">{{ couponDiscountTotal + cashUse > 0 ? "-" : "" }}{{ formatPrice(couponDiscountTotal + cashUse) }}</dd></div>
+                        <div class="mt-1.5 flex items-baseline justify-between border-t border-[#e5e7eb] pt-2"><dt class="font-bold text-gray-900">{{ AMT.pay }}</dt><dd class="m-0 text-[1.25rem] font-extrabold text-[#bc8246]">{{ formatPrice(orderTotalRef) }}</dd></div>
                       </dl>
 
                     <div class="payment-method">
@@ -247,6 +250,7 @@
 
 <script setup lang="ts">
 import PayMethodSelect from "~/components/pay/PayMethodSelect.vue";
+import { AMT } from "~/conts/amountLabels";
 import SnsProviderIcon from "~/components/my/SnsProviderIcon.vue";
 import { DEFAULT_PAY_METHOD, loadLastPayMethod, payMethodFromDbCd, saveLastPayMethod, type PayMethodCd } from "~/conts/payMethods";
 import { myPaySvc } from "~/svc/fo/ec/my/myPaySvc";
@@ -337,7 +341,7 @@ const loginCols: FoFormColumn[] = [
 // 주문 내역 표(<fo-grid>) 컬럼 — 셀은 슬롯으로 그린다
 const orderCols: FoGridColumn[] = [
   { key: "prodNm", label: "상품", align: "left" },
-  { key: "total", label: "합계", width: "160px", align: "right" },
+  { key: "total", label: "금액", width: "160px", align: "right" },
 ];
 
 // [자동입력] 버튼 — 이름/성/회사명/이메일/연락처처럼 검색 없이 바로 채울 수 있는 간단한
@@ -590,7 +594,7 @@ watch(
 );
 
 const calc = computed(() => calcCheckout(subtotalRef.value, baseShip.value, appliedCoupons, couponLines.value, cashBalance.value, useMaxCash.value));
-const orderTotalRef = computed(() => calc.value.total); // 최종 결제 금액(토스 결제 금액)
+const orderTotalRef = computed(() => calc.value.total); // 최종 결제금액 = 주문금액 − 총 할인금액 (PG 로 결제하는 금액, conts/amountLabels.ts 참조)
 const couponDiscountTotal = computed(() => calc.value.couponTotal);
 const cashUse = computed(() => calc.value.cashUse);
 const couponBaseAmts = computed(() => couponBases(subtotalRef.value, baseShip.value, appliedCoupons, couponLines.value)); // 쿠폰 모달 미리보기용
@@ -629,7 +633,8 @@ async function handleFormSubmit() {
   }
   const total = orderTotalRef.value;
   if (total < TOSS_MIN_AMOUNT) {
-    await useAlert().openAlert({ title: "주문 금액 확인", variant: "warning", message: `결제 금액이 ${TOSS_MIN_AMOUNT}원 이상이어야 주문할 수 있습니다.\n장바구니와 쿠폰 적용 금액을 확인해 주세요.` });
+    await useAlert().openAlert({ title: "결제금액 확인", variant: "warning", message: `최종 결제금액이 ${TOSS_MIN_AMOUNT}원 이상이어야 주문할 수 있습니다.
+상품금액과 쿠폰·캐시 적용 금액을 확인해 주세요.` });
     return;
   }
   if (!agreeTerms.value) {
