@@ -9,6 +9,7 @@
 <script setup lang="ts">
 import Layout from "~/layout/Layout.vue";
 import { useAuthStore } from "~/store/useAuthStore";
+import { consumeLoginReturn } from "~/utils/loginReturn";
 
 const route = useRoute();
 const router = useRouter();
@@ -24,7 +25,7 @@ onMounted(async () => {
     history.replaceState(null, "", location.pathname); // 주소창/히스토리에서 토큰 제거
     const res = await authStore.socialLogin(provider, providerToken);
     if (res.ok) {
-      router.replace("/");
+      router.replace(consumeLoginReturn());
     } else if (res.message?.includes("KAKAO_RECONSENT") && Date.now() - Number(sessionStorage.getItem("kakao_reconsent") ?? 0) > 60_000) {
       // 연동을 취소했던 카카오 계정 — 서버가 카카오 쪽 동의를 지웠으니 카카오 인증을 다시 시작해 동의 화면(필수/선택)을 띄운다(무한 반복 방지: 60초에 한 번)
       sessionStorage.setItem("kakao_reconsent", String(Date.now()));
@@ -45,7 +46,7 @@ onMounted(async () => {
   }
   authStore.setToken(token);
   authStore.loadStAuthInfo().then(() => {
-    router.replace("/");
+    router.replace(consumeLoginReturn());
   });
 });
 

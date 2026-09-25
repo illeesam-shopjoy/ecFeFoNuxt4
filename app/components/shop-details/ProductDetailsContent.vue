@@ -184,6 +184,7 @@
         <size-guide-modal ref="sizeGuideRef" />
         <option-status-help-modal ref="colorStatusHelpRef" title="색상" />
         <option-status-help-modal ref="sizeStatusHelpRef" title="사이즈" />
+        <gift-modal ref="giftModalRef" :prod-nm="item.prodNm" :qty="Number(state.orderQuantity) || 1" :price-text="`단가 ${formatPrice((item.salePrice ?? 0) + selectedAddPrice)}`" @submit="onGiftSubmit" />
         </div>
         <!-- 2026-09-13(요청사항: "모바일로 보기에서 [장바구니추가] 버튼이 커서 우측에 숨겨진거 같아") —
              기존 flex-nowrap이 좁은 화면에서도 한 줄을 강제해 버튼이 화면 밖으로 밀려나갔다.
@@ -217,6 +218,7 @@
             <!-- 2026-09-22(요청사항: "상품문의하기 링크는 없어도 되") -->
             <button type="button" class="h-12 w-full cursor-pointer rounded-[10px] border-2 border-solid border-[#222] bg-white text-[0.95rem] font-semibold text-[#222] transition-colors hover:bg-[#222] hover:text-white" @click.prevent="handleBuyNow">⚡ 바로구매</button>
           </div>
+          <button type="button" class="mb-4 h-11 w-full cursor-pointer rounded-[10px] border-[1.5px] border-solid border-[#bc8246] bg-[#fdf6ee] text-[0.92rem] font-semibold text-[#8a5a25] transition-colors hover:bg-[#f8ecd9]" @click.prevent="handleGift">🎁 선물하기</button>
           <div class="flex flex-col gap-1.5 border-t border-[#e5e7eb] pt-3.5 text-[0.8rem] text-[#555]">
             <div class="flex gap-2"><span aria-hidden="true">🚚</span><span>결제 확인 후 <strong>1~2 영업일</strong> 내 출고</span></div>
             <div class="flex gap-2"><span aria-hidden="true">↩️</span><span>수령 후 <strong>7일 이내</strong> 교환·반품 가능</span></div>
@@ -261,6 +263,8 @@ import { useWishlistStore } from "~/store/useWishlistStore";
 import { prodTypeLabel } from "~/conts/pdConst";
 import { prodOptSwatchColor } from "~/utils/prodOptColor";
 import SizeGuideModal from "~/components/modals/SizeGuideModal.vue";
+import GiftModal from "~/components/modals/GiftModal.vue";
+import { useAuthStore } from "~/store/useAuthStore";
 import OptionStatusHelpModal from "~/components/modals/OptionStatusHelpModal.vue";
 
 const props = defineProps<{
@@ -429,6 +433,29 @@ function resolveSelection(): { prodSkuId?: string } | null {
     return null;
   }
   return { prodSkuId: matchedSku?.prodSkuId };
+}
+
+// ── 선물하기 — 받는 분 정보를 받고 /gift/order(선물 결제)로 이동. 금액은 서버가 상품가로 계산한다.
+const giftModalRef = ref<InstanceType<typeof GiftModal> | null>(null);
+const giftSel = ref<{ prodSkuId?: string } | null>(null);
+async function handleGift() {
+  if (!useAuthStore().isStLoggedIn) {
+    await useAlert().openAlert({ title: "로그인 필요", variant: "warning", message: "선물하기는 로그인 후 이용할 수 있습니다." });
+    await navigateTo("/login");
+    return;
+  }
+  const sel = resolveSelection();
+  if (!sel) return;
+  giftSel.value = sel;
+  giftModalRef.value?.show();
+}
+function onGiftSubmit(v: { recvNm: string; recvPhone: string; recvEmail: string; giftMsg: string }) {
+  try {
+    sessionStorage.setItem("gift_ctx", JSON.stringify({ prodId: props.item.prodId, prodSkuId: giftSel.value?.prodSkuId, qty: state.orderQuantity, prodNm: props.item.prodNm, ...v }));
+  } catch {
+    /* 저장소를 못 쓰면 선물 결제를 진행할 수 없다 */
+  }
+  navigateTo("/gift/order");
 }
 
 function handleAddToCart() {

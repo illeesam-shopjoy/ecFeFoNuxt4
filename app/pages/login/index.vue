@@ -102,6 +102,7 @@ import type { FoFormColumn } from "~/types/fo/foCompType";
 import * as yup from "yup";
 import type { SyLoginFormType } from "~/types/sy/syLoginFormType";
 import { useAuthStore } from "~/store/useAuthStore";
+import { consumeLoginReturn, setLoginReturn } from "~/utils/loginReturn";
 import { useRouter } from "vue-router";
 
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -120,6 +121,7 @@ const termsModalRef = ref<InstanceType<typeof TermsAgreementModal> | null>(null)
 
 // OAuth 콜백 실패 시 쿼리로 전달된 에러 표시
 onMounted(() => {
+  if (typeof route.query.redirect === "string") setLoginReturn(route.query.redirect); // 로그인 후 돌아갈 화면(예: 선물 링크)
   const err = route.query.error as string;
   if (err === "no_code") errorMsg.value = "인증이 취소되었거나 코드를 받지 못했습니다.";
   else if (err?.startsWith("token_exchange")) errorMsg.value = `토큰 교환에 실패했습니다.${err.length > "token_exchange".length ? ` (${err.slice("token_exchange_".length)})` : ""}`;
@@ -149,7 +151,7 @@ async function onSubmit() {
   loading.value = false;
   if (result.ok) {
     form.password = "";
-    router.push("/");
+    router.push(consumeLoginReturn());
   } else {
     errorMsg.value = (result.message ?? "로그인에 실패했습니다.").split("::")[0]!;
   }

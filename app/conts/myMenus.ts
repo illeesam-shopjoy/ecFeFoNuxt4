@@ -25,6 +25,7 @@ export const MY_MENU_GROUPS: MyMenuGroup[] = [
       { key: "order", label: "주문", to: "/my/order", icon: "📦" },
       { key: "claim", label: "취소/반품/교환", to: "/my/claim", icon: "↩️" },
       { key: "coupon", label: "쿠폰", to: "/my/coupon", icon: "🎟️" },
+      { key: "prod-coupon", label: "선물 · 상품쿠폰", to: "/my/prod-coupon", icon: "🎁" },
       { key: "cache", label: "캐쉬 · 충전", to: "/my/cache", icon: "💰" },
     ],
   },

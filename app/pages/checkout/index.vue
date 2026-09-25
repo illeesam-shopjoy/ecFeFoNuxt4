@@ -213,13 +213,23 @@
                     <div class="payment-method">
                       <!-- 결제수단 선택(카드/계좌이체/가상계좌/간편결제) — [주문하기]를 누르면 선택한 수단의 결제창이 열린다. 수단→PG 매핑은 conts/payMethods.ts -->
                       <h4 class="co-sub">결제 방법</h4>
-                      <pay-method-select v-model="payMethod" />
-                      <div v-if="isTestPay" class="mt-3 rounded-lg bg-[#fff7e6] px-3 py-2 text-[0.8rem] text-[#8a5a25]"><i class="fas fa-info-circle mr-1.5"></i>테스트 결제 환경입니다. 실제로 결제되지 않습니다.</div>
+                      <pay-method-select v-model="payMethod" :voucher-count="loggedIn && !isPassGuest ? voucherCoupons.length : undefined" />
+                      <!-- 상품쿠폰 — 선물 받은 교환권. 장바구니와 별개로 쿠폰의 상품을 0원에 교환(배송지 입력 화면으로 이동) -->
+                      <div v-if="payMethod === 'VOUCHER'" class="mt-3 rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.82rem] text-gray-600">
+                        <template v-if="voucherCoupons.length">
+                          <select v-model="voucherSel" class="mb-2 h-10 w-full rounded-lg border border-[#d1d5db] bg-white px-3 text-[0.85rem]" aria-label="사용할 상품쿠폰">
+                            <option v-for="v in voucherCoupons" :key="v.prodCouponId" :value="v.prodCouponId">{{ v.prodNm }} × {{ v.qty }} ({{ v.couponCode }})</option>
+                          </select>
+                          <p class="m-0 text-gray-500">상품쿠폰은 <b>장바구니 상품과 별개로</b> 쿠폰에 담긴 상품을 결제금액 0원으로 교환합니다. 선택 후 [상품쿠폰으로 교환하기]를 누르면 배송지 입력 화면으로 이동합니다.</p>
+                        </template>
+                        <p v-else class="m-0">사용 가능한 상품쿠폰이 없습니다. 선물 받은 링크/코드는 <nuxt-link class="underline" to="/my/prod-coupon">선물 · 상품쿠폰</nuxt-link>에서 등록하세요.</p>
+                      </div>
+                      <div v-if="isTestPay && payMethod !== 'VOUCHER'" class="mt-3 rounded-lg bg-[#fff7e6] px-3 py-2 text-[0.8rem] text-[#8a5a25]"><i class="fas fa-info-circle mr-1.5"></i>테스트 결제 환경입니다. 실제로 결제되지 않습니다.</div>
                       <label class="m-0 mt-3 flex cursor-pointer items-center gap-2 text-[0.85rem] text-gray-700">
                         <input v-model="agreeTerms" type="checkbox" class="!my-0 accent-[#bc8246]" />[필수] 결제 서비스 이용 약관, 개인정보 처리에 동의합니다.
                       </label>
                       <div class="order-button-payment mt-20">
-                        <button type="submit" class="os-btn os-btn-black">주문하기</button>
+                        <button type="submit" class="os-btn os-btn-black" :disabled="payMethod === 'VOUCHER' && !voucherCoupons.length">{{ payMethod === "VOUCHER" ? "상품쿠폰으로 교환하기" : "주문하기" }}</button>
                       </div>
                     </div>
                     </div>
@@ -247,6 +257,8 @@ import type { MbMemberAddrType } from "~/types/mb/mbMemberAddrType";
 import SnsProviderIcon from "~/components/my/SnsProviderIcon.vue";
 import { DEFAULT_PAY_METHOD, loadLastPayMethod, payMethodFromDbCd, saveLastPayMethod, type PayMethodCd } from "~/conts/payMethods";
 import { myPaySvc } from "~/svc/fo/ec/my/myPaySvc";
+import { prodCouponSvc } from "~/svc/fo/ec/pm/prodCouponSvc";
+import type { PmProdCouponType } from "~/types/pm/pmProdCouponType";
 import { getPayProvider } from "~/utils/payProvider";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
@@ -599,7 +611,9 @@ const couponBaseAmts = computed(() => couponBases(subtotalRef.value, baseShip.va
 // ── 결제수단 선택 + 결제창 호출 ──
 // 화면은 결제수단만 고르고, 그 수단을 처리할 PG 는 conts/payMethods.ts 의 PAY_METHOD_PG, 결제창 호출은 utils/payProvider.ts 의 어댑터가 맡는다.
 const TOSS_MIN_AMOUNT = 100; // 최소 결제금액(원)
-const payMethod = ref<PayMethodCd>(DEFAULT_PAY_METHOD); // 기본 카드, 이전에 쓴 수단이 있으면 그것
+const payMethod = ref<PayMethodCd | "VOUCHER">(DEFAULT_PAY_METHOD); // 기본 카드, 이전에 쓴 수단이 있으면 그것. VOUCHER = 상품쿠폰(선물 교환권)
+const voucherCoupons = ref<PmProdCouponType[]>([]); // 지금 쓸 수 있는 내 상품쿠폰(받은 것 중 사용 가능)
+const voucherSel = ref("");
 const agreeTerms = ref(true);
 const publicCfg = useRuntimeConfig().public as { tossPayClientKey?: string; mode?: string };
 const isTestPay = computed(() => (publicCfg.tossPayClientKey ?? "").startsWith("test_"));
@@ -610,6 +624,10 @@ onMounted(async () => {
   if (loggedIn.value) {
     const last = payMethodFromDbCd(await myPaySvc.getLastPayMethod().catch(() => null));
     if (last) payMethod.value = last;
+    prodCouponSvc.mine().then((r) => {
+      voucherCoupons.value = (r.received ?? []).filter((x) => x.statusCd === "ACTIVE");
+      voucherSel.value = voucherCoupons.value[0]?.prodCouponId ?? "";
+    }).catch(() => {});
   }
 });
 
@@ -628,6 +646,11 @@ async function handleFormSubmit() {
     document.querySelector("#checkout-guest")?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
+  // 상품쿠폰 — 결제창 없이 쿠폰 교환(배송지 입력) 화면으로 이동
+  if (payMethod.value === "VOUCHER") {
+    if (!voucherSel.value) return void (await useAlert().openAlert({ title: "상품쿠폰 선택", variant: "warning", message: "교환할 상품쿠폰을 선택해 주세요." }));
+    return void (await navigateTo(`/gift/redeem?coupon=${encodeURIComponent(voucherSel.value)}`));
+  }
   const total = orderTotalRef.value;
   if (total < TOSS_MIN_AMOUNT) {
     await useAlert().openAlert({ title: "결제금액 확인", variant: "warning", message: `최종 결제금액이 ${TOSS_MIN_AMOUNT}원 이상이어야 주문할 수 있습니다.
@@ -639,18 +662,19 @@ async function handleFormSubmit() {
     return;
   }
   // 결제 성공 페이지가 주문 생성에 쓸 값(적용 쿠폰/상품합계/캐시) — 주문은 쿠폰 1개만 받으므로 주문 → 상품 → 배송비 순으로 첫 번째를 보낸다
-  const provider = getPayProvider(payMethod.value);
+  const method: PayMethodCd = payMethod.value;
+  const provider = getPayProvider(method);
   try {
-    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? Object.values(appliedCoupons.product).find((c) => c) ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value, idvId: idv.value?.identityVerificationId, payMethod: payMethod.value, pgCd: provider.pg }));
+    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? Object.values(appliedCoupons.product).find((c) => c) ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value, idvId: idv.value?.identityVerificationId, payMethod: method, pgCd: provider.pg }));
   } catch {
     /* 저장소를 못 써도 결제는 진행 */
   }
-  saveLastPayMethod(payMethod.value); // 다음 주문의 기본 선택
+  saveLastPayMethod(method); // 다음 주문의 기본 선택
   const orderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   const origin = window.location.origin;
   try {
     await provider.request({
-      method: payMethod.value,
+      method,
       amount: total,
       orderId,
       orderName: "shopjoy 주문",

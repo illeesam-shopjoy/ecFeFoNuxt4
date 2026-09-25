@@ -114,6 +114,27 @@ export function useShareTools() {
     }
   }
 
+  /** 임의의 주소를 카카오톡으로 공유한다(선물 링크 등) */
+  async function shareKakaoUrl(o: { title: string; description?: string; url: string; imageUrl?: string; buttonTitle?: string }) {
+    const jsKey = useRuntimeConfig().public.kakaoMapKey as string;
+    if (!jsKey) {
+      await useAlert().openAlert("카카오 공유 설정(JavaScript 키)이 없습니다.");
+      return;
+    }
+    try {
+      await loadKakaoSdk();
+      const Kakao = window.Kakao!;
+      if (!Kakao.isInitialized()) Kakao.init(jsKey);
+      Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: { title: o.title, description: o.description ?? "", imageUrl: o.imageUrl ?? `${CDN_URL}/cdn/prod/img/logo/logo.png`, link: { mobileWebUrl: o.url, webUrl: o.url } },
+        buttons: [{ title: o.buttonTitle ?? "자세히 보기", link: { mobileWebUrl: o.url, webUrl: o.url } }],
+      });
+    } catch (e) {
+      await useAlert().openAlert(e instanceof Error ? e.message : "카카오톡 공유를 열 수 없습니다.");
+    }
+  }
+
   async function exportPdf() {
     if (pdfExporting.value) return;
     pdfExporting.value = true;
@@ -207,5 +228,5 @@ export function useShareTools() {
     }
   }
 
-  return { copyLink, shareKakao, exportPdf, pdfExporting };
+  return { copyLink, shareKakao, shareKakaoUrl, exportPdf, pdfExporting };
 }

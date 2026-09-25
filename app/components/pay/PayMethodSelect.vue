@@ -17,8 +17,18 @@
         </span>
         <i v-if="model === m.cd" class="fas fa-check-circle shrink-0 text-[1.05rem]"></i>
       </label>
+      <!-- 상품쿠폰(선물 교환권) — 쿠폰 수를 넘긴 화면(주문/결제)에서만 보인다 -->
+      <label v-if="voucherCount !== undefined" class="pm-btn m-0 flex cursor-pointer items-center gap-2.5 rounded-xl border-[1.5px] px-3 py-3" :class="model === 'VOUCHER' ? 'pm-on' : 'pm-off'" :aria-pressed="model === 'VOUCHER'">
+        <input v-model="model" type="radio" name="pay-method" value="VOUCHER" class="sr-only" />
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[1rem]" style="background: #bc8246; color: #ffffff">🎁</span>
+        <span class="min-w-0 flex-1 leading-tight">
+          <span class="block break-keep text-[0.86rem] font-bold">상품쿠폰</span>
+          <span class="pm-desc mt-0.5 block break-keep text-[0.72rem]">선물 받은 상품 교환권 · {{ voucherCount }}장</span>
+        </span>
+        <i v-if="model === 'VOUCHER'" class="fas fa-check-circle shrink-0 text-[1.05rem]"></i>
+      </label>
     </div>
-    <ul v-if="selected" class="m-0 mt-3 list-none rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.8rem] leading-relaxed text-gray-600">
+    <ul v-if="selected && model !== 'VOUCHER'" class="m-0 mt-3 list-none rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.8rem] leading-relaxed text-gray-600">
       <li v-for="(n, i) in selected.notes" :key="i" class="flex gap-1.5"><span class="text-gray-400">·</span><span>{{ n }}</span></li>
     </ul>
   </div>
@@ -28,7 +38,8 @@
 import { computed } from "vue";
 import { PAY_METHODS, type PayMethodCd } from "~/conts/payMethods";
 
-const model = defineModel<PayMethodCd>({ required: true });
+const model = defineModel<PayMethodCd | "VOUCHER">({ required: true });
+defineProps<{ voucherCount?: number }>();
 const selected = computed(() => PAY_METHODS.find((m) => m.cd === model.value));
 </script>
 
