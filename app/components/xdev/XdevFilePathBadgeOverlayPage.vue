@@ -57,7 +57,7 @@ const PAGES_FILE_MAP: { filePath: string; routePath: string }[] = [
   { filePath: "index.vue", routePath: "/" },
   { filePath: "404.vue", routePath: "/404" },
   { filePath: "contact.vue", routePath: "/contact" },
-  { filePath: "login.vue", routePath: "/login" },
+  { filePath: "login/index.vue", routePath: "/login" },
   { filePath: "login/oauth-success.vue", routePath: "/login/oauth-success" },
   { filePath: "register.vue", routePath: "/register" },
   { filePath: "my/profile.vue", routePath: "/my/profile" },

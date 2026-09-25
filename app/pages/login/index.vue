@@ -157,7 +157,7 @@ async function onSubmit() {
 
 /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
 const handleBtnAction = (cmd: string, param: unknown = {}) => {
-  console.log(" ■■ login.vue : handleBtnAction -> ", cmd, param);
+  console.log(" ■■ login/index.vue : handleBtnAction -> ", cmd, param);
   // 로그인 (검증 → authStore.login)
   if (cmd === "form-submit") {
     return onSubmit();
