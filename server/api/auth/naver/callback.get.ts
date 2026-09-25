@@ -1,7 +1,6 @@
 /**
  * 네이버 OAuth 2.0 콜백: code로 액세스 토큰 교환 후 회원정보 조회, 앱 토큰 발급.
  */
-import { createOAuthToken } from "~~/server/utils/oauthToken";
 import { consumeLinkMode, linkErrorUrl, linkSuccessUrl } from "~~/server/utils/oauthLink";
 
 export default defineEventHandler(async (event) => {
@@ -53,11 +52,6 @@ export default defineEventHandler(async (event) => {
   }
 
   if (link) return sendRedirect(event, linkSuccessUrl("naver", tokenRes.access_token), 302);
-  const token = createOAuthToken({
-    provider: "naver",
-    id: profile.id,
-    email: profile.email || "",
-    name: profile.name || profile.email || "User",
-  });
-  return sendRedirect(event, `/login/oauth-success?token=${encodeURIComponent(token)}`, 302);
+  // naver accessToken 을 URL 해시로 넘기면 브라우저가 ecBeBo /co/fo-auth/social-login 으로 교환해 자체 세션을 만든다.
+  return sendRedirect(event, `/login/oauth-success#provider=naver&accessToken=${encodeURIComponent(tokenRes.access_token)}`, 302);
 });

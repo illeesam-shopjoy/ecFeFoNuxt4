@@ -1,7 +1,6 @@
 /**
  * Google OAuth 2.0 콜백: code를 액세스 토큰으로 교환 후 사용자 정보 조회, 앱 토큰 발급하여 리다이렉트.
  */
-import { createOAuthToken } from "~~/server/utils/oauthToken";
 import { consumeLinkMode, linkErrorUrl, linkSuccessUrl } from "~~/server/utils/oauthLink";
 
 export default defineEventHandler(async (event) => {
@@ -54,11 +53,6 @@ export default defineEventHandler(async (event) => {
   }
 
   if (link) return sendRedirect(event, linkSuccessUrl("google", tokenRes.access_token), 302);
-  const token = createOAuthToken({
-    provider: "google",
-    id: userRes.id,
-    email: userRes.email || "",
-    name: userRes.name || userRes.email || "User",
-  });
-  return sendRedirect(event, `/login/oauth-success?token=${encodeURIComponent(token)}`, 302);
+  // google accessToken 을 URL 해시로 넘기면 브라우저가 ecBeBo /co/fo-auth/social-login 으로 교환해 자체 세션을 만든다.
+  return sendRedirect(event, `/login/oauth-success#provider=google&accessToken=${encodeURIComponent(tokenRes.access_token)}`, 302);
 });
