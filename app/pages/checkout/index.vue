@@ -70,7 +70,7 @@
                 <div class="col-lg-6">
                   <div class="checkbox-form">
                     <h3 class="flex items-center justify-between">
-                      <span>결제 정보</span>
+                      <span>주문자·배송 정보</span>
                       <button
                         type="button"
                         class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold whitespace-nowrap"
