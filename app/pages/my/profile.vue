@@ -30,8 +30,11 @@
 
       <div class="rounded-2xl border border-[#e5e7eb] bg-white p-6">
         <h3 class="m-0 mb-3 text-[1rem] font-bold text-gray-900">수신 동의</h3>
-        <div class="flex flex-wrap gap-2 text-[0.82rem]">
-          <span v-for="c in consents" :key="c.label" class="rounded-full px-3 py-1 font-semibold" :class="c.on ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#f3f4f6] text-gray-400'">{{ c.label }} {{ c.on ? "동의" : "미동의" }}</span>
+        <div v-for="g in consents" :key="g.label" class="mb-2.5 last:mb-0">
+          <p class="m-0 mb-1 text-[0.76rem] text-gray-500">{{ g.label }}</p>
+          <div class="flex flex-wrap gap-2 text-[0.82rem]">
+            <span v-for="c in g.items" :key="c.label" class="rounded-full px-3 py-1 font-semibold" :class="c.on ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#f3f4f6] text-gray-400'">{{ c.label }} {{ c.on ? "동의" : "미동의" }}</span>
+          </div>
         </div>
         <p class="m-0 mt-2 text-[0.78rem] text-gray-400">'개인정보 수정'에서 바꿀 수 있습니다.</p>
       </div>
@@ -73,13 +76,14 @@ const rows = computed(() => [
   { label: "생년월일", value: p.value.birthDate },
   { label: "주소", value: [p.value.memberZipCode, p.value.memberAddr, p.value.memberAddrDetail].filter(Boolean).join(" ") },
 ]);
-const consents = computed(() => [
-  { label: "휴대폰", on: p.value.recvPhoneYn === "Y" },
-  { label: "카카오", on: p.value.recvKakaoYn === "Y" },
-  { label: "SMS", on: p.value.recvSmsYn === "Y" },
-  { label: "이메일", on: p.value.recvEmailYn === "Y" },
-  { label: "광고", on: p.value.recvAdYn === "Y" },
-]);
+const consents = computed(() => {
+  const on = (k: keyof typeof p.value) => p.value[k] === "Y";
+  return [
+    { label: "필수 · 주문/문의", items: [{ label: "휴대폰", on: on("recvPhoneYn") }, { label: "카카오", on: on("recvKakaoYn") }, { label: "SMS", on: on("recvSmsYn") }, { label: "이메일", on: on("recvEmailYn") }] },
+    { label: "선택 · 마케팅(이벤트/기획전)", items: [{ label: "카카오", on: on("recvMktKakaoYn") }, { label: "SMS", on: on("recvMktSmsYn") }, { label: "이메일", on: on("recvMktEmailYn") }] },
+    { label: "선택 · 광고", items: [{ label: "카카오", on: on("recvAdKakaoYn") }, { label: "SMS", on: on("recvAdSmsYn") }, { label: "이메일", on: on("recvAdEmailYn") }] },
+  ];
+});
 
 async function load() {
   try {

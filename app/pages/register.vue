@@ -95,6 +95,7 @@ import { useRouter } from "vue-router";
 import ProfileImgUpload from "~/components/my/ProfileImgUpload.vue";
 import RecvConsentRow from "~/components/my/RecvConsentRow.vue";
 import type { MbRecvConsentType } from "~/types/mb/mbRecvConsentType";
+import { defaultRecvConsent, isRequiredRecvOk, REQUIRED_RECV_MESSAGE } from "~/utils/recvConsent";
 import { maskName, maskPhone, usePassIdentity } from "~/composables/usePassIdentity";
 import type { MbIdentityVerifyType } from "~/types/mb/mbIdentityVerifyType";
 
@@ -109,7 +110,7 @@ const router = useRouter();
 const errorMsg = ref("");
 const loading = ref(false);
 const profileImgUrl = ref("");
-const consent = ref<MbRecvConsentType>({ recvPhoneYn: "N", recvKakaoYn: "N", recvSmsYn: "N", recvEmailYn: "N", recvAdYn: "N" });
+const consent = ref<MbRecvConsentType>(defaultRecvConsent()); // 필수(주문/문의)는 휴대폰·이메일 초기 체크
 
 // PASS 본인인증(선택) — 인증하면 이름을 인증된 실명으로 채우고, 가입 요청에 인증 건 ID 를 함께 보낸다(서버가 재확인해 "인증 완료"로 저장)
 const pass = usePassIdentity();
@@ -146,6 +147,10 @@ const { errors, validate } = useFoValidate(schema, form);
 
 async function onSubmit() {
   if (!(await validate())) return;
+  if (!isRequiredRecvOk(consent.value)) {
+    errorMsg.value = REQUIRED_RECV_MESSAGE;
+    return;
+  }
   const { name, email, password } = form as unknown as MbRegisterFormType;
   loading.value = true;
   errorMsg.value = "";
@@ -155,7 +160,7 @@ async function onSubmit() {
     Object.assign(form, { name: "", email: "", password: "", password2: "" });
     idv.value = null;
     profileImgUrl.value = "";
-    consent.value = { recvPhoneYn: "N", recvKakaoYn: "N", recvSmsYn: "N", recvEmailYn: "N", recvAdYn: "N" };
+    consent.value = defaultRecvConsent();
     await useAlert().openAlert("가입이 완료되었습니다. 로그인해 주세요.");
     router.push("/login");
   } else {

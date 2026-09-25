@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div v-if="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title" @click.self="handleBtnAction('modal-close')">
-      <div class="relative w-full max-w-[440px] max-h-[88vh] overflow-y-auto rounded-xl bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+      <div class="relative w-full max-w-[440px] md:max-w-[680px] max-h-[88vh] overflow-y-auto rounded-xl bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
         <button type="button" class="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer" aria-label="닫기" @click="handleBtnAction('modal-close')">
           <i class="fal fa-times"></i>
         </button>
@@ -82,6 +82,7 @@ import FoForm from "~/components/fo/FoForm.vue";
 import type { FoFormColumn } from "~/types/fo/foCompType";
 import PassVerifyRow from "~/components/my/PassVerifyRow.vue";
 import SnsLinkRow from "~/components/my/SnsLinkRow.vue";
+import { isRequiredRecvOk, REQUIRED_RECV_MESSAGE, withAdSummary, withRequiredDefault } from "~/utils/recvConsent";
 import ProfileImgUpload from "~/components/my/ProfileImgUpload.vue";
 import RecvConsentRow from "~/components/my/RecvConsentRow.vue";
 import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
@@ -119,6 +120,12 @@ const f = reactive({
   recvSmsYn: "N",
   recvEmailYn: "N",
   recvAdYn: "N",
+  recvMktKakaoYn: "N",
+  recvMktSmsYn: "N",
+  recvMktEmailYn: "N",
+  recvAdKakaoYn: "N",
+  recvAdSmsYn: "N",
+  recvAdEmailYn: "N",
   memberZipCode: "",
   memberAddr: "",
   memberAddrDetail: "",
@@ -126,7 +133,7 @@ const f = reactive({
 
 // 수신 동의(체크박스 묶음) — f 의 recv*Yn 과 양방향으로 맞춘다
 const consent = computed<MbRecvConsentType>({
-  get: () => ({ recvPhoneYn: f.recvPhoneYn, recvKakaoYn: f.recvKakaoYn, recvSmsYn: f.recvSmsYn, recvEmailYn: f.recvEmailYn, recvAdYn: f.recvAdYn }),
+  get: () => ({ recvPhoneYn: f.recvPhoneYn, recvKakaoYn: f.recvKakaoYn, recvSmsYn: f.recvSmsYn, recvEmailYn: f.recvEmailYn, recvMktKakaoYn: f.recvMktKakaoYn, recvMktSmsYn: f.recvMktSmsYn, recvMktEmailYn: f.recvMktEmailYn, recvAdKakaoYn: f.recvAdKakaoYn, recvAdSmsYn: f.recvAdSmsYn, recvAdEmailYn: f.recvAdEmailYn, recvAdYn: f.recvAdYn }),
   set: (v) => Object.assign(f, v),
 });
 
@@ -159,6 +166,7 @@ watch(
     loading.value = true;
     try {
       Object.assign(f, await myInfoSvc.getProfile());
+      Object.assign(f, withRequiredDefault(consent.value)); // 필수(주문/문의)를 정한 적 없으면 휴대폰·이메일 초기 체크
     } catch (e) {
       errorMsg.value = errMsg(e, "회원 정보를 불러오지 못했습니다.");
     } finally {
@@ -182,6 +190,10 @@ defineExpose({ show, close });
 
 async function save() {
   if (!f.memberNm.trim() || saving.value) return;
+  if (!isRequiredRecvOk(consent.value)) {
+    errorMsg.value = REQUIRED_RECV_MESSAGE;
+    return;
+  }
   saving.value = true;
   errorMsg.value = "";
   try {
@@ -198,7 +210,13 @@ async function save() {
       recvKakaoYn: f.recvKakaoYn,
       recvSmsYn: f.recvSmsYn,
       recvEmailYn: f.recvEmailYn,
-      recvAdYn: f.recvAdYn,
+      recvAdYn: withAdSummary(consent.value).recvAdYn,
+      recvMktKakaoYn: f.recvMktKakaoYn,
+      recvMktSmsYn: f.recvMktSmsYn,
+      recvMktEmailYn: f.recvMktEmailYn,
+      recvAdKakaoYn: f.recvAdKakaoYn,
+      recvAdSmsYn: f.recvAdSmsYn,
+      recvAdEmailYn: f.recvAdEmailYn,
     });
     // 헤더/드롭다운에 보이는 이름·휴대폰을 즉시 반영(localStorage 캐시 프로필도 함께 갱신)
     if (authStore.token && authStore.user) authStore.setSession(authStore.token, { ...authStore.user, userNm: saved.memberNm, userPhone: saved.memberPhone });
