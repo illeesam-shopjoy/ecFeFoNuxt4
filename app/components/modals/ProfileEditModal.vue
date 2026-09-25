@@ -27,7 +27,7 @@
             <input v-model="form.memberAddrDetail" class="pf-input" placeholder="상세 주소 (동/호수 등)" maxlength="100" />
           </template>
 
-          <!-- 본인인증(PASS) — 주소 아래 -->
+          <!-- 본인인증(PASS) — 휴대폰 아래 -->
           <template #pass>
             <pass-verify-row :verified="f.passVerifiedYn === 'Y'" :verified-date="f.passVerifiedDate" @verified="onPassVerified" />
           </template>
@@ -134,8 +134,8 @@ const formCols: FoFormColumn[] = [
   { key: "memberNm", label: "이름", type: "text", required: true, placeholder: "이름", maxlength: 50, colSpan: 2 },
   { key: "memberEmail", label: "이메일", type: "readonly", colSpan: 2, fmt: (v, form) => String(v || form.loginId || "-") },
   { key: "memberPhone", label: "휴대폰", type: "tel", placeholder: "010-0000-0000", maxlength: 20, colSpan: 2 },
-  { key: "addr", type: "slot", colSpan: 2 },
   { key: "pass", type: "slot", colSpan: 2 },
+  { key: "addr", type: "slot", colSpan: 2 },
   { key: "birthDate", label: "생년월일", type: "date" },
   { key: "gender", type: "slot" },
 ];
