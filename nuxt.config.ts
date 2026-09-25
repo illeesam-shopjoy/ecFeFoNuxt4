@@ -137,6 +137,7 @@ export default defineNuxtConfig({
     naverClientSecret: process.env.NAVER_CLIENT_SECRET ?? "",
     kakaoClientId: process.env.KAKAO_CLIENT_ID ?? "",
     kakaoClientSecret: process.env.KAKAO_CLIENT_SECRET ?? "",
+    kakaoScope: process.env.KAKAO_SCOPE ?? "", // 비면 기본(account_email profile_nickname)
     // 2026-09-12: 자체 Redis/JWT 로그인 제거 — 인증은 전부 ecBeBo(FoAuthController)를 통하고
     // 이 Nuxt 서버는 beApi.ts로 프록시만 한다(server/api/auth/*.ts 참조). useRedis/redisUrl/
     // authJwtSecret/authAccessTokenTtlSec/authRefreshTokenTtlSec 런타임설정은 그래서 폐기.

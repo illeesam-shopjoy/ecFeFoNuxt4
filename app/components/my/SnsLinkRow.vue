@@ -16,6 +16,7 @@
           <span class="text-[0.75rem] font-semibold" :class="isLinked(p.cd) ? 'text-gray-800' : 'text-gray-400'">{{ p.nm }}</span>
           <span class="text-[0.7rem]" :class="isLinked(p.cd) ? 'text-[#15803d]' : 'text-gray-400 group-hover:text-gray-600'">{{ isLinked(p.cd) ? "연동됨" : "인증하기" }}</span>
           <span v-if="isLinked(p.cd) && linkedDate(p.cd)" class="text-[0.68rem] text-gray-400">연동일 {{ linkedDate(p.cd) }}</span>
+          <span v-if="isLinked(p.cd) && authDate(p.cd)" class="text-[0.68rem] text-gray-400">인증일 {{ authDate(p.cd) }}</span>
         </button>
         <button
           v-if="isLinked(p.cd)"
@@ -28,6 +29,19 @@
         </button>
       </div>
     </div>
+    <!-- 연동 상세 — SNS 가 내려준 정보(동의·승인된 항목만 채워짐). CI 는 값을 노출하지 않고 제공 여부만 표시 -->
+    <details v-if="list.length" class="mt-2 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-[0.76rem] text-gray-600">
+      <summary class="cursor-pointer select-none font-semibold text-gray-700">연동 상세 정보</summary>
+      <div v-for="s in list" :key="s.memberSnsId" class="mt-2 border-t border-dashed border-[#e5e7eb] pt-2 first:border-t-0 first:pt-0">
+        <p class="m-0 mb-1 font-bold text-gray-800">{{ providerNm(s.snsChannelCd) }}</p>
+        <dl class="m-0 grid grid-cols-[5.5rem_1fr] gap-x-2 gap-y-0.5">
+          <template v-for="row in detailRows(s)" :key="row[0]">
+            <dt class="text-gray-400">{{ row[0] }}</dt>
+            <dd class="m-0 break-all text-gray-700">{{ row[1] }}</dd>
+          </template>
+        </dl>
+      </div>
+    </details>
     <p v-if="msg" class="m-0 mt-1 text-[0.78rem] text-red-500">{{ msg }}</p>
   </div>
 </template>
@@ -48,8 +62,35 @@ const busy = ref(false);
 const msg = ref("");
 const linked = computed(() => new Set(list.value.map((s) => s.snsChannelCd.toUpperCase())));
 const isLinked = (cd: string) => linked.value.has(cd);
-/** 연동일(YYYY-MM-DD) — 서버가 내려주는 등록일시(regDate)의 날짜 부분 */
-const linkedDate = (cd: string) => list.value.find((s) => s.snsChannelCd.toUpperCase() === cd)?.regDate?.slice(0, 10) ?? "";
+const rowOf = (cd: string) => list.value.find((s) => s.snsChannelCd.toUpperCase() === cd);
+/** 연동일(YYYY-MM-DD) — 등록일시(regDate)의 날짜 부분 */
+const linkedDate = (cd: string) => rowOf(cd)?.regDate?.slice(0, 10) ?? "";
+/** SNS 인증일(YYYY-MM-DD) — 마지막 SNS 인증(로그인/연동) 성공일 */
+const authDate = (cd: string) => rowOf(cd)?.snsAuthDate?.slice(0, 10) ?? "";
+const providerNm = (cd: string) => PROVIDERS.find((p) => p.cd === cd.toUpperCase())?.nm ?? cd;
+
+const SCOPE_NM: Record<string, string> = {
+  email: "이메일", name: "이름", nickname: "닉네임", profile_image: "프로필 사진", gender: "성별", age: "연령대", age_range: "연령대",
+  birthyear: "출생연도", birthday: "생일", phone_number: "휴대폰", mobile: "휴대폰", ci: "CI",
+};
+const mask = (v: string) => (v.length <= 4 ? v : `${v.slice(0, v.length - 4).replace(/[0-9]/g, "*")}${v.slice(-4)}`);
+/** 연동 상세 표 행 — SNS 가 내려준 값이 있는 항목만 [라벨, 값] */
+function detailRows(s: MbMemberSnsType): [string, string][] {
+  const rows: [string, string | undefined][] = [
+    ["연동일", s.regDate?.replace("T", " ").slice(0, 16)],
+    ["인증일", s.snsAuthDate?.replace("T", " ").slice(0, 16)],
+    ["닉네임", s.snsNickNm],
+    ["이름", s.snsName],
+    ["이메일", s.snsEmail],
+    ["성별", s.snsGender === "M" ? "남" : s.snsGender === "F" ? "여" : undefined],
+    ["연령대", s.snsAgeRange],
+    ["출생연도", s.snsBirthYear],
+    ["생일", s.snsBirthDay ? `${s.snsBirthDay.slice(0, 2)}-${s.snsBirthDay.slice(2)}` : undefined],
+    ["휴대폰", s.snsPhoneNo ? mask(s.snsPhoneNo) : undefined],
+    ["받은 항목", s.snsScope ? s.snsScope.split(",").map((k) => SCOPE_NM[k] ?? k).join(", ") : undefined],
+  ];
+  return rows.filter((r): r is [string, string] => !!r[1]);
+}
 
 async function load() {
   try {

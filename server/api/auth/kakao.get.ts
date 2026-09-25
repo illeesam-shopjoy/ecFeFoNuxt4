@@ -11,7 +11,9 @@ export default defineEventHandler((event) => {
   // 2026-09-14 버그수정 — google.get.ts와 동일 사유(config.apiBaseUrl은 ecBeBo 주소).
   const baseUrl = getRequestURL(event).origin;
   const redirectUri = `${baseUrl}/api/auth/kakao/callback`;
+  // 요청 동의항목 — 카카오 콘솔에서 승인된 항목만 넣어야 한다(미승인 항목을 넣으면 KOE205). 승인 후 KAKAO_SCOPE 환경변수로 늘린다.
+  const scope = (config.kakaoScope as string) || "account_email profile_nickname";
   const state = Buffer.from(Date.now().toString(36) + Math.random().toString(36)).toString("base64url");
-  const url = `https://kauth.kakao.com/oauth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${state}&scope=account_email profile_nickname`;
+  const url = `https://kauth.kakao.com/oauth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${state}&scope=${encodeURIComponent(scope)}`;
   return sendRedirect(event, url, 302);
 });
