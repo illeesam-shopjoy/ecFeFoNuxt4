@@ -8,61 +8,57 @@
         <nuxt-link class="os-btn os-btn-black mt-15" to="/shop"> Shop Now </nuxt-link>
       </div>
       <div v-if="state.cartProducts.length > 0">
-        <section class="coupon-area pt-[16px] md:pt-[100px] pb-30">
+        <!-- 주문자 확인 — 로그인 회원은 한 줄 안내, 비로그인은 "로그인" 또는 "비회원(PASS 본인인증)" 중 하나를 고르게 한다 -->
+        <section class="pt-[16px] md:pt-[100px] pb-30">
           <div class="max-w-7xl mx-auto px-4">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="coupon-accordion">
-                  <!-- 아코디언 시작 -->
-                  <h3>
-                    기존 회원이신가요?
-                    <span @click="handleBtnAction('login-toggle')" id="showlogin">로그인하려면 클릭</span>
-                  </h3>
-                  <div v-if="checkoutLogin" id="checkout-login" class="coupon-content">
-                    <div class="coupon-info">
-                      <p class="coupon-text">기존 회원은 로그인 후 주문을 이어가실 수 있습니다.</p>
-                      <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — <fo-form> 으로 교체 -->
-                      <fo-form :columns="loginCols" :form="formValue" :cols="1" :gap="12" @submit="handleBtnAction('login-submit')">
-                        <template #actions>
-                          <!-- 2026-09-22(요청사항: "로그인 버튼은 가운데 정렬") -->
-                          <p class="form-row flex flex-wrap items-center justify-center gap-3">
-                            <button class="os-btn os-btn-black" type="submit">로그인</button>
-                            <label>
-                              <input type="checkbox" v-model="formValue.isChecked" />
-                              로그인 상태 유지
-                            </label>
-                          </p>
-                          <p class="lost-password text-center">
-                            <nuxt-link href="/login">비밀번호를 잊으셨나요?</nuxt-link>
-                          </p>
-                        </template>
-                      </fo-form>
-                    </div>
-                  </div>
-                  <!-- 아코디언 끝 -->
+            <div v-if="loggedIn && !isPassGuest" class="flex flex-wrap items-center gap-2 rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-5 py-4 text-[0.92rem] text-gray-800">
+              <i class="fas fa-check-circle text-[#16a34a]"></i>
+              <span class="inline-flex items-center gap-1.5 font-bold">{{ authStore.user?.userNm }}<sns-provider-icon :provider="authStore.user?.loginSns" :size="16" /></span>
+              <span class="text-gray-500">님으로 주문합니다.</span>
+              <span class="ml-auto text-[0.8rem] text-gray-500">배송지·쿠폰·캐시가 회원 정보로 적용됩니다.</span>
+            </div>
+            <div v-else id="checkout-guest" class="grid gap-4 md:grid-cols-2">
+              <!-- 회원 로그인 -->
+              <div class="rounded-xl border border-[#e5e7eb] bg-white p-5">
+                <h4 class="m-0 text-[1rem] font-bold text-gray-900"><i class="fas fa-user mr-2 text-theme"></i>기존 회원이신가요?</h4>
+                <p class="m-0 mt-1 text-[0.82rem] text-gray-500">로그인하면 저장된 배송지·보유 쿠폰·캐시가 자동으로 적용됩니다.</p>
+                <button type="button" class="mt-3 cursor-pointer rounded-lg border-0 bg-gray-900 px-4 py-2 text-[0.85rem] font-bold text-white" @click="handleBtnAction('login-toggle')">{{ checkoutLogin ? "로그인 닫기" : "로그인하려면 클릭" }}</button>
+                <div v-if="checkoutLogin" id="checkout-login" class="mt-4 border-t border-dashed border-[#e5e7eb] pt-4">
+                  <!-- 2026-09-19(요청사항: "FoGrid FoForm 적극적으로 사용") — <fo-form> 으로 교체 -->
+                  <fo-form :columns="loginCols" :form="formValue" :cols="1" :gap="12" @submit="handleBtnAction('login-submit')">
+                    <template #actions>
+                      <!-- 2026-09-22(요청사항: "로그인 버튼은 가운데 정렬") -->
+                      <p class="form-row flex flex-wrap items-center justify-center gap-3">
+                        <button class="os-btn os-btn-black" type="submit">로그인</button>
+                        <label>
+                          <input type="checkbox" v-model="formValue.isChecked" />
+                          로그인 상태 유지
+                        </label>
+                      </p>
+                      <p class="lost-password text-center">
+                        <nuxt-link href="/login">비밀번호를 잊으셨나요?</nuxt-link>
+                      </p>
+                    </template>
+                  </fo-form>
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="coupon-accordion">
-                  <!-- 2026-09-14(요청사항: "주문할인쿠폰 상품할인쿠폰 배송비할인쿠폰 선택하여
-                       적용할 수 있게 모달연결해주고") — 기존 텍스트 코드 입력(어디에도 실제로
-                       반영 안 되던 목업)을 종류별로 골라 적용하는 CouponModal로 교체. -->
-                  <h3>
-                    쿠폰이 있으신가요?
-                    <span @click="handleBtnAction('coupon-modalOpen')" id="showcoupon">쿠폰 선택하기</span>
-                    <span v-if="myCoupons.length" class="ml-2 text-[12px] font-normal text-[#999]">보유 {{ myCoupons.length }}장</span>
-                  </h3>
-                  <div v-if="appliedCouponList.length" class="coupon-checkout-content">
-                    <ul class="mt-10">
-                      <li v-for="row in appliedCouponList" :key="row.key" class="text-[14px] text-[#606060] mb-5">
-                        <span class="mr-1 text-[12px] text-[#999]">[{{ COUPON_CATEGORY_LABEL[row.coupon.category] }}<template v-if="row.lineName"> · {{ row.lineName }}</template>]</span>{{ row.coupon.name }}
-                        <b class="ml-1 text-[#c0392b]">-{{ formatPrice(row.discount) }}</b>
-                        <span class="ml-1 text-[11px] text-[#999]">({{ row.touched ? "직접 선택" : "자동 적용" }})</span>
-                        <a href="#" class="ml-10 text-[12px] text-[#999] hover:text-danger" @click.prevent="handleBtnAction('coupon-remove', row.remove)">제거</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
+              <!-- 비회원: PASS 본인인증 -->
+              <div class="rounded-xl border px-5 py-5" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
+                <h4 class="m-0 flex items-center gap-2 text-[1rem] font-bold text-gray-900">
+                  <i class="fas" :class="idv ? 'fa-check-circle text-[#16a34a]' : 'fa-mobile-alt text-[#d97706]'"></i>비회원으로 주문
+                  <span v-if="idv" class="ml-1 rounded-full bg-[#dcfce7] px-2 py-px text-[0.72rem] font-bold text-[#15803d]">인증 완료</span>
+                </h4>
+                <template v-if="!idv">
+                  <p class="m-0 mt-1 text-[0.82rem] text-gray-600">비회원은 주문 전에 <b>PASS 본인인증</b>이 필요합니다. 인증하면 이름·휴대폰이 주문 정보에 채워집니다.</p>
+                  <p class="m-0 mt-1 text-[0.78rem] text-gray-500">인증 후 아래 결제 정보에 <b>이메일</b>(주문 안내 수신)을 입력해 주세요.</p>
+                  <button type="button" class="mt-3 cursor-pointer rounded-lg border-0 bg-[#111] px-4 py-2 text-[0.85rem] font-bold text-white disabled:opacity-60" :disabled="idvBusy" @click="startIdentity">{{ idvBusy ? "인증 중..." : "PASS 본인인증" }}</button>
+                </template>
+                <template v-else>
+                  <p class="m-0 mt-1 text-[0.85rem] text-gray-800">{{ maskName(idv.name) }} · {{ maskPhone(idv.phoneNumber) }}</p>
+                  <p class="m-0 mt-1 text-[0.78rem] text-gray-500">이름·휴대폰은 인증 정보로 채워졌습니다. 이메일을 입력해 주세요.</p>
+                  <button type="button" class="mt-2 cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="resetIdentity">다시 인증</button>
+                </template>
+                <p v-if="idvError" class="m-0 mt-2 whitespace-pre-line text-[0.78rem] text-red-500">{{ idvError }}</p>
               </div>
             </div>
           </div>
@@ -137,100 +133,90 @@
                   </div>
                 </div>
                 <div class="col-lg-6">
-                  <!-- 주문 영역 시작 -->
-                  <div class="your-order mb-30">
-                    <h3>주문 내역</h3>
-                    <div class="your-order-table">
-                      <fo-grid bare :columns="orderCols" :rows="state.cartProducts">
-                        <template #cell-prodNm="{ row }">
-                          <td class="product-name text-left">{{ row.prodNm }} <strong class="product-quantity"> x {{ row.orderQuantity }}</strong></td>
-                        </template>
-                        <template #cell-total="{ row }">
-                          <td class="product-total text-right"><span class="amount">{{ formatPrice(row.salePrice) }}</span></td>
-                        </template>
-                        <template #tfoot>
-                          <tr class="cart-subtotal">
-                            <th>장바구니 소계</th>
-                            <td>
-                              <span class="amount">{{ formatPrice(state.getStTotalPriceQuantity.total) }}</span>
-                            </td>
-                          </tr>
-                          <tr class="shipping">
-                            <th>배송비</th>
-                            <td>
-                              <ul>
-                                <li>
-                                  <input v-model="ship_cost" :value="7000" id="flat-rate" name="ship-cost" type="radio" />
-                                  <label for="flat-rate">
-                                    배송비: <span class="amount">{{ formatPrice(7000) }}</span>
-                                  </label>
-                                </li>
-                                <li>
-                                  <input v-model="ship_cost" id="free" value="free" name="ship-cost" type="radio" />
-                                  <label for="free">무료 배송:</label>
-                                </li>
-                              </ul>
-                            </td>
-                          </tr>
-                          <!-- 2026-09-14(요청사항: "쿠폰 선택하여 적용할 수 있게") — 적용된
-                               쿠폰이 있으면 할인 금액을 별도 줄로 보여준다. -->
-                          <tr v-if="couponDiscountTotal > 0" class="order-total">
-                            <th>쿠폰 할인</th>
-                            <td>
-                              <span class="amount text-danger">-{{ formatPrice(couponDiscountTotal) }}</span>
-                            </td>
-                          </tr>
-                          <tr v-if="cashUse > 0" class="order-total">
-                            <th>캐시 사용</th>
-                            <td>
-                              <span class="amount text-danger">-{{ formatPrice(cashUse) }}</span>
-                            </td>
-                          </tr>
-                          <tr class="order-total">
-                            <th>주문 합계</th>
-                            <td>
-                              <strong>
-                                <span class="amount">{{ formatPrice(orderTotalRef) }}</span>
-                              </strong>
-                            </td>
-                          </tr>
-                        </template>
-                      </fo-grid>
-                    </div>
-
-                    <!-- 비회원 결제: PASS 본인인증 (로그인 회원은 생략) -->
-                    <div v-if="!loggedIn || isPassGuest" class="mb-4 rounded-lg border px-4 py-3 text-[0.88rem]" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
-                      <div class="flex items-center gap-2">
-                        <i class="fas" :class="idv ? 'fa-check-circle text-[#16a34a]' : 'fa-mobile-alt text-[#d97706]'"></i>
-                        <span class="font-semibold text-gray-800">비회원 결제 본인인증 (PASS)</span>
-                        <button
-                          v-if="!idv"
-                          type="button"
-                          class="ml-auto cursor-pointer rounded-md border-0 bg-[#111] px-3 py-1.5 text-[0.8rem] font-bold text-white disabled:opacity-60"
-                          :disabled="idvBusy"
-                          @click="startIdentity"
-                        >
-                          {{ idvBusy ? "인증 중..." : "PASS 본인인증" }}
-                        </button>
-                        <button v-else type="button" class="ml-auto cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="resetIdentity">다시 인증</button>
+                  <!-- 주문 영역 시작 — 주문정보 / 할인정보 / 결제정보 -->
+                  <div class="your-order mb-30 !p-0 !border-0 !bg-transparent">
+                    <!-- ① 주문정보 -->
+                    <div class="mb-4 rounded-xl border border-[#e5e7eb] bg-white p-5">
+                      <h3 class="m-0 mb-3 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-[0.75rem] text-white">1</span>주문 정보</h3>
+                      <div class="your-order-table">
+                        <fo-grid bare :columns="orderCols" :rows="state.cartProducts">
+                          <template #cell-prodNm="{ row }">
+                            <td class="product-name text-left">{{ row.prodNm }} <strong class="product-quantity"> x {{ row.orderQuantity }}</strong></td>
+                          </template>
+                          <template #cell-total="{ row }">
+                            <td class="product-total text-right"><span class="amount">{{ formatPrice(row.salePrice) }}</span></td>
+                          </template>
+                          <template #tfoot>
+                            <tr class="cart-subtotal">
+                              <th>상품 소계</th>
+                              <td><span class="amount">{{ formatPrice(state.getStTotalPriceQuantity.total) }}</span></td>
+                            </tr>
+                            <tr class="shipping">
+                              <th>배송비</th>
+                              <td>
+                                <ul>
+                                  <li>
+                                    <input v-model="ship_cost" :value="7000" id="flat-rate" name="ship-cost" type="radio" />
+                                    <label for="flat-rate">배송비: <span class="amount">{{ formatPrice(7000) }}</span></label>
+                                  </li>
+                                  <li>
+                                    <input v-model="ship_cost" id="free" value="free" name="ship-cost" type="radio" />
+                                    <label for="free">무료 배송:</label>
+                                  </li>
+                                </ul>
+                              </td>
+                            </tr>
+                          </template>
+                        </fo-grid>
                       </div>
-                      <p v-if="!idv" class="m-0 mt-1 text-[0.78rem] text-gray-500">비회원은 주문 전에 PASS 로 본인 확인을 해야 합니다. 인증한 이름·휴대폰이 주문 정보에 채워집니다.</p>
-                      <p v-else class="m-0 mt-1 text-[0.8rem] text-gray-700">
-                        인증 완료 · {{ maskName(idv.name) }} · {{ maskPhone(idv.phoneNumber) }}
-                      </p>
-                      <p v-if="idvError" class="m-0 mt-1 whitespace-pre-line text-[0.78rem] text-red-500">{{ idvError }}</p>
                     </div>
 
-                    <!-- 캐시(적립금): 보유 캐시를 최대로 쓸지 선택 -->
-                    <div v-if="loggedIn" class="mb-4 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-4 py-3 text-[0.88rem]">
-                      <label class="m-0 flex cursor-pointer items-center gap-2" :class="cashBalance <= 0 ? 'cursor-not-allowed opacity-60' : ''">
-                        <input v-model="useMaxCash" type="checkbox" :disabled="cashBalance <= 0" />
-                        <span class="font-semibold text-gray-800">보유 캐시 최대 사용</span>
-                        <span class="ml-auto text-gray-500">보유 <b class="text-gray-800">{{ formatPrice(cashBalance) }}</b></span>
-                      </label>
-                      <div v-if="useMaxCash && cashUse > 0" class="mt-1 text-[0.8rem] text-[#c0392b]">이번 주문에 {{ formatPrice(cashUse) }} 사용 · 결제 금액 {{ formatPrice(orderTotalRef) }}</div>
-                      <div v-else-if="cashBalance <= 0" class="mt-1 text-[0.78rem] text-gray-400">사용할 수 있는 캐시가 없습니다.</div>
+                    <!-- ② 할인정보 — 쿠폰 / 캐시 -->
+                    <div class="mb-4 rounded-xl border border-[#e5e7eb] bg-white p-5">
+                      <h3 class="m-0 mb-3 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-[0.75rem] text-white">2</span>할인 정보</h3>
+                      <!-- 2026-09-14(요청사항: "주문할인쿠폰 상품할인쿠폰 배송비할인쿠폰 선택하여 적용할 수 있게 모달연결해주고") — CouponModal -->
+                      <div class="flex items-center gap-2 text-[0.9rem]">
+                        <span class="font-semibold text-gray-800">쿠폰</span>
+                        <span v-if="myCoupons.length" class="text-[0.78rem] text-gray-500">보유 {{ myCoupons.length }}장</span>
+                        <button type="button" class="ml-auto cursor-pointer rounded-lg border-[1.5px] border-theme bg-[#fdf6ee] px-3 py-1.5 text-[0.8rem] font-bold text-theme" @click="handleBtnAction('coupon-modalOpen')">쿠폰 선택하기</button>
+                      </div>
+                      <ul v-if="appliedCouponList.length" class="m-0 mt-2 list-none p-0">
+                        <li v-for="row in appliedCouponList" :key="row.key" class="mb-1.5 text-[0.85rem] text-[#606060]">
+                          <span class="mr-1 text-[0.75rem] text-[#999]">[{{ COUPON_CATEGORY_LABEL[row.coupon.category] }}<template v-if="row.lineName"> · {{ row.lineName }}</template>]</span>{{ row.coupon.name }}
+                          <b class="ml-1 text-[#c0392b]">-{{ formatPrice(row.discount) }}</b>
+                          <span class="ml-1 text-[0.7rem] text-[#999]">({{ row.touched ? "직접 선택" : "자동 적용" }})</span>
+                          <a href="#" class="ml-2 text-[0.75rem] text-[#999] hover:text-danger" @click.prevent="handleBtnAction('coupon-remove', row.remove)">제거</a>
+                        </li>
+                      </ul>
+                      <p v-else class="m-0 mt-2 text-[0.8rem] text-gray-400">적용된 쿠폰이 없습니다.</p>
+
+                      <!-- 캐시(적립금): 보유 캐시를 최대로 쓸지 선택 -->
+                      <div v-if="loggedIn" class="mt-4 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-4 py-3 text-[0.88rem]">
+                        <label class="m-0 flex cursor-pointer items-center gap-2" :class="cashBalance <= 0 ? 'cursor-not-allowed opacity-60' : ''">
+                          <input v-model="useMaxCash" type="checkbox" :disabled="cashBalance <= 0" />
+                          <span class="font-semibold text-gray-800">보유 캐시 최대 사용</span>
+                          <span class="ml-auto text-gray-500">보유 <b class="text-gray-800">{{ formatPrice(cashBalance) }}</b></span>
+                        </label>
+                        <div v-if="useMaxCash && cashUse > 0" class="mt-1 text-[0.8rem] text-[#c0392b]">이번 주문에 {{ formatPrice(cashUse) }} 사용</div>
+                        <div v-else-if="cashBalance <= 0" class="mt-1 text-[0.78rem] text-gray-400">사용할 수 있는 캐시가 없습니다.</div>
+                      </div>
+
+                      <dl class="m-0 mt-3 border-t border-dashed border-[#e5e7eb] pt-3 text-[0.88rem]">
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">쿠폰 할인</dt><dd class="m-0 font-semibold" :class="couponDiscountTotal > 0 ? 'text-danger' : 'text-gray-400'">{{ couponDiscountTotal > 0 ? "-" : "" }}{{ formatPrice(couponDiscountTotal) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">캐시 사용</dt><dd class="m-0 font-semibold" :class="cashUse > 0 ? 'text-danger' : 'text-gray-400'">{{ cashUse > 0 ? "-" : "" }}{{ formatPrice(cashUse) }}</dd></div>
+                      </dl>
                     </div>
+
+                    <!-- ③ 결제정보 — 결제 금액 / 결제 방법 / 약관 / 주문하기 -->
+                    <div class="rounded-xl border border-[#e5e7eb] bg-white p-5">
+                      <h3 class="m-0 mb-3 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-[0.75rem] text-white">3</span>결제 정보</h3>
+                      <dl class="m-0 mb-4 rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.88rem]">
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">상품 금액</dt><dd class="m-0">{{ formatPrice(subtotalRef) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">배송비</dt><dd class="m-0">{{ formatPrice(baseShip) }}</dd></div>
+                        <div v-if="couponDiscountTotal > 0" class="flex justify-between py-0.5"><dt class="text-gray-500">쿠폰 할인</dt><dd class="m-0 text-danger">-{{ formatPrice(couponDiscountTotal) }}</dd></div>
+                        <div v-if="cashUse > 0" class="flex justify-between py-0.5"><dt class="text-gray-500">캐시 사용</dt><dd class="m-0 text-danger">-{{ formatPrice(cashUse) }}</dd></div>
+                        <div class="mt-1.5 flex items-baseline justify-between border-t border-[#e5e7eb] pt-2"><dt class="font-bold text-gray-900">최종 결제 금액</dt><dd class="m-0 text-[1.25rem] font-extrabold text-[#bc8246]">{{ formatPrice(orderTotalRef) }}</dd></div>
+                      </dl>
 
                     <div class="payment-method">
                       <!-- 결제수단 선택(카드/계좌이체/가상계좌/간편결제) — [주문하기]를 누르면 선택한 수단의 결제창이 열린다. 수단→PG 매핑은 conts/payMethods.ts -->
@@ -243,6 +229,7 @@
                       <div class="order-button-payment mt-20">
                         <button type="submit" class="os-btn os-btn-black">주문하기</button>
                       </div>
+                    </div>
                     </div>
                   </div>
                   <!-- 주문 영역 끝 -->
@@ -260,6 +247,7 @@
 
 <script setup lang="ts">
 import PayMethodSelect from "~/components/pay/PayMethodSelect.vue";
+import SnsProviderIcon from "~/components/my/SnsProviderIcon.vue";
 import { DEFAULT_PAY_METHOD, loadLastPayMethod, payMethodFromDbCd, saveLastPayMethod, type PayMethodCd } from "~/conts/payMethods";
 import { myPaySvc } from "~/svc/fo/ec/my/myPaySvc";
 import { getPayProvider } from "~/utils/payProvider";
@@ -465,6 +453,7 @@ const cashBalance = ref(0); // 보유 캐시
 const useMaxCash = ref(false); // 보유 캐시 최대 사용
 const touched = reactive({ order: false, shipping: false }); // 직접 고른 종류는 자동 적용이 덮어쓰지 않는다
 const productTouched = ref(false); // 상품할인쿠폰을 직접 골랐으면 자동 적용이 덮어쓰지 않는다
+const authStore = useAuthStore(); // 템플릿에서 회원명/로그인 소셜 아이콘 표시
 const loggedIn = computed(() => useAuthStore().isStLoggedIn);
 const isPassGuest = computed(() => useAuthStore().isPassGuest);
 function handleApplyCoupons(coupons: AppliedCoupons) {
@@ -635,7 +624,7 @@ async function handleFormSubmit() {
   // 비회원은 PASS 본인인증을 마쳐야 주문할 수 있다
   if ((!loggedIn.value || isPassGuest.value) && !idv.value) {
     await useAlert().openAlert({ title: "본인인증 필요", variant: "warning", message: "비회원 결제는 PASS 본인인증 후 진행할 수 있습니다.\n'PASS 본인인증' 버튼을 눌러 인증해 주세요." });
-    document.querySelector(".your-order")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document.querySelector("#checkout-guest")?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
   const total = orderTotalRef.value;
