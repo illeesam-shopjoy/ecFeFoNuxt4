@@ -10,8 +10,8 @@
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { type PdProdType } from "~/types/pd/pdProdType";
 
-export function useCacheProducts(size = 24) {
-  const { data } = useAsyncData<PdProdType[]>(`pd-latest-${size}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: size }).then((r) => r.items), {
+export function useCacheProducts(size = 24, opts: { isBest?: boolean; isNew?: boolean } = {}) {
+  const { data } = useAsyncData<PdProdType[]>(`pd-latest-${size}${opts.isBest ? "-best" : ""}${opts.isNew ? "-new" : ""}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: size, ...opts }).then((r) => r.items), {
     default: () => [],
     lazy: true,
     server: false, // 보조 위젯 — SEO 서버 렌더(/shop 사이드바 등)에서는 뺀다

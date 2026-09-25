@@ -14,5 +14,7 @@ export interface PdProdPageParamsType {
   priceMax?: number;
   sort?: string; // ecBeBo buildOrder 허용 컬럼: "prodNm asc" | "regDate desc" | "prodId asc" | "salePrice asc/desc"
   keyword?: string; // 상품명 키워드 검색
+  isBest?: boolean; // 베스트 상품만 (서버 필터)
+  isNew?: boolean; // 신상품만 (서버 필터)
   prodTypeCd?: string; // 상품유형 단일선택 — PROD_TYPE_CD {SINGLE:단품, OPTION:옵션상품, GROUP:묶음상품, SET:세트상품, GIFT:사은품} (2026-09-22, conts/pdConst.ts 참조)
 }

@@ -224,6 +224,8 @@ export function buildProdPageQuery(params: PdProdPageParamsType): Record<string,
     q.searchType = "prodNm";
     q.searchValue = params.keyword;
   }
+  if (params.isBest) q.isBest = "Y";
+  if (params.isNew) q.isNew = "Y";
   if (params.prodTypeCd) q.prodTypeCd = params.prodTypeCd;
   return q;
 }

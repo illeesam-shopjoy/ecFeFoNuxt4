@@ -408,12 +408,8 @@ const { data: catData } = useAsyncData<PdCategoryTreeResType>(
 );
 const categoryItems = computed(() => (catData.value?.categoryTree ?? []).slice(3, 6));
 
-// 베스트 상품 + 추천 상품 — 최신 상품 24개 중 isBest, 없으면 최신순으로 대체(백엔드 목록 API에 isBest 필터가 없어 전체 카탈로그 없이는 서버에서 못 거름)
-const latestProducts = useCacheProducts();
-const bestSaleProducts = computed(() => {
-  const best = latestProducts.value.filter((p) => p.isBest);
-  return best.length ? best : latestProducts.value;
-});
+// 베스트 상품 + 추천 상품 — 서버 isBest 필터로 베스트 24개 조회
+const bestSaleProducts = useCacheProducts(24, { isBest: true });
 const bigPrd1 = computed(() => bestSaleProducts.value.filter((p) => p.bigImg)[0]);
 const bigPrd2 = computed(() => bestSaleProducts.value.filter((p) => p.bigImg)[1]);
 const smBestPrd = computed(() => bestSaleProducts.value.filter((p) => !p.bigImg));
