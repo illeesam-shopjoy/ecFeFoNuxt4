@@ -29,41 +29,11 @@
               />
             </div>
 
+            <!-- 본문: ecBeBo blogContent(에디터 HTML) — 브라우저에서 정화 후 렌더 -->
             <div class="postbox__wrapper mb-70">
-              <div class="postbox__text mt-65">
-                <p>
-                  디가, 코마, 토러스는 <span class="highlight theme">옴모</span>를 위해 디자인된 세 가지 주방 용기입니다. 2016년 2월 앙비엔테 쇼에서 소개된 디자인 중심 브랜드로,
-                  <span class="highlight">미니멀한 디자인, 선명한 색상, 스테인리스 스틸과 무광 플라스틱</span>, 추상적인 형태와 곡선이 특징이며 실용적이고 사용하기 편합니다.
-                </p>
-              </div>
-              <div class="postbox__text">
-                <p>디가는 두 가지 색의 멜라민 샐러드 보울로, 채소를 씻고 물기를 빼 담을 수 있습니다. 바닥 디스크를 반시계 방향으로 돌리면 물이 빠지고, 시계 방향으로 돌리면 배수가 잠기고 소스를 담아 두기에 좋습니다.</p>
-              </div>
-              <article class="postbox format-quote mt-45 mb-50">
-                <div class="postbox__quote">
-                  <blockquote>
-                    <p><i class="fas fa-quote-right"></i> 많은 출판·웹 에디터가 기본 예시 문장으로 로렘 입숨을 사용합니다. 간단한 검색만으로도 아직 초기 단계인 웹 사이트들을 많이 찾아볼 수 있습니다.</p>
-                  </blockquote>
-                </div>
-              </article>
-              <!-- 본문 내 보조 이미지: AppImage (스켈레톤 + noImage) -->
-              <div class="postbox__details-img w-img mb-60">
-                <app-image
-                  :src="`${CDN_URL}/cdn/prod/img/blog/blog-details-sm.jpg`"
-                  alt="블로그 상세 이미지"
-                  wrap-class="w-full"
-                  :skeleton-style="{ width: '100%', aspectRatio: '16/7' }"
-                />
-              </div>
-              <div class="postbox__text">
-                <p>코마와 토러스는 각각 독특한 디자인과 숨겨진 기능을 가진 티 인퓨저입니다. 코마는 둥근 받침과 긴 스테인리스 핸들로 잡기 편합니다.</p>
-              </div>
-              <div class="postbox__text">
-                <p>
-                  브러시드 스틸 뚜껑은 손가락으로 열고 닫아 인퓨저를 쉽게 채우고 비울 수 있어, 티 브루잉을 즐기기 좋습니다. 토러스는 도넛 형태로 어떤 컵에도 걸 수 있으며, 다양한 디퓨저 세 개까지 넣을 수 있는 케이스와 함께 건조한 티 보관에 활용할 수
-                  있습니다.
-                </p>
-              </div>
+              <client-only>
+                <div v-if="item.blogContent" class="postbox__text he-view" v-html="toSafeHtml(item.blogContent)"></div>
+              </client-only>
             </div>
 
             <div class="postbox__share mb-95">
@@ -223,6 +193,7 @@ import BlogSidebar from "~/components/common/sidebar/BlogSidebar.vue";
 import AppImage from "~/components/ui/AppImage.vue";
 import SkeletonCard from "~/components/ui/SkeletonCard.vue";
 import { CDN_URL } from "~/conts/baseConst";
+import { toSafeHtml } from "~/utils/htmlSafe";
 import FoForm from "~/components/fo/FoForm.vue";
 import { useFoValidate } from "~/composables/useFoValidate";
 import type { FoFormColumn } from "~/types/fo/foCompType";

@@ -114,5 +114,5 @@ usePageTitle("홈 2");
 const products = useCacheProducts();
 const trendingBigItem = computed(() => products.value.find((p) => p.bigImg));
 const trendingProducts = computed(() => products.value.slice(0, 6));
-const saleProducts = computed(() => products.value.filter((p) => typeof p.saleDiscntRate === "number" && p.saleDiscntRate > 0).slice(0, 12));
+const saleProducts = useCacheProducts(12, { isSale: true });
 </script>

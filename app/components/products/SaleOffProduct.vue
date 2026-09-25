@@ -31,7 +31,7 @@ useComponentTitle('할인 상품');
 import ProductItem from "./ProductItem.vue";
 import { computed } from "vue";
 
-// 최신 24개 중 할인 상품 5개 — 전체 카탈로그를 받지 않는다(useCacheProducts.ts 참조).
-const products = useCacheProducts();
-const saleItems = computed(() => products.value.filter((p) => p.saleDiscntRate).slice(0, 5));
+// 할인 상품 5개 — 서버 isSale 필터로 조회(useCacheProducts.ts 참조).
+const saleProducts = useCacheProducts(5, { isSale: true });
+const saleItems = computed(() => saleProducts.value);
 </script>

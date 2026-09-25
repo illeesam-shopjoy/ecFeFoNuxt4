@@ -127,8 +127,9 @@ const trending_products = computed(() => [
   { id: 1, items: products.value.slice(0, 3) },
   { id: 2, items: products.value.slice(3, 6) },
 ]);
+const saleList = useCacheProducts(6, { isSale: true });
 const sale_products = computed(() => {
-  const sale = products.value.filter((p) => p.saleDiscntRate);
+  const sale = saleList.value;
   return [
     { id: 1, items: sale.slice(0, 3) },
     { id: 2, items: sale.slice(3, 6) },
