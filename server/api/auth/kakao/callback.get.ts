@@ -34,14 +34,20 @@ export default defineEventHandler(async (event) => {
   };
   if (clientSecret) body.client_secret = clientSecret;
 
+  // 실패 원인(KOE010=클라이언트 시크릿 불일치/누락, KOE320=코드 만료·재사용, KOE303=redirect_uri 불일치 등)을 로그/화면에 남긴다.
+  let kakaoErrorCode = "";
   const tokenRes = await $fetch<{ access_token?: string }>("https://kauth.kakao.com/oauth/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams(body).toString(),
-  }).catch(() => null);
+  }).catch((e) => {
+    kakaoErrorCode = e?.data?.error_code ?? e?.data?.error ?? "";
+    console.error("[kakao/callback] token 교환 실패", kakaoErrorCode, e?.data?.error_description ?? e?.message);
+    return null;
+  });
 
   if (!tokenRes?.access_token) {
-    return fail("token_exchange");
+    return fail(kakaoErrorCode ? `token_exchange_${kakaoErrorCode}` : "token_exchange");
   }
 
   const userRes = await $fetch<{
