@@ -69,16 +69,7 @@
               <div class="row">
                 <div class="col-lg-6">
                   <div class="checkbox-form">
-                    <h3 class="flex items-center justify-between">
-                      <span>주문자·배송 정보</span>
-                      <button
-                        type="button"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold whitespace-nowrap"
-                        @click="handleBtnAction('billing-autoFill')"
-                      >
-                        ⚡ 자동입력
-                      </button>
-                    </h3>
+                    <h3 class="co-title">주문자·배송 정보</h3>
                     <!-- 청구 정보 시작 -->
                     <fo-form as="div" :columns="billingCols" :form="billingForm" :cols="2" :gap="16">
                       <template #country><country-select /></template>
@@ -86,13 +77,11 @@
                         <span class="flex items-center justify-between text-[0.78rem] text-gray-500 mb-1">
                           <span>주소 <span class="text-theme">*</span></span>
                           <!-- 2026-09-15(요청사항: "주문하기의 카카오주소검색이야 모달처럼 띄워지는데 http://localhost:3100/checkout 에도 추가해줘") -->
-                          <button
-                            type="button"
-                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white text-xs font-semibold whitespace-nowrap"
-                            @click="handleBtnAction('addr-search')"
-                          >
-                            📮 주소 검색
-                          </button>
+                          <span v-if="loggedIn" class="flex gap-1.5">
+                            <button type="button" class="co-mini co-mini-dark" @click="handleBtnAction('addr-list')">📋 주소 목록</button>
+                            <button type="button" class="co-mini co-mini-green" @click="handleBtnAction('addr-search')">📮 주소 검색</button>
+                          </span>
+                          <button v-else type="button" class="co-mini co-mini-green" @click="handleBtnAction('addr-search')">📮 주소 검색</button>
                         </span>
                         <input type="text" class="w-full px-[13px] py-[10px] border-[1.5px] border-[#e5e7eb] rounded-lg bg-[#f9fafb] text-[0.88rem] outline-none" placeholder="도로명 주소" v-model="form.address" readonly />
                       </template>
@@ -115,7 +104,7 @@
                     <!-- 다른 배송지 시작 -->
                     <div class="different-address">
                       <div class="ship-different-title">
-                        <h3>
+                        <h3 class="co-sub">
                           <label for="ship-box">배송지가 다르면 체크</label>
                           <input @click="handleBtnAction('shipBox-toggle')" id="ship-box" type="checkbox" />
                         </h3>
@@ -137,7 +126,7 @@
                   <div class="your-order mb-30 !p-0 !border-0 !bg-transparent">
                     <!-- ① 주문정보 -->
                     <div class="mb-4 rounded-xl border border-[#e5e7eb] bg-white p-5">
-                      <h3 class="m-0 mb-3 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-[0.75rem] text-white">1</span>주문 정보</h3>
+                      <h3 class="co-title"><span class="co-num">1</span>주문 정보</h3>
                       <div class="your-order-table">
                         <fo-grid bare :columns="orderCols" :rows="state.cartProducts">
                           <template #cell-prodNm="{ row }">
@@ -177,7 +166,7 @@
 
                     <!-- ② 할인정보 — 쿠폰 / 캐시 -->
                     <div class="mb-4 rounded-xl border border-[#e5e7eb] bg-white p-5">
-                      <h3 class="m-0 mb-3 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-[0.75rem] text-white">2</span>할인 정보</h3>
+                      <h3 class="co-title"><span class="co-num">2</span>할인 정보</h3>
                       <!-- 2026-09-14(요청사항: "주문할인쿠폰 상품할인쿠폰 배송비할인쿠폰 선택하여 적용할 수 있게 모달연결해주고") — CouponModal -->
                       <div class="flex items-center gap-2 text-[0.9rem]">
                         <span class="font-semibold text-gray-800">쿠폰</span>
@@ -214,16 +203,16 @@
 
                     <!-- ③ 결제정보 — 결제 금액 / 결제 방법 / 약관 / 주문하기 -->
                     <div class="rounded-xl border border-[#e5e7eb] bg-white p-5">
-                      <h3 class="m-0 mb-3 flex items-center gap-2 text-[1.05rem] font-bold text-gray-900"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-[0.75rem] text-white">3</span>결제 정보</h3>
+                      <h3 class="co-title"><span class="co-num">3</span>결제 정보</h3>
                       <dl class="m-0 mb-4 rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.88rem]">
-                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.order }} <span class="text-[0.72rem] text-gray-400">({{ AMT.item }} + {{ AMT.ship }})</span></dt><dd class="m-0">{{ formatPrice(subtotalRef + baseShip) }}</dd></div>
-                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.discount }} <span class="text-[0.72rem] text-gray-400">({{ AMT.coupon }} + {{ AMT.cash }})</span></dt><dd class="m-0" :class="couponDiscountTotal + cashUse > 0 ? 'text-danger' : 'text-gray-400'">{{ couponDiscountTotal + cashUse > 0 ? "-" : "" }}{{ formatPrice(couponDiscountTotal + cashUse) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.order }}</dt><dd class="m-0">{{ formatPrice(subtotalRef + baseShip) }}</dd></div>
+                        <div class="flex justify-between py-0.5"><dt class="text-gray-500">{{ AMT.discount }}</dt><dd class="m-0" :class="couponDiscountTotal + cashUse > 0 ? 'text-danger' : 'text-gray-400'">{{ couponDiscountTotal + cashUse > 0 ? "-" : "" }}{{ formatPrice(couponDiscountTotal + cashUse) }}</dd></div>
                         <div class="mt-1.5 flex items-baseline justify-between border-t border-[#e5e7eb] pt-2"><dt class="font-bold text-gray-900">{{ AMT.pay }}</dt><dd class="m-0 text-[1.25rem] font-extrabold text-[#bc8246]">{{ formatPrice(orderTotalRef) }}</dd></div>
                       </dl>
 
                     <div class="payment-method">
                       <!-- 결제수단 선택(카드/계좌이체/가상계좌/간편결제) — [주문하기]를 누르면 선택한 수단의 결제창이 열린다. 수단→PG 매핑은 conts/payMethods.ts -->
-                      <h4 class="m-0 mb-3 text-[1rem] font-bold text-gray-900">결제 방법</h4>
+                      <h4 class="co-sub">결제 방법</h4>
                       <pay-method-select v-model="payMethod" />
                       <div v-if="isTestPay" class="mt-3 rounded-lg bg-[#fff7e6] px-3 py-2 text-[0.8rem] text-[#8a5a25]"><i class="fas fa-info-circle mr-1.5"></i>테스트 결제 환경입니다. 실제로 결제되지 않습니다.</div>
                       <label class="m-0 mt-3 flex cursor-pointer items-center gap-2 text-[0.85rem] text-gray-700">
@@ -245,12 +234,16 @@
     </client-only>
     <coupon-modal ref="couponModalRef" :coupons="myCoupons" :applied-coupons="appliedCoupons" :subtotal="subtotalRef" :bases="couponBaseAmts" :lines="couponLines" @apply="handleApplyCoupons" />
     <addr-search-modal ref="addrSearchModalRef" @select="handleAddrSelected" />
+    <!-- 내 주소 목록에서 배송지 선택 -->
+    <addr-manage-modal ref="addrManageRef" pick @pick="handleAddrPicked" />
   </layout>
 </template>
 
 <script setup lang="ts">
 import PayMethodSelect from "~/components/pay/PayMethodSelect.vue";
+import AddrManageModal from "~/components/modals/AddrManageModal.vue";
 import { AMT } from "~/conts/amountLabels";
+import type { MbMemberAddrType } from "~/types/mb/mbMemberAddrType";
 import SnsProviderIcon from "~/components/my/SnsProviderIcon.vue";
 import { DEFAULT_PAY_METHOD, loadLastPayMethod, payMethodFromDbCd, saveLastPayMethod, type PayMethodCd } from "~/conts/payMethods";
 import { myPaySvc } from "~/svc/fo/ec/my/myPaySvc";
@@ -344,9 +337,6 @@ const orderCols: FoGridColumn[] = [
   { key: "total", label: "금액", width: "160px", align: "right" },
 ];
 
-// [자동입력] 버튼 — 이름/성/회사명/이메일/연락처처럼 검색 없이 바로 채울 수 있는 간단한
-// 항목만 대상. 주소는 이미 "주소 검색" 모달 + 로그인 시 기본배송지 자동채움이 있어 제외.
-// 로그인 상태면 회원 프로필 값으로, 비로그인/미보유 값은 테스트용 기본값으로 채운다.
 /** "경기 성남시 중원구 …" → 시/도, 시/군/구 (주소 검색 모달이 채우는 값과 같은 모양) */
 function splitAddr(addr: string): { sido: string; sigungu: string } {
   const [sido = "", ...rest] = addr.trim().split(/\s+/);
@@ -354,42 +344,48 @@ function splitAddr(addr: string): { sido: string; sigungu: string } {
   return { sido, sigungu };
 }
 
-/** 자동입력 — 로그인 회원이면 내 정보(프로필) + 기본 배송지로 결제 정보를 채운다(값이 있는 항목만). 비로그인은 테스트용 기본값 */
-async function handleAutoFillBilling() {
+/** 이름을 성/이름 칸에 나눠 넣는다 — 한글 3~4글자는 첫 글자가 성, 그 밖은 전부 이름(성은 "-") */
+function setBillingName(fullNm: string) {
+  const nm = fullNm.trim();
+  if (!nm) return;
+  const koreanFull = /^[가-힣]{3,4}$/.test(nm);
+  billingForm.lastName = koreanFull ? nm.slice(0, 1) : billingForm.lastName || "-";
+  billingForm.name = koreanFull ? nm.slice(1) : nm;
+}
+/** 배송지(주소 목록/기본 배송지)를 주문자·배송 정보에 채운다 */
+function applyAddrToBilling(a: { recvNm?: string; recvPhone?: string; zipCode?: string; addr?: string; addrDetail?: string }, overwrite: boolean) {
+  if (a.recvNm && (overwrite || !billingForm.name)) setBillingName(a.recvNm);
+  if (a.recvPhone && (overwrite || !billingForm.phone)) billingForm.phone = a.recvPhone;
+  if (a.addr && (overwrite || !billingForm.address)) {
+    billingForm.address = a.addr;
+    billingForm.addressDetail = a.addrDetail ?? "";
+    billingForm.zipCode = a.zipCode ?? "";
+    Object.assign(billingForm, splitAddr(a.addr));
+  }
+}
+/** 로그인 회원의 기본 정보(이름·이메일·휴대폰·기본 배송지)를 주문자·배송 정보에 기본으로 채운다 — 이미 입력한 칸은 건드리지 않는다 */
+async function fillBillingFromMember() {
   const authStore = useAuthStore();
-  if (!authStore.isStLoggedIn) {
-    billingForm.name = "홍길동";
-    billingForm.lastName = billingForm.lastName || "-";
-    billingForm.email = billingForm.email || "illeesam@gmail.com";
-    billingForm.phone = billingForm.phone || "01038050206";
-    return;
-  }
+  if (!authStore.isStLoggedIn || isPassGuest.value) return;
   try {
-    const [profile, addrs] = await Promise.all([myInfoSvc.getProfile(), myAddrSvc.getMyAddrs()]);
+    const [profile, addrs] = await Promise.all([myInfoSvc.getProfile(), myAddrSvc.getMyAddrs().catch(() => [])]);
     const addr = addrs.find((a) => a.defaultYn === "Y") ?? addrs[0];
-    const fullNm = (profile.memberNm || addr?.recvNm || authStore.user?.userNm || "").trim();
-    if (fullNm) {
-      // 한글 3~4글자 이름은 첫 글자가 성, 나머지가 이름. 그 밖의 이름은 그대로 이름에 넣는다(성은 "-")
-      const koreanFull = /^[가-힣]{3,4}$/.test(fullNm);
-      billingForm.lastName = koreanFull ? fullNm.slice(0, 1) : billingForm.lastName || "-";
-      billingForm.name = koreanFull ? fullNm.slice(1) : fullNm;
-    }
-    billingForm.email = profile.memberEmail || profile.loginId || authStore.user?.userEmail || billingForm.email;
-    billingForm.phone = addr?.recvPhone || profile.memberPhone || billingForm.phone;
-    const address = addr?.addr || profile.memberAddr;
-    if (address) {
-      billingForm.address = address;
-      billingForm.addressDetail = addr?.addrDetail || profile.memberAddrDetail || billingForm.addressDetail;
-      billingForm.zipCode = addr?.zipCode || profile.memberZipCode || billingForm.zipCode;
-      Object.assign(billingForm, splitAddr(address));
-    }
+    if (!billingForm.name) setBillingName(profile.memberNm || addr?.recvNm || authStore.user?.userNm || "");
+    if (!billingForm.email) billingForm.email = profile.memberEmail || profile.loginId || authStore.user?.userEmail || "";
+    if (!billingForm.phone) billingForm.phone = profile.memberPhone || addr?.recvPhone || "";
+    if (addr) applyAddrToBilling(addr, false);
+    else if (profile.memberAddr) applyAddrToBilling({ zipCode: profile.memberZipCode, addr: profile.memberAddr, addrDetail: profile.memberAddrDetail }, false);
   } catch (err) {
-    console.warn("[checkout] 자동입력 실패:", err);
-    useNuxtApp().$toast.error("내 정보를 불러오지 못했습니다.");
+    console.warn("[checkout] 회원 기본정보 채우기 실패:", err);
   }
+}
+/** 주소 목록에서 고른 배송지 — 이름·연락처·주소를 그 배송지로 바꾼다 */
+function handleAddrPicked(a: MbMemberAddrType) {
+  applyAddrToBilling(a, true);
 }
 
 const addrSearchModalRef = ref<InstanceType<typeof AddrSearchModal> | null>(null);
+const addrManageRef = ref<InstanceType<typeof AddrManageModal> | null>(null);
 function handleAddrSelected(result: SyAddrSearchResultType) {
   billingForm.zipCode = result.zonecode;
   billingForm.address = result.address;
@@ -608,6 +604,7 @@ const agreeTerms = ref(true);
 const publicCfg = useRuntimeConfig().public as { tossPayClientKey?: string; mode?: string };
 const isTestPay = computed(() => (publicCfg.tossPayClientKey ?? "").startsWith("test_"));
 onMounted(async () => {
+  watch(() => loggedIn.value && !isPassGuest.value, (v) => { if (v) fillBillingFromMember(); }, { immediate: true });
   payMethod.value = loadLastPayMethod();
   // 로그인 회원은 서버에 기록된 마지막 결제수단이 있으면 그것을 기본으로(다른 기기에서 결제한 수단까지 반영)
   if (loggedIn.value) {
@@ -684,9 +681,9 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
   // 적용 쿠폰 제거 (param: 쿠폰 종류)
   } else if (cmd === "coupon-remove") {
     return removeCoupon(String(param));
-  // 결제 정보 자동입력
-  } else if (cmd === "billing-autoFill") {
-    return handleAutoFillBilling();
+  // 내 주소 목록에서 배송지 선택
+  } else if (cmd === "addr-list") {
+    addrManageRef.value?.show();
   // 주소 검색 모달 열기
   } else if (cmd === "addr-search") {
     addrSearchModalRef.value?.show();
@@ -704,3 +701,17 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
   }
 };
 </script>
+
+<style scoped>
+/* 주문/결제 화면 글꼴·스타일 통일 — 섹션 제목(co-title)·소제목(co-sub)·표 글자를 한 벌로 */
+.co-title { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 0 0 10px; border-bottom: 1px solid #ececec; font-size: 1.1rem !important; font-weight: 700 !important; line-height: 1.3; color: #111827; letter-spacing: 0; }
+.co-num { display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; border-radius: 9999px; background: #111827; color: #fff; font-size: 0.75rem; font-weight: 700; }
+.co-sub { margin: 0 0 10px; font-size: 0.95rem !important; font-weight: 700 !important; line-height: 1.3; color: #111827; letter-spacing: 0; }
+.co-sub label { margin: 0; font-size: inherit !important; font-weight: inherit !important; color: inherit !important; }
+.co-mini { padding: 6px 12px; border: 0; border-radius: 6px; color: #fff; font-size: 0.75rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.co-mini-green { background: #22c55e; }
+.co-mini-green:hover { background: #16a34a; }
+.co-mini-dark { background: #1f2937; }
+.co-mini-dark:hover { background: #111827; }
+.your-order-table :deep(table), .your-order-table :deep(th), .your-order-table :deep(td) { font-size: 0.88rem; }
+</style>

@@ -5,8 +5,8 @@
         <!-- 헤더 -->
         <div class="flex shrink-0 items-center justify-between border-b border-[#f0e2cf] bg-gradient-to-b from-[#fcf5e9] to-[#f8ecd9] px-6 py-4">
           <div>
-            <h3 id="addr-manage-title" class="m-0 text-[1.1rem] font-extrabold text-gray-900"><i class="fas fa-map-marker-alt text-theme mr-2 text-base"></i>주소 관리</h3>
-            <div class="mt-0.5 text-[0.78rem] text-gray-400">배송지를 여러 개 등록하고, 기본 배송지 1개를 정하세요.</div>
+            <h3 id="addr-manage-title" class="m-0 text-[1.1rem] font-extrabold text-gray-900"><i class="fas fa-map-marker-alt text-theme mr-2 text-base"></i>{{ pick ? "주소 목록에서 선택" : "주소 관리" }}</h3>
+            <div class="mt-0.5 text-[0.78rem] text-gray-400">{{ pick ? "주문에 쓸 배송지를 선택하세요. 필요하면 새 배송지를 추가할 수 있습니다." : "배송지를 여러 개 등록하고, 기본 배송지 1개를 정하세요." }}</div>
           </div>
           <button type="button" class="cursor-pointer border-0 bg-transparent p-1 text-gray-400 hover:text-gray-700" aria-label="닫기" @click="close"><i class="fal fa-times"></i></button>
         </div>
@@ -44,7 +44,8 @@
               <div class="flex flex-wrap items-center gap-2">
                 <span class="font-bold text-gray-900">{{ a.addrNm || "배송지" }}</span>
                 <span v-if="a.defaultYn === 'Y'" class="rounded-full bg-[#faf3ea] px-2 py-px text-[0.72rem] font-bold text-[#8a5a25]">기본 배송지</span>
-                <span class="ml-auto flex gap-2.5 text-[0.8rem]">
+                <span class="ml-auto flex items-center gap-2.5 text-[0.8rem]">
+                  <button v-if="pick" type="button" class="cursor-pointer rounded-md border-0 bg-gray-900 px-3 py-1 text-[0.78rem] font-bold text-white" @click="choose(a)">이 주소 선택</button>
                   <button v-if="a.defaultYn !== 'Y'" type="button" class="lnk" @click="setDefault(a)">기본으로 설정</button>
                   <button type="button" class="lnk" @click="openForm(a)">수정</button>
                   <button type="button" class="lnk !text-red-500" @click="remove(a)">삭제</button>
@@ -79,7 +80,8 @@ import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
 import type { MbMemberAddrType } from "~/types/mb/mbMemberAddrType";
 import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 
-const emit = defineEmits<{ (e: "changed", defaultAddr: MbMemberAddrType | null): void }>();
+const props = defineProps<{ pick?: boolean }>(); // 선택 모드 — 목록에서 주소 1개를 골라 돌려준다(주문 화면)
+const emit = defineEmits<{ (e: "changed", defaultAddr: MbMemberAddrType | null): void; (e: "pick", addr: MbMemberAddrType): void }>();
 
 const visible = ref(false);
 const loading = ref(false);
@@ -159,6 +161,13 @@ async function remove(a: MbMemberAddrType) {
     useNuxtApp().$toast.error(errText(e, "삭제에 실패했습니다."));
   }
 }
+
+/** 선택 모드: 이 주소를 부모에게 돌려주고 닫는다 */
+function choose(a: MbMemberAddrType) {
+  emit("pick", a);
+  visible.value = false;
+}
+void props;
 
 async function show() {
   err.value = "";

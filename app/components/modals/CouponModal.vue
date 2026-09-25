@@ -19,103 +19,42 @@
             <p class="text-sm text-gray-500 mb-0">상품할인쿠폰은 <b>상품별로 1개</b>씩, 주문할인·배송비할인쿠폰은 주문당 1개씩 적용됩니다. 기본은 혜택이 가장 큰 쿠폰(같으면 종료가 빠른 쿠폰)이 자동 적용되며, 여기서 바꿀 수 있습니다.</p>
           </div>
 
-          <p v-if="!coupons.length" class="mb-6 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">사용할 수 있는 쿠폰이 없습니다. (로그인 후 보유 쿠폰이 표시됩니다)</p>
+          <!-- 내 보유 쿠폰 / 지금 적용 가능한 쿠폰 요약 -->
+          <div class="mb-5 flex items-center justify-between rounded-lg bg-[#f9fafb] px-4 py-3 text-[0.88rem]">
+            <span class="text-gray-600">내 보유 쿠폰 <b class="text-gray-900">{{ coupons.length }}장</b></span>
+            <span class="text-gray-600">지금 적용 가능 <b class="text-theme">{{ usableCount }}장</b></span>
+          </div>
+          <p v-if="!coupons.length" class="mb-5 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-center text-[0.85rem] text-gray-500">사용할 수 있는 쿠폰이 없습니다. (로그인 후 보유 쿠폰이 표시됩니다)</p>
 
-          <!-- 상품할인쿠폰 — 상품(주문 줄)별 1개 -->
-          <fieldset class="mb-6">
-            <legend class="text-sm font-semibold text-gray-800 mb-2">{{ COUPON_CATEGORY_LABEL.product }} <span class="font-normal text-gray-400">· 상품별 1개</span></legend>
-            <p v-if="!productPool.length" class="m-0 rounded-lg border border-dashed border-gray-200 px-3 py-3 text-center text-xs text-gray-400">보유한 상품할인쿠폰이 없습니다.</p>
-            <div v-for="line in lines" :key="line.key" class="mb-4 last:mb-0" :class="{ hidden: !productPool.length }">
-              <div class="mb-1.5 flex items-baseline justify-between gap-2 text-[13px]">
+          <!-- ① 상품할인쿠폰 — 상품(주문 줄)마다 1개 -->
+          <div class="mb-5">
+            <div class="cp-title">{{ COUPON_CATEGORY_LABEL.product }} <span class="cp-hint">· 상품별 1개</span></div>
+            <p v-if="!productPool.length" class="cp-empty">보유한 상품할인쿠폰이 없습니다.</p>
+            <div v-for="line in lines" :key="line.key" class="mb-3 last:mb-0" :class="{ hidden: !productPool.length }">
+              <div class="mb-1 flex items-baseline justify-between gap-2 text-[0.82rem]">
                 <span class="min-w-0 truncate font-medium text-gray-800" v-html="line.name"></span>
-                <span class="shrink-0 text-xs text-gray-500">{{ formatPrice(line.amount) }}</span>
+                <span class="shrink-0 text-gray-500">{{ formatPrice(line.amount) }}</span>
               </div>
-              <div class="flex flex-col gap-2">
-                <label class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition" :class="!selected.product[line.key] ? 'border-theme bg-theme/5' : 'border-gray-200 hover:border-gray-300'">
-                  <input type="radio" class="mt-1" :name="`coupon-product-${line.key}`" :checked="!selected.product[line.key]" @change="selected.product[line.key] = null" />
-                  <span class="text-sm text-gray-500">선택 안 함</span>
-                </label>
-                <label
-                  v-for="coupon in productPool"
-                  :key="coupon.couponId"
-                  class="flex items-start gap-3 rounded-lg border p-3 transition"
-                  :class="[
-                    productBlock(coupon, line) ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60' : 'cursor-pointer',
-                    selected.product[line.key]?.couponId === coupon.couponId ? 'border-theme bg-theme/5' : productBlock(coupon, line) ? '' : 'border-gray-200 hover:border-gray-300',
-                  ]"
-                >
-                  <input
-                    type="radio"
-                    class="mt-1"
-                    :name="`coupon-product-${line.key}`"
-                    :disabled="!!productBlock(coupon, line)"
-                    :checked="selected.product[line.key]?.couponId === coupon.couponId"
-                    @change="selected.product[line.key] = coupon"
-                  />
-                  <span class="min-w-0 flex-1">
-                    <span class="flex items-center gap-2">
-                      <span class="text-sm font-medium text-gray-900">{{ coupon.name }}</span>
-                      <span v-if="bestOfLine[line.key] === coupon.couponId" class="rounded-full bg-[#faf3ea] px-2 py-px text-[11px] font-semibold text-theme">최대 혜택</span>
-                    </span>
-                    <span v-if="coupon.desc" class="block text-xs text-gray-500 mt-0.5">{{ coupon.desc }}</span>
-                    <span class="block text-xs mt-0.5" :class="productBlock(coupon, line) ? 'text-red-500' : 'text-gray-500'">
-                      <template v-if="productBlock(coupon, line)">{{ productBlock(coupon, line) }}</template>
-                      <template v-else>
-                        <b class="text-[#c0392b]">-{{ formatPrice(couponDiscount(coupon, line.amount)) }}</b>
-                        <template v-if="coupon.validTo"> · ~{{ coupon.validTo }} 까지</template>
-                      </template>
-                    </span>
-                  </span>
-                </label>
-              </div>
+              <select class="cp-select" :value="selected.product[line.key]?.couponId ?? ''" @change="pickProduct(line, ($event.target as HTMLSelectElement).value)">
+                <option value="">선택 안 함</option>
+                <option v-for="coupon in productPool" :key="coupon.couponId" :value="coupon.couponId" :disabled="!!productBlock(coupon, line)">{{ optionLabel(coupon, couponDiscount(coupon, line.amount), productBlock(coupon, line), bestOfLine[line.key] === coupon.couponId) }}</option>
+              </select>
+              <p v-if="selected.product[line.key]" class="cp-info">{{ infoLine(selected.product[line.key]!) }}</p>
             </div>
-          </fieldset>
+          </div>
 
-          <!-- 주문할인 / 배송비할인 — 주문당 1개 -->
-          <fieldset v-for="section in orderSections" :key="section.category" class="mb-6 last:mb-0">
-            <legend class="text-sm font-semibold text-gray-800 mb-2">{{ section.label }} <span class="font-normal text-gray-400">· 주문당 1개</span></legend>
-            <div class="flex flex-col gap-2">
-              <label
-                class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition"
-                :class="selected[section.category] === null ? 'border-theme bg-theme/5' : 'border-gray-200 hover:border-gray-300'"
-              >
-                <input type="radio" class="mt-1" :name="`coupon-${section.category}`" :checked="selected[section.category] === null" @change="selected[section.category] = null" />
-                <span class="text-sm text-gray-500">선택 안 함</span>
-              </label>
-              <label
-                v-for="coupon in section.coupons"
-                :key="coupon.couponId"
-                class="flex items-start gap-3 p-3 rounded-lg border transition"
-                :class="[
-                  blockOf(coupon) ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60' : 'cursor-pointer',
-                  selected[section.category]?.couponId === coupon.couponId ? 'border-theme bg-theme/5' : blockOf(coupon) ? '' : 'border-gray-200 hover:border-gray-300',
-                ]"
-              >
-                <input
-                  type="radio"
-                  class="mt-1"
-                  :name="`coupon-${section.category}`"
-                  :disabled="!!blockOf(coupon)"
-                  :checked="selected[section.category]?.couponId === coupon.couponId"
-                  @change="selected[section.category] = coupon"
-                />
-                <span class="min-w-0 flex-1">
-                  <span class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-gray-900">{{ coupon.name }}</span>
-                    <span v-if="bestId[section.category] === coupon.couponId" class="rounded-full bg-[#faf3ea] px-2 py-px text-[11px] font-semibold text-theme">최대 혜택</span>
-                  </span>
-                  <span v-if="coupon.desc" class="block text-xs text-gray-500 mt-0.5">{{ coupon.desc }}</span>
-                  <span class="block text-xs mt-0.5" :class="blockOf(coupon) ? 'text-red-500' : 'text-gray-500'">
-                    <template v-if="blockOf(coupon)">{{ blockOf(coupon) }}</template>
-                    <template v-else>
-                      <b class="text-[#c0392b]">-{{ formatPrice(couponDiscount(coupon, previewBase[section.category])) }}</b>
-                      <template v-if="coupon.validTo"> · ~{{ coupon.validTo }} 까지</template>
-                    </template>
-                  </span>
-                </span>
-              </label>
-            </div>
-          </fieldset>
+          <!-- ② 주문할인 / ③ 배송비할인 — 주문당 1개 -->
+          <div v-for="section in orderSections" :key="section.category" class="mb-5">
+            <div class="cp-title">{{ section.label }} <span class="cp-hint">· 주문당 1개</span></div>
+            <p v-if="!section.coupons.length" class="cp-empty">보유한 {{ section.label }}이 없습니다.</p>
+            <template v-else>
+              <select class="cp-select" :value="selected[section.category]?.couponId ?? ''" @change="pickOrder(section.category, ($event.target as HTMLSelectElement).value)">
+                <option value="">선택 안 함</option>
+                <option v-for="coupon in section.coupons" :key="coupon.couponId" :value="coupon.couponId" :disabled="!!blockOf(coupon)">{{ optionLabel(coupon, couponDiscount(coupon, previewBase[section.category]), blockOf(coupon), bestId[section.category] === coupon.couponId) }}</option>
+              </select>
+              <p v-if="selected[section.category]" class="cp-info">{{ infoLine(selected[section.category]!) }}</p>
+            </template>
+          </div>
 
           <div class="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100">
             <button type="button" class="mbtn mbtn-ghost" @click="cancel">취소</button>
@@ -165,6 +104,24 @@ const blockOf = (c: PmCouponApplyType) => couponBlockReason(c, props.subtotal, t
 const visible = ref(false);
 const selected = reactive<AppliedCoupons>({ order: null, shipping: null, product: {} });
 
+/** 옵션 문구: 쿠폰명 · 할인액(또는 못 쓰는 이유) · 최대 혜택 */
+function optionLabel(c: PmCouponApplyType, discount: number, block: string, best: boolean): string {
+  if (block) return `${c.name} · 사용 불가 (${block})`;
+  return `${c.name} · -${formatPrice(discount)}${best ? " · 최대 혜택" : ""}`;
+}
+/** 고른 쿠폰 설명 한 줄 — 설명 · 유효기간 */
+function infoLine(c: PmCouponApplyType): string {
+  return [c.desc, c.validTo ? `~${c.validTo} 까지` : ""].filter(Boolean).join(" · ");
+}
+function pickProduct(line: CouponLine, couponId: string) {
+  selected.product[line.key] = couponId ? productPool.value.find((c) => c.couponId === couponId) ?? null : null;
+}
+function pickOrder(category: "order" | "shipping", couponId: string) {
+  selected[category] = couponId ? props.coupons.find((c) => c.couponId === couponId && c.category === category) ?? null : null;
+}
+/** 지금 조건(기간·최소금액)을 만족해 쓸 수 있는 쿠폰 수 */
+const usableCount = computed(() => props.coupons.filter((c) => !couponBlockReason(c, props.subtotal, todayYmd())).length);
+
 /** 이 줄에서 이 쿠폰을 못 쓰는 이유 — 기간/최소금액, 또는 다른 상품에 이미 고른 쿠폰 */
 function productBlock(c: PmCouponApplyType, line: CouponLine): string {
   const why = lineCouponBlockReason(c, line, todayYmd());
@@ -208,6 +165,12 @@ defineExpose({ show });
 </script>
 
 <style scoped>
+.cp-title { margin-bottom: 6px; font-size: 0.92rem; font-weight: 700; color: #1f2937; }
+.cp-hint { font-weight: 400; color: #9ca3af; }
+.cp-empty { margin: 0; padding: 10px 12px; border: 1px dashed #e5e7eb; border-radius: 8px; text-align: center; font-size: 0.8rem; color: #9ca3af; }
+.cp-select { width: 100%; height: 42px; padding: 0 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 0.88rem; color: #111827; outline: none; }
+.cp-select:focus { border-color: #bc8246; }
+.cp-info { margin: 4px 0 0; font-size: 0.78rem; color: #6b7280; }
 .coupon-fade-enter-active,
 .coupon-fade-leave-active {
   transition: opacity 0.2s ease;
