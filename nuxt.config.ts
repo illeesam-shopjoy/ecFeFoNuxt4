@@ -126,6 +126,8 @@ export default defineNuxtConfig({
     apiBaseUrl: API_URL,
     /** 토스페이먼츠 시크릿 키 (서버 전용, 결제 승인 API용) */
     tossPaymentsSecretKey: process.env.TOSSPAYMENTS_SECRET_KEY ?? "",
+    /** 토스 결제창(API 개별 연동) 시크릿 키 — 주문 화면 결제수단 선택 방식의 승인용(서버 전용). 위젯 키(tossPaymentsSecretKey)와 짝이 다르다 */
+    tossPaymentsPaySecretKey: process.env.TOSSPAYMENTS_PAY_SECRET_KEY ?? "",
     /** 본인인증(PASS) — 포트원(PortOne) V2 본인인증 API 시크릿 (서버 전용). 비회원 결제 전 PASS 인증 결과를 서버에서 검증한다. */
     portoneApiSecret: process.env.PORTONE_API_SECRET ?? "",
     /** 포트원 API 주소 (테스트용으로 바꿀 수 있음) */
@@ -164,6 +166,8 @@ export default defineNuxtConfig({
       appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */
       tossPaymentClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY ?? "",
+      /** 토스 결제창(API 개별 연동) 클라이언트 키 test_ck_/live_ck_ — 주문 화면의 결제수단 선택(카드/계좌이체/가상계좌/간편결제) 결제창용 */
+      tossPayClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_PAY_CLIENT_KEY ?? "",
       /** 토스 카드 등록(빌링) 클라이언트 키 — 'API 개별 연동' 키(결제위젯 키와 다름). 마이페이지 결제카드 등록용 */
       tossBillingClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_BILLING_CLIENT_KEY ?? "",
       /** 포트원 스토어 ID / 본인인증(PASS) 채널 키 — 인증창 호출용(공개 값) */

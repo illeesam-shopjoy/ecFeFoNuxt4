@@ -5,16 +5,17 @@
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
-  const secretKey = config.tossPaymentsSecretKey as string;
-  if (!secretKey) {
-    throw createError({ statusCode: 500, statusMessage: "토스페이먼츠 시크릿 키가 설정되지 않았습니다." });
-  }
-
   const body = await readBody(event).catch(() => ({})) as {
     paymentKey?: string;
     orderId?: string;
     amount?: number;
+    keyType?: string;
   };
+  // keyType "pay" = 주문 화면의 결제창(API 개별 연동 키), 그 외 = 결제위젯 키(캐시 충전 등). 결제를 연 키의 짝 시크릿으로 승인해야 한다.
+  const secretKey = (body?.keyType === "pay" ? config.tossPaymentsPaySecretKey : config.tossPaymentsSecretKey) as string;
+  if (!secretKey) {
+    throw createError({ statusCode: 500, statusMessage: "토스페이먼츠 시크릿 키가 설정되지 않았습니다." });
+  }
   const paymentKey = String(body?.paymentKey ?? "").trim();
   const orderId = String(body?.orderId ?? "").trim();
   const amount = Number(body?.amount);

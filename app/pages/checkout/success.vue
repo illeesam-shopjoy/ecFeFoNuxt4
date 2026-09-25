@@ -8,8 +8,8 @@
         </template>
         <template v-else-if="status === 'success'">
           <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f0fdf4] text-[1.7rem] text-[#16a34a]"><i class="fas fa-check"></i></div>
-          <h2 class="text-2xl font-bold text-green-700 mb-2">결제가 완료되었습니다</h2>
-          <p class="text-gray-500 mb-8 text-[0.9rem]">주문해 주셔서 감사합니다. 아래 결제 내용을 확인해 주세요.</p>
+          <h2 class="text-2xl font-bold mb-2" :class="waitingDeposit ? 'text-[#b45309]' : 'text-green-700'">{{ waitingDeposit ? "입금 대기 중입니다" : "결제가 완료되었습니다" }}</h2>
+          <p class="text-gray-500 mb-8 text-[0.9rem]">{{ waitingDeposit ? "아래 가상계좌로 입금기한 안에 입금해 주세요. 입금이 확인되면 주문이 처리됩니다." : "주문해 주셔서 감사합니다. 아래 결제 내용을 확인해 주세요." }}</p>
           <dl class="mx-auto mb-8 max-w-xl overflow-hidden rounded-xl border border-[#e5e7eb] bg-white text-left text-[0.9rem]">
             <div v-for="r in payRows" :key="r.label" class="flex items-baseline justify-between gap-4 border-b border-[#f0f0f0] px-5 py-3 last:border-b-0">
               <dt class="shrink-0 text-gray-500">{{ r.label }}</dt>
@@ -99,7 +99,7 @@ onMounted(async () => {
     }
     await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: ctx.totalAmt ?? amount.value, couponId: ctx.couponId, items });
 
-    pay.value = await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value });
+    pay.value = await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value, keyType: "pay" });
     status.value = "success";
     try {
       sessionStorage.removeItem("checkout_ctx");
@@ -115,6 +115,9 @@ onMounted(async () => {
   }
 });
 
+const BANKS: Record<string, string> = { "02": "산업", "03": "기업", "04": "국민", "07": "수협", "11": "농협", "20": "우리", "23": "SC제일", "27": "씨티", "31": "대구", "32": "부산", "34": "광주", "35": "제주", "37": "전북", "39": "경남", "45": "새마을금고", "48": "신협", "71": "우체국", "81": "하나", "88": "신한", "89": "케이뱅크", "90": "카카오뱅크", "92": "토스뱅크" };
+/** 가상계좌 결제는 승인 시점에 "입금 대기" 상태다 — 입금이 확인되면 주문이 처리된다 */
+const waitingDeposit = computed(() => pay.value?.status === "WAITING_FOR_DEPOSIT");
 const fmtDateTime = (iso?: string) => (iso ? new Date(iso).toLocaleString("ko-KR", { hour12: false }) : "");
 
 /** 결제완료 화면에 보여줄 결제 내용 (토스 승인 응답 기준, 값이 있는 것만) */
@@ -130,7 +133,11 @@ const payRows = computed(() => {
     { label: "결제수단", value: method, strong: false },
     { label: "카드", value: card, strong: false },
     { label: "승인번호", value: p?.card?.approveNo ?? "", strong: false },
-    { label: "결제 상태", value: p?.status === "DONE" ? "결제 완료" : (p?.status ?? ""), strong: false },
+    { label: "결제 상태", value: p?.status === "DONE" ? "결제 완료" : p?.status === "WAITING_FOR_DEPOSIT" ? "입금 대기" : (p?.status ?? ""), strong: false },
+    { label: "입금 은행", value: p?.virtualAccount?.bankCode ? `${BANKS[p.virtualAccount.bankCode] ?? p.virtualAccount.bankCode}은행` : "", strong: false },
+    { label: "입금 계좌번호", value: p?.virtualAccount?.accountNumber ?? "", strong: true },
+    { label: "예금주", value: p?.virtualAccount?.customerName ?? "", strong: false },
+    { label: "입금 기한", value: fmtDateTime(p?.virtualAccount?.dueDate), strong: false },
     { label: "응답코드", value: p?.failure?.code ?? (p?.status ? `${p.status} (정상)` : ""), strong: false },
     { label: "거래시간", value: fmtDateTime(p?.approvedAt || p?.requestedAt), strong: false },
     { label: "결제 금액", value: formatPrice(p?.totalAmount ?? amount.value), strong: true },

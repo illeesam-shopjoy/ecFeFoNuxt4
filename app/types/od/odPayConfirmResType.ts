@@ -14,7 +14,7 @@ export interface OdPayConfirmResType {
   requestedAt?: string; // 결제 요청 일시(ISO)
   card?: { number?: string; installmentPlanMonths?: number; approveNo?: string; cardType?: string; ownerType?: string; isInterestFree?: boolean };
   easyPay?: { provider?: string; amount?: number };
-  virtualAccount?: { bankCode?: string; accountNumber?: string; dueDate?: string };
+  virtualAccount?: { bankCode?: string; accountNumber?: string; dueDate?: string; customerName?: string; accountType?: string; expired?: boolean }; // 가상계좌 발급 정보(입금대기)
   receipt?: { url?: string };
   failure?: { code?: string; message?: string }; // 실패 시 오류 코드/메시지
 }

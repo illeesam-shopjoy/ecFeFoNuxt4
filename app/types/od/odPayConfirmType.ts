@@ -3,4 +3,5 @@ export interface OdPayConfirmType {
   paymentKey: string;
   orderId: string;
   amount: number;
+  keyType?: "pay" | "widget"; // pay = 주문 화면 결제창 키(기본 widget = 결제위젯 키)
 }
