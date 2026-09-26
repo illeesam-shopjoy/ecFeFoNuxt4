@@ -2,6 +2,7 @@
 # 각 저장소의 .github/workflows/telegram-push-notify.yml 로 배치한다.
 # 필요한 Secrets: TELEGRAM_BOT_TOKEN_DEV, TELEGRAM_CHAT_ID_DEV (shopjoy-dev 그룹)
 #   + 운영 사이트 저장소(ecFeBo·ecFeFoNuxt4·ecFeMain)는 TELEGRAM_BOT_TOKEN_OPER, TELEGRAM_CHAT_ID_OPER (shopjoy-oper 그룹, 없으면 건너뜀)
+# URLS 항목의 자리표시자(언더스코어 두 개로 감싼 DEV_URLS / OPER_URLS)는 저장소별 점검 URL(포트·서브도메인 / 운영 Netlify)로 치환해서 배치한다(github-actions/repo-urls.json 참조).
 name: telegram-push-notify
 
 on:
@@ -21,6 +22,9 @@ jobs:
           ACTOR: ${{ github.actor }}
           COMMITS: ${{ github.event.head_commit.message }}
           COMPARE: ${{ github.event.compare }}
+          URLS: |
+            🔗 http://illeesam.synology.me:22100
+            🔗 https://22100.illeesam.synology.me
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
@@ -32,7 +36,8 @@ jobs:
             --data-urlencode "text=📦 [GitHub push] $REPO (main)
           작성자: $ACTOR
           push 내용: $TITLE
-          $COMPARE"
+          $COMPARE
+          $URLS"
       - name: 텔레그램 발송 (운영 그룹)
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN_OPER }}
@@ -41,6 +46,8 @@ jobs:
           ACTOR: ${{ github.actor }}
           COMMITS: ${{ github.event.head_commit.message }}
           COMPARE: ${{ github.event.compare }}
+          URLS: |
+            🔗 https://shopjoy-ecfefonuxt4.netlify.app
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "운영 텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
@@ -52,4 +59,5 @@ jobs:
             --data-urlencode "text=📦 [GitHub push · 운영 사이트 저장소] $REPO (main)
           작성자: $ACTOR
           push 내용: $TITLE
-          $COMPARE"
+          $COMPARE
+          $URLS"
