@@ -1,0 +1,32 @@
+# GitHub push → 텔레그램 알림 (shopjoy-dev 그룹)
+# 각 저장소의 .github/workflows/telegram-push-notify.yml 로 배치한다.
+# 필요한 저장소 Secrets: TELEGRAM_BOT_TOKEN_DEV, TELEGRAM_CHAT_ID_DEV
+name: telegram-push-notify
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 텔레그램 발송
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID_DEV }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          COMMITS: ${{ github.event.head_commit.message }}
+          COMPARE: ${{ github.event.compare }}
+        run: |
+          [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "텔레그램 시크릿 없음 - 스킵"; exit 0; }
+          TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
+          curl -s -m 15 -o /dev/null -w "telegram http %{http_code}\n" \
+            "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
+            --data-urlencode "chat_id=$TG_CHAT" \
+            --data-urlencode "disable_web_page_preview=true" \
+            --data-urlencode "text=📦 [GitHub push] $REPO (main)
+          작성자: $ACTOR
+          커밋: $TITLE
+          $COMPARE"
