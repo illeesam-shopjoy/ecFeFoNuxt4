@@ -179,6 +179,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "~/store/useAuthStore";
 import { usePassIdentity } from "~/composables/usePassIdentity";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
+import { openChatStream, type ChatStreamHandle } from "~/composables/useChatStream";
 import type { CmChattMsgViewType } from "~/types/cm/cmChattMsgViewType";
 import type { CmChattParticipantType } from "~/types/cm/cmChattParticipantType";
 
@@ -225,20 +226,58 @@ function fnChatScrollBottom() {
   });
 }
 
-function fnStartChatPoll() {
-  if (chatPollTimer) return;
-  chatPollTimer = setInterval(async () => {
-    if (!chatState.roomId || chatState.roomId === "_local" || !chatState.open) return;
-    try {
-      const lastId = chatState.msgs.length > 0 ? chatState.msgs[chatState.msgs.length - 1]!.chattMsgId : null;
-      const newMsgs = await myChatSvc.getMessages(chatState.roomId, lastId);
-      if (newMsgs.length > 0) {
-        chatState.msgs.push(...newMsgs);
-        fnChatScrollBottom();
-      }
-    } catch (err) {
-      console.warn("[chatPoll]", err);
+/** 새 메시지 조회 — 마지막 메시지 ID 이후만 가져온다(스트림 신호·폴링 공용) */
+let lastFetchAt = 0;
+async function fnFetchNewMsgs() {
+  if (!chatState.roomId || chatState.roomId === "_local" || !chatState.open) return;
+  lastFetchAt = Date.now();
+  try {
+    const real = chatState.msgs.filter((m) => !String(m.chattMsgId).startsWith("_"));
+    const lastId = real.length > 0 ? real[real.length - 1]!.chattMsgId : null;
+    const newMsgs = await myChatSvc.getMessages(chatState.roomId, lastId);
+    // 내가 방금 보낸 임시 메시지(_tmp_)는 서버 메시지로 대체된다
+    const fresh = newMsgs.filter((m) => !chatState.msgs.some((x) => x.chattMsgId === m.chattMsgId));
+    if (fresh.length > 0) {
+      chatState.msgs = chatState.msgs.filter((m) => !(String(m.chattMsgId).startsWith("_tmp_") && fresh.some((f) => f.msgText === m.msgText && f.senderTypeCd === m.senderTypeCd)));
+      chatState.msgs.push(...fresh);
+      fnChatScrollBottom();
     }
+  } catch (err) {
+    console.warn("[chatFetch]", err);
+  }
+}
+
+// 실시간: 서버가 새 메시지/상태 변경 신호를 보내면(SSE) 바로 조회한다. 스트림이 끊겨 있는 동안만 3초 폴링이 보완하고,
+// 연결돼 있을 때는 20초에 한 번만 확인한다(안전망).
+let chatStream: ChatStreamHandle | null = null;
+let chatStreamRoom: string | null = null;
+let streamConnected = false;
+
+function fnStartChatStream() {
+  if (!chatState.roomId || chatState.roomId === "_local") return;
+  if (chatStream && chatStreamRoom === chatState.roomId) return;
+  chatStream?.close();
+  chatStreamRoom = chatState.roomId;
+  chatStream = openChatStream(
+    `/fo/my/chat/${encodeURIComponent(chatState.roomId)}/stream`,
+    (event, data) => {
+      if (event === "status" && typeof data.statusCd === "string") chatState.status = data.statusCd;
+      if (event === "msg" || event === "status") void fnFetchNewMsgs();
+    },
+    (connected) => {
+      streamConnected = connected;
+      if (connected) void fnFetchNewMsgs(); // 연결(재연결) 직후 놓친 메시지 보충
+    },
+    () => myChatSvc.getMyList(), // 재연결 전에 토큰 갱신 유도
+  );
+}
+
+function fnStartChatPoll() {
+  fnStartChatStream();
+  if (chatPollTimer) return;
+  chatPollTimer = setInterval(() => {
+    if (streamConnected && Date.now() - lastFetchAt < 20000) return;
+    void fnFetchNewMsgs();
   }, 3000);
 }
 function fnStopChatPoll() {
@@ -246,6 +285,10 @@ function fnStopChatPoll() {
     clearInterval(chatPollTimer);
     chatPollTimer = null;
   }
+  chatStream?.close();
+  chatStream = null;
+  chatStreamRoom = null;
+  streamConnected = false;
 }
 
 async function fnLoadOrCreateRoom() {
