@@ -79,9 +79,9 @@ export const useAuthStore = defineStore("auth", {
     },
 
     /** 소셜 로그인(카카오 등) — 제공자 accessToken 을 ecBeBo 가 검증해 회원 매칭/가입 후 자체 토큰 발급 */
-    async socialLogin(provider: string, accessToken: string): Promise<{ ok: boolean; message?: string }> {
+    async socialLogin(provider: string, accessToken: string, reconsent?: boolean): Promise<{ ok: boolean; message?: string }> {
       try {
-        const res = await authSvc.socialLogin(provider, accessToken);
+        const res = await authSvc.socialLogin(provider, accessToken, reconsent);
         this.setSession(res.token, { ...res.user, loginSns: provider.toUpperCase() }); // 이름 옆에 로그인한 소셜 아이콘을 보이기 위해 기억
         return { ok: true };
       } catch (err: unknown) {

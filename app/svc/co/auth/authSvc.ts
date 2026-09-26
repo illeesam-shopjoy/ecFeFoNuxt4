@@ -18,7 +18,7 @@ export const authSvc = {
   login: (email: string, password: string): Promise<SyLoginSessionType> => csrPost<SyLoginResType>("/co/fo-auth/login", buildLoginPayload(email, password)).then(mapLoginRes),
 
   /** POST /co/fo-auth/social-login — 소셜 제공자 accessToken 을 서버가 검증 → 회원 매칭/자동가입 → 자체 accessToken 발급 */
-  socialLogin: (provider: string, accessToken: string): Promise<SyLoginSessionType> => csrPost<SyLoginResType>("/co/fo-auth/social-login", { provider, accessToken }).then(mapLoginRes),
+  socialLogin: (provider: string, accessToken: string, reconsent?: boolean): Promise<SyLoginSessionType> => csrPost<SyLoginResType>("/co/fo-auth/social-login", { provider, accessToken, ...(reconsent ? { reconsent: true } : {}) }).then(mapLoginRes),
 
   /** POST /co/fo-auth/join — 회원가입(자동 로그인 안 함) */
   join: (name: string, email: string, password: string, passVerifyId?: string, extra?: Record<string, string>): Promise<SyJoinResType> =>
