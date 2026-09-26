@@ -24,13 +24,14 @@ jobs:
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
+          [ -n "$TITLE" ] || TITLE="(수동 실행 - 알림 테스트)"
           curl -s -m 15 -o /dev/null -w "telegram http %{http_code}\n" \
             "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
             --data-urlencode "chat_id=$TG_CHAT" \
             --data-urlencode "disable_web_page_preview=true" \
             --data-urlencode "text=📦 [GitHub push] $REPO (main)
           작성자: $ACTOR
-          커밋: $TITLE
+          push 내용: $TITLE
           $COMPARE"
       - name: 텔레그램 발송 (운영 그룹)
         env:
@@ -43,11 +44,12 @@ jobs:
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "운영 텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
+          [ -n "$TITLE" ] || TITLE="(수동 실행 - 알림 테스트)"
           curl -s -m 15 -o /dev/null -w "telegram(oper) http %{http_code}\n" \
             "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
             --data-urlencode "chat_id=$TG_CHAT" \
             --data-urlencode "disable_web_page_preview=true" \
             --data-urlencode "text=📦 [GitHub push · 운영 사이트 저장소] $REPO (main)
           작성자: $ACTOR
-          커밋: $TITLE
+          push 내용: $TITLE
           $COMPARE"
