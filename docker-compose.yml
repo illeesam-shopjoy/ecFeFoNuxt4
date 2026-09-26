@@ -39,7 +39,7 @@ services:
     ports:
       - "22100:3000"
 
-    restart: unless-stopped
+    restart: always
 
     # Nuxt(Nitro) 서버는 SPA 홈(/)이 즉시 200 을 준다 — busybox wget 으로 확인.
     healthcheck:
