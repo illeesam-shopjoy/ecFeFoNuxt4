@@ -4,4 +4,5 @@ import type { CmChattMsgType } from "~/types/cm/cmChattMsgType";
 export interface CmChattMsgViewType extends CmChattMsgType {
   _pending?: boolean;
   _error?: boolean;
+  _preview?: string; // 업로드 중인 사진의 로컬 미리보기(blob URL)
 }

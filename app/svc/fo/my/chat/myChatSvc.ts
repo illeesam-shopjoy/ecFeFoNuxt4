@@ -16,6 +16,10 @@ export const myChatSvc = {
   /** POST /fo/my/chat/open — 채팅방 열기(없으면 생성) */
   openRoom: (subject?: string): Promise<CmChattType> => csrPost<CmChattType>(`${CHAT}/open`, { subject: subject ?? "고객 문의" }, authCfg()),
 
+  /** POST /fo/my/chat/{id}/msg — 사진 메시지 전송(msgText 에 CDN 이미지 주소, refId 에 첨부ID) */
+  sendImage: (chattId: string, imageUrl: string, attachId: string): Promise<CmChattMsgType> =>
+    csrPost<CmChattMsgType>(idPath(CHAT, chattId, "/msg"), { msgText: imageUrl, msgTypeCd: "IMAGE", refTypeCd: "ATTACH", refId: attachId }, authCfg()),
+
   /** POST /fo/my/chat/{id}/reopen — 종료된 채팅방 다시 열기(지난 대화 이어가기) */
   reopen: (chattId: string): Promise<CmChattType> => csrPost<CmChattType>(idPath(CHAT, chattId, "/reopen"), {}, authCfg()),
 

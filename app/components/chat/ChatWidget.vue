@@ -13,10 +13,10 @@
           <div class="flex-1">
             <div class="text-[13px] font-extrabold text-[#9f2946]">채팅 상담</div>
             <div class="text-[11px] mt-0.5">
-              <span v-if="chatState.status === 'ACTIVE'" class="text-green-700">● 상담 중</span>
+              <span v-if="chatState.needAuth" class="text-indigo-500">● 로그인 필요</span>
+              <span v-else-if="chatState.status === 'ACTIVE'" class="text-green-700">● 상담 중</span>
               <span v-else-if="chatState.status === 'PENDING'" class="text-amber-700">● 대기 중</span>
               <span v-else-if="chatState.status === 'CLOSED'" class="text-gray-400">○ 종료됨</span>
-              <span v-else-if="chatState.needAuth" class="text-indigo-500">● 로그인 필요</span>
               <span v-else class="text-gray-300">연결 중...</span>
             </div>
           </div>
@@ -140,13 +140,19 @@
             <div class="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0" style="background: linear-gradient(135deg, #ff8fab, #e8587a)">💁</div>
             <div class="max-w-[75%]">
               <div class="text-[10px] text-gray-400 mb-0.5">상담사</div>
-              <div class="bg-white border border-[#ffe4ec] rounded-tr-lg rounded-br-lg rounded-bl-lg px-2.5 py-2 text-[13px] leading-relaxed text-gray-800 shadow-sm">{{ m.msgText }}</div>
+              <div class="bg-white border border-[#ffe4ec] rounded-tr-lg rounded-br-lg rounded-bl-lg px-2.5 py-2 text-[13px] leading-relaxed text-gray-800 shadow-sm">
+                <img v-if="m.msgTypeCd === 'IMAGE'" :src="fnImgSrc(m)" alt="첨부 사진" class="max-w-full max-h-[220px] rounded-lg cursor-pointer" @click="openImg(fnImgSrc(m))" />
+                <template v-else>{{ m.msgText }}</template>
+              </div>
               <div class="text-[10px] text-gray-300 mt-0.5">{{ m.sendDate ? String(m.sendDate).slice(11, 16) : "" }}</div>
             </div>
           </div>
           <div v-else class="flex flex-row-reverse items-end gap-1.5">
             <div class="max-w-[75%]">
-              <div class="rounded-tl-lg rounded-bl-lg rounded-br-lg px-2.5 py-2 text-[13px] leading-relaxed text-white" :class="m._error ? 'opacity-60' : ''" style="background: linear-gradient(135deg, #ff8fab, #e8587a)">{{ m.msgText }}</div>
+              <div class="rounded-tl-lg rounded-bl-lg rounded-br-lg px-2.5 py-2 text-[13px] leading-relaxed text-white" :class="m._error ? 'opacity-60' : ''" style="background: linear-gradient(135deg, #ff8fab, #e8587a)">
+                <img v-if="m.msgTypeCd === 'IMAGE'" :src="fnImgSrc(m)" alt="보낸 사진" class="max-w-full max-h-[220px] rounded-lg cursor-pointer" :class="m._pending ? 'opacity-60' : ''" @click="openImg(fnImgSrc(m))" />
+                <template v-else>{{ m.msgText }}</template>
+              </div>
               <div class="text-[10px] text-gray-300 mt-0.5 text-right">
                 <span v-if="m._pending" class="text-gray-400">전송 중...</span>
                 <span v-else-if="m._error" class="text-red-400">전송 실패</span>
@@ -173,6 +179,29 @@
 
       <!-- 입력 영역 (로그인 후) -->
       <div v-if="!chatState.needAuth && chatState.view === 'chat' && !(chatState.status === 'CLOSED' && chatState.roomId)" class="p-2.5 border-t border-[#ffe4ec] bg-white flex gap-1.5 items-end">
+        <!-- 사진 첨부 / 카메라 촬영 -->
+        <div class="flex flex-col gap-1 flex-shrink-0">
+          <button
+            type="button"
+            class="w-[30px] h-[30px] rounded-full border border-[#ffd5e1] bg-white text-[15px] flex items-center justify-center hover:bg-[#fff5f8] disabled:opacity-40"
+            title="사진 첨부"
+            :disabled="chatState.sending || !chatState.roomId"
+            @click="imgInput?.click()"
+          >
+            🖼️
+          </button>
+          <button
+            type="button"
+            class="w-[30px] h-[30px] rounded-full border border-[#ffd5e1] bg-white text-[15px] flex items-center justify-center hover:bg-[#fff5f8] disabled:opacity-40"
+            title="카메라로 촬영"
+            :disabled="chatState.sending || !chatState.roomId"
+            @click="onCameraClick"
+          >
+            📷
+          </button>
+        </div>
+        <input ref="imgInput" type="file" accept="image/*" class="hidden" @change="onPickImage" />
+        <input ref="camInput" type="file" accept="image/*" capture="environment" class="hidden" @change="onPickImage" />
         <textarea
           ref="chatInputRef"
           v-model="chatState.inputText"
@@ -194,6 +223,27 @@
         </button>
       </div>
     </div>
+
+    <!-- 사진 오류 안내 -->
+    <div v-if="imgErr && chatState.open" class="fixed z-[8850] rounded-lg bg-red-500 text-white text-[12px] px-3 py-1.5 shadow-lg" style="right: 27px; bottom: calc(156px + var(--fab-lift, 0px))" @click="imgErr = ''">{{ imgErr }}</div>
+
+    <!-- PC 웹캠 촬영 창 -->
+    <Teleport to="body">
+      <div v-if="camOpen" class="fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 p-4" @click.self="closeCam">
+        <div class="w-full max-w-[420px] rounded-xl bg-white p-4 shadow-xl">
+          <p class="m-0 mb-2 text-[0.95rem] font-bold text-gray-800">사진 찍기</p>
+          <div class="relative mx-auto aspect-[4/3] w-full overflow-hidden rounded-lg bg-black">
+            <video ref="camVideo" autoplay playsinline muted class="h-full w-full -scale-x-100 object-cover"></video>
+            <div v-if="camLoading" class="absolute inset-0 flex items-center justify-center text-white">⏳</div>
+          </div>
+          <p v-if="camErr" class="m-0 mt-2 text-[0.78rem] text-red-500">{{ camErr }}</p>
+          <div class="mt-3 flex gap-2">
+            <button type="button" class="flex-1 cursor-pointer rounded-md border border-[#c9ced6] bg-white py-2 text-[0.85rem] font-semibold text-gray-700" @click="closeCam">취소</button>
+            <button type="button" class="flex-1 cursor-pointer rounded-md bg-[#e8587a] py-2 text-[0.85rem] font-semibold text-white disabled:opacity-40" :disabled="camLoading || !!camErr" @click="snapCam">📸 촬영해서 보내기</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- 채팅 플로팅 버튼 — 2026-09-15(요청사항: "최상위버튼과, 채팅버튼이 겹치는네
          최하단에 바가 들어올수 있으니 약간 공백을둬줘") — BackToTop(#scroll a)과 우측 하단에서
@@ -227,11 +277,13 @@
  *  - 방 목록 조회는 실제 컨트롤러 경로인 GET /fo/my/chat(접미사 없음)을 쓴다 — ecFeBo가 쓰던
  *    "/fo/my/chat/list"는 컨트롤러에 없어 GET /{id}(id="list")로 잘못 라우팅되는 경로였다.
  */
-import { reactive, ref, computed, onUnmounted, nextTick, watch } from "vue";
+import { reactive, ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/store/useAuthStore";
 import { usePassIdentity } from "~/composables/usePassIdentity";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
+import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
+import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
 import { openChatStream, type ChatStreamHandle } from "~/composables/useChatStream";
 import type { CmChattMsgViewType } from "~/types/cm/cmChattMsgViewType";
 import type { CmChattParticipantType } from "~/types/cm/cmChattParticipantType";
@@ -541,6 +593,146 @@ async function endChat() {
   fnStopChatPoll();
   fnChatScrollBottom();
 }
+
+// ── 사진 첨부 / 카메라 촬영 ─────────────────────────────────────────────
+// 갤러리·파일 선택은 <input type=file>, 촬영은 터치 기기(폰/태블릿)에서는 capture 입력으로 카메라 앱을 바로 열고,
+// PC 는 웹캠 미리보기 창(getUserMedia)을 쓴다. 올리기 전에 긴 변 1280px 이하 JPEG 로 줄여 용량을 낮춘다.
+const cdnBase = useRuntimeConfig().public.prodCdnBase as string;
+const imgInput = ref<HTMLInputElement | null>(null);
+const camInput = ref<HTMLInputElement | null>(null);
+const touchDevice = ref(false);
+const imgErr = ref("");
+onMounted(() => {
+  touchDevice.value = window.matchMedia?.("(pointer: coarse)").matches === true;
+});
+
+/** 화면에 보일 사진 주소 — 업로드 중이면 로컬 미리보기, 아니면 CDN 주소(내부 주소는 공개 CDN 으로 보정) */
+function fnImgSrc(m: LocalMsg): string {
+  return m._preview || fixInternalCdnUrl(resolveCdnUrl(m.msgText, cdnBase), cdnBase) || "";
+}
+function openImg(src: string) {
+  if (src) window.open(src, "_blank", "noopener");
+}
+
+async function shrinkImage(src: Blob | HTMLVideoElement, name: string): Promise<File> {
+  const MAX = 1280;
+  const bmp = src instanceof Blob ? await createImageBitmap(src) : null;
+  const sw = bmp ? bmp.width : (src as HTMLVideoElement).videoWidth;
+  const sh = bmp ? bmp.height : (src as HTMLVideoElement).videoHeight;
+  const scale = Math.min(1, MAX / Math.max(sw, sh));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(sw * scale));
+  canvas.height = Math.max(1, Math.round(sh * scale));
+  canvas.getContext("2d")!.drawImage((bmp ?? src) as CanvasImageSource, 0, 0, canvas.width, canvas.height);
+  bmp?.close();
+  const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+  if (!blob) throw new Error("이미지를 만들지 못했습니다.");
+  return new File([blob], name, { type: "image/jpeg" });
+}
+
+async function sendImageFile(file: File) {
+  imgErr.value = "";
+  if (!file.type.startsWith("image/")) return void (imgErr.value = "이미지 파일만 보낼 수 있습니다.");
+  const roomId = chatState.roomId;
+  if (!roomId || roomId === "_local" || chatState.status === "CLOSED" || chatState.sending) return void (imgErr.value = "지금은 사진을 보낼 수 없습니다.");
+  chatState.sending = true;
+  let small = file;
+  try {
+    small = await shrinkImage(file, `chat_${Date.now()}.jpg`);
+  } catch {
+    /* 축소 실패 시 원본으로 진행 */
+  }
+  if (small.size > 8 * 1024 * 1024) {
+    chatState.sending = false;
+    return void (imgErr.value = "사진은 8MB 이하만 보낼 수 있습니다.");
+  }
+  chatState.msgs.push({
+    chattMsgId: "_tmp_" + Date.now(),
+    chattId: roomId,
+    senderTypeCd: "MEMBER",
+    msgTypeCd: "IMAGE",
+    msgText: "",
+    sendDate: new Date().toISOString(),
+    _pending: true,
+    _preview: URL.createObjectURL(small),
+  });
+  const t = chatState.msgs[chatState.msgs.length - 1]!; // 반응형 프록시로 다시 잡아야 화면이 갱신된다
+  fnChatScrollBottom();
+  try {
+    const res = await coUploadSvc.uploadMulti([small], "chat");
+    const f = res.files?.[0];
+    const url = fixInternalCdnUrl(resolveCdnUrl(f?.cdnImgUrl || f?.filePath, cdnBase), cdnBase);
+    if (!url || !f?.attachId) throw new Error("업로드 응답에 사진 주소가 없습니다.");
+    await myChatSvc.sendImage(roomId, url, f.attachId);
+    if (t._preview) URL.revokeObjectURL(t._preview);
+    t._preview = undefined;
+    t.msgText = url; // 서버 메시지와 같은 값 → 다음 조회 때 임시 메시지가 서버 메시지로 대체된다
+    t._pending = false;
+    if (chatState.status === "PENDING") chatState.status = "ACTIVE";
+  } catch (err) {
+    console.warn("[sendImageFile]", err);
+    t._error = true;
+    t._pending = false;
+    imgErr.value = "사진 전송에 실패했습니다.";
+  } finally {
+    chatState.sending = false;
+  }
+}
+
+async function onPickImage(e: Event) {
+  const el = e.target as HTMLInputElement;
+  const file = el.files?.[0];
+  el.value = "";
+  if (file) await sendImageFile(file);
+}
+
+// PC 웹캠 촬영
+const camOpen = ref(false);
+const camLoading = ref(false);
+const camErr = ref("");
+const camVideo = ref<HTMLVideoElement | null>(null);
+let camStream: MediaStream | null = null;
+
+function stopCamStream() {
+  camStream?.getTracks().forEach((tr) => tr.stop());
+  camStream = null;
+}
+function closeCam() {
+  stopCamStream();
+  camOpen.value = false;
+}
+async function onCameraClick() {
+  imgErr.value = "";
+  if (touchDevice.value || !navigator.mediaDevices?.getUserMedia) return void camInput.value?.click();
+  camErr.value = "";
+  camLoading.value = true;
+  camOpen.value = true;
+  await nextTick();
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    if (camVideo.value) {
+      camVideo.value.srcObject = camStream;
+      await camVideo.value.play().catch(() => undefined);
+    }
+  } catch (e) {
+    const name = (e as { name?: string })?.name;
+    camErr.value = name === "NotAllowedError" ? "카메라 사용이 차단되었습니다. 주소창의 카메라 권한을 허용해 주세요." : name === "NotFoundError" ? "사용할 수 있는 카메라가 없습니다." : "카메라를 열 수 없습니다.";
+  } finally {
+    camLoading.value = false;
+  }
+}
+async function snapCam() {
+  const v = camVideo.value;
+  if (!v || !v.videoWidth) return;
+  try {
+    const file = await shrinkImage(v, `chat_${Date.now()}.jpg`);
+    closeCam();
+    await sendImageFile(file);
+  } catch {
+    camErr.value = "촬영에 실패했습니다. 다시 시도해 주세요.";
+  }
+}
+onUnmounted(stopCamStream);
 
 function onChatKeydown(e: KeyboardEvent) {
   if (e.key === "Enter" && !e.shiftKey) {
