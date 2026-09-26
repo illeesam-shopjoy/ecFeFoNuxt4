@@ -16,6 +16,9 @@ export const myChatSvc = {
   /** POST /fo/my/chat/open — 채팅방 열기(없으면 생성) */
   openRoom: (subject?: string): Promise<CmChattType> => csrPost<CmChattType>(`${CHAT}/open`, { subject: subject ?? "고객 문의" }, authCfg()),
 
+  /** POST /fo/my/chat/{id}/reopen — 종료된 채팅방 다시 열기(지난 대화 이어가기) */
+  reopen: (chattId: string): Promise<CmChattType> => csrPost<CmChattType>(idPath(CHAT, chattId, "/reopen"), {}, authCfg()),
+
   /** GET /fo/my/chat/{id}/messages — 메시지 목록(afterMsgId 이후만) */
   getMessages: (chattId: string, afterMsgId?: string | null): Promise<CmChattMsgType[]> =>
     csrList<CmChattMsgType>(idPath(CHAT, chattId, "/messages"), authCfg({ params: afterMsgId ? { afterMsgId } : undefined })),

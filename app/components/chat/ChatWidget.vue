@@ -21,7 +21,16 @@
             </div>
           </div>
           <button
-            v-if="chatState.status !== 'CLOSED' && !chatState.needAuth"
+            v-if="!chatState.needAuth"
+            type="button"
+            class="text-[11px] px-2 py-1 bg-white/60 border border-[#ffc9d6] rounded text-[#9f2946]"
+            :title="chatState.view === 'list' ? '대화로 돌아가기' : '지난 채팅 목록'"
+            @click="chatState.view === 'list' ? (chatState.view = 'chat') : showRoomList()"
+          >
+            {{ chatState.view === "list" ? "대화" : "목록" }}
+          </button>
+          <button
+            v-if="chatState.status !== 'CLOSED' && !chatState.needAuth && chatState.view === 'chat'"
             type="button"
             class="text-[11px] px-2 py-1 bg-white/60 border border-[#ffc9d6] rounded text-[#9f2946]"
             @click="endChat"
@@ -92,7 +101,38 @@
       </div>
 
       <!-- 메시지 영역 (로그인 후) -->
-      <div v-if="!chatState.needAuth" id="fo-chat-msgbox" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2 bg-gray-50">
+      <!-- 지난 채팅 목록 (진행중/종료) — 클릭하면 그 대화로 이동해 이어간다 -->
+      <div v-if="!chatState.needAuth && chatState.view === 'list'" class="flex-1 overflow-y-auto bg-gray-50">
+        <button
+          type="button"
+          class="w-full text-left px-3.5 py-2.5 text-[12px] font-bold text-[#9f2946] bg-white border-b border-[#ffe4ec] hover:bg-[#fff5f8]"
+          @click="startNewChat"
+        >
+          ＋ 새 채팅 상담 시작
+        </button>
+        <div v-if="chatState.roomsLoading" class="text-center text-gray-300 text-xs py-6">⏳ 불러오는 중...</div>
+        <div v-else-if="chatState.rooms.length === 0" class="text-center text-gray-300 text-xs py-8">지난 채팅이 없습니다.</div>
+        <button
+          v-for="r in chatState.rooms"
+          :key="r.chattId"
+          type="button"
+          class="w-full text-left px-3.5 py-2.5 border-b border-[#ffe4ec] bg-white hover:bg-[#fff5f8] flex items-center gap-2"
+          @click="openExistingRoom(r)"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="text-[13px] font-semibold text-gray-800 truncate">{{ r.subject || "채팅 상담" }}</div>
+            <div class="text-[11px] text-gray-400 mt-0.5">{{ String(r.lastMsgDate || r.regDate || "").slice(0, 16).replace("T", " ") }}</div>
+          </div>
+          <span
+            class="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0"
+            :class="r.chattStatusCd === 'CLOSED' ? 'bg-gray-100 text-gray-500' : r.chattStatusCd === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
+          >
+            {{ r.chattStatusCd === "CLOSED" ? "종료" : r.chattStatusCd === "ACTIVE" ? "진행중" : "대기중" }}
+          </span>
+        </button>
+      </div>
+
+      <div v-if="!chatState.needAuth && chatState.view === 'chat'" id="fo-chat-msgbox" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2 bg-gray-50">
         <div v-if="chatState.loading" class="text-center text-gray-300 text-xs py-5">⏳ 연결 중...</div>
         <template v-for="m in chatState.msgs" :key="m.chattMsgId">
           <div v-if="m.senderTypeCd === 'SYSTEM'" class="text-center text-[11px] text-gray-400 bg-gray-100 rounded-lg py-1.5 px-2.5 mx-5">{{ m.msgText }}</div>
@@ -118,8 +158,21 @@
         <div v-if="!chatState.loading && chatState.msgs.length === 0" class="text-center text-gray-300 text-xs py-8">메시지가 없습니다.<br />아래 입력창으로 문의하세요.</div>
       </div>
 
+      <!-- 종료된 채팅을 보고 있을 때: 다시 열어 이어가기 -->
+      <div v-if="!chatState.needAuth && chatState.view === 'chat' && chatState.status === 'CLOSED' && chatState.roomId && chatState.roomId !== '_local'" class="p-2.5 border-t border-[#ffe4ec] bg-white">
+        <button
+          type="button"
+          class="w-full py-2 rounded-lg text-white text-[13px] font-bold transition hover:opacity-85"
+          style="background: linear-gradient(135deg, #ff8fab, #e8587a)"
+          :disabled="chatState.loading"
+          @click="reopenCurrentRoom"
+        >
+          🔁 이 대화 이어서 문의하기
+        </button>
+      </div>
+
       <!-- 입력 영역 (로그인 후) -->
-      <div v-if="!chatState.needAuth" class="p-2.5 border-t border-[#ffe4ec] bg-white flex gap-1.5 items-end">
+      <div v-if="!chatState.needAuth && chatState.view === 'chat' && !(chatState.status === 'CLOSED' && chatState.roomId)" class="p-2.5 border-t border-[#ffe4ec] bg-white flex gap-1.5 items-end">
         <textarea
           ref="chatInputRef"
           v-model="chatState.inputText"
@@ -174,7 +227,7 @@
  *  - 방 목록 조회는 실제 컨트롤러 경로인 GET /fo/my/chat(접미사 없음)을 쓴다 — ecFeBo가 쓰던
  *    "/fo/my/chat/list"는 컨트롤러에 없어 GET /{id}(id="list")로 잘못 라우팅되는 경로였다.
  */
-import { reactive, ref, computed, onUnmounted, nextTick } from "vue";
+import { reactive, ref, computed, onUnmounted, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/store/useAuthStore";
 import { usePassIdentity } from "~/composables/usePassIdentity";
@@ -182,6 +235,7 @@ import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
 import { openChatStream, type ChatStreamHandle } from "~/composables/useChatStream";
 import type { CmChattMsgViewType } from "~/types/cm/cmChattMsgViewType";
 import type { CmChattParticipantType } from "~/types/cm/cmChattParticipantType";
+import type { CmChattType } from "~/types/cm/cmChattType";
 
 type LocalMsg = CmChattMsgViewType;
 
@@ -199,6 +253,9 @@ const chatState = reactive({
   status: null as string | null,
   needAuth: false,
   tooltipId: null as string | null,
+  view: "chat" as "chat" | "list", // 대화 화면 / 지난 채팅 목록
+  rooms: [] as CmChattType[],
+  roomsLoading: false,
 });
 let chatPollTimer: ReturnType<typeof setInterval> | null = null;
 const chatInputRef = ref<HTMLTextAreaElement | null>(null);
@@ -316,6 +373,93 @@ async function fnLoadOrCreateRoom() {
     fnChatScrollBottom();
   }
 }
+
+/** 지난 채팅 목록 (진행중/대기/종료) */
+async function showRoomList() {
+  chatState.view = "list";
+  chatState.roomsLoading = true;
+  try {
+    const rooms = await myChatSvc.getMyList();
+    chatState.rooms = [...rooms].sort((a, b) => String(b.lastMsgDate || b.regDate || "").localeCompare(String(a.lastMsgDate || a.regDate || "")));
+  } catch (err) {
+    console.warn("[showRoomList]", err);
+    chatState.rooms = [];
+  } finally {
+    chatState.roomsLoading = false;
+  }
+}
+
+/** 목록에서 채팅방 선택 → 그 대화를 불러와 이어간다(종료된 방은 읽기 전용 + 다시 열기 버튼) */
+async function openExistingRoom(room: CmChattType) {
+  fnStopChatPoll();
+  chatState.roomId = room.chattId;
+  chatState.status = room.chattStatusCd ?? null;
+  chatState.msgs = [];
+  chatState.view = "chat";
+  chatState.loading = true;
+  try {
+    chatState.msgs = await myChatSvc.getMessages(room.chattId);
+  } catch (err) {
+    console.warn("[openExistingRoom]", err);
+  } finally {
+    chatState.loading = false;
+    fnChatScrollBottom();
+  }
+  if (chatState.status !== "CLOSED") fnStartChatPoll();
+  nextTick(() => chatInputRef.value?.focus());
+}
+
+/** 종료된 대화를 다시 열어 이어간다 */
+async function reopenCurrentRoom() {
+  if (!chatState.roomId || chatState.roomId === "_local") return;
+  chatState.loading = true;
+  try {
+    const r = await myChatSvc.reopen(chatState.roomId);
+    chatState.status = r.chattStatusCd ?? "PENDING";
+    fnStartChatPoll();
+    nextTick(() => chatInputRef.value?.focus());
+  } catch (err) {
+    console.warn("[reopenCurrentRoom]", err);
+  } finally {
+    chatState.loading = false;
+  }
+}
+
+/** 새 채팅 상담 시작 — 진행중인 방이 있으면 그 방으로, 없으면 새로 만든다 */
+async function startNewChat() {
+  fnStopChatPoll();
+  chatState.roomId = null;
+  chatState.msgs = [];
+  chatState.status = null;
+  chatState.view = "chat";
+  await fnLoadOrCreateRoom();
+  if (chatState.roomId && chatState.roomId !== "_local") fnStartChatPoll();
+  nextTick(() => chatInputRef.value?.focus());
+}
+
+/** 로그아웃 시 채팅 상태를 전부 비운다 — 이전 사용자의 대화가 화면에 남지 않도록 */
+function resetChatState() {
+  fnStopChatPoll();
+  chatState.open = false;
+  chatState.roomId = null;
+  chatState.msgs = [];
+  chatState.inputText = "";
+  chatState.sending = false;
+  chatState.loading = false;
+  chatState.unread = 0;
+  chatState.status = null;
+  chatState.needAuth = false;
+  chatState.tooltipId = null;
+  chatState.view = "chat";
+  chatState.rooms = [];
+  chatState.roomsLoading = false;
+}
+watch(
+  () => authStore.isStLoggedIn,
+  (loggedIn, was) => {
+    if (was && !loggedIn) resetChatState();
+  },
+);
 
 async function toggleChat() {
   chatState.open = !chatState.open;
