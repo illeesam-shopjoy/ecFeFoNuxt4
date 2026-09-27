@@ -262,8 +262,7 @@ async function sendSummaryEmail(results) {
   }
   const allOk = results.every((r) => r.ok === true);
   const anyFail = results.some((r) => r.ok === false);
-  // 2026-09-12(요청사항: '제목앞단에 🌈✅ 아이콘 표시해줘야해') — 전체 성공일 때 제목 맨 앞에
-  // 🌈✅, 실패/불확실은 기존대로 ❌/⚠를 맨 앞에 둔다.
+  // 2026-09-27: 제목 맨 앞은 무지개 대신 행위자+결과 아이콘(예: 🙂✅ / 🙂❌ / 🙂⚠️) — 아래 icon 참고.
   // 2026-09-27(요청사항): 맨 앞에 행위자(🙂 사람 / 💻 시스템·주기 / 🔍 시스템·AI 테스트)+결과(✅ 성공 / ❌ 실패 / ⚠️ 경고) 아이콘 — 행위자는 NOTIFY_ACTOR 로 변경 가능(기본 🙂)
   const icon = `${process.env.NOTIFY_ACTOR || '🙂'}${allOk ? '✅' : anyFail ? '❌' : '⚠️'}`;
   const overall = allOk ? '전체 성공' : anyFail ? '실패 있음' : '일부 확인불가';

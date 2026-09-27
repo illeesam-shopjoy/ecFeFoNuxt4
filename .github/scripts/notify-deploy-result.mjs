@@ -3,7 +3,7 @@
 // (Gmail SMTP + 앱 비밀번호, nodemailer) — 이 저장소 전용으로 가볍게 옮겨왔다.
 // 자격정보가 없으면 조용히 스킵하고, 발송 자체가 실패해도 워크플로를 실패시키지 않는다
 // (알림 실패가 배포 결과에 영향을 주면 안 되므로 항상 exit 0).
-// 2026-09-12(요청사항: '제목앞단에 🌈✅ 아이콘' + '로그파일도 첨부') — 제목 맨 앞 아이콘 +
+// 2026-09-27: 제목 맨 앞은 무지개 대신 행위자+결과 아이콘(예: 🙂✅) + 2026-09-12 요청 '로그파일도 첨부' —
 // DEPLOY_LOG_FILE(=deploy.log, 워크플로의 Install/Build/Deploy 단계 출력 누적본) 첨부.
 import fs from "node:fs";
 import nodemailer from "nodemailer";
