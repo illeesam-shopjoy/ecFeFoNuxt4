@@ -26,8 +26,10 @@ const runUrl = repo && runId ? `https://github.com/${repo}/actions/runs/${runId}
 const siteUrl = process.env.NETLIFY_SITE_URL ?? "https://shopjoy-ecfefonuxt4.netlify.app";
 
 const ok = status === "success";
-const icon = ok ? "🌈✅" : "❌";
-const subject = `${icon} [ecFeFoNuxt4] Netlify 배포 ${ok ? "성공" : "실패"} — ${ref}@${sha}`;
+// 2026-09-27(요청사항): 맨 앞에 행위자(🙂 사람이 push·수동 실행 / 💻 예약 실행)+결과(✅ 성공 · ❌ 실패) 아이콘
+const actor = process.env.GITHUB_EVENT_NAME === "schedule" ? "💻" : "🙂";
+const icon = `${actor}${ok ? "✅" : "❌"}`;
+const subject = `${icon} [GitHub Actions] [ecFeFoNuxt4] Netlify 배포 ${ok ? "성공" : "실패"} — ${ref}@${sha}`;
 const text = [
   `상태: ${ok ? "✅ 성공" : "❌ 실패"} (${status})`,
   `브랜치: ${ref}`,
