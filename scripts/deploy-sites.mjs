@@ -258,7 +258,7 @@ async function waitNetlifyDeploy(target, sha) {
 async function sendSummaryEmail(results) {
   if (!EMAIL_FROM || !EMAIL_APP_PASSWORD) {
     log('[알림] 이메일 설정 없음(.env.deploy의 NOTIFY_EMAIL_FROM/NOTIFY_EMAIL_APP_PASSWORD) — 발송 스킵');
-    return;
+    return '설정 없음(스킵)';
   }
   const allOk = results.every((r) => r.ok === true);
   const anyFail = results.some((r) => r.ok === false);
@@ -266,7 +266,8 @@ async function sendSummaryEmail(results) {
   // 🌈✅, 실패/불확실은 기존대로 ❌/⚠를 맨 앞에 둔다.
   const icon = allOk ? '🌈✅' : anyFail ? '❌' : '⚠';
   const overall = allOk ? '전체 성공' : anyFail ? '실패 있음' : '일부 확인불가';
-  const subject = `${icon} [ShopJoy 배포] ${overall} — ${results.map((r) => r.label).join(', ')}`;
+  // 2026-09-27(요청사항): 로컬 스크립트로 배포한 알림은 맨 앞에 [로컬-script]
+  const subject = `[로컬-script] ${icon} [ShopJoy 배포] ${overall} — ${results.map((r) => r.label).join(', ')}`;
   const body = results.map((r) => (
     `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠'} ${r.label}\n` +
     `  ${r.detail}\n` +
@@ -286,8 +287,41 @@ async function sendSummaryEmail(results) {
       attachments: [{ filename: path.basename(logPath), path: logPath }],
     });
     console.log(`[알림] 이메일 발송 완료(로그파일 첨부) → ${EMAIL_TO}`); // logStream을 이미 닫아서 log()말고 console.log
+    return `발송 완료(로그 첨부) → ${EMAIL_TO}`;
   } catch (e) {
     console.warn(`[알림] ⚠ 이메일 발송 실패(무시하고 계속): ${e?.message ?? e}`);
+    return `발송 실패(${String(e?.message ?? e).slice(0, 60)})`;
+  }
+}
+
+/* ── 텔레그램 통지 (shopjoy-oper 봇) — 요약 메시지 + 로그 파일 첨부. 설정(.env.deploy 의 TELEGRAM_BOT_TOKEN_OPER/TELEGRAM_CHAT_ID_OPER)이 없으면 스킵 ── */
+async function sendSummaryTelegram(results, mailStatus) {
+  const token = process.env.TELEGRAM_BOT_TOKEN_OPER;
+  const chatId = process.env.TELEGRAM_CHAT_ID_OPER;
+  if (!token || !chatId) {
+    console.log('[알림] 텔레그램 설정 없음(.env.deploy의 TELEGRAM_BOT_TOKEN_OPER/TELEGRAM_CHAT_ID_OPER) — 발송 스킵');
+    return;
+  }
+  const allOk = results.every((r) => r.ok === true);
+  const anyFail = results.some((r) => r.ok === false);
+  const head = `[로컬-script] ${allOk ? '🌈✅' : anyFail ? '❌' : '⚠'} [운영][배포][${allOk ? '성공' : anyFail ? '실패' : '확인불가'}] ${results.map((r) => r.label).join(', ')}`;
+  const body = results.map((r) => `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠'} ${r.label} — ${r.detail}${r.url ? `\n🔗 ${r.url}` : ''}`).join('\n');
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: `${head}\n${body}\n\n📧 메일: ${mailStatus}`.slice(0, 3900), disable_web_page_preview: true }),
+      signal: AbortSignal.timeout(10000),
+    });
+    console.log(r.ok ? '[알림] 텔레그램 발송 완료' : `[알림] ⚠ 텔레그램 발송 실패(HTTP ${r.status}) — 무시하고 계속`);
+    if (fs.existsSync(logPath)) {
+      const form = new FormData();
+      form.append('chat_id', chatId);
+      form.append('document', new Blob([fs.readFileSync(logPath)]), path.basename(logPath));
+      const d = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, { method: 'POST', body: form, signal: AbortSignal.timeout(30000) });
+      console.log(d.ok ? '[알림] 텔레그램 로그 파일 첨부 완료' : `[알림] ⚠ 텔레그램 로그 첨부 실패(HTTP ${d.status}) — 무시하고 계속`);
+    }
+  } catch (e) {
+    console.warn(`[알림] ⚠ 텔레그램 발송 실패(무시하고 계속): ${e?.message ?? e}`);
   }
 }
 
@@ -334,11 +368,12 @@ async function main() {
   }
   log(`로그 파일: ${logPath}`);
 
-  await sendSummaryEmail(results);
+  const mailStatus = await sendSummaryEmail(results);
 
   // sendSummaryEmail이 실제 발송에 성공한 경우 첨부 전에 이미 logStream을 닫아뒀음(flush 보장) —
-  // 자격정보 없어 스킵한 경우 등 아직 안 닫혔을 때만 여기서 닫는다(이중 종료 방지).
-  if (!logStream.writableEnded) logStream.end();
+  // 자격정보 없어 스킵한 경우 등 아직 안 닫혔을 때만 여기서 닫는다(이중 종료 방지). 텔레그램 로그 첨부 전에 flush 완료를 기다린다.
+  if (!logStream.writableEnded) await new Promise((resolve) => logStream.end(resolve));
+  await sendSummaryTelegram(results, mailStatus);
   process.exit(results.some((r) => r.ok === false) ? 1 : 0);
 }
 
