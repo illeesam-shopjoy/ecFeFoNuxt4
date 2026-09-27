@@ -22,18 +22,20 @@ jobs:
           ACTOR: ${{ github.actor }}
           COMMITS: ${{ github.event.head_commit.message }}
           COMPARE: ${{ github.event.compare }}
+          EVT: ${{ github.event_name }}
           URLS: |
             🔗 http://illeesam.synology.me:22100
             🔗 https://22100.illeesam.synology.me
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
+          if [ "$EVT" = "push" ]; then KIND="main-push"; else KIND="수동실행"; fi
           [ -n "$TITLE" ] || TITLE="(수동 실행 - 알림 테스트)"
           curl -s -m 15 -o /dev/null -w "telegram http %{http_code}\n" \
             "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
             --data-urlencode "chat_id=$TG_CHAT" \
             --data-urlencode "disable_web_page_preview=true" \
-            --data-urlencode "text=📦 [GitHub push] $REPO (main)
+            --data-urlencode "text=📦 [GitHub push][개발][$KIND][성공] $REPO
           작성자: $ACTOR
           push 내용: $TITLE
           $COMPARE
@@ -46,17 +48,19 @@ jobs:
           ACTOR: ${{ github.actor }}
           COMMITS: ${{ github.event.head_commit.message }}
           COMPARE: ${{ github.event.compare }}
+          EVT: ${{ github.event_name }}
           URLS: |
             🔗 https://shopjoy-ecfefonuxt4.netlify.app
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "운영 텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
+          if [ "$EVT" = "push" ]; then KIND="main-push"; else KIND="수동실행"; fi
           [ -n "$TITLE" ] || TITLE="(수동 실행 - 알림 테스트)"
           curl -s -m 15 -o /dev/null -w "telegram(oper) http %{http_code}\n" \
             "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
             --data-urlencode "chat_id=$TG_CHAT" \
             --data-urlencode "disable_web_page_preview=true" \
-            --data-urlencode "text=📦 [GitHub push · 운영 사이트 저장소] $REPO (main)
+            --data-urlencode "text=📦 [GitHub push][운영][$KIND][성공] $REPO
           작성자: $ACTOR
           push 내용: $TITLE
           $COMPARE
