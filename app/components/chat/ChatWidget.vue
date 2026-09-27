@@ -80,8 +80,55 @@
       <!-- needAuth: 로그인 유도 화면 -->
       <div v-if="chatState.needAuth" class="flex-1 flex flex-col items-center justify-center px-6 py-7 gap-4 bg-gray-50 text-center">
         <div class="text-4xl leading-none">🔐</div>
-        <div class="text-sm font-bold text-gray-800 leading-relaxed">채팅 상담은 로그인 또는<br />PASS 본인인증 후 이용할 수 있습니다.</div>
+        <div class="text-sm font-bold text-gray-800 leading-relaxed">채팅 상담은 로그인 또는<br />휴대폰 인증 후 이용할 수 있습니다.</div>
+        <!-- 휴대폰 문자인증 -->
+        <div class="w-full max-w-[240px] flex flex-col gap-2 text-left">
+          <div class="flex gap-1.5">
+            <input
+              v-model="sms.phone"
+              type="tel"
+              inputmode="numeric"
+              maxlength="13"
+              placeholder="휴대폰 번호 (- 없이)"
+              class="flex-1 min-w-0 border border-gray-300 rounded-lg px-2.5 py-2 text-[13px] outline-none focus:border-[#e8587a]"
+              :disabled="sms.busy"
+              @keydown.enter.prevent="sendSmsCode"
+            />
+            <button
+              type="button"
+              class="px-2.5 rounded-lg bg-gray-900 text-white text-[12px] font-bold disabled:opacity-50 whitespace-nowrap"
+              :disabled="sms.busy || sms.cooldown > 0"
+              @click="sendSmsCode"
+            >
+              {{ sms.cooldown > 0 ? sms.cooldown + "초" : sms.sent ? "재전송" : "인증번호" }}
+            </button>
+          </div>
+          <div v-if="sms.sent" class="flex gap-1.5">
+            <input
+              v-model="sms.code"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="인증번호 6자리"
+              class="flex-1 min-w-0 border border-gray-300 rounded-lg px-2.5 py-2 text-[13px] tracking-widest outline-none focus:border-[#e8587a]"
+              :disabled="sms.busy"
+              @keydown.enter.prevent="verifySmsCode"
+            />
+            <button
+              type="button"
+              class="px-2.5 rounded-lg text-white text-[12px] font-bold disabled:opacity-50 whitespace-nowrap"
+              style="background: linear-gradient(135deg, #ff8fab, #e8587a)"
+              :disabled="sms.busy || sms.code.trim().length < 4"
+              @click="verifySmsCode"
+            >
+              확인
+            </button>
+          </div>
+          <p v-if="sms.info" class="m-0 text-[11px] leading-snug text-gray-500">{{ sms.info }}</p>
+          <p v-if="sms.err" class="m-0 text-[11px] leading-snug text-red-500">{{ sms.err }}</p>
+        </div>
         <button
+          v-if="passEnabled"
           type="button"
           class="w-full max-w-[220px] py-2.5 rounded-lg bg-gray-900 text-white text-[13px] font-bold transition hover:opacity-85 disabled:opacity-60"
           :disabled="passBusy"
@@ -281,6 +328,7 @@ import { reactive, ref, computed, onMounted, onUnmounted, nextTick, watch } from
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/store/useAuthStore";
 import { usePassIdentity } from "~/composables/usePassIdentity";
+import { authSvc } from "~/svc/co/auth/authSvc";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
 import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
 import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
@@ -505,6 +553,11 @@ function resetChatState() {
   chatState.view = "chat";
   chatState.rooms = [];
   chatState.roomsLoading = false;
+  sms.phone = "";
+  sms.code = "";
+  sms.sent = false;
+  sms.err = "";
+  sms.info = "";
 }
 watch(
   () => authStore.isStLoggedIn,
@@ -539,6 +592,63 @@ function closeChat() {
 const pass = usePassIdentity();
 const passBusy = pass.busy;
 const passErr = ref("");
+// PASS 연동 키(포트원)가 설정된 환경에서만 PASS 버튼을 보인다(미설정이면 눌러도 오류만 난다)
+const passEnabled = computed(() => !!String(useRuntimeConfig().public.portoneStoreId ?? "").trim() && !!String(useRuntimeConfig().public.portoneIdvChannelKey ?? "").trim());
+
+// 휴대폰 문자인증(SMS OTP): 번호 입력 → 인증번호 문자 수신 → 확인 → 임시회원으로 로그인하고 채팅을 연다
+const sms = reactive({ phone: "", code: "", sent: false, busy: false, err: "", info: "", cooldown: 0 });
+let smsTimer: ReturnType<typeof setInterval> | null = null;
+function smsStartCooldown(sec: number) {
+  sms.cooldown = sec;
+  if (smsTimer) clearInterval(smsTimer);
+  smsTimer = setInterval(() => {
+    sms.cooldown -= 1;
+    if (sms.cooldown <= 0 && smsTimer) {
+      clearInterval(smsTimer);
+      smsTimer = null;
+    }
+  }, 1000);
+}
+const smsErrText = (err: unknown): string => {
+  const e = err as { response?: { data?: { message?: string } }; data?: { message?: string }; message?: string };
+  return String(e?.response?.data?.message ?? e?.data?.message ?? "요청에 실패했습니다. 잠시 후 다시 시도해 주세요.").split("::")[0]!;
+};
+async function sendSmsCode() {
+  if (sms.busy || sms.cooldown > 0) return;
+  sms.err = "";
+  sms.info = "";
+  if (!/^0\d{9,10}$/.test(sms.phone.replace(/[^0-9]/g, ""))) return void (sms.err = "휴대폰 번호를 정확히 입력해 주세요.");
+  sms.busy = true;
+  try {
+    const r = await authSvc.sendSmsCode(sms.phone);
+    sms.sent = true;
+    sms.code = "";
+    sms.info = `인증번호를 문자로 보냈습니다. (${Math.round(r.expireSeconds / 60)}분 안에 입력)` + (r.devCode ? ` [개발용 인증번호: ${r.devCode}]` : "");
+    smsStartCooldown(r.resendSeconds || 60);
+  } catch (err) {
+    sms.err = smsErrText(err);
+  } finally {
+    sms.busy = false;
+  }
+}
+async function verifySmsCode() {
+  if (sms.busy) return;
+  sms.err = "";
+  sms.busy = true;
+  try {
+    const r = await authStore.smsGuestLogin(sms.phone, sms.code.trim());
+    if (!r.ok) return void (sms.err = r.message ?? "인증에 실패했습니다.");
+    chatState.needAuth = false;
+    sms.code = "";
+    sms.sent = false;
+    sms.info = "";
+    if (!chatState.roomId) await fnLoadOrCreateRoom();
+    if (chatState.roomId && chatState.roomId !== "_local") fnStartChatPoll();
+    nextTick(() => chatInputRef.value?.focus());
+  } finally {
+    sms.busy = false;
+  }
+}
 async function startPassChat() {
   passErr.value = "";
   const v = await pass.start();

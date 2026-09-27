@@ -101,6 +101,18 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    /** 휴대폰 문자인증을 마친 비회원을 임시회원으로 로그인시킨다(같은 번호면 같은 임시회원) */
+    async smsGuestLogin(phone: string, code: string): Promise<{ ok: boolean; message?: string }> {
+      try {
+        const res = await authSvc.smsGuestLogin(phone, code);
+        this.setSession(res.token, res.user);
+        return { ok: true };
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { message?: string } }; data?: { message?: string } };
+        return { ok: false, message: String(e?.response?.data?.message ?? e?.data?.message ?? "문자인증에 실패했습니다.").split("::")[0] };
+      }
+    },
+
     /** 회원가입 — ecBeBo FoAuthController.join() 직접 호출(authSvc) (가입만, 자동로그인은 안 함) */
     async register(name: string, email: string, password: string, passVerifyId?: string, extra?: Record<string, string>): Promise<{ ok: boolean; message?: string }> {
       try {

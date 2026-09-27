@@ -30,6 +30,14 @@ export const authSvc = {
   /** POST /co/fo-auth/pass-guest-login — PASS 본인인증을 마친 비회원을 "PASS 임시회원"으로 로그인(채팅 상담·비회원 결제용) */
   passGuestLogin: (identityVerificationId: string): Promise<SyLoginSessionType> => csrPost<SyLoginResType>("/co/fo-auth/pass-guest-login", { identityVerificationId }).then(mapLoginRes),
 
+  /** POST /co/fo-auth/sms/send — 휴대폰 인증번호 문자 발송 */
+  sendSmsCode: (phone: string): Promise<{ expireSeconds: number; resendSeconds: number; devCode?: string | null }> =>
+    csrPost<{ expireSeconds: number; resendSeconds: number; devCode?: string | null }>("/co/fo-auth/sms/send", { phone }),
+
+  /** POST /co/fo-auth/sms-guest-login — 문자 인증번호 확인 후 "문자인증 임시회원"으로 로그인(채팅 상담용) */
+  smsGuestLogin: (phone: string, code: string): Promise<SyLoginSessionType> =>
+    csrPost<SyLoginResType>("/co/fo-auth/sms-guest-login", { phone, code }).then(mapLoginRes),
+
   /** POST /co/fo-auth/find-id — PASS 인증 결과로 가입 아이디(가림) 찾기 */
   findId: (identityVerificationId: string): Promise<SyFoundIdType> => csrPost<SyFoundIdType>("/co/fo-auth/find-id", { identityVerificationId }),
 
