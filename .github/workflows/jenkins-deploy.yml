@@ -1,0 +1,76 @@
+# GitHub push / 태그 → Jenkins 배포 요청 (Synology 개발 · Netlify 운영)
+# 각 저장소의 .github/workflows/jenkins-deploy.yml 로 배치한다(ecBeBo·ecBeCdn·ecBeGateway·ecBeRedis·ecFeBo·ecFeFoNuxt4·ecFeMain).
+#
+# 배포 규칙
+#   - main push: 커밋 메시지에 "개발배포" 가 있으면 Jenkins shopjoy-apps-dev, "운영배포" 가 있으면 shopjoy-apps-oper(Netlify) 를 배포한다. 둘 다 있으면 둘 다.
+#                (푸시에 여러 커밋이 있으면 그 커밋 메시지 전체에서 찾는다. 키워드가 없으면 배포하지 않는다.)
+#   - 태그 push: dev-*  → 개발 배포(해당 태그 소스)   /   v* · oper-* → 운영 배포(해당 태그 소스)
+#   - 수동 실행(Actions 탭 → Run workflow): 환경(dev/oper/both)과 참조(main 또는 태그)를 골라 배포
+# 운영(Netlify) 잡이 있는 저장소는 ecFeBo · ecFeFoNuxt4 · ecFeMain 뿐이다(백엔드는 운영 서버 미정이라 운영 요청은 건너뜀).
+#
+# 필요한 저장소 Secrets: JENKINS_URL(http://illeesam.synology.me:22900), JENKINS_DEPLOY_USER(gh-deploy), JENKINS_DEPLOY_PASSWORD
+#   gh-deploy 는 Jenkins 에서 "잡 조회·빌드" 권한만 가진 전용 계정이다(관리자 계정이 아님).
+name: jenkins-deploy
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*', 'dev-*', 'oper-*']
+  workflow_dispatch:
+    inputs:
+      target:
+        description: '배포 환경'
+        type: choice
+        options: [dev, oper, both]
+        default: dev
+      ref:
+        description: '배포할 참조 (main 또는 태그명, 예: v1.0.0)'
+        default: main
+
+jobs:
+  request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 배포 대상 판단 후 Jenkins 에 요청
+        env:
+          J_URL: ${{ secrets.JENKINS_URL }}
+          J_USER: ${{ secrets.JENKINS_DEPLOY_USER }}
+          J_PASS: ${{ secrets.JENKINS_DEPLOY_PASSWORD }}
+          APP: ${{ github.event.repository.name }}
+          EVT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          IN_TARGET: ${{ github.event.inputs.target }}
+          IN_REF: ${{ github.event.inputs.ref }}
+        run: |
+          [ -n "$J_URL" ] && [ -n "$J_USER" ] && [ -n "$J_PASS" ] || { echo "Jenkins 시크릿 없음 - 스킵"; exit 0; }
+          DEV=0; OPER=0; GIT_REF="main"
+          if [ "$EVT" = "workflow_dispatch" ]; then
+            case "$IN_TARGET" in dev) DEV=1;; oper) OPER=1;; both) DEV=1; OPER=1;; esac
+            case "$IN_REF" in ""|main) GIT_REF="main";; refs/*) GIT_REF="$IN_REF";; *) GIT_REF="refs/tags/$IN_REF";; esac
+          elif [ "${REF#refs/tags/}" != "$REF" ]; then
+            GIT_REF="$REF"
+            case "$REF_NAME" in dev-*) DEV=1;; oper-*|v*) OPER=1;; esac
+          else
+            MSGS=$(jq -r '[.commits[]?.message] | join("\n")' "$GITHUB_EVENT_PATH")
+            printf '%s' "$MSGS" | grep -q '개발배포' && DEV=1
+            printf '%s' "$MSGS" | grep -q '운영배포' && OPER=1
+          fi
+          if [ "$DEV" = 0 ] && [ "$OPER" = 0 ]; then echo "배포 키워드(개발배포/운영배포)·배포 태그 없음 - 배포 요청 안 함"; exit 0; fi
+          case "$APP" in ecFeBo|ecFeFoNuxt4|ecFeMain) HAS_OPER=1;; *) HAS_OPER=0;; esac
+
+          JAR=$(mktemp)
+          CRUMB=$(curl -sS -m 20 -c "$JAR" -u "$J_USER:$J_PASS" "$J_URL/crumbIssuer/api/json" | jq -r '.crumbRequestField + ":" + .crumb')
+          [ -n "$CRUMB" ] && [ "$CRUMB" != "null:null" ] || { echo "Jenkins 인증/접속 실패(crumb)"; exit 1; }
+          request() { # $1=폴더 $2=표시명
+            CODE=$(curl -s -m 30 -o /dev/null -w '%{http_code}' -b "$JAR" -c "$JAR" -u "$J_USER:$J_PASS" -H "$CRUMB" -X POST \
+              "$J_URL/job/$1/job/$APP/buildWithParameters" --data-urlencode "GIT_REF=$GIT_REF")
+            echo "$2 배포 요청: $APP ($GIT_REF) → http $CODE"
+            [ "$CODE" = "201" ] || [ "$CODE" = "200" ] || FAIL=1
+          }
+          FAIL=0
+          [ "$DEV" = 1 ] && request shopjoy-apps-dev 개발
+          if [ "$OPER" = 1 ]; then
+            if [ "$HAS_OPER" = 1 ]; then request shopjoy-apps-oper 운영; else echo "운영 배포 요청 건너뜀: $APP 은(는) 운영 배포 잡이 없음(운영 서버 미정)"; fi
+          fi
+          exit $FAIL
