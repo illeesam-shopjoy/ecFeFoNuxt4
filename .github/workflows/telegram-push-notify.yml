@@ -1,7 +1,7 @@
 # GitHub push → 텔레그램 알림
 # 각 저장소의 .github/workflows/telegram-push-notify.yml 로 배치한다.
-# 필요한 Secrets: TELEGRAM_BOT_TOKEN_DEV, TELEGRAM_CHAT_ID_DEV (shopjoy-dev 그룹)
-#   + 운영 사이트 저장소(ecFeBo·ecFeFoNuxt4·ecFeMain)는 TELEGRAM_BOT_TOKEN_OPER, TELEGRAM_CHAT_ID_OPER (shopjoy-oper 그룹, 없으면 건너뜀)
+# 필요한 Secrets: TELEGRAM_BOT_TOKEN_DEV, TELEGRAM_CHAT_ID_DEV (shopjoy-apps-dev 그룹)
+#   + 운영 사이트 저장소(ecFeBo·ecFeFoNuxt4·ecFeMain)는 TELEGRAM_BOT_TOKEN_OPER, TELEGRAM_CHAT_ID_OPER (shopjoy-apps-oper 그룹, 없으면 건너뜀)
 # URLS 항목의 자리표시자(언더스코어 두 개로 감싼 DEV_URLS / OPER_URLS)는 저장소별 점검 URL(포트·서브도메인 / 운영 Netlify)로 치환해서 배치한다(github-actions/repo-urls.json 참조).
 name: telegram-push-notify
 
@@ -24,8 +24,8 @@ jobs:
           COMPARE: ${{ github.event.compare }}
           EVT: ${{ github.event_name }}
           URLS: |
-            🔗 http://illeesam.synology.me:22100
-            🔗 https://22100.illeesam.synology.me
+            🔗 http://illeesam.synology.me:22100 (FO-nuxt4)
+            🔗 https://22100.illeesam.synology.me (FO-nuxt4)
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
@@ -50,7 +50,7 @@ jobs:
           COMPARE: ${{ github.event.compare }}
           EVT: ${{ github.event_name }}
           URLS: |
-            🔗 https://shopjoy-ecfefonuxt4.netlify.app
+            🔗 https://shopjoy-ecfefonuxt4.netlify.app (FO-nuxt4)
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || { echo "운영 텔레그램 시크릿 없음 - 스킵"; exit 0; }
           TITLE=$(printf '%s' "$COMMITS" | head -n 1 | cut -c1-200)
