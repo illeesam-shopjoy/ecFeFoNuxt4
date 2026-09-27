@@ -295,7 +295,7 @@ async function sendSummaryEmail(results) {
   }
 }
 
-/* ── 텔레그램 통지 (shopjoy-oper 봇) — 요약 메시지 + 로그 파일 첨부. 설정(.env.deploy 의 TELEGRAM_BOT_TOKEN_OPER/TELEGRAM_CHAT_ID_OPER)이 없으면 스킵 ── */
+/* ── 텔레그램 통지 (oper 봇, shopjoy-apps-oper 그룹) — 요약 메시지 + 로그 파일 첨부. 설정(.env.deploy 의 TELEGRAM_BOT_TOKEN_OPER/TELEGRAM_CHAT_ID_OPER)이 없으면 스킵 ── */
 async function sendSummaryTelegram(results, mailStatus) {
   const token = process.env.TELEGRAM_BOT_TOKEN_OPER;
   const chatId = process.env.TELEGRAM_CHAT_ID_OPER;
