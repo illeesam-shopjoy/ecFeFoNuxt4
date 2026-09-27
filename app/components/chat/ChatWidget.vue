@@ -172,9 +172,9 @@
           </div>
           <span
             class="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0"
-            :class="r.chattStatusCd === 'CLOSED' ? 'bg-gray-100 text-gray-500' : r.chattStatusCd === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
+            :class="r.chattStatusCd === 'CLOSED' || r.chattStatusCd === 'DONE' ? 'bg-gray-100 text-gray-500' : r.chattStatusCd === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
           >
-            {{ r.chattStatusCd === "CLOSED" ? "종료" : r.chattStatusCd === "ACTIVE" ? "진행중" : "대기중" }}
+            {{ r.chattStatusCd === "CLOSED" || r.chattStatusCd === "DONE" ? "종료" : r.chattStatusCd === "ACTIVE" ? "진행중" : "대기중" }}
           </span>
         </button>
       </div>
