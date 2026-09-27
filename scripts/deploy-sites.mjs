@@ -295,6 +295,8 @@ async function sendSummaryEmail(results) {
 }
 
 /* ── 텔레그램 통지 (oper 봇, shopjoy-apps-oper 그룹) — 요약 메시지 + 로그 파일 첨부. 설정(.env.deploy 의 TELEGRAM_BOT_TOKEN_OPER/TELEGRAM_CHAT_ID_OPER)이 없으면 스킵 ── */
+// URL 뒤에 붙이는 "무엇으로 만들어졌는지" 꼬리표
+const SITE_KIND = { ecFeFoNuxt4: 'FO-nuxt4', ecFeMain: 'Main-vue3cdn', ecFeBo: 'FO-vue3cdn' };
 async function sendSummaryTelegram(results, mailStatus) {
   const token = process.env.TELEGRAM_BOT_TOKEN_OPER;
   const chatId = process.env.TELEGRAM_CHAT_ID_OPER;
@@ -305,7 +307,7 @@ async function sendSummaryTelegram(results, mailStatus) {
   const allOk = results.every((r) => r.ok === true);
   const anyFail = results.some((r) => r.ok === false);
   const head = `${process.env.NOTIFY_ACTOR || '🙂'}${allOk ? '✅' : anyFail ? '❌' : '⚠️'} [로컬-script] [운영][배포][${allOk ? '성공' : anyFail ? '실패' : '확인불가'}] ${results.map((r) => r.label).join(', ')}`;
-  const body = results.map((r) => `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠'} ${r.label} — ${r.detail}${r.url ? `\n🔗 ${r.url}` : ''}`).join('\n');
+  const body = results.map((r) => `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠'} ${r.label} — ${r.detail}${r.url ? `\n🔗 ${r.url}${SITE_KIND[r.label] ? ` (${SITE_KIND[r.label]})` : ''}` : ''}`).join('\n');
   try {
     const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
