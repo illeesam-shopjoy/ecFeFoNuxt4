@@ -264,8 +264,8 @@ async function sendSummaryEmail(results) {
   const anyFail = results.some((r) => r.ok === false);
   // 2026-09-12(요청사항: '제목앞단에 🌈✅ 아이콘 표시해줘야해') — 전체 성공일 때 제목 맨 앞에
   // 🌈✅, 실패/불확실은 기존대로 ❌/⚠를 맨 앞에 둔다.
-  // 2026-09-27(요청사항): 맨 앞에 행위자(🙂 사람 / 💻 시스템·주기 / 🔍 시스템·AI 테스트)+결과(🟢 성공 / 🔴 실패 / 🟡 경고) 아이콘 — 행위자는 NOTIFY_ACTOR 로 변경 가능(기본 🙂)
-  const icon = `${process.env.NOTIFY_ACTOR || '🙂'}${allOk ? '🟢' : anyFail ? '🔴' : '🟡'}`;
+  // 2026-09-27(요청사항): 맨 앞에 행위자(🙂 사람 / 💻 시스템·주기 / 🔍 시스템·AI 테스트)+결과(✅ 성공 / ❌ 실패 / ⚠️ 경고) 아이콘 — 행위자는 NOTIFY_ACTOR 로 변경 가능(기본 🙂)
+  const icon = `${process.env.NOTIFY_ACTOR || '🙂'}${allOk ? '✅' : anyFail ? '❌' : '⚠️'}`;
   const overall = allOk ? '전체 성공' : anyFail ? '실패 있음' : '일부 확인불가';
   // 2026-09-27(요청사항): 로컬 스크립트로 배포한 알림은 맨 앞에 [로컬-script]
   const subject = `${icon} [로컬-script] [ShopJoy 배포] ${overall} — ${results.map((r) => r.label).join(', ')}`;
@@ -305,7 +305,7 @@ async function sendSummaryTelegram(results, mailStatus) {
   }
   const allOk = results.every((r) => r.ok === true);
   const anyFail = results.some((r) => r.ok === false);
-  const head = `${process.env.NOTIFY_ACTOR || '🙂'}${allOk ? '🟢' : anyFail ? '🔴' : '🟡'} [로컬-script] [운영][배포][${allOk ? '성공' : anyFail ? '실패' : '확인불가'}] ${results.map((r) => r.label).join(', ')}`;
+  const head = `${process.env.NOTIFY_ACTOR || '🙂'}${allOk ? '✅' : anyFail ? '❌' : '⚠️'} [로컬-script] [운영][배포][${allOk ? '성공' : anyFail ? '실패' : '확인불가'}] ${results.map((r) => r.label).join(', ')}`;
   const body = results.map((r) => `${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠'} ${r.label} — ${r.detail}${r.url ? `\n🔗 ${r.url}` : ''}`).join('\n');
   try {
     const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
