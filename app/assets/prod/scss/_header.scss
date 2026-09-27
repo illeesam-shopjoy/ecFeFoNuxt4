@@ -104,6 +104,18 @@
     &.transparent-sticky {
       position: static;
     }
+    // 2026-09-27(home-6 모바일 헤더 깨짐) — HeaderThree(header__area-6)는 <lg에서 두 줄(환영문구 + 로고·아이콘)로
+    // 쌓이는데 absolute 라 히어로 제목을 덮었다. <lg에선 문서 흐름 안에 두고 흰 배경을 깐다.
+    &.header__area-6 {
+      @media (max-width: 991px) {
+        position: relative;
+        background: $white;
+        padding: 8px 0 10px;
+        & .header__top-2 {
+          padding-top: 0;
+        }
+      }
+    }
     &-2 {
       @media #{$md} {
         background: $white;
