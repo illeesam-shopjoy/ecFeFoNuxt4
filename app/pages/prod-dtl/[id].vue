@@ -121,7 +121,8 @@
                       <div v-for="d in ratingDist" :key="d.star" class="flex items-center gap-2 text-[0.78rem] text-gray-600">
                         <span class="w-6 text-right">{{ d.star }}<i class="fas fa-star ml-0.5 text-[0.65rem] text-[#f5a623]"></i></span>
                         <div class="h-2 flex-1 overflow-hidden rounded bg-[#eee]"><div class="h-full bg-[#f5a623]" :style="{ width: d.pct + '%' }"></div></div>
-                        <span class="w-9 text-right text-[#9ca3af]">{{ d.pct }}%</span>
+                        <!-- 2026-09-29(요청사항: "상품평점수 그래프 50% 표시부분 우측에 건수도 표시해줘") -->
+                        <span class="w-[68px] shrink-0 text-right text-[#9ca3af]">{{ d.pct }}% <span class="text-[#c0c4cc]">({{ d.cnt }}건)</span></span>
                       </div>
                     </div>
                   </div>
@@ -601,11 +602,13 @@ const avgRating = computed(() => {
   const list = ratedReviewList.value;
   return list.length ? list.reduce((sum, r) => sum + r.rating, 0) / list.length : Number(item.value?.rating) || 0;
 });
+// 2026-09-29(요청사항: "상품평점수 그래프 50% 표시부분 우측에 건수도 표시해줘") — 퍼센트만으론 "50%가
+// 몇 건인지" 알 수 없었다. n(건수)도 같이 반환해 템플릿에서 "50% (1건)"처럼 보여준다.
 const ratingDist = computed(() => {
   const total = ratedReviewList.value.length || 1;
   return [5, 4, 3, 2, 1].map((star) => {
     const n = ratedReviewList.value.filter((r) => Math.round(r.rating) === star).length;
-    return { star, pct: Math.round((n / total) * 100) };
+    return { star, pct: Math.round((n / total) * 100), cnt: n };
   });
 });
 const reviewSortOptions = [
