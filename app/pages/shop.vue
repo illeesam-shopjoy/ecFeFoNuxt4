@@ -493,7 +493,9 @@ const isInitialLoading = computed(() => pending.value && !firstPage.value);
 
 // 2026-09-13: ecBeBo sizeInfoCd 실 enum 값(자유 텍스트가 아니라 고정 코드) — 상품 옵션(SKU)
 // 스캔이 아니라 상품 자체 필드라 서버에서 바로 IN 필터링된다.
-const SIZE_OPTIONS = ["FREE", "XS", "S", "M", "L", "XL"];
+// 2026-09-29(요청사항: "size 조건값이 더 있어야 할거 같아") — ecBeBo 실 enum(QPdProdRepositoryImpl
+// 주석 "SIZE_INFO_CD {FREE,XS,S,M,L,XL,XXL}")에는 XXL까지 있는데 FO 필터엔 빠져 있었다.
+const SIZE_OPTIONS = ["FREE", "XS", "S", "M", "L", "XL", "XXL"];
 
 // 상품유형 필터 선택지 — 전체 + PROD_TYPE_LABEL(conts/pdConst.ts) 순서대로, 사은품(GIFT)은 뺀다(2026-09-22 요청사항: "사은품은 빼줘")
 const PROD_TYPE_FILTER_OPTIONS = [{ value: "", label: "전체" }, ...Object.entries(PROD_TYPE_LABEL).filter(([value]) => value !== "GIFT").map(([value, label]) => ({ value, label }))];

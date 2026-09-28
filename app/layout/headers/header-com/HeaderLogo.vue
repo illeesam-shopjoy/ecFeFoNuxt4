@@ -3,18 +3,22 @@
        야자수 아이콘 + 이름 + 태그라인 + 환경(prod/dev/local) 배지 + api/cdn 호스트. 예전 EnvModeBadge(로고 아래 2줄)를 이 컴포넌트가 대신한다. -->
   <div class="flex" :class="align === 'center' ? 'justify-center' : 'justify-start'">
     <!-- 2026-09-22(요청사항: "ShopJoy 좌측 CI 쪽으로 공백줄이고 더 붙여줘") — 아이콘과 글자 사이 gap을 줄여 더 붙임 -->
-    <nuxt-link href="/" class="inline-flex items-center gap-0.5 min-w-0 no-underline" aria-label="ShopJoy 홈">
+    <!-- 2026-09-29(요청사항: "PC에서 볼때 기본값이 너무 작긴하네 — 반응형은 유지하되 PC에서
+         정상적으로 볼때는 좀 더 크면 좋겠어") — 예전엔 sm(640px) 이후로는 더 안 커져서 1920px
+         데스크탑에서도 폰과 거의 같은 크기였다. 모바일/태블릿 크기는 그대로 두고 lg(1024px)
+         이상에서만 로고 아이콘·글자를 한 단계 더 키운다. -->
+    <nuxt-link href="/" class="inline-flex items-center gap-0.5 lg:gap-1.5 min-w-0 no-underline" aria-label="ShopJoy 홈">
       <!-- <img> 로 둬야 다크모드(html invert 필터, assets/theme-dark.css)에서 img 규칙으로 색이 되돌려진다 -->
-      <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-7 h-7 sm:w-9 sm:h-9" />
+      <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-7 h-7 sm:w-9 sm:h-9 lg:w-11 lg:h-11" />
       <span class="flex flex-col min-w-0 leading-[1.1] text-left">
         <!-- 2026-09-22(요청사항: "ShopJoy 글씨 더 작게 — width 최소한으로") — 폭을 최대한 덜 차지하도록 더 줄임 -->
-        <span class="text-[0.68rem] sm:text-[0.8rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy</span>
-        <span class="flex flex-wrap items-center gap-1 text-[0.6rem] font-medium tracking-[0.08em] text-[#8a8a8a]">
+        <span class="text-[0.68rem] sm:text-[0.8rem] lg:text-[1.05rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy</span>
+        <span class="flex flex-wrap items-center gap-1 text-[0.6rem] sm:text-[0.6rem] lg:text-[0.78rem] font-medium tracking-[0.08em] text-[#8a8a8a]">
           <!-- 2026-09-21(요청사항: 폰에서 로고 폭 줄이기) — 좁은 화면(<sm)에선 "쇼핑의 즐거움" 문구를 빼고 그 자리에 환경 배지(prod)만 보인다 -->
           <span class="max-sm:hidden">쇼핑의 즐거움</span>
-          <span class="px-[5px] rounded-[3px] border font-mono text-[9px] font-bold" :class="chipClass">{{ modeLabel }}</span>
+          <span class="px-[5px] lg:px-[6px] rounded-[3px] border font-mono text-[9px] lg:text-[10px] font-bold" :class="chipClass">{{ modeLabel }}</span>
         </span>
-        <span class="hidden lg:block text-[0.58rem] text-[#a3a3a3] opacity-75 whitespace-nowrap overflow-hidden text-ellipsis max-w-[45vw]">api {{ apiHost }} · cdn {{ cdnHost }}</span>
+        <span class="hidden lg:block text-[0.68rem] text-[#a3a3a3] opacity-75 whitespace-nowrap overflow-hidden text-ellipsis max-w-[45vw]">api {{ apiHost }} · cdn {{ cdnHost }}</span>
       </span>
     </nuxt-link>
   </div>

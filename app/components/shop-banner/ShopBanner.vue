@@ -1,7 +1,11 @@
 <template>
   <div class="banner__area-2 pb-60">
     <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
-    <div :class="`container-fluid ${style_2 ? '' : 'p-0'}`">
+    <!-- 2026-09-29(요청사항: "화면늘리면 계속 늘어나는데 원래 이미지의 어느 비율까지만 늘어나면
+         좋겠어") — container-fluid는 max-width가 없어(_grid.scss 참조) 초광폭 화면에서 배너
+         이미지가 끝없이 커졌다. 사이트의 다른 폭넓은 섹션(TrendingProducts 등)과 동일하게
+         max-w-[1840px]로 상한을 두고 그 너머는 가운데 정렬되게 한다. -->
+    <div :class="`container-fluid mx-auto max-w-[1840px] ${style_2 ? '' : 'p-0'}`">
       <div class="row g-0">
         <div v-for="(item, index) in bannerItems" :key="item.prodId" class="col-xl-6 col-lg-6">
           <div :class="`banner__item-2 banner-${index === 0 ? 'right' : 'left'} relative mb-30 p${index === 0 ? 'r' : 'l'}-15`">

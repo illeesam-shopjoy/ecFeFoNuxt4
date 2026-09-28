@@ -23,6 +23,13 @@
       padding-top: 12px;
       padding-bottom: 12px;
     }
+    // 2026-09-29(요청사항: "PC에서 볼때 기본값이 너무 작긴하네 — 반응형은 유지하되 PC에서 정상적으로
+    // 볼때는 좀 더 크면 좋겠어") — 태블릿까지는 그대로 두고 데스크탑(1024px+)에서만 상하 여백을 더 줘
+    // 바 전체 높이를 키운다.
+    @media (min-width: 1024px) {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
   }
   &__row {
     flex-wrap: nowrap !important;
@@ -487,6 +494,10 @@
         padding: 27px 0;
         padding-bottom: 30px;
         text-transform: capitalize;
+        // 2026-09-29(요청사항: "PC에서 볼때 기본값이 너무 작긴하네") — 데스크탑에서만 메뉴 글자를 한 단계 키운다.
+        @media (min-width: 1024px) {
+          font-size: 15px;
+        }
       }
       &.active {
         & a {

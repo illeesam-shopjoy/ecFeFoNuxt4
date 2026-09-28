@@ -4,9 +4,11 @@
        2026-09-21(요청사항: "화면 줄이면 상단에 지금 보이는건 다 보여주고, 종 아이콘은 장바구니 우측") — 알림 종을 장바구니 오른쪽으로 옮기고,
        좁은 화면(<sm)에서도 검색/좋아요/테마를 숨기지 않는다(대신 버튼을 28px로 줄여 한 줄에 다 들어가게 함).
        모든 헤더(Header/HeaderTwo/Three/Four)가 이 컴포넌트 하나를 쓴다. 로그인/좋아요/장바구니 수량은 localStorage 기반이라 client-only. -->
-  <div class="inline-flex flex-nowrap justify-end items-center gap-0.5 sm:gap-2">
-    <a href="#" class="inline-flex w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl items-center justify-center bg-white border border-[#e5e7eb] text-gray-600 hover:border-gray-400 transition" aria-label="검색" title="검색" @click.prevent="emit('search')">
-      <i class="fas fa-search text-[14px]"></i>
+  <!-- 2026-09-29(요청사항: "PC에서 볼때 기본값이 너무 작긴하네") — sm(640px) 이후로는 버튼이 더
+       안 커져서 넓은 데스크탑에서도 작아 보였다. 모바일/태블릿은 그대로 두고 lg(1024px) 이상만 키운다. -->
+  <div class="inline-flex flex-nowrap justify-end items-center gap-0.5 sm:gap-2 lg:gap-3">
+    <a href="#" class="inline-flex w-7 h-7 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-lg sm:rounded-xl items-center justify-center bg-white border border-[#e5e7eb] text-gray-600 hover:border-gray-400 transition" aria-label="검색" title="검색" @click.prevent="emit('search')">
+      <i class="fas fa-search text-[14px] lg:text-[16px]"></i>
     </a>
 
     <client-only>
@@ -14,7 +16,7 @@
 
       <!-- 좋아요 -->
       <nuxt-link href="/wishlist" class="hta-btn" aria-label="위시리스트" title="위시리스트">
-        <i class="far fa-heart text-[15px]"></i>
+        <i class="far fa-heart text-[15px] lg:text-[17px]"></i>
         <span v-if="wishlist.wishlists.length" class="hta-badge">{{ wishlist.wishlists.length }}</span>
       </nuxt-link>
 
@@ -24,7 +26,7 @@
           <li style="margin-left: 0">
             <div>
               <nuxt-link href="/cart" class="hta-btn" aria-label="장바구니" title="장바구니">
-                <i class="fas fa-shopping-cart text-[15px]"></i>
+                <i class="fas fa-shopping-cart text-[15px] lg:text-[17px]"></i>
                 <span v-if="cart.getStTotalPriceQuantity.quantity" class="hta-badge">{{ cart.getStTotalPriceQuantity.quantity }}</span>
               </nuxt-link>
             </div>
@@ -79,6 +81,13 @@ const wishlist = useWishlistStore();
     width: 40px;
     height: 40px;
     border-radius: 12px;
+  }
+}
+@media (min-width: 1024px) {
+  .hta-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
   }
 }
 .hta-btn:hover {

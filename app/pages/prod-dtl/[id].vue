@@ -139,8 +139,11 @@
                                고정폭을 차지하는데, min-w-0인 가운데 열이 그걸 위해 계속 줄어들다 90px까지 짜부라져서 이름·버튼·별점이 한 글자씩 줄바꿈됐다.
                                flex-wrap을 켜고 가운데 열에 실질적인 min-width를 줘서, 자리가 부족하면 첨부열이 통째로 다음 줄로 내려가게 한다(짜부라지지 않음). -->
                           <div class="flex flex-wrap items-start gap-4">
-                            <div class="comments-avatar shrink-0">
-                              <app-image :src="review.img" :alt="review.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
+                            <!-- 2026-09-29(요청사항: "상품평의 사용자 이미지 영역이 많이 차지하는데 반응형으로 좁아지거나,
+                                 모바일로 볼때는 사진은 안보여도 될거 같아") — 폰(<sm)에선 아바타를 아예 숨기고(공간 절약),
+                                 sm 이상에서만 48px→md 이상 60px로 점점 커지게 한다. -->
+                            <div class="comments-avatar hidden shrink-0 sm:block">
+                              <app-image :src="review.img" :alt="review.writerNm" wrap-class="block h-12 w-12 overflow-hidden rounded-full md:h-[60px] md:w-[60px]" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                             </div>
                             <div class="min-w-[200px] flex-1">
                               <div class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -162,7 +165,9 @@
                                 </li>
                               </ul>
                             </div>
-                            <div v-if="mediaFilesOf(review).length > 0" class="ml-[76px] flex w-full flex-col items-start sm:ml-0 sm:w-auto sm:shrink-0 sm:items-end">
+                            <!-- 2026-09-29: 아바타를 <sm에서 숨겼으므로(위 참조) 더 이상 아바타 폭만큼
+                                 밀어줄 필요가 없다(예전엔 60px+gap 16px=76px 오프셋으로 아바타 아래에 맞췄음). -->
+                            <div v-if="mediaFilesOf(review).length > 0" class="flex w-full flex-col items-start sm:w-auto sm:shrink-0 sm:items-end">
                               <div class="flex flex-wrap gap-1.5 sm:justify-end">
                                 <template v-for="(f, i) in mediaFilesOf(review).slice(0, 5)" :key="f.url">
                                   <button type="button" class="relative w-12 h-12 rounded overflow-hidden border border-gray-200 p-0 cursor-pointer bg-gray-100 shrink-0 hover:opacity-90" @click="openMedia(mediaFilesOf(review), i)">
@@ -185,8 +190,8 @@
                         </li>
                         <li v-for="reply in (review.replies ?? [])" :key="reply.reviewId" class="children">
                           <div class="flex flex-wrap items-start gap-4">
-                            <div class="comments-avatar shrink-0">
-                              <app-image :src="reply.img" :alt="reply.writerNm" :img-style="{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
+                            <div class="comments-avatar hidden shrink-0 sm:block">
+                              <app-image :src="reply.img" :alt="reply.writerNm" wrap-class="block h-12 w-12 overflow-hidden rounded-full md:h-[60px] md:w-[60px]" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
                             </div>
                             <div class="min-w-[160px] flex-1">
                               <div class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">

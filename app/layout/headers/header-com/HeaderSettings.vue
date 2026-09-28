@@ -4,13 +4,13 @@
   <div ref="wrapRef" class="relative inline-flex">
     <button
       type="button"
-      class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl inline-flex items-center justify-center border cursor-pointer transition"
+      class="w-7 h-7 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-lg sm:rounded-xl inline-flex items-center justify-center border cursor-pointer transition"
       :class="open ? 'bg-[#fdf6ee] border-theme text-theme' : 'bg-white border-[#e5e7eb] text-gray-500 hover:border-gray-400'"
       aria-label="설정"
       :aria-expanded="open"
       @click.stop="open = !open"
     >
-      <i class="fas fa-cog text-[15px]"></i>
+      <i class="fas fa-cog text-[15px] lg:text-[17px]"></i>
     </button>
 
     <div v-show="open" class="absolute top-[calc(100%+10px)] right-0 w-[248px] bg-white rounded-xl border border-[#eee] shadow-[0_10px_35px_rgba(0,0,0,0.14)] py-2 z-[9999] text-left" @click="onMenuClick">
