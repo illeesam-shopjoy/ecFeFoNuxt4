@@ -89,19 +89,22 @@
                   </div>
                   <!-- 2026-09-22(요청사항: "모아보기시 해당줄에 이미지, 동영상 목록 나열해주고 한줄에 안들어가는 나머지는 ...으로,
                        모아보기 버튼은 제일 우측면에") — 텍스트 대신 실제 썸네일을 한 줄로 나열하고, DOM 측정 없이(성능) 고정
-                       개수만 보여준 뒤 넘치면 "…"만 붙인다. 버튼은 ml-auto로 항상 줄 맨 끝에 붙는다. -->
+                       개수만 보여준 뒤 넘치면 "…"만 붙인다. 버튼은 ml-auto로 항상 줄 맨 끝에 붙는다.
+                       2026-09-29(요청사항: "모아보기 이미지들 이미지가 너무 작어 2배이상 크게 해도 될거 같은데") —
+                       28px(h-7)는 너무 작아 안 보였다. 64px(h-16)로 2배 이상 키우고(미리보기 개수는 8→6으로
+                       줄여 좁은 화면에서 잘리지 않게), 라운드도 살짝 키운다. -->
                   <div v-if="totalAttachmentCount > 0" class="flex flex-nowrap items-center gap-2 mb-20">
-                    <div class="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-hidden">
+                    <div class="flex min-w-0 flex-1 flex-nowrap items-center gap-2 overflow-hidden">
                       <button
                         v-for="(f, i) in shownAttachments"
                         :key="f.url"
                         type="button"
-                        class="relative h-7 w-7 shrink-0 cursor-pointer overflow-hidden rounded border border-gray-200 bg-gray-100 p-0"
+                        class="relative h-16 w-16 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0 hover:opacity-90"
                         @click="openAllMedia(i)"
                       >
                         <img v-if="f.thumb" :src="f.thumb" alt="" class="h-full w-full object-cover" />
                         <span v-else class="flex h-full w-full items-center justify-center bg-gray-600"></span>
-                        <span v-if="isVideoUrl(f.url)" class="absolute inset-0 flex items-center justify-center bg-black/25"><i class="fa fa-play text-[10px] text-white"></i></span>
+                        <span v-if="isVideoUrl(f.url)" class="absolute inset-0 flex items-center justify-center bg-black/25"><i class="fa fa-play text-[13px] text-white"></i></span>
                       </button>
                       <span v-if="totalAttachmentCount > shownAttachments.length" class="shrink-0 text-sm tracking-widest text-gray-400">…</span>
                     </div>
@@ -134,7 +137,10 @@
                   <div class="latest-comments mb-30">
                     <ul>
                       <template v-for="review in sortedReviews" :key="review.reviewId">
-                        <li>
+                        <!-- 2026-09-29(요청사항: "댓글 여러글이 너무 안이쁘게 목록화 되네 잘 나오게 스타일 줘봐") —
+                             예전엔 리뷰 사이 구분선/여백이 전혀 없어(레거시 .comments-box를 이 화면은 안 써서)
+                             리뷰가 여러 개면 답글까지 한 덩어리로 붙어 보였다. 리뷰 단위로 구분선+여백을 준다. -->
+                        <li class="border-b border-[#eee] pb-7 mb-7 last:mb-0 last:border-b-0 last:pb-0">
                           <!-- 2026-09-22(요청사항: "상품평 글이 찌그러져 보여 — 좌측에 빈 공백, 별표도 2줄") — 첨부 썸네일이 있으면 그 열(최대 5장 × 48px)이
                                고정폭을 차지하는데, min-w-0인 가운데 열이 그걸 위해 계속 줄어들다 90px까지 짜부라져서 이름·버튼·별점이 한 글자씩 줄바꿈됐다.
                                flex-wrap을 켜고 가운데 열에 실질적인 min-width를 줘서, 자리가 부족하면 첨부열이 통째로 다음 줄로 내려가게 한다(짜부라지지 않음). -->
@@ -154,9 +160,12 @@
                                   <button v-if="canModifyReview(review)" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(review.reviewId, false, !review.memberId)">삭제</button>
                                 </span>
                               </div>
-                              <div class="mb-1 flex items-center gap-0.5 text-[0.9rem]">
+                              <!-- 2026-09-29: 평점을 안 준 리뷰(rating=0)를 빈 별 5개로 그리면 "0점 평가"처럼
+                                   보여 오해를 준다 — 아예 별 대신 "평점 없음" 표시로 구분. -->
+                              <div v-if="review.rating > 0" class="mb-1 flex items-center gap-0.5 text-[0.9rem]">
                                 <i v-for="s in 5" :key="s" class="text-[#f5a623]" :class="s <= review.rating ? 'fas fa-star' : 'fal fa-star'"></i>
                               </div>
+                              <div v-else class="mb-1 text-[0.78rem] text-gray-400">평점 없음</div>
                               <div v-if="!isAutoTitle(review.reviewTitle, review.reviewContent)" class="mb-1 text-[0.95rem] font-bold text-gray-900">{{ review.reviewTitle }}</div>
                               <client-only><div class="he-view" v-html="toSafeHtml(review.reviewContent) || '내용 없음'"></div></client-only>
                               <ul v-if="otherFilesOf(review).length" class="m-0 mt-2 flex list-none flex-col gap-1 p-0">
@@ -188,17 +197,21 @@
                             </div>
                           </div>
                         </li>
-                        <li v-for="reply in (review.replies ?? [])" :key="reply.reviewId" class="children">
-                          <div class="flex flex-wrap items-start gap-4">
+                        <!-- 2026-09-29(요청사항: "댓글 여러글이 너무 안이쁘게 목록화 되네") — 답글이 여러 개면
+                             예전엔 카드/구분 없이 텍스트가 위아래로 그냥 붙어 나왔다. 옅은 배경 카드 + 왼쪽 컬러
+                             바(스레드 표시)로 리뷰 본문과 답글, 답글끼리를 시각적으로 분리한다. -->
+                        <li v-for="(reply, ri) in (review.replies ?? [])" :key="reply.reviewId" class="children" :class="ri === 0 ? 'mt-4' : 'mt-3'">
+                          <div class="flex flex-wrap items-start gap-3 rounded-lg border-l-[3px] border-[#e5cfae] bg-[#faf8f5] p-4">
                             <div class="comments-avatar hidden shrink-0 sm:block">
-                              <app-image :src="reply.img" :alt="reply.writerNm" wrap-class="block h-12 w-12 overflow-hidden rounded-full md:h-[60px] md:w-[60px]" :skeleton-style="{ width: '60px', height: '60px', borderRadius: '50%' }" />
+                              <app-image :src="reply.img" :alt="reply.writerNm" wrap-class="block h-10 w-10 overflow-hidden rounded-full md:h-12 md:w-12" :skeleton-style="{ width: '48px', height: '48px', borderRadius: '50%' }" />
                             </div>
                             <div class="min-w-[160px] flex-1">
                               <div class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                                <h5 class="m-0">{{ reply.writerNm }}</h5>
+                                <i class="fas fa-reply text-[11px] text-[#bc8246]"></i>
+                                <h5 class="m-0 text-[0.92rem]">{{ reply.writerNm }}</h5>
                                 <button type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(reply.reviewId, true)">삭제</button>
                               </div>
-                              <client-only><div class="he-view" v-html="toSafeHtml(reply.reviewContent)"></div></client-only>
+                              <client-only><div class="he-view text-[0.88rem]" v-html="toSafeHtml(reply.reviewContent)"></div></client-only>
                             </div>
                           </div>
                         </li>
@@ -226,6 +239,10 @@
                          이미 0.5 단위를 받고 있었다 — handleReviewSubmit의 `rating < 0.5` 체크 참고). -->
                     <!-- 2026-09-23(요청사항: "상품평 쓰기에서 별표가 너무 작은데 좀 크게해줘") — text-[length:inherit]로
                          li/버튼/아이콘이 이 폰트크기를 그대로 물려받는다(기본은 상속된 14px라 작아 보였음). -->
+                    <!-- 2026-09-29(요청사항: "평점은 안줄수도 있게 해줘 ... 유효한 점수일때 평점에 계산된다는
+                         안내글을 남겨줘") — 별점은 더 이상 필수가 아니다(선택 안 하면 0점=평점 없음으로 등록).
+                         안내 문구는 현재 선택 상태에 따라 바뀐다: 안 골랐으면 "평점을 입력하지 않았습니다",
+                         골랐으면 유효한 점수만 평균에 반영된다는 걸 알려준다. -->
                     <div v-if="!replyingToReviewId" class="post-rating text-[1.6rem]">
                       <ul>
                         <li v-for="n in 5" :key="n" class="relative inline-block text-[length:inherit]">
@@ -233,7 +250,13 @@
                           <button type="button" class="absolute inset-y-0 left-0 w-1/2 border-0 bg-transparent p-0 cursor-pointer" :aria-label="`${n - 0.5}점`" @click.prevent="setReviewRating(n - 0.5)"></button>
                           <button type="button" class="absolute inset-y-0 right-0 w-1/2 border-0 bg-transparent p-0 cursor-pointer" :aria-label="`${n}점`" @click.prevent="setReviewRating(n)"></button>
                         </li>
+                        <li v-if="reviewRating > 0" class="text-[length:inherit]">
+                          <button type="button" class="ml-1 align-middle text-[0.7rem] font-normal text-gray-400 underline hover:text-gray-600" @click.prevent="setReviewRating(0)">평점 취소</button>
+                        </li>
                       </ul>
+                      <p class="mt-1 text-[0.75rem] font-normal leading-snug text-gray-400">
+                        {{ reviewRating > 0 ? `평점 ${reviewRating}점이 상품평점 평균 계산에 반영됩니다.` : "평점을 입력하지 않았습니다 — 평점은 선택사항이며, 유효한 점수(0.5~5점)를 입력했을 때만 상품평점 평균 계산에 반영됩니다." }}
+                      </p>
                     </div>
                   </div>
                   <!-- 2026-09-14(요청사항: "리뷰작성 에도 yup 적용해줘") — login/register/contact와
@@ -571,14 +594,17 @@ const totalReviewCount = computed(() => {
 
 // 평점 요약(평균 + 별점 분포)과 정렬 (2026-09-20) — 답글이 아닌 리뷰 본문만 대상
 const reviewList = computed(() => item.value?.reviews ?? []);
+// 2026-09-29(요청사항: "상품평점 평균은 점수가 유효한거에 대한 평균으로 해줘") — 별점을 안 준(0점)
+// 리뷰까지 포함하면 평균/분포가 실제보다 낮게 나온다. 평점이 있는(>0) 리뷰만 대상으로 계산.
+const ratedReviewList = computed(() => reviewList.value.filter((r) => r.rating > 0));
 const avgRating = computed(() => {
-  const list = reviewList.value.filter((r) => r.rating > 0);
+  const list = ratedReviewList.value;
   return list.length ? list.reduce((sum, r) => sum + r.rating, 0) / list.length : Number(item.value?.rating) || 0;
 });
 const ratingDist = computed(() => {
-  const total = reviewList.value.length || 1;
+  const total = ratedReviewList.value.length || 1;
   return [5, 4, 3, 2, 1].map((star) => {
-    const n = reviewList.value.filter((r) => Math.round(r.rating) === star).length;
+    const n = ratedReviewList.value.filter((r) => Math.round(r.rating) === star).length;
     return { star, pct: Math.round((n / total) * 100) };
   });
 });
@@ -605,7 +631,8 @@ const allAttachmentsList = computed(() => {
 });
 const totalAttachmentCount = computed(() => allAttachmentsList.value.length);
 // 헤더 줄에 미리보기로 보여줄 개수 — DOM 폭 측정 없이 고정 개수만(성능), 넘치면 "…"만 표시
-const ATTACH_PREVIEW_COUNT = 8;
+// 2026-09-29: 썸네일을 28px→64px로 키우면서(위 템플릿 참조) 8개가 좁은 화면에서 잘리기 쉬워 6개로 줄임.
+const ATTACH_PREVIEW_COUNT = 6;
 const shownAttachments = computed(() => allAttachmentsList.value.slice(0, ATTACH_PREVIEW_COUNT));
 
 const mediaViewerOpen = ref(false);
@@ -756,9 +783,12 @@ async function handleReviewSubmit(rawValues: GenericObject, { resetForm }: { res
     reviewTitleError.value = "제목을 2자 이상 입력해 주세요.";
     return;
   }
-  if (!replyingToReviewId.value && (reviewRating.value < 0.5 || !item.value?.prodId)) {
-    $toast?.error?.("별점을 선택해 주세요.");
-    return;
+  // 2026-09-29(요청사항: "평점은 안줄수도 있게 해줘") — 예전엔 별점 미선택 시 등록 자체를 막았다.
+  // 이제 별점은 선택사항: prodId만 확인(있어야 할 값이 없는 비정상 상태 방어)하고, 별점을 안 골랐으면
+  // 막지 않되 등록 사실을 알리는 안내만 띄운다(평균 계산에서는 어차피 0점이라 자동 제외됨 — avgRating 참고).
+  if (!replyingToReviewId.value && !item.value?.prodId) return;
+  if (!replyingToReviewId.value && reviewRating.value < 0.5) {
+    $toast?.info?.("평점을 입력하지 않았습니다. 평점 없이 상품평이 등록됩니다.");
   }
   const isGuestWrite = !isLoggedIn.value && !replyingToReviewId.value && !editingReviewId.value;
   if (isGuestWrite) {
