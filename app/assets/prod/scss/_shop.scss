@@ -447,6 +447,9 @@
         position: relative;
         margin-bottom: 15px;
         overflow: hidden;
+        // 2026-09-29(요청사항: "상품목록 항목 이미지 정사각형인데 모서리 라운드처리효과 있면 좋겠어 —
+        // 티 안날정도의 부드럽게 보이는정도면 되") — 눈에 띄지 않을 정도로만 살짝(6px).
+        border-radius: 6px;
         &-2{
             position: absolute;
             top: 0;
