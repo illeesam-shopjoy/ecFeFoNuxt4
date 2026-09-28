@@ -369,7 +369,9 @@ import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import { useAuthStore } from "~/store/useAuthStore";
 import AttachUploader from "~/components/ui/AttachUploader.vue";
-import HtmlEditor from "~/components/ui/HtmlEditor.vue";
+import { defineAsyncComponent } from "vue";
+// 2026-09-28(성능 개선): TipTap(ProseMirror) 번들이 커서 에디터가 실제로 그려질 때 별도 파일로 받는다(상품상세 첫 로딩에서 제외).
+const HtmlEditor = defineAsyncComponent(() => import("~/components/ui/HtmlEditor.vue"));
 import { htmlToText, toSafeHtml } from "~/utils/htmlSafe";
 import WriterPwdModal from "~/components/modals/WriterPwdModal.vue";
 import type { PdReviewType } from "~/types/pd/pdReviewType";

@@ -26,6 +26,12 @@
              sm-5와 같은 성격), .row 거터 확장(-22.5px)만 Tailwind 임의값(-mx-[22.5px])으로
              인라인 전환. product__item 패딩(6px)도 px-1.5로 직접 부여. -->
         <div :class="`row ${style_3 ? 'row-cols-xl-5 -mx-[22.5px]' : ''}`">
+          <!-- 2026-09-28(성능 개선): 상품 API 가 lazy 라 도착 전에는 자리표시 카드를 보여준다 -->
+          <template v-if="pending && !trending_prd.length">
+            <div v-for="n in initialSize" :key="`sk-${n}`" class="col-lg-3 col-md-4 product__item px-1.5">
+              <div class="animate-pulse rounded-lg bg-gray-100" style="aspect-ratio: 3 / 4"></div>
+            </div>
+          </template>
           <div v-for="item in trending_prd" :key="item.prodId" class="col-lg-3 col-md-4 product__item px-1.5">
             <product-item :item="item" />
           </div>
@@ -47,7 +53,7 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('트렌드 상품');
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import ProductItem from "./ProductItem.vue";
@@ -69,9 +75,23 @@ const pageNo = ref(1);
 const hasMore = ref(false);
 const loadingMore = ref(false);
 
-const { data: firstPage } = await useAsyncData(`dp-trending-products-${initialSize}`, () => pdProductSvc.getPaged({ pageNo: 1, pageSize: initialSize }));
-const trending_prd = ref<PdProdType[]>(firstPage.value?.items ?? []);
-hasMore.value = firstPage.value?.hasMore ?? false;
+// 2026-09-28(성능 개선): 기존엔 `await useAsyncData` 라 상품 API(미캐시 시 수 초)가 끝날 때까지 홈 전체
+// (헤더/푸터 포함)가 렌더되지 않았다 — lazy 로 바꿔 화면을 먼저 그리고 상품은 도착하는 대로 채운다.
+const { data: firstPage, pending } = useAsyncData(
+  `dp-trending-products-${initialSize}`,
+  () => pdProductSvc.getPaged({ pageNo: 1, pageSize: initialSize }),
+  { lazy: true }
+);
+const trending_prd = ref<PdProdType[]>([]);
+watch(
+  firstPage,
+  (page) => {
+    if (!page) return;
+    trending_prd.value = [...page.items];
+    hasMore.value = page.hasMore ?? false;
+  },
+  { immediate: true }
+);
 
 // 2026-09-14(요청사항: "더보기 버튼 클릭하면 8개씩 더 나오게 해줘") — 이제 서버에서 다음 페이지를 실제로 더 받아온다.
 async function handleLoadMore() {
