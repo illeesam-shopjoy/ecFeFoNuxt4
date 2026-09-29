@@ -32,6 +32,25 @@
                   </div>
                 </div>
                 <field-msg v-if="idv" class="-mt-1 mb-10" :ok="true" text="휴대폰 본인인증이 완료되었습니다" />
+
+                <!-- 판매자 신청(선택) — 체크 시 유형/판매자명을 추가로 받아 가입 요청에 함께 보낸다(가입과 동시에 PENDING 신청) -->
+                <label class="mb-10 flex cursor-pointer items-center gap-2 text-[0.85rem] text-gray-700">
+                  <input type="checkbox" class="!my-0 !ml-0 !mr-2 !h-4 !w-4 shrink-0 !border-0 !p-0 accent-[#bc8246]" v-model="sellerApply" />
+                  판매자로도 가입하기 (판매자 신청)
+                </label>
+                <div v-if="sellerApply" class="mb-10 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-3">
+                  <span class="mb-1 block text-[0.78rem] text-gray-500">판매자 유형</span>
+                  <div class="mb-3 flex gap-2">
+                    <label class="m-0 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-[1.5px] px-3 py-2 text-[0.85rem] font-semibold" :class="sellerTypeCd === 'INDIVIDUAL' ? 'border-gray-900 bg-gray-900 text-white' : 'border-[#e5e7eb] bg-white text-gray-600'">
+                      <input v-model="sellerTypeCd" type="radio" name="seller-type-cd" value="INDIVIDUAL" class="sr-only" />개인
+                    </label>
+                    <label class="m-0 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-[1.5px] px-3 py-2 text-[0.85rem] font-semibold" :class="sellerTypeCd === 'COMPANY' ? 'border-gray-900 bg-gray-900 text-white' : 'border-[#e5e7eb] bg-white text-gray-600'">
+                      <input v-model="sellerTypeCd" type="radio" name="seller-type-cd" value="COMPANY" class="sr-only" />업체
+                    </label>
+                  </div>
+                  <label class="mb-1 block text-[0.78rem] text-gray-500" for="seller-nm">판매자명<span class="text-theme ml-0.5">*</span></label>
+                  <input id="seller-nm" v-model="sellerNm" class="w-full rounded-lg border-[1.5px] border-[#e5e7eb] bg-white px-3.5 py-2.5 text-[0.88rem] text-gray-900 outline-none focus:border-[#bc8246]" placeholder="판매자명(상호명) 입력" maxlength="60" />
+                </div>
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
                 <div class="mt-10"></div>
@@ -112,6 +131,11 @@ const loading = ref(false);
 const profileImgUrl = ref("");
 const consent = ref<MbRecvConsentType>(defaultRecvConsent()); // 필수(주문/문의)는 휴대폰·이메일 초기 체크
 
+// 판매자로도 가입하기(선택) — 체크 시 sellerNm 필수, sellerTypeCd 는 기본 INDIVIDUAL. 2026-09-30
+const sellerApply = ref(false);
+const sellerTypeCd = ref<"INDIVIDUAL" | "COMPANY">("INDIVIDUAL");
+const sellerNm = ref("");
+
 // PASS 본인인증(선택) — 인증하면 이름을 인증된 실명으로 채우고, 가입 요청에 인증 건 ID 를 함께 보낸다(서버가 재확인해 "인증 완료"로 저장)
 const pass = usePassIdentity();
 const passBusy = pass.busy;
@@ -151,16 +175,24 @@ async function onSubmit() {
     errorMsg.value = REQUIRED_RECV_MESSAGE;
     return;
   }
+  if (sellerApply.value && !sellerNm.value.trim()) {
+    errorMsg.value = "판매자명을 입력해 주세요.";
+    return;
+  }
   const { name, email, password } = form as unknown as MbRegisterFormType;
   loading.value = true;
   errorMsg.value = "";
-  const result = await authStore.register(name, email, password, idv.value?.identityVerificationId, { profileImgUrl: profileImgUrl.value, ...consent.value });
+  const sellerExtra: Record<string, string> = sellerApply.value ? { sellerNm: sellerNm.value.trim(), sellerTypeCd: sellerTypeCd.value } : {};
+  const result = await authStore.register(name, email, password, idv.value?.identityVerificationId, { profileImgUrl: profileImgUrl.value, ...consent.value, ...sellerExtra });
   loading.value = false;
   if (result.ok) {
     Object.assign(form, { name: "", email: "", password: "", password2: "" });
     idv.value = null;
     profileImgUrl.value = "";
     consent.value = defaultRecvConsent();
+    sellerApply.value = false;
+    sellerTypeCd.value = "INDIVIDUAL";
+    sellerNm.value = "";
     await useAlert().openAlert("가입이 완료되었습니다. 로그인해 주세요.");
     router.push("/login");
   } else {

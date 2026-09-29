@@ -8,6 +8,7 @@ import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
 import type { MbMemberType } from "~/types/mb/mbMemberType";
 import type { SyLoginSessionType } from "~/types/sy/syLoginSessionType";
 import type { SyNotiType } from "~/types/sy/syNotiType";
+import type { MbSellerApplyReqType, MbSellerMyType } from "~/types/mb/mbSellerApplyType";
 import { badRequest, requireText } from "~/utils/svcInput";
 
 // ── 인증 ──
@@ -28,8 +29,16 @@ export function buildJoinPayload(name: string, email: string, password: string, 
   const loginId = String(email ?? "").trim();
   const loginPwdHash = String(password ?? "");
   if (!memberNm || !loginId || !loginPwdHash) badRequest("이름, 이메일, 비밀번호를 모두 입력해 주세요.");
-  // extra: 프로필 이미지 URL · 수신 동의(recv*Yn) 등 가입 화면이 함께 보내는 선택 항목(Y/N·URL 만 허용)
-  const safe = Object.fromEntries(Object.entries(extra).filter(([k, v]) => (k === "profileImgUrl" && typeof v === "string") || (/^recv(Phone|Kakao|Sms|Email|Ad|MktEvent|MktPlan)Yn$/.test(k) && (v === "Y" || v === "N"))));
+  // extra: 프로필 이미지 URL · 수신 동의(recv*Yn) · 판매자 동시신청(sellerNm/sellerTypeCd, 2026-09-30) 등 가입 화면이 함께 보내는 선택 항목만 허용
+  const safe = Object.fromEntries(
+    Object.entries(extra).filter(
+      ([k, v]) =>
+        (k === "profileImgUrl" && typeof v === "string") ||
+        (/^recv(Phone|Kakao|Sms|Email|Ad|MktEvent|MktPlan)Yn$/.test(k) && (v === "Y" || v === "N")) ||
+        (k === "sellerNm" && typeof v === "string" && v.trim() !== "") ||
+        (k === "sellerTypeCd" && (v === "INDIVIDUAL" || v === "COMPANY"))
+    )
+  );
   return { memberNm, loginId, loginPwdHash, ...(passVerifyId ? { passVerifyId } : {}), ...safe };
 }
 
@@ -124,3 +133,15 @@ export function latestNotis(list: SyNotiType[], limit = 30): SyNotiType[] {
 
 // ── 채팅 ──
 export const requireMsgText = (v: unknown) => requireText(v, "메시지 내용이 필요합니다.");
+
+// ── 판매자 신청 (2026-09-30) ──
+/** POST /fo/ec/mb/seller/apply 본문 — 판매자명 필수, 유형은 INDIVIDUAL/COMPANY 만(그 외/미입력은 서버 기본값인 INDIVIDUAL) */
+export function buildSellerApplyPayload(sellerNm: string, sellerTypeCd?: string): MbSellerApplyReqType {
+  const nm = requireText(sellerNm, "판매자명을 입력해 주세요.");
+  return { sellerNm: nm, sellerTypeCd: sellerTypeCd === "COMPANY" ? "COMPANY" : "INDIVIDUAL" };
+}
+/** GET /fo/ec/mb/seller/my 응답 정규화 — 신청 이력이 없으면 서버가 null/빈 객체를 줄 수 있어 sellerId 유무로 판단한다 */
+export function mapSellerMy(r: MbSellerMyType | null | undefined): MbSellerMyType | null {
+  if (!r || !r.sellerId) return null;
+  return { sellerId: r.sellerId, sellerNm: r.sellerNm ?? "", sellerStatusCd: r.sellerStatusCd };
+}
