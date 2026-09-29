@@ -3,7 +3,7 @@
  * ecBeBo FoPdReviewController(/api/fo/ec/pd/review, 비회원 작성 허용)·FoPdReviewCommentController(/api/fo/ec/pd/review-comment, 로그인 필요).
  * 입력 검증·본문 조립은 utils/mapBoard.ts — 여기서는 전송만 한다. 리뷰 "조회"는 상품 상세(pdProductSvc.getById)가 함께 내려받는다.
  */
-import { authCfg, csrDelete, csrPost, csrPut, idPath } from "~/utils/svcHttp";
+import { authCfg, csrDelete, csrPatch, csrPost, csrPut, idPath } from "~/utils/svcHttp";
 import { buildReviewCommentPayload, buildReviewCreatePayload, buildReviewUpdatePayload, writeRes } from "~/utils/mapBoard";
 import type { CoWriteResultType } from "~/types/co/coWriteResultType";
 import type { PdReviewCommentCreateType, PdReviewCreateType, PdReviewUpdateType } from "~/types/pd/pdReviewWriteType";
@@ -30,4 +30,10 @@ export const pdReviewSvc = {
 
   /** DELETE /fo/ec/pd/review-comment/{id} — 리뷰 답글 삭제 */
   deleteReviewComment: (reviewCommentId: string): Promise<CoWriteResultType> => csrDelete(idPath(COMMENT, reviewCommentId), authCfg()).then(() => writeRes()),
+
+  /** PATCH /fo/ec/pd/review/{id}/hide — 강제 숨김(MD 또는 판매자 소속 계정만). 2026-09-29(셀러 Phase 1) */
+  hideReview: (reviewId: string): Promise<CoWriteResultType> => csrPatch(`${idPath(REVIEW, reviewId)}/hide`, undefined, authCfg()).then(() => writeRes(reviewId, "숨김 처리되었습니다.")),
+
+  /** PATCH /fo/ec/pd/review/{id}/unhide — 숨김 해제 */
+  unhideReview: (reviewId: string): Promise<CoWriteResultType> => csrPatch(`${idPath(REVIEW, reviewId)}/unhide`, undefined, authCfg()).then(() => writeRes(reviewId, "숨김이 해제되었습니다.")),
 };

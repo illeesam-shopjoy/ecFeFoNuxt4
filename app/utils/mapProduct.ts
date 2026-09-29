@@ -105,6 +105,7 @@ export function mapProduct(p: PdProdRawType, cdnBase: string): Record<string, un
   return {
     prodId: p.prodId,
     prodTypeCd: p.prodTypeCd ?? undefined,
+    sellerId: p.sellerId ?? undefined, // 2026-09-29(셀러 Phase 1) — 상품평/Q&A 답변·숨김 권한 판단
     img,
     thumbImg,
     bigImg: fullImg || undefined,

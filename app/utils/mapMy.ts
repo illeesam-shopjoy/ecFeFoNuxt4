@@ -19,7 +19,8 @@ export function buildLoginPayload(email: string, password: string): { loginId: s
 }
 export const mapLoginRes = (r: SyLoginResType): SyLoginSessionType => ({
   token: r.accessToken,
-  user: { memberId: r.memberId, userNm: r.userNm, userEmail: r.userEmail, userPhone: r.userPhone, siteId: r.siteId },
+  // 2026-09-29(셀러 Phase 1): mdYn/sellerIds — 상품평/Q&A 답변·숨김 버튼 노출 판단에 사용
+  user: { memberId: r.memberId, userNm: r.userNm, userEmail: r.userEmail, userPhone: r.userPhone, siteId: r.siteId, mdYn: r.mdYn, sellerIds: r.sellerIds },
 });
 /** 회원가입 본문 — loginPwdHash 필드에 평문을 담는다(ecBeBo 가 그 자리에서 encode) */
 export function buildJoinPayload(name: string, email: string, password: string, passVerifyId?: string, extra: Record<string, string> = {}): Record<string, string> {

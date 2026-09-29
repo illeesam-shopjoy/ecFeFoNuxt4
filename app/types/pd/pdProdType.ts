@@ -50,6 +50,7 @@ export interface PdProdType {
   categoryId?: string; // 카테고리ID
   brandId?: string; // 브랜드ID
   vendorId?: string; // 업체ID
+  sellerId?: string; // 판매자ID (mb_seller.seller_id) — 2026-09-29(셀러 Phase 1) 상품평/Q&A 답변·숨김 권한 판단에 사용
   prodCode?: string; // 상품코드(SKU)
   currCd?: string; // 통화코드 (KRW/USD/CNY/JPY, 기본 KRW) - 환율 변환은 하지 않음
   currCdNm?: string; // 통화코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)

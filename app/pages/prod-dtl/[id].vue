@@ -159,7 +159,10 @@
                                   <button v-if="isLoggedIn" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startReply(review.reviewId)">답글 쓰기</button>
                                   <button v-if="canModifyReview(review)" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85" @click.prevent="startEditReview(review)">수정</button>
                                   <button v-if="canModifyReview(review)" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-danger hover:opacity-85" @click.prevent="deleteReview(review.reviewId, false, !review.memberId)">삭제</button>
+                                  <!-- 2026-09-29(셀러 Phase 1: MD/판매자 강제숨김) -->
+                                  <button v-if="canModerate" type="button" class="whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer text-[length:inherit] text-inherit hover:opacity-85 disabled:opacity-50" :disabled="reviewHideBusyId === review.reviewId" @click.prevent="toggleReviewHide(review)">{{ review.reviewStatusCd === 'HIDDEN' ? '숨김해제' : '숨김' }}</button>
                                 </span>
+                                <span v-if="review.reviewStatusCd === 'HIDDEN'" class="rounded bg-red-50 px-1.5 py-px text-[0.72rem] font-semibold text-red-500">숨김 처리됨</span>
                               </div>
                               <!-- 2026-09-29: 평점을 안 준 리뷰(rating=0)를 빈 별 5개로 그리면 "0점 평가"처럼
                                    보여 오해를 준다 — 아예 별 대신 "평점 없음" 표시로 구분. -->
@@ -326,7 +329,7 @@
             <!-- Q&A 섹션 (2026-09-20) -->
             <div ref="secQna" id="sec-qna" class="pt-12 pb-10 border-b border-[#f0f0f0] scroll-mt-[120px]">
               <h2 class="text-[1.35rem] font-bold text-gray-900 mb-6 pb-3 border-b-2 border-[#e5e7eb]">Q&amp;A <span class="ml-2 inline-flex min-w-[24px] items-center justify-center rounded-full px-2 py-px align-middle text-[0.8rem] font-bold leading-[1.4]" :class="qnaCount > 0 ? 'bg-[#e8587a] text-white' : 'bg-[#e5e7eb] text-gray-500'">{{ qnaCount }}</span></h2>
-              <prod-qna :prod-id="item.prodId" @count="qnaCount = $event" />
+              <prod-qna :prod-id="item.prodId" :seller-id="item.sellerId" @count="qnaCount = $event" />
             </div>
 
             <!-- 사이즈 섹션 -->
@@ -665,6 +668,33 @@ const isLoggedIn = computed(() => authStore.isStLoggedIn);
 const myMemberId = computed(() => authStore.user?.memberId ?? "");
 // 회원 글은 본인만, 비회원 글(memberId 없음)은 누구에게나 버튼을 보이고 글 비밀번호로 서버가 판정한다
 const canModifyReview = (r: PdReviewType) => !r.memberId || (isLoggedIn.value && r.memberId === myMemberId.value);
+// 2026-09-29(셀러 Phase 1: "상품평, Q&A는 해당 MD 및 판매회사 관계자가 강제 글 숨김기 처리할 수 있는 기능") —
+// MD(md_yn='Y')는 전 상품, 판매자 소속 계정은 이 상품(item.sellerId)이 자기 소속일 때만 숨김/답변 가능.
+// 실제 권한 확정은 서버(MbSellerPermissionService)가 하고, 여기선 버튼 노출 여부만 판단한다.
+const canModerate = computed(() => {
+  if (!isLoggedIn.value) return false;
+  if (authStore.user?.mdYn === "Y") return true;
+  const sellerId = item.value?.sellerId;
+  return !!sellerId && (authStore.user?.sellerIds ?? []).includes(sellerId);
+});
+const reviewHideBusyId = ref<string | null>(null);
+async function toggleReviewHide(review: PdReviewType) {
+  reviewHideBusyId.value = review.reviewId;
+  try {
+    if (review.reviewStatusCd === "HIDDEN") {
+      await pdReviewSvc.unhideReview(review.reviewId);
+      $toast?.success?.("숨김이 해제되었습니다.");
+    } else {
+      await pdReviewSvc.hideReview(review.reviewId);
+      $toast?.success?.("숨김 처리되었습니다.");
+    }
+    await refreshItem();
+  } catch (e: any) {
+    $toast?.error?.(String(e?.data?.message ?? e?.message ?? "처리에 실패했습니다.").split("::")[0] ?? "처리에 실패했습니다.");
+  } finally {
+    reviewHideBusyId.value = null;
+  }
+}
 const otherFilesOf = (r: PdReviewType) => (r.attachFiles ?? []).filter((f) => f.cdnImgUrl && !isImageExt(f.fileExt) && !isVideoExt(f.fileExt));
 // 2026-09-22(요청사항: "동영상배경이미지로 썸네일이 표시되어야 해") — attachments(평평한 URL 목록)는 어떤 파일이 동영상인지만
 // 구분할 뿐 그 동영상의 실제 프레임 썸네일(ecBeBo가 이미 ffmpeg로 만들어 thumbCdnUrl에 내려줌)은 버렸다. attachFiles(원본,

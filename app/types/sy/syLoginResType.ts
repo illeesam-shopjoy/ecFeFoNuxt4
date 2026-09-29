@@ -6,6 +6,9 @@ export interface SyLoginResType {
   userEmail: string;
   userPhone?: string;
   siteId?: string;
+  /** 2026-09-29(셀러 Phase 1) */
+  mdYn?: string;
+  sellerIds?: string[];
 }
 
 /** 토큰 재발급 응답 — accessExpiresIn 은 분(minute) 단위(ecBeBo JwtProvider 기준). */
