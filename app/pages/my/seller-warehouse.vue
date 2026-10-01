@@ -53,12 +53,25 @@
             <span v-if="w.useYn === 'N'" class="rounded-full bg-gray-100 px-2 py-px text-[0.72rem] font-bold text-gray-500">미사용</span>
             <span class="ml-auto flex gap-2 text-[0.8rem]">
               <button v-if="w.isDefault !== 'Y' && w.useYn !== 'N'" type="button" class="lnk" @click="handleBtnAction('warehouse-set-default', w)">기본으로 설정</button>
+              <button type="button" class="lnk" @click="handleBtnAction('warehouse-toggle-stock', w)">{{ stockOpenId === w.warehouseId ? "재고 닫기" : "재고 보기" }}</button>
               <button type="button" class="lnk" @click="handleBtnAction('warehouse-open-form', w)">수정</button>
               <button type="button" class="lnk !text-red-500" @click="handleBtnAction('warehouse-remove', w)">삭제</button>
             </span>
           </div>
           <div v-if="w.contactNm || w.contactPhone" class="mt-1 text-[0.88rem] text-gray-700">{{ [w.contactNm, w.contactPhone].filter(Boolean).join(" · ") }}</div>
           <div class="text-[0.85rem] text-gray-500">({{ w.zipCode }}) {{ w.addr }} {{ w.addrDetail }}</div>
+          <!-- 창고물품관리(조회) — 이 창고에서 출고되는 내 상품과 SKU 재고. 재고 수량은 상품 수정에서 바꾼다(창고별 수량 분산 원장 아님) -->
+          <div v-if="stockOpenId === w.warehouseId" class="mt-3 rounded-lg bg-[#f9fafb] p-3">
+            <p v-if="stockLoading" class="m-0 text-[0.82rem] text-gray-400">불러오는 중...</p>
+            <p v-else-if="!stockProds.length" class="m-0 text-[0.82rem] text-gray-400">이 창고에서 출고되는 상품이 없습니다.</p>
+            <ul v-else class="m-0 list-none p-0">
+              <li v-for="p in stockProds" :key="p.prodId" class="flex items-center gap-2 py-1 text-[0.85rem]">
+                <span class="min-w-0 flex-1 truncate text-gray-800">{{ p.prodNm }}</span>
+                <span class="text-gray-500">재고 <b class="text-gray-900">{{ p.stockQty ?? 0 }}</b>개</span>
+                <NuxtLink to="/my/prod" class="text-[0.78rem] text-gray-500 underline">상품 관리</NuxtLink>
+              </li>
+            </ul>
+          </div>
         </li>
       </ul>
     </template>
@@ -73,6 +86,8 @@ import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { slSellerWarehouseSvc } from "~/svc/fo/ec/sl/slSellerWarehouseSvc";
+import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
+import type { PdMyProdType } from "~/types/pd/pdMyProdType";
 import type { SlSellerWarehouseSaveType, SlSellerWarehouseType } from "~/types/sl/slSellerWarehouseType";
 import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 
@@ -100,6 +115,9 @@ const blank = (): SlSellerWarehouseSaveType & { warehouseId: string } => ({
   useYn: "Y",
 });
 const form = reactive(blank());
+const stockOpenId = ref("");
+const stockProds = ref<PdMyProdType[]>([]);
+const stockLoading = ref(false);
 
 const errText = (e: unknown, fb: string) => String((e as { data?: { message?: string }; message?: string })?.data?.message ?? (e as { message?: string })?.message ?? fb).split("::")[0]!;
 
@@ -112,6 +130,8 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
     return save();
   } else if (cmd === "warehouse-set-default") {
     return setDefault(param as SlSellerWarehouseType);
+  } else if (cmd === "warehouse-toggle-stock") {
+    return toggleStock(param as SlSellerWarehouseType);
   } else if (cmd === "warehouse-remove") {
     return remove(param as SlSellerWarehouseType);
   } else {
@@ -172,6 +192,20 @@ async function save() {
     err.value = errText(e, "저장에 실패했습니다.");
   } finally {
     saving.value = false;
+  }
+}
+/** toggleStock — 창고별 재고 보기: 이 창고에서 출고되는 내 상품과 재고(서버가 SKU 실효 창고 기준으로 걸러줌) */
+async function toggleStock(w: SlSellerWarehouseType) {
+  if (stockOpenId.value === w.warehouseId) return void (stockOpenId.value = "");
+  stockOpenId.value = w.warehouseId;
+  stockProds.value = [];
+  stockLoading.value = true;
+  try {
+    stockProds.value = (await pdMyProdSvc.getMyProds(w.warehouseId)).filter((p) => p.prodStatusCd !== "ENDED");
+  } catch (e) {
+    useNuxtApp().$toast.error(errText(e, "재고를 불러오지 못했습니다."));
+  } finally {
+    stockLoading.value = false;
   }
 }
 async function setDefault(w: SlSellerWarehouseType) {

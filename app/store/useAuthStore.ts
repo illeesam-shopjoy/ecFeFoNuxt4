@@ -90,14 +90,14 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    /** PASS 본인인증을 마친 비회원을 임시회원으로 로그인시킨다(같은 이름·휴대폰·생년월일이면 같은 임시회원) */
-    async passGuestLogin(identityVerificationId: string): Promise<{ ok: boolean; message?: string }> {
+    /** 이메일 링크 인증을 마친 비회원을 임시회원으로 로그인시킨다(같은 이메일이면 같은 임시회원) */
+    async emailGuestLogin(emailVerifyId: string, purposeCd: "CHECKOUT_GUEST" | "CHAT_GUEST"): Promise<{ ok: boolean; message?: string }> {
       try {
-        const res = await authSvc.passGuestLogin(identityVerificationId);
+        const res = await authSvc.emailGuestLogin(emailVerifyId, purposeCd);
         this.setSession(res.token, res.user);
         return { ok: true };
       } catch (err: unknown) {
-        return { ok: false, message: String((err as { data?: { message?: string } })?.data?.message ?? "본인인증 로그인에 실패했습니다.").split("::")[0]! };
+        return { ok: false, message: String((err as { data?: { message?: string } })?.data?.message ?? "이메일 인증 로그인에 실패했습니다.").split("::")[0]! };
       }
     },
 
@@ -114,9 +114,9 @@ export const useAuthStore = defineStore("auth", {
     },
 
     /** 회원가입 — ecBeBo FoAuthController.join() 직접 호출(authSvc) (가입만, 자동로그인은 안 함) */
-    async register(name: string, email: string, password: string, passVerifyId?: string, extra?: Record<string, string>): Promise<{ ok: boolean; message?: string }> {
+    async register(name: string, email: string, password: string, emailVerifyId?: string, extra?: Record<string, unknown>): Promise<{ ok: boolean; message?: string }> {
       try {
-        await authSvc.join(name, email, password, passVerifyId, extra);
+        await authSvc.join(name, email, password, emailVerifyId, extra);
         return { ok: true };
       } catch (err: unknown) {
         const message = ((err as { response?: { data?: { message?: string } } })?.response?.data?.message

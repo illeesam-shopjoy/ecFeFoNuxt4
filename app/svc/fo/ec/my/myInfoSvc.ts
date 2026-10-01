@@ -24,9 +24,9 @@ export const myInfoSvc = {
     return csrPut<MbMemberType>(INFO, payload, authCfg()).then((saved) => mapProfileSaved(saved, payload));
   },
 
-  /** POST /fo/ec/my/info/pass-verify — PASS 본인인증 완료 반영(서버가 포트원에서 재확인) */
-  passVerify: (identityVerificationId: string): Promise<MbMemberProfileType> =>
-    csrPost<MbMemberType>(`${INFO}/pass-verify`, { identityVerificationId }, authCfg()).then(mapProfile),
+  /** POST /fo/ec/my/info/email-verify — 이메일 링크 인증 완료 반영(서버가 인증 건을 1회 소비하며 내 이메일과 같은지 확인, 2026-10-02 PASS 대체) */
+  emailVerify: (emailVerifyId: string): Promise<MbMemberProfileType> =>
+    csrPost<MbMemberType>(`${INFO}/email-verify`, { emailVerifyId }, authCfg()).then(mapProfile),
 
   /** GET /fo/ec/my/info/sns — 내 소셜 연동 목록 */
   getSns: (): Promise<MbMemberSnsType[]> => csrList<MbMemberSnsType>(`${INFO}/sns`, authCfg()),

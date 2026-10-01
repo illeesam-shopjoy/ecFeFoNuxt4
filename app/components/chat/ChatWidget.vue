@@ -127,16 +127,12 @@
           <p v-if="sms.info" class="m-0 text-[11px] leading-snug text-gray-500">{{ sms.info }}</p>
           <p v-if="sms.err" class="m-0 text-[11px] leading-snug text-red-500">{{ sms.err }}</p>
         </div>
-        <button
-          v-if="passEnabled"
-          type="button"
-          class="w-full max-w-[220px] py-2.5 rounded-lg bg-gray-900 text-white text-[13px] font-bold transition hover:opacity-85 disabled:opacity-60"
-          :disabled="passBusy"
-          @click="startPassChat"
-        >
-          {{ passBusy ? "인증 중..." : "📱 PASS 본인인증으로 채팅" }}
-        </button>
-        <p v-if="passErr" class="m-0 text-[11px] leading-snug text-red-500">{{ passErr }}</p>
+        <!-- 이메일 인증(2026-10-02, PASS 대체): 이메일 입력 → 인증 메일의 링크를 누르면 이메일 임시회원으로 로그인하고 채팅을 연다 -->
+        <div class="w-full max-w-[260px] text-left">
+          <input v-model="chatEmail" type="email" autocomplete="email" placeholder="이메일 주소" class="mb-1.5 h-9 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-[12px] outline-none focus:border-[#e8587a]" />
+          <email-verify-box purpose-cd="CHAT_GUEST" :email="chatEmail" title="이메일 인증" idle-text="미인증" @verified="startEmailChat" />
+        </div>
+        <p v-if="chatEmailErr" class="m-0 text-[11px] leading-snug text-red-500">{{ chatEmailErr }}</p>
         <button
           type="button"
           class="w-full max-w-[200px] py-2.5 rounded-lg text-white text-[13px] font-bold transition hover:opacity-85"
@@ -327,7 +323,7 @@
 import { reactive, ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/store/useAuthStore";
-import { usePassIdentity } from "~/composables/usePassIdentity";
+import EmailVerifyBox from "~/components/fo/EmailVerifyBox.vue";
 import { authSvc } from "~/svc/co/auth/authSvc";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
 import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
@@ -588,12 +584,9 @@ function closeChat() {
   fnStopChatPoll();
 }
 
-// 비로그인: PASS 본인인증 → PASS 임시회원으로 로그인한 뒤 바로 채팅을 연다
-const pass = usePassIdentity();
-const passBusy = pass.busy;
-const passErr = ref("");
-// PASS 연동 키(포트원)가 설정된 환경에서만 PASS 버튼을 보인다(미설정이면 눌러도 오류만 난다)
-const passEnabled = computed(() => !!String(useRuntimeConfig().public.portoneStoreId ?? "").trim() && !!String(useRuntimeConfig().public.portoneIdvChannelKey ?? "").trim());
+// 비로그인: 이메일 링크 인증 → 이메일 임시회원으로 로그인한 뒤 바로 채팅을 연다 (2026-10-02, PASS 대체)
+const chatEmail = ref("");
+const chatEmailErr = ref("");
 
 // 휴대폰 문자인증(SMS OTP): 번호 입력 → 인증번호 문자 수신 → 확인 → 임시회원으로 로그인하고 채팅을 연다
 const sms = reactive({ phone: "", code: "", sent: false, busy: false, err: "", info: "", cooldown: 0 });
@@ -649,12 +642,10 @@ async function verifySmsCode() {
     sms.busy = false;
   }
 }
-async function startPassChat() {
-  passErr.value = "";
-  const v = await pass.start();
-  if (!v) return;
-  const r = await authStore.passGuestLogin(v.identityVerificationId);
-  if (!r.ok) return void (passErr.value = r.message ?? "본인인증 로그인에 실패했습니다.");
+async function startEmailChat(verifyId: string) {
+  chatEmailErr.value = "";
+  const r = await authStore.emailGuestLogin(verifyId, "CHAT_GUEST");
+  if (!r.ok) return void (chatEmailErr.value = r.message ?? "이메일 인증 로그인에 실패했습니다.");
   chatState.needAuth = false;
   if (!chatState.roomId) await fnLoadOrCreateRoom();
   if (chatState.roomId && chatState.roomId !== "_local") fnStartChatPoll();

@@ -23,7 +23,9 @@ export interface MbMemberType {
   memberAddrDetail?: string; // 상세주소
   memberMemo?: string; // 메모
   siteId?: string; // 사이트ID
-  passVerifiedYn?: string; // PASS 본인인증 여부 Y/N
+  passVerifiedYn?: string; // PASS 본인인증 여부 Y/N (더 이상 쓰지 않음 — 이메일 인증으로 대체)
+  emailVerifiedYn?: string; // 이메일 링크 인증 여부 Y/N
+  emailVerifiedDate?: string; // 이메일 링크 인증 일시
   profileImgUrl?: string; // 프로필 이미지 URL
   recvPhoneYn?: string; // 휴대폰 수신 동의 Y/N
   recvKakaoYn?: string; // 카카오 수신 동의 Y/N

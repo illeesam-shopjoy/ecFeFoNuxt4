@@ -5,7 +5,8 @@
  * 입력 검증·응답 가공은 utils/mapMy.ts — 여기서는 전송만 한다.
  */
 import { csrPost } from "~/utils/svcHttp";
-import type { SyFoundIdType, SyPwCodeSentType, SyPwResetTokenType } from "~/types/sy/syFindAccountType";
+import type { SyFoundIdType, SyPwResetTokenType } from "~/types/sy/syFindAccountType";
+import type { MbEmailVerifyPurposeType } from "~/types/mb/mbEmailVerifyType";
 import { buildJoinPayload, buildLoginPayload, mapLoginRes } from "~/utils/mapMy";
 import type { SyJoinResType } from "~/types/sy/syJoinResType";
 import type { SyLoginResType, SyTokenPairType } from "~/types/sy/syLoginResType";
@@ -21,14 +22,15 @@ export const authSvc = {
   socialLogin: (provider: string, accessToken: string, reconsent?: boolean): Promise<SyLoginSessionType> => csrPost<SyLoginResType>("/co/fo-auth/social-login", { provider, accessToken, ...(reconsent ? { reconsent: true } : {}) }).then(mapLoginRes),
 
   /** POST /co/fo-auth/join — 회원가입(자동 로그인 안 함) */
-  join: (name: string, email: string, password: string, passVerifyId?: string, extra?: Record<string, string>): Promise<SyJoinResType> =>
-    csrPost<SyJoinResType>("/co/fo-auth/join", buildJoinPayload(name, email, password, passVerifyId, extra)),
+  join: (name: string, email: string, password: string, emailVerifyId?: string, extra?: Record<string, unknown>): Promise<SyJoinResType> =>
+    csrPost<SyJoinResType>("/co/fo-auth/join", buildJoinPayload(name, email, password, emailVerifyId, extra)),
 
   /** POST /co/fo-auth/token-refresh — 만료된 accessToken 으로 새 토큰 발급 */
   refresh: (accessToken: string): Promise<SyTokenPairType> => csrPost<SyTokenPairType>("/co/fo-auth/token-refresh", undefined, bearer(accessToken)),
 
-  /** POST /co/fo-auth/pass-guest-login — PASS 본인인증을 마친 비회원을 "PASS 임시회원"으로 로그인(채팅 상담·비회원 결제용) */
-  passGuestLogin: (identityVerificationId: string): Promise<SyLoginSessionType> => csrPost<SyLoginResType>("/co/fo-auth/pass-guest-login", { identityVerificationId }).then(mapLoginRes),
+  /** POST /co/fo-auth/email-guest-login — 이메일 링크 인증을 마친 비회원을 "이메일 임시회원"으로 로그인(비회원 결제·채팅용, 같은 이메일이면 같은 임시회원) */
+  emailGuestLogin: (emailVerifyId: string, purposeCd: Extract<MbEmailVerifyPurposeType, "CHECKOUT_GUEST" | "CHAT_GUEST">): Promise<SyLoginSessionType> =>
+    csrPost<SyLoginResType>("/co/fo-auth/email-guest-login", { emailVerifyId, purposeCd }).then(mapLoginRes),
 
   /** POST /co/fo-auth/sms/send — 휴대폰 인증번호 문자 발송 */
   sendSmsCode: (phone: string): Promise<{ expireSeconds: number; resendSeconds: number; devCode?: string | null }> =>
@@ -38,14 +40,11 @@ export const authSvc = {
   smsGuestLogin: (phone: string, code: string): Promise<SyLoginSessionType> =>
     csrPost<SyLoginResType>("/co/fo-auth/sms-guest-login", { phone, code }).then(mapLoginRes),
 
-  /** POST /co/fo-auth/find-id — PASS 인증 결과로 가입 아이디(가림) 찾기 */
-  findId: (identityVerificationId: string): Promise<SyFoundIdType> => csrPost<SyFoundIdType>("/co/fo-auth/find-id", { identityVerificationId }),
+  /** POST /co/fo-auth/find-id — 이메일 링크 인증을 마친 이메일로 가입 아이디(가림) 찾기 */
+  findId: (emailVerifyId: string): Promise<SyFoundIdType> => csrPost<SyFoundIdType>("/co/fo-auth/find-id", { emailVerifyId }),
 
-  /** POST /co/fo-auth/pw-reset/request — 아이디 + PASS 인증 확인 후 본인확인번호를 메일로 발송 */
-  requestPwReset: (loginId: string, identityVerificationId: string): Promise<SyPwCodeSentType> => csrPost<SyPwCodeSentType>("/co/fo-auth/pw-reset/request", { loginId, identityVerificationId }),
-
-  /** POST /co/fo-auth/pw-reset/verify — 메일로 받은 본인확인번호 확인 → 재설정 토큰 */
-  verifyPwReset: (loginId: string, code: string): Promise<SyPwResetTokenType> => csrPost<SyPwResetTokenType>("/co/fo-auth/pw-reset/verify", { loginId, code }),
+  /** POST /co/fo-auth/pw-reset/request — 아이디 + 이메일 인증 확인 후 1회용 재설정 토큰 발급 */
+  requestPwReset: (loginId: string, emailVerifyId: string): Promise<SyPwResetTokenType> => csrPost<SyPwResetTokenType>("/co/fo-auth/pw-reset/request", { loginId, emailVerifyId }),
 
   /** POST /co/fo-auth/pw-reset/confirm — 재설정 토큰으로 새 비밀번호 설정 */
   confirmPwReset: (loginId: string, resetToken: string, newPassword: string): Promise<void> => csrPost("/co/fo-auth/pw-reset/confirm", { loginId, resetToken, newPassword }),

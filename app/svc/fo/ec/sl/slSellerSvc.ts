@@ -7,13 +7,14 @@
 import { authCfg, csrGet, csrPost } from "~/utils/svcHttp";
 import { buildSellerApplyPayload, mapSellerMy } from "~/utils/mapMy";
 import type { SlSellerMyType, SlSellerTypeCd } from "~/types/sl/slSellerApplyType";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 
 const SELLER = "/fo/ec/sl/seller";
 
 export const slSellerSvc = {
   /** POST /fo/ec/sl/seller/apply — 기존 로그인 회원의 판매자 신청(PENDING 생성). 이미 신청/판매자면 서버가 오류를 던진다 */
-  applySeller: (sellerNm: string, sellerTypeCd?: SlSellerTypeCd): Promise<SlSellerMyType> =>
-    csrPost<SlSellerMyType>(`${SELLER}/apply`, buildSellerApplyPayload(sellerNm, sellerTypeCd), authCfg()),
+  applySeller: (sellerNm: string, sellerTypeCd: SlSellerTypeCd | undefined, emailVerifyId: string | undefined, attachFiles: SyAttachChangeType[]): Promise<SlSellerMyType> =>
+    csrPost<SlSellerMyType>(`${SELLER}/apply`, buildSellerApplyPayload(sellerNm, sellerTypeCd, emailVerifyId, attachFiles), authCfg()),
 
   /** GET /fo/ec/sl/seller/my — 내 판매자 신청 현황. 신청 이력이 없으면 null */
   getMySeller: (): Promise<SlSellerMyType | null> => csrGet<SlSellerMyType | null>(`${SELLER}/my`, authCfg()).then(mapSellerMy),

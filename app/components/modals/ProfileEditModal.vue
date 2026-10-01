@@ -36,7 +36,7 @@
 
           <!-- 본인인증(PASS) — 휴대폰 아래 -->
           <template #pass>
-            <pass-verify-row :verified="f.passVerifiedYn === 'Y'" :verified-date="f.passVerifiedDate" @verified="onPassVerified" />
+            <email-verify-row :verified="f.emailVerifiedYn === 'Y'" :verified-date="f.emailVerifiedDate" @verified="onEmailVerified" />
           </template>
 
           <template #gender="{ form }">
@@ -89,7 +89,7 @@ import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
 import type { MbMemberAddrType } from "~/types/mb/mbMemberAddrType";
 import FoForm from "~/components/fo/FoForm.vue";
 import type { FoFormColumn } from "~/types/fo/foCompType";
-import PassVerifyRow from "~/components/my/PassVerifyRow.vue";
+import EmailVerifyRow from "~/components/my/EmailVerifyRow.vue";
 import SnsLinkRow from "~/components/my/SnsLinkRow.vue";
 import { isRequiredRecvOk, REQUIRED_RECV_MESSAGE, withRequiredDefault } from "~/utils/recvConsent";
 import ProfileImgUpload from "~/components/my/ProfileImgUpload.vue";
@@ -122,8 +122,8 @@ const f = reactive({
   memberPhone: "",
   memberGender: "",
   birthDate: "",
-  passVerifiedYn: "N",
-  passVerifiedDate: "",
+  emailVerifiedYn: "N",
+  emailVerifiedDate: "",
   profileImgUrl: "",
   recvPhoneYn: "N",
   recvKakaoYn: "N",
@@ -153,9 +153,9 @@ const formCols: FoFormColumn[] = [
   { key: "gender", type: "slot" },
 ];
 
-function onPassVerified(profile: MbMemberProfileType) {
-  f.passVerifiedYn = profile.passVerifiedYn ?? "Y";
-  f.passVerifiedDate = String(profile.passVerifiedDate ?? "");
+function onEmailVerified(profile: MbMemberProfileType) {
+  f.emailVerifiedYn = profile.emailVerifiedYn ?? "Y";
+  f.emailVerifiedDate = String(profile.emailVerifiedDate ?? "");
   emit("saved");
 }
 

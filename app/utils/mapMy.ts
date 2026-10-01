@@ -9,6 +9,7 @@ import type { MbMemberType } from "~/types/mb/mbMemberType";
 import type { SyLoginSessionType } from "~/types/sy/syLoginSessionType";
 import type { SyNotiType } from "~/types/sy/syNotiType";
 import type { SlSellerApplyReqType, SlSellerMyType } from "~/types/sl/slSellerApplyType";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import { badRequest, requireText } from "~/utils/svcInput";
 
 // ── 인증 ──
@@ -24,22 +25,23 @@ export const mapLoginRes = (r: SyLoginResType): SyLoginSessionType => ({
   user: { memberId: r.memberId, userNm: r.userNm, userEmail: r.userEmail, userPhone: r.userPhone, siteId: r.siteId, mdYn: r.mdYn, sellerIds: r.sellerIds },
 });
 /** 회원가입 본문 — loginPwdHash 필드에 평문을 담는다(ecBeBo 가 그 자리에서 encode) */
-export function buildJoinPayload(name: string, email: string, password: string, passVerifyId?: string, extra: Record<string, string> = {}): Record<string, string> {
+export function buildJoinPayload(name: string, email: string, password: string, emailVerifyId?: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
   const memberNm = String(name ?? "").trim();
   const loginId = String(email ?? "").trim();
   const loginPwdHash = String(password ?? "");
   if (!memberNm || !loginId || !loginPwdHash) badRequest("이름, 이메일, 비밀번호를 모두 입력해 주세요.");
-  // extra: 프로필 이미지 URL · 수신 동의(recv*Yn) · 판매자 동시신청(sellerNm/sellerTypeCd, 2026-09-30) 등 가입 화면이 함께 보내는 선택 항목만 허용
+  // extra: 프로필 이미지 URL · 수신 동의(recv*Yn) · 판매자 동시신청(sellerNm/sellerTypeCd/sellerAttachFiles, 2026-09-30·10-02) 등 가입 화면이 함께 보내는 선택 항목만 허용
   const safe = Object.fromEntries(
     Object.entries(extra).filter(
       ([k, v]) =>
         (k === "profileImgUrl" && typeof v === "string") ||
         (/^recv(Phone|Kakao|Sms|Email|Ad|MktEvent|MktPlan)Yn$/.test(k) && (v === "Y" || v === "N")) ||
         (k === "sellerNm" && typeof v === "string" && v.trim() !== "") ||
-        (k === "sellerTypeCd" && (v === "INDIVIDUAL" || v === "COMPANY"))
+        (k === "sellerTypeCd" && (v === "INDIVIDUAL" || v === "COMPANY")) ||
+        (k === "sellerAttachFiles" && Array.isArray(v)) // 판매자 신청 서류 — AttachUploader 의 attachFiles 변경목록(2026-10-02)
     )
   );
-  return { memberNm, loginId, loginPwdHash, ...(passVerifyId ? { passVerifyId } : {}), ...safe };
+  return { memberNm, loginId, loginPwdHash, ...(emailVerifyId ? { emailVerifyId } : {}), ...safe };
 }
 
 // ── 내 정보 ──
@@ -56,6 +58,8 @@ export const mapProfile = (m: MbMemberType): MbMemberProfileType => ({
   memberAddrDetail: m.memberAddrDetail ?? "",
   passVerifiedYn: m.passVerifiedYn ?? "N",
   passVerifiedDate: m.passVerifiedDate,
+  emailVerifiedYn: m.emailVerifiedYn ?? "N",
+  emailVerifiedDate: m.emailVerifiedDate,
   profileImgUrl: m.profileImgUrl ?? "",
   recvPhoneYn: m.recvPhoneYn ?? "N",
   recvKakaoYn: m.recvKakaoYn ?? "N",
@@ -136,9 +140,10 @@ export const requireMsgText = (v: unknown) => requireText(v, "메시지 내용�
 
 // ── 판매자 신청 (2026-09-30) ──
 /** POST /fo/ec/sl/seller/apply 본문 — 판매자명 필수, 유형은 INDIVIDUAL/COMPANY 만(그 외/미입력은 서버 기본값인 INDIVIDUAL) */
-export function buildSellerApplyPayload(sellerNm: string, sellerTypeCd?: string): SlSellerApplyReqType {
+export function buildSellerApplyPayload(sellerNm: string, sellerTypeCd: string | undefined, emailVerifyId: string | undefined, attachFiles: SyAttachChangeType[]): SlSellerApplyReqType {
   const nm = requireText(sellerNm, "판매자명을 입력해 주세요.");
-  return { sellerNm: nm, sellerTypeCd: sellerTypeCd === "COMPANY" ? "COMPANY" : "INDIVIDUAL" };
+  if (!attachFiles.some((f) => f.rowStatus === "I")) badRequest("판매자 신청 서류를 1개 이상 첨부해 주세요.");
+  return { sellerNm: nm, sellerTypeCd: sellerTypeCd === "COMPANY" ? "COMPANY" : "INDIVIDUAL", ...(emailVerifyId ? { emailVerifyId } : {}), attachFiles };
 }
 /** GET /fo/ec/sl/seller/my 응답 정규화 — 신청 이력이 없으면 서버가 null/빈 객체를 줄 수 있어 sellerId 유무로 판단한다 */
 export function mapSellerMy(r: SlSellerMyType | null | undefined): SlSellerMyType | null {

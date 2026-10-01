@@ -8,7 +8,7 @@
         <nuxt-link class="os-btn os-btn-black mt-15" to="/shop"> Shop Now </nuxt-link>
       </div>
       <div v-if="state.cartProducts.length > 0">
-        <!-- 주문자 확인 — 로그인 회원은 한 줄 안내, 비로그인은 "로그인" 또는 "비회원(PASS 본인인증)" 중 하나를 고르게 한다 -->
+        <!-- 주문자 확인 — 로그인 회원은 한 줄 안내, 비로그인은 "로그인" 또는 "비회원(이메일 인증)" 중 하나를 고르게 한다 -->
         <section class="pt-[16px] md:pt-[100px] pb-30">
           <div class="max-w-7xl mx-auto px-4">
             <div v-if="loggedIn && !isPassGuest" class="flex flex-wrap items-center gap-2 rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-5 py-4 text-[0.92rem] text-gray-800">
@@ -42,23 +42,23 @@
                   </fo-form>
                 </div>
               </div>
-              <!-- 비회원: PASS 본인인증 -->
-              <div class="rounded-xl border px-5 py-5" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
+              <!-- 비회원: 이메일 인증 (2026-10-02, PASS 본인인증 대체) -->
+              <div class="rounded-xl border px-5 py-5" :class="guestVerified ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
                 <h4 class="m-0 flex items-center gap-2 text-[1rem] font-bold text-gray-900">
-                  <i class="fas" :class="idv ? 'fa-check-circle text-[#16a34a]' : 'fa-mobile-alt text-[#d97706]'"></i>비회원으로 주문
-                  <span v-if="idv" class="ml-1 rounded-full bg-[#dcfce7] px-2 py-px text-[0.72rem] font-bold text-[#15803d]">인증 완료</span>
+                  <i class="fas" :class="guestVerified ? 'fa-check-circle text-[#16a34a]' : 'fa-envelope text-[#d97706]'"></i>비회원으로 주문
+                  <span v-if="guestVerified" class="ml-1 rounded-full bg-[#dcfce7] px-2 py-px text-[0.72rem] font-bold text-[#15803d]">인증 완료</span>
                 </h4>
-                <template v-if="!idv">
-                  <p class="m-0 mt-1 text-[0.82rem] text-gray-600">비회원은 주문 전에 <b>PASS 본인인증</b>이 필요합니다. 인증하면 이름·휴대폰이 주문 정보에 채워집니다.</p>
-                  <p class="m-0 mt-1 text-[0.78rem] text-gray-500">인증 후 아래 결제 정보에 <b>이메일</b>(주문 안내 수신)을 입력해 주세요.</p>
-                  <button type="button" class="mt-3 cursor-pointer rounded-lg border-0 bg-[#111] px-4 py-2 text-[0.85rem] font-bold text-white disabled:opacity-60" :disabled="idvBusy" @click="startIdentity">{{ idvBusy ? "인증 중..." : "PASS 본인인증" }}</button>
+                <template v-if="!guestVerified">
+                  <p class="m-0 mt-1 text-[0.82rem] text-gray-600">비회원은 주문 전에 <b>이메일 인증</b>이 필요합니다. 주문 안내를 받을 이메일을 입력하고 인증해 주세요.</p>
+                  <input v-model="guestEmail" type="email" autocomplete="email" placeholder="주문 안내를 받을 이메일" class="mb-2 mt-3 h-10 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-[0.9rem] outline-none focus:border-[#bc8246]" />
+                  <email-verify-box purpose-cd="CHECKOUT_GUEST" :email="guestEmail" title="이메일 인증" @verified="onGuestVerified" />
                 </template>
                 <template v-else>
-                  <p class="m-0 mt-1 text-[0.85rem] text-gray-800">{{ maskName(idv.name) }} · {{ maskPhone(idv.phoneNumber) }}</p>
-                  <p class="m-0 mt-1 text-[0.78rem] text-gray-500">이름·휴대폰은 인증 정보로 채워졌습니다. 이메일을 입력해 주세요.</p>
-                  <button type="button" class="mt-2 cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="resetIdentity">다시 인증</button>
+                  <p class="m-0 mt-1 text-[0.85rem] text-gray-800">{{ guestEmail }}</p>
+                  <p class="m-0 mt-1 text-[0.78rem] text-gray-500">인증한 이메일로 주문 안내가 전달됩니다. 이름·휴대폰은 아래 주문자 정보에 입력해 주세요.</p>
+                  <button type="button" class="mt-2 cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="resetGuest">다시 인증</button>
                 </template>
-                <p v-if="idvError" class="m-0 mt-2 whitespace-pre-line text-[0.78rem] text-red-500">{{ idvError }}</p>
+                <p v-if="guestError" class="m-0 mt-2 whitespace-pre-line text-[0.78rem] text-red-500">{{ guestError }}</p>
               </div>
             </div>
           </div>
@@ -280,9 +280,7 @@ import type { SyCheckoutLoginFormType } from "~/types/sy/syCheckoutLoginFormType
 import type { AppliedCoupons, CouponLine, PmCouponApplyType } from "~/types/pm/pmCouponApplyType";
 import { COUPON_CATEGORY_LABEL, autoPickProductCoupons, calcCheckout, couponBases, couponBlockReason, couponDiscount, couponLineKey, lineCouponBlockReason, pickBestCoupon, productDiscountTotal, toApplyCoupon, todayYmd } from "~/utils/mapCoupon";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
-import { identitySvc } from "~/svc/co/identity/identitySvc";
-import type { MbIdentityVerifyType } from "~/types/mb/mbIdentityVerifyType";
-import { maskName, maskPhone, usePassIdentity } from "~/composables/usePassIdentity";
+import EmailVerifyBox from "~/components/fo/EmailVerifyBox.vue";
 
 const state = useCartStore();
 import { usePageTitle } from "~/composables/usePageTitle";
@@ -491,51 +489,46 @@ function removeCoupon(target: string) {
   appliedCoupons[cat] = null;
 }
 
-// ── 비회원 본인인증(PASS, 포트원 V2) — 공용 composable(usePassIdentity) ───────────
-const pass = usePassIdentity();
-const idvBusy = pass.busy;
-const idvError = pass.error;
-const idv = ref<MbIdentityVerifyType | null>(null);
+// ── 비회원 이메일 인증 (2026-10-02, PASS 본인인증 대체) ───────────────────────────
+// 이메일 링크 인증을 마치면 "이메일 임시회원"으로 로그인시켜 주문 생성 등 로그인 회원 API 를 쓸 수 있게 한다(같은 이메일이면 같은 임시회원).
+const guestEmail = ref("");
+const guestVerified = ref(false);
+const guestError = ref("");
 
-function applyIdentity(v: MbIdentityVerifyType) {
-  idv.value = v;
-  // 인증된 실명/휴대폰을 주문 정보에 채운다(한글 3~4자는 성/이름 분리)
-  const koreanFull = /^[가-힣]{3,4}$/.test(v.name);
-  billingForm.lastName = koreanFull ? v.name.slice(0, 1) : billingForm.lastName || "-";
-  billingForm.name = koreanFull ? v.name.slice(1) : v.name;
-  billingForm.phone = v.phoneNumber;
+async function onGuestVerified(verifyId: string) {
+  guestError.value = "";
+  const r = await useAuthStore().emailGuestLogin(verifyId, "CHECKOUT_GUEST");
+  if (!r.ok) {
+    guestError.value = r.message ?? "이메일 인증 로그인에 실패했습니다.";
+    await useAlert().openAlert({ title: "이메일 인증 실패", variant: "error", message: guestError.value });
+    return;
+  }
+  guestVerified.value = true;
+  billingForm.email = guestEmail.value.trim(); // 인증한 이메일을 주문 정보에 채운다
   try {
-    sessionStorage.setItem("checkout_idv", JSON.stringify(v));
+    sessionStorage.setItem("checkout_guest_email", guestEmail.value.trim());
   } catch {
     /* 저장소를 못 써도 진행 */
   }
 }
-function resetIdentity() {
-  idv.value = null;
-  idvError.value = "";
+function resetGuest() {
+  guestVerified.value = false;
+  guestError.value = "";
   try {
-    sessionStorage.removeItem("checkout_idv");
+    sessionStorage.removeItem("checkout_guest_email");
   } catch {
     /* 무시 */
   }
 }
-async function startIdentity() {
-  const v = await pass.start();
-  if (!v) return;
-  // 인증 결과로 "PASS 임시회원" 로그인 — 주문 생성 등 로그인 회원 API 를 쓸 수 있게 한다
-  const r = await useAuthStore().passGuestLogin(v.identityVerificationId);
-  if (!r.ok) {
-    idvError.value = r.message ?? "본인인증 로그인에 실패했습니다.";
-    await useAlert().openAlert({ title: "본인인증 실패", variant: "error", message: idvError.value });
-    return;
-  }
-  applyIdentity(v);
-}
 onMounted(() => {
-  // 새로고침해도 인증 결과 유지(같은 탭 동안)
+  // 새로고침해도 인증 결과 유지(같은 탭 동안 — 임시회원 로그인 세션이 남아 있을 때만)
   try {
-    const raw = sessionStorage.getItem("checkout_idv");
-    if (raw && (!useAuthStore().isStLoggedIn || useAuthStore().isPassGuest)) applyIdentity(JSON.parse(raw));
+    const email = sessionStorage.getItem("checkout_guest_email");
+    if (email && useAuthStore().isStLoggedIn && useAuthStore().isPassGuest) {
+      guestEmail.value = email;
+      guestVerified.value = true;
+      if (!billingForm.email) billingForm.email = email;
+    }
   } catch {
     /* 무시 */
   }
@@ -640,9 +633,9 @@ const showPayFail = (message: string) => useAlert().openAlert({ title: "결제 �
 // 결제 제출 — 선택한 결제수단의 결제창을 연다. 성공/실패는 successUrl/failUrl(/checkout/success, /checkout/fail)로 돌아온다
 async function handleFormSubmit() {
   if (import.meta.server) return;
-  // 비회원은 PASS 본인인증을 마쳐야 주문할 수 있다
-  if ((!loggedIn.value || isPassGuest.value) && !idv.value) {
-    await useAlert().openAlert({ title: "본인인증 필요", variant: "warning", message: "비회원 결제는 PASS 본인인증 후 진행할 수 있습니다.\n'PASS 본인인증' 버튼을 눌러 인증해 주세요." });
+  // 비회원은 이메일 인증을 마쳐야 주문할 수 있다
+  if ((!loggedIn.value || isPassGuest.value) && !guestVerified.value) {
+    await useAlert().openAlert({ title: "이메일 인증 필요", variant: "warning", message: "비회원 결제는 이메일 인증 후 진행할 수 있습니다.\n주문 안내를 받을 이메일을 입력하고 '이메일 인증하기'를 눌러 인증해 주세요." });
     document.querySelector("#checkout-guest")?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
@@ -665,7 +658,7 @@ async function handleFormSubmit() {
   const method: PayMethodCd = payMethod.value;
   const provider = getPayProvider(method);
   try {
-    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? Object.values(appliedCoupons.product).find((c) => c) ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value, idvId: idv.value?.identityVerificationId, payMethod: method, pgCd: provider.pg }));
+    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? Object.values(appliedCoupons.product).find((c) => c) ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value, payMethod: method, pgCd: provider.pg }));
   } catch {
     /* 저장소를 못 써도 결제는 진행 */
   }

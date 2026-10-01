@@ -24,7 +24,7 @@
 
       <div class="rounded-2xl border border-[#e5e7eb] bg-white p-6">
         <h3 class="m-0 mb-3 text-[1rem] font-bold text-gray-900">본인인증 · 소셜 연동</h3>
-        <pass-verify-row class="mb-4" :verified="p.passVerifiedYn === 'Y'" :verified-date="p.passVerifiedDate" @verified="load" />
+        <email-verify-row class="mb-4" :verified="p.emailVerifiedYn === 'Y'" :verified-date="p.emailVerifiedDate" @verified="load" />
         <sns-link-row />
       </div>
 
@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
 import MyShell from "~/components/my/MyShell.vue";
-import PassVerifyRow from "~/components/my/PassVerifyRow.vue";
+import EmailVerifyRow from "~/components/my/EmailVerifyRow.vue";
 import SnsLinkRow from "~/components/my/SnsLinkRow.vue";
 import ProfileEditModal from "~/components/modals/ProfileEditModal.vue";
 import PasswordChangeModal from "~/components/modals/PasswordChangeModal.vue";

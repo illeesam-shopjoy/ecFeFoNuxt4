@@ -62,7 +62,8 @@
               <div class="mb-3.5 rounded-xl border border-[#e5e7eb] bg-white p-5 sm:p-7">
                 <h3 class="mb-3.5 flex items-center gap-2 text-[0.95rem] font-bold text-gray-900"><span aria-hidden="true">📋</span> 상품 설명</h3>
                 <!-- ecBeBo contentHtml 은 단일 HTML 블록. 서버 렌더(SEO 최소 정보)에는 비어 있고 브라우저가 전체 조회한 뒤 채워진다 -->
-                <div v-if="item.contentHtml" class="product__details-des" v-html="item.contentHtml"></div>
+                <!-- 2026-10-02: 판매자(셀러)가 상세설명 HTML 을 직접 올릴 수 있게 되어 저장형 XSS 방지를 위해 항상 정화해서 출력한다 -->
+                <div v-if="item.contentHtml" class="product__details-des" v-html="toSafeHtml(item.contentHtml)"></div>
                 <p v-else-if="item.smDesc" class="text-[0.9rem] leading-[1.9] text-gray-600">{{ item.smDesc }}</p>
               </div>
               <div class="rounded-xl border border-[#e5e7eb] bg-white p-5 sm:p-7">

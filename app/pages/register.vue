@@ -20,18 +20,8 @@
                 <!-- 프로필 이미지 · 수신 동의(휴대폰/카카오/SMS/이메일/광고) — 모두 선택 -->
                 <profile-img-upload v-model="profileImgUrl" class="mb-15" />
                 <recv-consent-row v-model="consent" class="mb-15" />
-                <!-- PASS 본인인증 여부 — 가입 전에 인증하면 가입 회원정보에 "인증 완료"로 저장된다(선택). 서버가 가입 시 한 번 더 확인한다. -->
-                <div class="mb-10 rounded-lg border px-3 py-2.5 text-[0.85rem]" :class="idv ? 'border-[#bbf7d0] bg-[#f0fdf4]' : 'border-[#fde68a] bg-[#fffbeb]'">
-                  <div class="flex items-center gap-2">
-                    <i class="fas" :class="idv ? 'fa-check-circle text-[#16a34a]' : 'fa-mobile-alt text-[#d97706]'"></i>
-                    <span class="font-semibold text-gray-800">PASS 본인인증</span>
-                    <span v-if="idv" class="text-[#15803d]">인증 완료 · {{ maskName(idv.name) }} · {{ maskPhone(idv.phoneNumber) }}</span>
-                    <span v-else class="text-gray-500">미인증 (선택)</span>
-                    <button v-if="!idv" type="button" class="ml-auto cursor-pointer rounded-md border-0 bg-[#111] px-3 py-1.5 text-[0.8rem] font-bold text-white disabled:opacity-60" :disabled="passBusy" @click="handleBtnAction('pass-verify')">{{ passBusy ? "인증 중..." : "PASS 인증하기" }}</button>
-                    <button v-else type="button" class="ml-auto cursor-pointer border-0 bg-transparent p-0 text-[0.78rem] text-gray-500 underline" @click="idv = null">다시 인증</button>
-                  </div>
-                </div>
-                <field-msg v-if="idv" class="-mt-1 mb-10" :ok="true" text="휴대폰 본인인증이 완료되었습니다" />
+                <!-- 이메일 인증(2026-10-02, PASS 대체) — 가입 이메일로 링크를 보내 인증한다(선택, 판매자로도 가입하면 필수). 서버가 가입 시 한 번 더 확인한다. -->
+                <email-verify-box class="mb-10" purpose-cd="JOIN" :email="form.email" title="이메일 인증" :idle-text="sellerApply ? '미인증 (판매자 가입은 필수)' : '미인증 (선택)'" @verified="(id: string) => (emailVerifyId = id)" @reset="emailVerifyId = ''" />
 
                 <!-- 판매자 신청(선택) — 체크 시 유형/판매자명을 추가로 받아 가입 요청에 함께 보낸다(가입과 동시에 PENDING 신청) -->
                 <label class="mb-10 flex cursor-pointer items-center gap-2 text-[0.85rem] text-gray-700">
@@ -50,6 +40,9 @@
                   </div>
                   <label class="mb-1 block text-[0.78rem] text-gray-500" for="seller-nm">판매자명<span class="text-theme ml-0.5">*</span></label>
                   <input id="seller-nm" v-model="sellerNm" class="w-full rounded-lg border-[1.5px] border-[#e5e7eb] bg-white px-3.5 py-2.5 text-[0.88rem] text-gray-900 outline-none focus:border-[#bc8246]" placeholder="판매자명(상호명) 입력" maxlength="60" />
+                  <span class="mb-1 mt-3 block text-[0.78rem] text-gray-500">신청 서류 (사업자등록증·신분증 사본 등)<span class="text-theme ml-0.5">*</span></span>
+                  <attach-uploader v-model="sellerAttach" title="신청 서류" :show-grp="false" grp-code="SELLER_DOC" :max-count="5" :accept="DOC_ACCEPT" />
+                  <p class="mb-0 mt-1.5 text-[0.75rem] leading-snug text-gray-400">판매자는 이메일 인증과 서류 첨부가 필요하며, 관리자 검토 후 승인됩니다.</p>
                 </div>
                 <p v-if="errorMsg" class="text-danger mb-10" style="font-size: 0.85rem">{{ errorMsg }}</p>
 
@@ -115,8 +108,9 @@ import ProfileImgUpload from "~/components/my/ProfileImgUpload.vue";
 import RecvConsentRow from "~/components/my/RecvConsentRow.vue";
 import type { MbRecvConsentType } from "~/types/mb/mbRecvConsentType";
 import { defaultRecvConsent, isRequiredRecvOk, REQUIRED_RECV_MESSAGE } from "~/utils/recvConsent";
-import { maskName, maskPhone, usePassIdentity } from "~/composables/usePassIdentity";
-import type { MbIdentityVerifyType } from "~/types/mb/mbIdentityVerifyType";
+import EmailVerifyBox from "~/components/fo/EmailVerifyBox.vue";
+import AttachUploader from "~/components/ui/AttachUploader.vue";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
@@ -136,16 +130,11 @@ const sellerApply = ref(false);
 const sellerTypeCd = ref<"INDIVIDUAL" | "COMPANY">("INDIVIDUAL");
 const sellerNm = ref("");
 
-// PASS 본인인증(선택) — 인증하면 이름을 인증된 실명으로 채우고, 가입 요청에 인증 건 ID 를 함께 보낸다(서버가 재확인해 "인증 완료"로 저장)
-const pass = usePassIdentity();
-const passBusy = pass.busy;
-const idv = ref<MbIdentityVerifyType | null>(null);
-async function runPass() {
-  const v = await pass.start();
-  if (!v) return;
-  idv.value = v;
-  form.name = v.name;
-}
+// 이메일 링크 인증(선택, 판매자 가입은 필수) — 인증을 마치면 verifyId 를 가입 요청에 함께 보낸다(서버가 1회 소비하며 가입 이메일과 같은지 확인)
+const emailVerifyId = ref("");
+// 판매자 신청 서류 — AttachUploader 변경목록({attachId,rowStatus:'I'}), 판매자 가입이면 1건 이상 필수
+const sellerAttach = ref<SyAttachChangeType[]>([]);
+const DOC_ACCEPT = ["jpg", "jpeg", "png", "pdf", "docx", "xlsx", "zip"];
 
 import PasswordRules from "~/components/fo/PasswordRules.vue";
 import FieldMsg from "~/components/fo/FieldMsg.vue";
@@ -179,15 +168,24 @@ async function onSubmit() {
     errorMsg.value = "판매자명을 입력해 주세요.";
     return;
   }
+  if (sellerApply.value && !emailVerifyId.value) {
+    errorMsg.value = "판매자로 가입하려면 이메일 인증을 완료해 주세요.";
+    return;
+  }
+  if (sellerApply.value && !sellerAttach.value.some((f) => f.rowStatus === "I")) {
+    errorMsg.value = "판매자 신청 서류를 1개 이상 첨부해 주세요.";
+    return;
+  }
   const { name, email, password } = form as unknown as MbRegisterFormType;
   loading.value = true;
   errorMsg.value = "";
-  const sellerExtra: Record<string, string> = sellerApply.value ? { sellerNm: sellerNm.value.trim(), sellerTypeCd: sellerTypeCd.value } : {};
-  const result = await authStore.register(name, email, password, idv.value?.identityVerificationId, { profileImgUrl: profileImgUrl.value, ...consent.value, ...sellerExtra });
+  const sellerExtra: Record<string, unknown> = sellerApply.value ? { sellerNm: sellerNm.value.trim(), sellerTypeCd: sellerTypeCd.value, sellerAttachFiles: sellerAttach.value } : {};
+  const result = await authStore.register(name, email, password, emailVerifyId.value || undefined, { profileImgUrl: profileImgUrl.value, ...consent.value, ...sellerExtra });
   loading.value = false;
   if (result.ok) {
     Object.assign(form, { name: "", email: "", password: "", password2: "" });
-    idv.value = null;
+    emailVerifyId.value = "";
+    sellerAttach.value = [];
     profileImgUrl.value = "";
     consent.value = defaultRecvConsent();
     sellerApply.value = false;
@@ -206,8 +204,6 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
   // 회원가입 (검증 → authStore.register)
   if (cmd === "form-submit") {
     return onSubmit();
-  } else if (cmd === "pass-verify") {
-    return runPass();
   } else {
     console.warn("[handleBtnAction] unknown cmd:", cmd);
   }

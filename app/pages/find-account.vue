@@ -11,8 +11,13 @@
           <div class="rounded-2xl border border-[#e5e7eb] bg-white p-7">
             <!-- 아이디 찾기 -->
             <template v-if="tab === 'id'">
-              <p class="mt-0 text-[0.88rem] text-gray-500">가입한 이름·휴대폰으로 PASS 본인인증을 하면 아이디를 알려드립니다.</p>
-              <button v-if="!foundIds.length" type="button" class="btn-main" :disabled="busy" @click="findId">{{ busy ? "인증 중..." : "PASS 본인인증으로 아이디 찾기" }}</button>
+              <p class="mt-0 text-[0.88rem] text-gray-500">가입한 이메일을 입력하고 이메일 인증을 하면 아이디를 알려드립니다.</p>
+              <template v-if="!foundIds.length">
+                <label class="lb">가입한 이메일</label>
+                <input v-model="idEmail" class="in mb-3" type="text" autocomplete="email" placeholder="가입한 이메일" />
+                <email-verify-box purpose-cd="FIND_ACCOUNT" :email="idEmail" title="이메일 인증" @verified="findId" @reset="idVerifyId = ''" />
+                <p v-if="busy" class="m-0 mt-2 text-[0.8rem] text-gray-500">아이디를 찾는 중...</p>
+              </template>
               <div v-else class="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] p-4">
                 <div class="mb-2 text-[0.85rem] font-semibold text-[#15803d]">가입된 아이디</div>
                 <ul class="m-0 list-none p-0"><li v-for="i in foundIds" :key="i" class="py-1 font-mono text-[1rem] font-bold text-gray-900">{{ i }}</li></ul>
@@ -27,22 +32,15 @@
               </ol>
 
               <template v-if="step === 1">
-                <p class="mt-0 text-[0.88rem] text-gray-500">아이디(이메일)를 입력하고 PASS 본인인증을 하면, 가입 메일로 <b>본인확인번호</b>를 보내드립니다.</p>
+                <p class="mt-0 text-[0.88rem] text-gray-500">아이디(이메일)를 입력하고 이메일 인증을 하면, 새 비밀번호를 설정할 수 있습니다.</p>
                 <label class="lb">아이디(이메일)</label>
-                <input v-model="loginId" class="in" type="text" autocomplete="username" placeholder="가입한 이메일" />
-                <button type="button" class="btn-main mt-4" :disabled="busy || !loginId.trim()" @click="requestCode">{{ busy ? "처리 중..." : "PASS 인증 후 본인확인번호 받기" }}</button>
+                <input v-model="loginId" class="in mb-3" type="text" autocomplete="username" placeholder="가입한 이메일" />
+                <email-verify-box purpose-cd="FIND_ACCOUNT" :email="loginId" title="이메일 인증" @verified="requestReset" @reset="pwVerifyId = ''" />
+                <p v-if="busy" class="m-0 mt-2 text-[0.8rem] text-gray-500">확인 중...</p>
               </template>
 
               <template v-else-if="step === 2">
-                <p class="mt-0 text-[0.88rem] text-gray-500"><b>{{ sentTo }}</b> 로 본인확인번호를 보냈습니다. {{ expireMin }}분 안에 입력해 주세요.</p>
-                <label class="lb">본인확인번호 (6자리)</label>
-                <input v-model="code" class="in text-center font-mono text-[1.3rem] tracking-[0.4em]" inputmode="numeric" maxlength="6" placeholder="000000" @keyup.enter="verifyCode" />
-                <button type="button" class="btn-main mt-4" :disabled="busy || code.length !== 6" @click="verifyCode">{{ busy ? "확인 중..." : "확인" }}</button>
-                <button type="button" class="mt-2 cursor-pointer border-0 bg-transparent p-0 text-[0.8rem] text-gray-500 underline" @click="step = 1">번호를 못 받았어요 (다시 요청)</button>
-              </template>
-
-              <template v-else-if="step === 3">
-                <p class="mt-0 text-[0.88rem] text-gray-500">본인확인이 완료되었습니다. 새 비밀번호를 설정해 주세요.</p>
+                <p class="mt-0 text-[0.88rem] text-gray-500">이메일 인증이 완료되었습니다. 새 비밀번호를 설정해 주세요.</p>
                 <label class="lb">새 비밀번호</label>
                 <password-input v-model="pw1" class="in" autocomplete="new-password" />
                 <password-rules class="mt-2" :value="pw1" />
@@ -70,27 +68,27 @@
 <script setup lang="ts">
 import Layout from "~/layout/Layout.vue";
 import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
+import EmailVerifyBox from "~/components/fo/EmailVerifyBox.vue";
 import { usePageTitle } from "~/composables/usePageTitle";
-import { usePassIdentity } from "~/composables/usePassIdentity";
 import { authSvc } from "~/svc/co/auth/authSvc";
 
 useHead({ title: "아이디 · 비밀번호 찾기" });
 usePageTitle("아이디 · 비밀번호 찾기");
 
+// 2026-10-02: PASS 본인인증 → 이메일 링크 인증. 비밀번호 찾기는 이메일 인증 한 번으로 본인확인이 끝나므로 "확인번호" 단계가 없다.
 const TABS = [{ key: "id", label: "아이디 찾기" }, { key: "pw", label: "비밀번호 찾기" }] as const;
-const STEPS = ["본인인증", "확인번호", "새 비밀번호"];
+const STEPS = ["이메일 인증", "새 비밀번호"];
 const route = useRoute();
 const tab = ref<"id" | "pw">(route.query.tab === "pw" ? "pw" : "id");
-const pass = usePassIdentity();
 const busy = ref(false);
 const err = ref("");
 
+const idEmail = ref("");
+const idVerifyId = ref("");
 const foundIds = ref<string[]>([]);
 const step = ref(1);
 const loginId = ref("");
-const code = ref("");
-const sentTo = ref("");
-const expireMin = ref(10);
+const pwVerifyId = ref("");
 const resetToken = ref("");
 import PasswordInput from "~/components/fo/PasswordInput.vue";
 import PasswordRules from "~/components/fo/PasswordRules.vue";
@@ -106,52 +104,34 @@ function switchTab(k: "id" | "pw") {
   err.value = "";
 }
 
-/** 아이디 찾기: PASS 인증 → 서버가 인증된 이름·휴대폰으로 회원 조회 */
-async function findId() {
+/** 아이디 찾기: 이메일 인증 완료 → 서버가 인증된 이메일로 가입 회원 조회 */
+async function findId(verifyId: string) {
   err.value = "";
-  const v = await pass.start();
-  if (!v) return;
+  idVerifyId.value = verifyId;
   busy.value = true;
   try {
-    foundIds.value = (await authSvc.findId(v.identityVerificationId)).maskedIds;
+    foundIds.value = (await authSvc.findId(verifyId)).maskedIds;
   } catch (e) {
     err.value = errText(e, "아이디를 찾지 못했습니다.");
   } finally {
     busy.value = false;
   }
 }
-/** 비밀번호 ①: 아이디 + PASS 인증 → 본인확인번호 메일 발송 */
-async function requestCode() {
+/** 비밀번호 ①: 아이디 + 이메일 인증 완료 → 1회용 재설정 토큰 */
+async function requestReset(verifyId: string) {
   err.value = "";
-  const v = await pass.start();
-  if (!v) return;
+  pwVerifyId.value = verifyId;
   busy.value = true;
   try {
-    const r = await authSvc.requestPwReset(loginId.value.trim(), v.identityVerificationId);
-    sentTo.value = r.maskedEmail;
-    expireMin.value = r.expireMinutes;
-    code.value = "";
+    resetToken.value = (await authSvc.requestPwReset(loginId.value.trim(), verifyId)).resetToken;
     step.value = 2;
   } catch (e) {
-    err.value = errText(e, "본인확인번호를 보내지 못했습니다.");
+    err.value = errText(e, "본인 확인에 실패했습니다.");
   } finally {
     busy.value = false;
   }
 }
-/** ②: 메일로 받은 본인확인번호 확인 */
-async function verifyCode() {
-  err.value = "";
-  busy.value = true;
-  try {
-    resetToken.value = (await authSvc.verifyPwReset(loginId.value.trim(), code.value.trim())).resetToken;
-    step.value = 3;
-  } catch (e) {
-    err.value = errText(e, "본인확인번호가 올바르지 않습니다.");
-  } finally {
-    busy.value = false;
-  }
-}
-/** ③: 새 비밀번호 설정 */
+/** ②: 새 비밀번호 설정 */
 async function confirm() {
   err.value = "";
   if (!isPasswordValid(pw1.value)) return void (err.value = PASSWORD_RULE_MESSAGE);
@@ -159,7 +139,7 @@ async function confirm() {
   busy.value = true;
   try {
     await authSvc.confirmPwReset(loginId.value.trim(), resetToken.value, pw1.value);
-    step.value = 4;
+    step.value = 3;
   } catch (e) {
     err.value = errText(e, "비밀번호를 재설정하지 못했습니다.");
   } finally {

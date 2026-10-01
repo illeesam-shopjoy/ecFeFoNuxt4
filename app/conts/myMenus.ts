@@ -17,8 +17,6 @@ export const MY_MENU_GROUPS: MyMenuGroup[] = [
       { key: "profile", label: "개인정보 수정", to: "/my/profile", icon: "👤" },
       { key: "card", label: "결제카드 등록", to: "/my/card", icon: "💳" },
       { key: "addr", label: "주소정보 관리", to: "/my/addr", icon: "📍" },
-      { key: "seller-apply", label: "판매자 신청", to: "/my/seller-apply", icon: "🏪" },
-      { key: "seller-warehouse", label: "판매자 창고 관리", to: "/my/seller-warehouse", icon: "🏭" },
     ],
   },
   {
@@ -38,6 +36,15 @@ export const MY_MENU_GROUPS: MyMenuGroup[] = [
       { key: "qna", label: "상품문의 관리", to: "/my/qna", icon: "❓" },
       { key: "contact", label: "1:1 문의", to: "/my/contact", icon: "📩" },
       { key: "chatt", label: "채팅", to: "/my/chatt", icon: "💬" },
+    ],
+  },
+  {
+    title: "판매자",
+    items: [
+      { key: "seller-apply", label: "판매자 신청", to: "/my/seller-apply", icon: "🏪" },
+      { key: "seller-warehouse", label: "창고 · 재고 관리", to: "/my/seller-warehouse", icon: "🏭" },
+      { key: "prod", label: "판매 상품 관리", to: "/my/prod", icon: "🛍️" },
+      { key: "promotion", label: "프로모션 관리", to: "/my/promotion", icon: "🏷️" },
     ],
   },
 ];
