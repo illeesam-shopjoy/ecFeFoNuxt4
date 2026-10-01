@@ -18,6 +18,7 @@ export const MY_MENU_GROUPS: MyMenuGroup[] = [
       { key: "card", label: "결제카드 등록", to: "/my/card", icon: "💳" },
       { key: "addr", label: "주소정보 관리", to: "/my/addr", icon: "📍" },
       { key: "seller-apply", label: "판매자 신청", to: "/my/seller-apply", icon: "🏪" },
+      { key: "seller-warehouse", label: "판매자 창고 관리", to: "/my/seller-warehouse", icon: "🏭" },
     ],
   },
   {
