@@ -53,8 +53,8 @@ import MyShell from "~/components/my/MyShell.vue";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
-import { mbSellerSvc } from "~/svc/fo/ec/mb/mbSellerSvc";
-import type { MbSellerMyType, MbSellerStatusCd } from "~/types/mb/mbSellerApplyType";
+import { slSellerSvc } from "~/svc/fo/ec/sl/slSellerSvc";
+import type { SlSellerMyType, SlSellerStatusCd } from "~/types/sl/slSellerApplyType";
 
 const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 판매자 신청" });
@@ -63,23 +63,23 @@ usePageTitle("마이페이지 - 판매자 신청");
 const authStore = useAuthStore();
 const loading = ref(true);
 const submitting = ref(false);
-const applied = ref<MbSellerMyType | null>(null);
+const applied = ref<SlSellerMyType | null>(null);
 const errorMsg = ref("");
 const sellerTypeCd = ref<"INDIVIDUAL" | "COMPANY">("INDIVIDUAL");
 const sellerNm = ref("");
 
-const STATUS_LABEL: Record<MbSellerStatusCd, string> = { PENDING: "승인 대기", ACTIVE: "판매중", SUSPENDED: "이용정지" };
-const STATUS_MSG: Record<MbSellerStatusCd, string> = {
+const STATUS_LABEL: Record<SlSellerStatusCd, string> = { PENDING: "승인 대기", ACTIVE: "판매중", SUSPENDED: "이용정지" };
+const STATUS_MSG: Record<SlSellerStatusCd, string> = {
   PENDING: "승인 대기 중입니다. 승인이 완료되면 판매자로 활동하실 수 있습니다.",
   ACTIVE: "이미 판매자입니다.",
   SUSPENDED: "이용이 정지된 판매자입니다. 자세한 사항은 고객센터로 문의해 주세요.",
 };
-const STATUS_BADGE_CLASS: Record<MbSellerStatusCd, string> = {
+const STATUS_BADGE_CLASS: Record<SlSellerStatusCd, string> = {
   PENDING: "bg-[#fef3c7] text-[#b45309]",
   ACTIVE: "bg-[#dcfce7] text-[#15803d]",
   SUSPENDED: "bg-[#fee2e2] text-[#b91c1c]",
 };
-const statusCd = computed<MbSellerStatusCd>(() => applied.value?.sellerStatusCd ?? "PENDING");
+const statusCd = computed<SlSellerStatusCd>(() => applied.value?.sellerStatusCd ?? "PENDING");
 const statusLabel = computed(() => STATUS_LABEL[statusCd.value]);
 const statusMsg = computed(() => STATUS_MSG[statusCd.value]);
 const statusBadgeClass = computed(() => STATUS_BADGE_CLASS[statusCd.value]);
@@ -103,7 +103,7 @@ async function handleApply() {
   errorMsg.value = "";
   submitting.value = true;
   try {
-    applied.value = await mbSellerSvc.applySeller(sellerNm.value.trim(), sellerTypeCd.value);
+    applied.value = await slSellerSvc.applySeller(sellerNm.value.trim(), sellerTypeCd.value);
     await useAlert().openAlert("신청이 완료되었습니다. 승인을 기다려주세요.");
   } catch (err) {
     errorMsg.value = ((err as Error)?.message ?? "신청에 실패했습니다.").split("::")[0]!;
@@ -114,7 +114,7 @@ async function handleApply() {
 
 async function load() {
   try {
-    applied.value = await mbSellerSvc.getMySeller();
+    applied.value = await slSellerSvc.getMySeller();
   } catch {
     applied.value = null;
   } finally {

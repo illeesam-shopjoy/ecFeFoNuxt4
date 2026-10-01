@@ -1,8 +1,8 @@
 /**
- * 판매자 창고(출고지/반품지) — ecBeBo FoMbSellerWarehouseController(/api/fo/ec/mb/seller-warehouse) 계약. mb_seller_warehouse 테이블 기준.
+ * 판매자 창고(출고지/반품지) — ecBeBo FoSlSellerWarehouseController(/api/fo/ec/sl/seller-warehouse) 계약. sl_seller_warehouse 테이블 기준.
  * sellerId 는 서버가 로그인 회원의 소속 판매자로 고정하므로 요청에 담지 않는다.
  */
-export interface MbSellerWarehouseType {
+export interface SlSellerWarehouseType {
   warehouseId: string;
   sellerId?: string;
   warehouseNm: string;
@@ -19,7 +19,7 @@ export interface MbSellerWarehouseType {
 }
 
 /** POST/PUT 본문 — 서버 엔티티에 기본값이 없어 isDefault/isReturnAddr/useYn 을 항상 명시해서 보낸다 */
-export interface MbSellerWarehouseSaveType {
+export interface SlSellerWarehouseSaveType {
   warehouseNm: string;
   zipCode: string;
   addr: string;

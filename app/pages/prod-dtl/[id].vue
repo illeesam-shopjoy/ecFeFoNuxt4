@@ -670,7 +670,7 @@ const myMemberId = computed(() => authStore.user?.memberId ?? "");
 const canModifyReview = (r: PdReviewType) => !r.memberId || (isLoggedIn.value && r.memberId === myMemberId.value);
 // 2026-09-29(셀러 Phase 1: "상품평, Q&A는 해당 MD 및 판매회사 관계자가 강제 글 숨김기 처리할 수 있는 기능") —
 // MD(md_yn='Y')는 전 상품, 판매자 소속 계정은 이 상품(item.sellerId)이 자기 소속일 때만 숨김/답변 가능.
-// 실제 권한 확정은 서버(MbSellerPermissionService)가 하고, 여기선 버튼 노출 여부만 판단한다.
+// 실제 권한 확정은 서버(SlSellerPermissionService)가 하고, 여기선 버튼 노출 여부만 판단한다.
 const canModerate = computed(() => {
   if (!isLoggedIn.value) return false;
   if (authStore.user?.mdYn === "Y") return true;

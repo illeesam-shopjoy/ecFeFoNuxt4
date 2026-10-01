@@ -8,7 +8,7 @@ import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
 import type { MbMemberType } from "~/types/mb/mbMemberType";
 import type { SyLoginSessionType } from "~/types/sy/syLoginSessionType";
 import type { SyNotiType } from "~/types/sy/syNotiType";
-import type { MbSellerApplyReqType, MbSellerMyType } from "~/types/mb/mbSellerApplyType";
+import type { SlSellerApplyReqType, SlSellerMyType } from "~/types/sl/slSellerApplyType";
 import { badRequest, requireText } from "~/utils/svcInput";
 
 // ── 인증 ──
@@ -135,13 +135,13 @@ export function latestNotis(list: SyNotiType[], limit = 30): SyNotiType[] {
 export const requireMsgText = (v: unknown) => requireText(v, "메시지 내용이 필요합니다.");
 
 // ── 판매자 신청 (2026-09-30) ──
-/** POST /fo/ec/mb/seller/apply 본문 — 판매자명 필수, 유형은 INDIVIDUAL/COMPANY 만(그 외/미입력은 서버 기본값인 INDIVIDUAL) */
-export function buildSellerApplyPayload(sellerNm: string, sellerTypeCd?: string): MbSellerApplyReqType {
+/** POST /fo/ec/sl/seller/apply 본문 — 판매자명 필수, 유형은 INDIVIDUAL/COMPANY 만(그 외/미입력은 서버 기본값인 INDIVIDUAL) */
+export function buildSellerApplyPayload(sellerNm: string, sellerTypeCd?: string): SlSellerApplyReqType {
   const nm = requireText(sellerNm, "판매자명을 입력해 주세요.");
   return { sellerNm: nm, sellerTypeCd: sellerTypeCd === "COMPANY" ? "COMPANY" : "INDIVIDUAL" };
 }
-/** GET /fo/ec/mb/seller/my 응답 정규화 — 신청 이력이 없으면 서버가 null/빈 객체를 줄 수 있어 sellerId 유무로 판단한다 */
-export function mapSellerMy(r: MbSellerMyType | null | undefined): MbSellerMyType | null {
+/** GET /fo/ec/sl/seller/my 응답 정규화 — 신청 이력이 없으면 서버가 null/빈 객체를 줄 수 있어 sellerId 유무로 판단한다 */
+export function mapSellerMy(r: SlSellerMyType | null | undefined): SlSellerMyType | null {
   if (!r || !r.sellerId) return null;
   return { sellerId: r.sellerId, sellerNm: r.sellerNm ?? "", sellerStatusCd: r.sellerStatusCd };
 }

@@ -38,7 +38,7 @@ export interface PdProdRawType {
   prodId: string;
   categoryId?: string | null;
   brandId?: string | null;
-  sellerId?: string | null; // 판매자ID (mb_seller.seller_id) — 2026-09-29(셀러 Phase 1)
+  sellerId?: string | null; // 판매자ID (sl_seller.seller_id) — 2026-09-29(셀러 Phase 1)
   prodNm: string;
   prodCode?: string | null;
   prodTypeCd?: string | null; // 상품유형 SINGLE/OPTION/GROUP/SET/GIFT

@@ -72,8 +72,8 @@ import AddrSearchModal from "~/components/modals/AddrSearchModal.vue";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
-import { mbSellerWarehouseSvc } from "~/svc/fo/ec/mb/mbSellerWarehouseSvc";
-import type { MbSellerWarehouseSaveType, MbSellerWarehouseType } from "~/types/mb/mbSellerWarehouseType";
+import { slSellerWarehouseSvc } from "~/svc/fo/ec/sl/slSellerWarehouseSvc";
+import type { SlSellerWarehouseSaveType, SlSellerWarehouseType } from "~/types/sl/slSellerWarehouseType";
 import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 
 const currentFilePath = useCurrentFilePath();
@@ -82,12 +82,12 @@ usePageTitle("마이페이지 - 판매자 창고 관리");
 
 const loading = ref(true);
 const notSeller = ref(false);
-const list = ref<MbSellerWarehouseType[]>([]);
+const list = ref<SlSellerWarehouseType[]>([]);
 const editing = ref(false);
 const saving = ref(false);
 const err = ref("");
 const addrModal = ref<InstanceType<typeof AddrSearchModal> & { show(): void } | null>(null);
-const blank = (): MbSellerWarehouseSaveType & { warehouseId: string } => ({
+const blank = (): SlSellerWarehouseSaveType & { warehouseId: string } => ({
   warehouseId: "",
   warehouseNm: "",
   zipCode: "",
@@ -107,20 +107,20 @@ const errText = (e: unknown, fb: string) => String((e as { data?: { message?: st
 const handleBtnAction = (cmd: string, param: unknown = {}) => {
   console.log(" ■■ my/seller-warehouse.vue : handleBtnAction -> ", cmd, param);
   if (cmd === "warehouse-open-form") {
-    return openForm(param as MbSellerWarehouseType);
+    return openForm(param as SlSellerWarehouseType);
   } else if (cmd === "warehouse-save") {
     return save();
   } else if (cmd === "warehouse-set-default") {
-    return setDefault(param as MbSellerWarehouseType);
+    return setDefault(param as SlSellerWarehouseType);
   } else if (cmd === "warehouse-remove") {
-    return remove(param as MbSellerWarehouseType);
+    return remove(param as SlSellerWarehouseType);
   } else {
     console.warn("[handleBtnAction] unknown cmd:", cmd);
   }
 };
 
 /* toSaveBody — 서버 엔티티에 기본값이 없어 Y/N 3개를 항상 채워 보낸다. 수정 시 setDefault 처럼 일부만 바꿔도 나머지는 기존 값을 그대로 유지 */
-const toSaveBody = (w: MbSellerWarehouseType | typeof form, patch: Partial<MbSellerWarehouseSaveType> = {}): MbSellerWarehouseSaveType => ({
+const toSaveBody = (w: SlSellerWarehouseType | typeof form, patch: Partial<SlSellerWarehouseSaveType> = {}): SlSellerWarehouseSaveType => ({
   warehouseNm: w.warehouseNm,
   zipCode: w.zipCode ?? "",
   addr: w.addr ?? "",
@@ -135,7 +135,7 @@ const toSaveBody = (w: MbSellerWarehouseType | typeof form, patch: Partial<MbSel
 
 async function load() {
   try {
-    list.value = (await mbSellerWarehouseSvc.getMyWarehouses()).slice().sort((a, b) => (b.isDefault === "Y" ? 1 : 0) - (a.isDefault === "Y" ? 1 : 0));
+    list.value = (await slSellerWarehouseSvc.getMyWarehouses()).slice().sort((a, b) => (b.isDefault === "Y" ? 1 : 0) - (a.isDefault === "Y" ? 1 : 0));
     notSeller.value = false;
   } catch (e) {
     // 판매자가 아니면 서버가 '판매자가 아닙니다.' 를 던진다 — 그 외 오류는 토스트
@@ -145,7 +145,7 @@ async function load() {
     loading.value = false;
   }
 }
-function openForm(w?: MbSellerWarehouseType) {
+function openForm(w?: SlSellerWarehouseType) {
   err.value = "";
   // 첫 창고는 기본 출고지로 미리 체크 — 이벤트 객체/빈 객체가 넘어와도 warehouseId 가 있는 경우만 수정으로 본다
   const isEdit = !!w?.warehouseId;
@@ -163,8 +163,8 @@ async function save() {
   saving.value = true;
   try {
     const body = toSaveBody({ ...form, warehouseNm: form.warehouseNm.trim() });
-    if (form.warehouseId) await mbSellerWarehouseSvc.updateWarehouse(form.warehouseId, body);
-    else await mbSellerWarehouseSvc.createWarehouse(body);
+    if (form.warehouseId) await slSellerWarehouseSvc.updateWarehouse(form.warehouseId, body);
+    else await slSellerWarehouseSvc.createWarehouse(body);
     editing.value = false;
     await load();
     useNuxtApp().$toast.success("저장되었습니다.");
@@ -174,18 +174,18 @@ async function save() {
     saving.value = false;
   }
 }
-async function setDefault(w: MbSellerWarehouseType) {
+async function setDefault(w: SlSellerWarehouseType) {
   try {
-    await mbSellerWarehouseSvc.updateWarehouse(w.warehouseId, toSaveBody(w, { isDefault: "Y" }));
+    await slSellerWarehouseSvc.updateWarehouse(w.warehouseId, toSaveBody(w, { isDefault: "Y" }));
     await load();
   } catch (e) {
     useNuxtApp().$toast.error(errText(e, "기본 출고지 설정에 실패했습니다."));
   }
 }
-async function remove(w: MbSellerWarehouseType) {
+async function remove(w: SlSellerWarehouseType) {
   if (!(await useConfirm().openConfirm({ title: "창고 삭제", message: `'${w.warehouseNm}' 를 삭제할까요?`, confirmText: "삭제", cancelText: "취소", variant: "danger" }))) return;
   try {
-    await mbSellerWarehouseSvc.removeWarehouse(w.warehouseId);
+    await slSellerWarehouseSvc.removeWarehouse(w.warehouseId);
     await load();
   } catch (e) {
     useNuxtApp().$toast.error(errText(e, "삭제에 실패했습니다."));
