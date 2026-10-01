@@ -59,7 +59,6 @@ const currentFilePath = useCurrentFilePath();
 import { useComponentTitle } from "~/composables/useComponentTitle";
 useComponentTitle('오프캔버스 메뉴');
 import { ref } from "vue";
-import { STATIC_MENUS } from "~/conts/foMenus";
 
 // 2026-09-22(요청사항: "1레벨 메뉴를 클릭하면 첫번째 메뉴 오픈하면되") — 평소엔 아코디언(한 번에 하나만 펼침).
 // "전체 펼치기" 버튼을 누르면 전부 펼쳐 한눈에 보여주고(allOpen), 그 상태에서 메뉴를 다시 클릭하면 아코디언 모드로 돌아간다.
@@ -67,9 +66,9 @@ const openTitle = ref<string | null>(null);
 const allOpen = ref(false);
 const showSidebar = ref(false);
 const isOpen = (title: string) => allOpen.value || openTitle.value === title;
-// 상단 메뉴(STATIC_MENUS)와 같은 목록을 쓴다 — 메뉴가 추가/삭제돼도 모바일 메뉴가 어긋나지 않게(고객센터 누락 방지).
+// 상단 메뉴(useTenant().menus)와 같은 목록을 쓴다 — 메뉴가 추가/삭제돼도 모바일 메뉴가 어긋나지 않게(고객센터 누락 방지).
 // 메가메뉴의 그룹(쇼핑 레이아웃/상품·주문 등)은 모바일에서 한 단계로 펼쳐 보여준다.
-const mobile_menus: SyMenuMobileType[] = STATIC_MENUS.map((m) => {
+const mobile_menus: SyMenuMobileType[] = useTenant().menus.map((m) => {
   const subs = (m.dropdownItems ?? []).flatMap((it) => (it.dropdownMenu?.length ? it.dropdownMenu : [it]));
   const seen = new Set<string>();
   const dropdownMenu = subs

@@ -45,7 +45,7 @@ async function beFetchOnce<T>(url: string, method: string, opts: BeCallOptions):
     method,
     query: opts.query,
     body: opts.body,
-    headers: opts.headers,
+    headers: { "X-Site-Id": String(useRuntimeConfig().public.siteId), ...opts.headers }, // 멀티테넌트: 호출자가 따로 지정하면 그것이 우선
     // 2026-09-13 재조정: 8초는 재시도까지 겹치면(8+8=16초) 페이지 전체가 15초 넘게
     // 멎어 보이는 원인이었다 — 자택 NAS가 느릴 땐 8초를 기다려도 대체로 성공하지
     // 않았으므로(직접 curl은 항상 0.2~2초) 5초로 낮춰 실패를 더 빨리 확정한다.

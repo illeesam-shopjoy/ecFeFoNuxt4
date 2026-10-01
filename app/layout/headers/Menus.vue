@@ -25,10 +25,10 @@
 
 <script setup lang="ts">
 import { CDN_URL } from "~/conts/baseConst";
-import { STATIC_MENUS } from "~/conts/foMenus";
 
 const BG = `${CDN_URL}/cdn/prod/img/bg/mega-menu-bg.jpg`;
 
 // 2026-09-20: 메뉴는 정적 데이터라 API(/api/fo/menu) 없이 상수(conts/foMenus.ts)를 그대로 쓴다.
-const menus = STATIC_MENUS;
+// 2026-10-02(멀티테넌트): 모듈 레이어가 메뉴를 정했으면 그것을, 아니면 기본 메뉴를 쓴다.
+const menus = useTenant().menus;
 </script>

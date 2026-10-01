@@ -1,13 +1,23 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 // 2026-09-14(요청사항: "nuxt.config.ts 파일의 process.env 정보 baseConst.ts에 정의하고
 // 사용하는건 어때?") — api/cdn/mode 관련 값(전부 public, 노출 무해)의 근원을 baseConst.ts
 // 하나로 통일. 결제/소셜로그인 시크릿 등 서버 전용 민감정보는 그대로 여기서 직접 읽는다
 // (app/ 밑 파일은 클라이언트 번들에도 들어갈 수 있어 시크릿을 두기엔 부적절).
-import { CDN_URL, API_URL, RUN_MODE } from "./app/conts/baseConst";
+import { CDN_URL, API_URL, RUN_MODE, SITE_ID, TENANT_MODULE } from "./app/conts/baseConst";
+
+// 멀티테넌트(2026-10-02): 이 빌드가 쓰는 모듈 레이어. 모듈 폴더가 없으면 빌드 전에 바로 알린다(환경파일의 NUXT_PUBLIC_TENANT_MODULE 오타 방지).
+const TENANT_LAYER = `./tenants/${TENANT_MODULE}`;
+if (!existsSync(fileURLToPath(new URL(TENANT_LAYER, import.meta.url)))) {
+  throw new Error(`[tenant] 모듈 레이어가 없습니다: tenants/${TENANT_MODULE}/ (NUXT_PUBLIC_TENANT_MODULE=${TENANT_MODULE})`);
+}
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-12-12",
+  // 멀티테넌트: 공통(core)은 이 프로젝트의 app/ 이고, 사이트별 화면·테마·메뉴는 tenants/<모듈>/ 이 채운다(app.config.ts + components/tenant/*).
+  // 레이어보다 프로젝트(app/)가 우선하므로, 모듈이 달라지는 지점은 core 가 "확장 지점"(TenantHome 컴포넌트, app.config 의 tenant)으로 열어 두고 레이어가 채운다.
+  extends: [TENANT_LAYER],
   // 2026-09-13: ecBeBo(로컬 IntelliJ 구동 시 기본 3000)와 포트 충돌 방지 — 로컬 dev 서버는 3100 사용.
   devServer: {
     port: 3100,
@@ -166,6 +176,10 @@ export default defineNuxtConfig({
       mode: RUN_MODE,
       envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
       appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
+      /** 멀티테넌트: 백엔드 사이트(sy_site.site_id) / 모듈 — useTenant() 와 axios·beApi 의 X-Site-Id 헤더가 쓴다 */
+      siteId: SITE_ID,
+      tenantModule: TENANT_MODULE,
+      themeColor: process.env.NUXT_PUBLIC_THEME_COLOR ?? "#bc8246",
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */
       tossPaymentClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY ?? "",
       /** 토스 결제창(API 개별 연동) 클라이언트 키 test_ck_/live_ck_ — 주문 화면의 결제수단 선택(카드/계좌이체/가상계좌/간편결제) 결제창용 */
@@ -192,6 +206,7 @@ export default defineNuxtConfig({
         .filter((k) => k.startsWith("NUXT_"))
         .sort()
         .forEach((k) => console.log(`  ${k}=${process.env[k] ?? ""}`));
+      console.log(`[Tenant] 사이트=${SITE_ID}  모듈=${TENANT_MODULE}(tenants/${TENANT_MODULE})  사이트(sy_site.site_id)=${SITE_ID}`);
       console.log("[Env] useRuntimeConfig().public.NAME (적용값):", {
         prodCdnBase: CDN_URL,
         apiBaseUrlDisplay: API_URL,

@@ -44,6 +44,8 @@ jobs:
           set -o pipefail
           pnpm install --frozen-lockfile 2>&1 | tee -a deploy.log
 
+      # 멀티테넌트(2026-10-02): `pnpm run build` = scripts/tenant.mjs build --profile production → 운영은 .env.site1.ec1.production (site1 · ec1).
+      #   (예전엔 환경파일 없이 순수 nuxt build 라 비밀값 외엔 기본값에 의존했다. 아래 시크릿은 환경파일보다 우선한다 — 이미 설정된 환경변수는 덮어쓰지 않는다)
       - name: Build
         run: |
           set -o pipefail

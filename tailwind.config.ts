@@ -9,11 +9,13 @@ export default {
     './app/plugins/**/*.{js,ts}',
     './app/app.vue',
     './app/error.vue',
+    './tenants/*/app/**/*.{vue,js,ts}', // 멀티테넌트: 모듈 레이어의 화면·컴포넌트(2026-10-02)
   ],
   theme: {
     extend: {
       colors: {
-        theme: '#bc8246',
+        // 테넌트 대표색 — 환경파일 NUXT_PUBLIC_THEME_COLOR (멀티테넌트, 2026-10-02). 없으면 기존 색.
+        theme: process.env.NUXT_PUBLIC_THEME_COLOR || '#bc8246',
         'theme-2': '#8a8f6a',
         // 2026-09-14(요청사항: "tailwind 에 맞게 커스텀되어야 해") — login/register/contact/
         // 리뷰작성 등 8곳에서 이미 쓰던 class="text-danger"(vee-validate ErrorMessage)를

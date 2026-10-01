@@ -7,7 +7,7 @@
 #
 #  다른 앱들과 같은 원칙: 컨테이너명 shopjoy-{앱}-{포트}, 완전 독립 스택(네트워크 비공유).
 #  백엔드(ecBeBo)는 Nuxt 서버가 BFF 로 호출하므로(server/utils/beApi.ts) 이 컨테이너는
-#  NUXT_API_BASE_URL(빌드 시 .env.development 값이 번들에 포함됨)로 지정된 주소로 나간다.
+#  NUXT_API_BASE_URL(빌드 시 .env.site1.ec1.development 값이 번들에 포함됨)로 지정된 주소로 나간다.
 #  브라우저는 이 컨테이너(22100)만 호출하고 ecBeBo 는 서버→서버라 CORS 와 무관하다.
 # ═══════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ services:
       - "host.docker.internal:host-gateway"
 
     # ───── 백엔드 주소 런타임 오버라이드 ─────
-    # 빌드 시 .env.development 의 NUXT_API_BASE_URL(=https://22300.illeesam.synology.me, 이 NAS 자신의
+    # 빌드 시 .env.site1.ec1.development 의 NUXT_API_BASE_URL(=https://22300.illeesam.synology.me, 이 NAS 자신의
     # 공인 DDNS)이 번들에 들어가는데, 컨테이너가 자기 NAS 의 공인 주소로 나갔다 되돌아오는 경로(NAT
     # 헤어핀)는 공유기에 따라 타임아웃난다(2026-09-19 실측: /shop 이 502/timeout). ecBeBo compose 의
     # DB_HOST=host.docker.internal 과 같은 이유 — 같은 NAS 의 ecBeBo(22300)를 호스트 경유로 직접 부른다.
