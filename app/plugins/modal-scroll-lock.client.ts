@@ -17,7 +17,7 @@
  * click(대부분 @click.self="close" 패턴)과 Escape keydown(.esc 리스너가 있는 모달)을 흉내내 쏴서
  * 모달 자신의 닫기 로직을 그대로 타게 한다 — 개별 모달 코드를 하나도 손대지 않는다.
  */
-import { defineNuxtPlugin } from "#app";
+import { defineNuxtPlugin, useRouter } from "#app";
 
 const MODAL_SELECTOR = '[role="dialog"], [role="alertdialog"], [aria-modal="true"], .body-overlay.opened';
 const MODAL_GUARD_STATE = { __modalGuard: true } as const;
@@ -27,6 +27,16 @@ export default defineNuxtPlugin(() => {
   const body = document.body;
   let locked = false;
   let saved = { htmlOverflow: "", bodyOverflow: "", bodyPaddingRight: "" };
+
+  // 2026-10-02(danmoo1 라이브 점검에서 발견): 확인창의 "로그인" 처럼 모달을 닫으면서 바로 라우터 이동을 시작하는 흐름에서,
+  // 아래 unlock() 의 history.back() 이 만드는 popstate 가 "현재 페이지로의 이동"이 되어 진행 중인 이동(/login, 청크 내려받는 중)을
+  // 취소시켰다(Vue Router 는 새 이동이 오면 이전 이동을 cancel). 로컬처럼 청크가 즉시 오면 드러나지 않고 Netlify 같은 느린 망에서만
+  // "버튼을 눌렀는데 아무 일도 안 일어남"이 됐다. → 이동 중이면 되돌린 뒤 같은 목적지로 다시 보낸다(히스토리도 [이전, 목적지]로 깨끗).
+  const router = useRouter();
+  let navigating: string | null = null; // 진행 중인 라우터 이동의 목적지(fullPath)
+  router.beforeEach((to) => { navigating = to.fullPath; });
+  router.afterEach(() => { navigating = null; });
+  router.onError(() => { navigating = null; });
 
   /** 화면에 실제로 보이는 모달이 있는가 — 작은 팝오버(absolute)는 제외하고 fixed 오버레이만 */
   function anyModalOpen(): boolean {
@@ -61,7 +71,13 @@ export default defineNuxtPlugin(() => {
     // 사용자가 X 버튼 등으로 "정상적으로" 닫은 경우 — 아직 우리가 밀어둔 더미 항목 위에 있다면(뒤로가기로
     // 닫힌 게 아니라는 뜻) 그 항목을 되돌려 히스토리 스택에 흔적을 남기지 않는다(두 번 뒤로가기 눌러야
     // 하는 상황 방지). 이미 popstate 로 소비된 뒤라면(history.state 가 더 이상 guard 가 아님) 손대지 않는다.
-    if (guardPushed && (history.state as typeof MODAL_GUARD_STATE | null)?.__modalGuard) history.back();
+    if (guardPushed && (history.state as typeof MODAL_GUARD_STATE | null)?.__modalGuard) {
+      const resume = navigating; // 모달을 닫은 직후 시작된 이동(확인창 → 로그인 등)이 있으면 back() 의 popstate 가 그것을 취소한다
+      if (resume) {
+        window.addEventListener("popstate", () => { setTimeout(() => { void router.push(resume); }, 0); }, { once: true });
+      }
+      history.back();
+    }
     guardPushed = false;
   }
 
