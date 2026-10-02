@@ -44,3 +44,23 @@ export interface PdMyProdSaveType {
   /** 대표이미지 — AttachUploader 로 먼저 올린 미연계 파일의 attachId. 수정 시 주면 교체, 생략하면 기존 유지 */
   attachId?: string;
 }
+
+/** POST /ai-draft 본문 — 사진으로 상품정보 자동 작성(Claude 연계). 사진은 화면에서 줄여 base64 로 보낸다 */
+export interface PdMyProdAiDraftReqType {
+  imageBase64: string;
+  mediaType: "image/jpeg" | "image/png" | "image/webp" | "image/gif";
+  /** 판매자 메모(선택) — 예: "작년에 산 정품, 박스 있음" */
+  hint?: string;
+}
+
+/** AI 가 작성한 상품정보 초안 — 입력란에 채워 넣고 판매자가 확인·수정한 뒤 저장한다 */
+export interface PdMyProdAiDraftType {
+  prodNm: string; // 알아볼 수 없으면 빈 값
+  categoryId: string; // 이 사이트 카테고리 중 하나(없으면 빈 값)
+  categoryNm: string;
+  contentHtml: string;
+  tags: string[];
+  suggestedSalePrice?: number | null; // 말하기 어려우면 없음
+  checkNote: string; // 저장 전에 확인할 점
+  model?: string;
+}

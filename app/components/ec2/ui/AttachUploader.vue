@@ -82,7 +82,8 @@ const props = withDefaults(
     etcMaxMb: 10,
   }
 );
-const emit = defineEmits<{ (e: "update:modelValue", v: SyAttachChangeType[]): void }>();
+// picked: 사용자가 이 위젯에서 고른(업로드할) 파일을 부모에 알린다 — 사진으로 상품정보를 자동 작성하는 화면처럼 파일 자체가 필요한 곳에서 쓴다
+const emit = defineEmits<{ (e: "update:modelValue", v: SyAttachChangeType[]): void; (e: "picked", files: File[]): void }>();
 
 const cdnBase = useRuntimeConfig().public.prodCdnBase as string;
 const picker = ref<HTMLInputElement | null>(null);
@@ -175,6 +176,14 @@ async function onPick(e: Event) {
   const input = e.target as HTMLInputElement;
   const picked = [...(input.files ?? [])];
   input.value = "";
+  await handleFiles(picked, true);
+}
+
+/** addFiles — 부모가 파일을 직접 넣는다(예: AI 자동 작성용으로 찍은 사진을 대표 이미지로도 올릴 때). picked 이벤트는 내지 않는다 */
+const addFiles = (files: File[]) => handleFiles(files, false);
+defineExpose({ addFiles });
+
+async function handleFiles(picked: File[], notify: boolean) {
   if (!picked.length) return;
   say("");
   const valid: File[] = [];
@@ -192,6 +201,7 @@ async function onPick(e: Event) {
   }
   const skippedMsg = skipped.length ? ` (제외 ${skipped.length}건 — ${skipped.join(", ")})` : "";
   if (!valid.length) return say(`첨부할 수 있는 파일이 없습니다${skippedMsg}`, true);
+  if (notify) emit("picked", valid);
   uploading.value = true;
   progress.value = 0;
   try {

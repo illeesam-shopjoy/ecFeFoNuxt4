@@ -5,7 +5,7 @@
  */
 import { authCfg, csrDelete, csrGet, csrList, csrPost, csrPut, idPath } from "~/utils/svcHttp";
 import type { PdCategoryType } from "~/types/pd/pdCategoryType";
-import type { PdMyProdSaveType, PdMyProdType } from "~/types/pd/pdMyProdType";
+import type { PdMyProdAiDraftReqType, PdMyProdAiDraftType, PdMyProdSaveType, PdMyProdType } from "~/types/pd/pdMyProdType";
 
 const MY_PROD = "/fo/ec/pd/my-prod";
 
@@ -21,6 +21,9 @@ export const pdMyProdSvc = {
 
   /** PUT /{id} — 내 상품 수정 */
   updateProd: (prodId: string, body: PdMyProdSaveType): Promise<PdMyProdType> => csrPut<PdMyProdType>(idPath(MY_PROD, prodId), body, authCfg()),
+
+  /** POST /ai-draft — 사진으로 상품정보 초안 자동 작성(Claude 연계). 저장하지 않고 초안만 돌려준다. AI 응답이 수십 초 걸릴 수 있어 대기 시간을 넉넉히 둔다 */
+  aiDraft: (body: PdMyProdAiDraftReqType): Promise<PdMyProdAiDraftType> => csrPost<PdMyProdAiDraftType>(`${MY_PROD}/ai-draft`, body, authCfg({ timeout: 120000 })),
 
   /** DELETE /{id} — 판매종료 처리(물리 삭제 아님) */
   endProd: (prodId: string): Promise<void> => csrDelete(idPath(MY_PROD, prodId), authCfg()),

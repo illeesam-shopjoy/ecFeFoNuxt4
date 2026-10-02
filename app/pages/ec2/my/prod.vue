@@ -24,6 +24,31 @@
 
       <form v-if="editing" class="mb-5 rounded-2xl border border-[#e5e7eb] bg-white p-5" @submit.prevent="handleBtnAction('prod-save')">
         <h3 class="m-0 mb-3 text-[1rem] font-bold text-gray-900">{{ form.prodId ? "상품 수정" : "상품 등록" }}</h3>
+        <!-- 사진으로 자동 작성(Claude 연계) — 사진을 찍거나 고르면 상품명·카테고리·상세설명 초안을 채워 준다. 저장 전 판매자가 확인·수정한다 -->
+        <div class="mb-4 rounded-xl border border-[#e0e7ff] bg-[#f5f7ff] px-4 py-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-[0.88rem] font-bold text-gray-900"><i class="fas fa-magic mr-1 text-[#4f46e5]"></i>사진으로 자동 작성</span>
+            <button type="button" class="ai-btn" :disabled="aiLoading" @click="aiCamera?.click()"><i class="fas fa-camera text-[0.75rem]"></i>사진 촬영</button>
+            <button type="button" class="ai-btn" :disabled="aiLoading" @click="aiPicker?.click()"><i class="fas fa-image text-[0.75rem]"></i>사진 선택</button>
+            <button v-if="aiPhoto && !aiLoading" type="button" class="ai-btn" @click="handleBtnAction('ai-draft')"><i class="fas fa-redo text-[0.72rem]"></i>다시 작성</button>
+            <input ref="aiCamera" type="file" accept="image/*" capture="environment" class="hidden" @change="onAiPhotoPick" />
+            <input ref="aiPicker" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" @change="onAiPhotoPick" />
+          </div>
+          <input v-model="aiHint" class="in mt-2" maxlength="200" placeholder="AI 에게 알려 줄 내용 (선택) — 예: 작년에 산 정품, 박스 있음, 사용감 거의 없음" />
+          <p v-if="aiLoading" class="m-0 mt-2 text-[0.82rem] text-[#4f46e5]"><i class="fas fa-spinner fa-spin mr-1"></i>AI 가 사진을 보고 상품정보를 작성하고 있습니다… (10~40초)</p>
+          <p v-else-if="aiErr" class="m-0 mt-2 text-[0.82rem] text-red-500">{{ aiErr }}</p>
+          <div v-else-if="aiResult" class="mt-2 text-[0.82rem] leading-relaxed text-gray-600">
+            <p class="m-0 font-bold text-[#15803d]">AI 가 작성했습니다. 아래 내용을 확인하고 고친 뒤 저장해 주세요.</p>
+            <p v-if="aiResult.checkNote" class="m-0 text-[#b45309]">확인 필요: {{ aiResult.checkNote }}</p>
+            <p v-if="aiResult.suggestedSalePrice" class="m-0">
+              예상 판매가 {{ aiResult.suggestedSalePrice.toLocaleString() }}원 (참고용)
+              <button type="button" class="lnk ml-1" @click="handleBtnAction('ai-use-price')">판매가에 넣기</button>
+            </p>
+            <p v-if="aiResult.tags.length" class="m-0">추천 태그: {{ aiResult.tags.map((t) => "#" + t).join(" ") }}</p>
+          </div>
+          <p v-else class="m-0 mt-2 text-[0.78rem] text-gray-500">상품 사진 한 장이면 상품명·카테고리·상세설명 초안을 채워 드립니다. 찍은 사진은 대표 이미지로도 올라갑니다.</p>
+        </div>
+
         <div class="grid gap-3 sm:grid-cols-2">
           <label class="block sm:col-span-2"><span class="lb">상품명 *</span><input v-model="form.prodNm" class="in" maxlength="200" /></label>
           <label class="block">
@@ -50,7 +75,7 @@
           <div class="sm:col-span-2">
             <span class="lb">대표 이미지 <span class="text-gray-400">— {{ form.prodId ? "새로 올리면 교체됩니다" : "1장" }}</span></span>
             <img v-if="form.prodId && currentThumb && !imgChanges.length" :src="currentThumb" alt="" class="mb-2 h-20 w-20 rounded-lg object-cover" />
-            <attach-uploader v-model="imgChanges" title="대표 이미지" :show-grp="false" grp-code="PROD_IMG" :max-count="1" :accept="IMG_ACCEPT" />
+            <attach-uploader ref="mainImgUploader" v-model="imgChanges" title="대표 이미지" :show-grp="false" grp-code="PROD_IMG" :max-count="1" :accept="IMG_ACCEPT" @picked="onMainImagePicked" />
           </div>
           <div class="sm:col-span-2">
             <span class="lb">상세 설명</span>
@@ -98,7 +123,7 @@ import { useAuthStore } from "~/store/useAuthStore";
 import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
 import { slSellerSvc } from "~/svc/fo/ec/sl/slSellerSvc";
 import { slSellerWarehouseSvc } from "~/svc/fo/ec/sl/slSellerWarehouseSvc";
-import type { PdMyProdSaveType, PdMyProdStatusCd, PdMyProdType } from "~/types/pd/pdMyProdType";
+import type { PdMyProdAiDraftType, PdMyProdSaveType, PdMyProdStatusCd, PdMyProdType } from "~/types/pd/pdMyProdType";
 import type { SlSellerMyType } from "~/types/sl/slSellerApplyType";
 import type { SlSellerWarehouseType } from "~/types/sl/slSellerWarehouseType";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
@@ -132,6 +157,16 @@ const currentThumb = ref("");
 const blank = () => ({ prodId: "", prodNm: "", categoryId: "", warehouseId: "", salePrice: 0, stdPrice: 0, stockQty: 0, prodStatusCd: "ACTIVE" as "ACTIVE" | "INACTIVE", contentHtml: "" });
 const form = reactive(blank());
 
+// ── 사진으로 자동 작성(Claude 연계) ──
+const aiCamera = ref<HTMLInputElement | null>(null);
+const aiPicker = ref<HTMLInputElement | null>(null);
+const mainImgUploader = ref<{ addFiles: (files: File[]) => Promise<void> } | null>(null);
+const aiPhoto = ref<File | null>(null); // 마지막으로 AI 에 보낸(보낼) 사진
+const aiHint = ref("");
+const aiLoading = ref(false);
+const aiErr = ref("");
+const aiResult = ref<PdMyProdAiDraftType | null>(null);
+
 const errText = (e: unknown, fb: string) => String((e as { data?: { message?: string }; message?: string })?.data?.message ?? (e as { message?: string })?.message ?? fb).split("::")[0]!;
 
 /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -141,6 +176,10 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
     return openForm(param as PdMyProdType);
   } else if (cmd === "prod-save") {
     return save();
+  } else if (cmd === "ai-draft") {
+    return runAiDraft();
+  } else if (cmd === "ai-use-price") {
+    if (aiResult.value?.suggestedSalePrice) form.salePrice = aiResult.value.suggestedSalePrice;
   } else if (cmd === "prod-end") {
     return endProd(param as PdMyProdType);
   } else {
@@ -163,9 +202,75 @@ async function loadList() {
   list.value = (await pdMyProdSvc.getMyProds()).slice().sort((a, b) => (a.prodStatusCd === "ENDED" ? 1 : 0) - (b.prodStatusCd === "ENDED" ? 1 : 0));
 }
 
+/** 사진을 긴 변 1280px 이하 JPEG 로 줄여 base64 로 만든다 — AI 에 보낼 용도(원본은 대표 이미지로 따로 올라간다) */
+async function toAiImage(file: File): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("사진을 처리할 수 없습니다.");
+  ctx.fillStyle = "#fff"; // 투명 배경(PNG)이 검게 나오지 않게
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close?.();
+  return canvas.toDataURL("image/jpeg", 0.85).split(",")[1] ?? "";
+}
+
+/** AI 초안 요청 → 입력란 채우기. 이미 적어 둔 상품명·설명이 있으면 덮어쓰기 전에 묻는다 */
+async function runAiDraft() {
+  if (!aiPhoto.value || aiLoading.value) return;
+  aiErr.value = "";
+  aiLoading.value = true;
+  try {
+    const d = await pdMyProdSvc.aiDraft({ imageBase64: await toAiImage(aiPhoto.value), mediaType: "image/jpeg", hint: aiHint.value.trim() || undefined });
+    if (!d.prodNm) {
+      aiResult.value = null;
+      return void (aiErr.value = d.checkNote || "사진에서 상품을 알아보지 못했습니다. 상품이 잘 보이는 사진으로 다시 시도해 주세요.");
+    }
+    const hasText = !!form.prodNm.trim() || !!form.contentHtml.replace(/<[^>]*>/g, "").trim();
+    if (hasText && !(await useConfirm().openConfirm({ title: "AI 자동 작성", message: "이미 입력한 상품명·상세 설명을 AI 가 작성한 내용으로 바꿀까요?", confirmText: "바꾸기", cancelText: "그대로 두기" }))) {
+      aiResult.value = d; // 안내(확인 필요·예상가·태그)만 보여 준다
+      return;
+    }
+    form.prodNm = d.prodNm;
+    if (d.categoryId && categoryOptions.value.some((c) => c.id === d.categoryId)) form.categoryId = d.categoryId;
+    form.contentHtml = d.contentHtml;
+    aiResult.value = d;
+  } catch (e) {
+    aiErr.value = errText(e, "AI 자동 작성에 실패했습니다. 직접 입력해 주세요.");
+  } finally {
+    aiLoading.value = false;
+  }
+}
+
+/** [사진 촬영]/[사진 선택] — 그 사진을 대표 이미지로 올리고(비어 있을 때) AI 초안을 만든다 */
+async function onAiPhotoPick(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+  if (!file) return;
+  aiPhoto.value = file;
+  if (!imgChanges.value.some((f) => f.rowStatus === "I")) void mainImgUploader.value?.addFiles([file]);
+  await runAiDraft();
+}
+
+/** 대표 이미지 칸에서 사진을 올렸을 때 — 새 상품이고 아직 상품명이 비어 있으면 그 사진으로 AI 초안을 만든다 */
+function onMainImagePicked(files: File[]) {
+  const img = files.find((f) => f.type.startsWith("image/"));
+  if (!img) return;
+  aiPhoto.value = img;
+  if (!form.prodId && !form.prodNm.trim()) void runAiDraft();
+}
+
 async function openForm(p?: PdMyProdType) {
   err.value = "";
   imgChanges.value = [];
+  aiPhoto.value = null;
+  aiHint.value = "";
+  aiErr.value = "";
+  aiResult.value = null;
   if (p?.prodId) {
     try {
       const d = await pdMyProdSvc.getMyProd(p.prodId); // 상세설명까지 포함된 최신 값
@@ -249,5 +354,7 @@ onMounted(async () => {
 .in { width: 100%; height: 38px; padding: 0 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.88rem; outline: none; background: #fff; }
 .in:focus { border-color: #bc8246; }
 .lnk { padding: 0; border: 0; background: transparent; color: #4b5563; cursor: pointer; text-decoration: underline; }
+.ai-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border: 1px solid #c7d2fe; border-radius: 8px; background: #fff; color: #4338ca; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.ai-btn:disabled { opacity: 0.5; cursor: default; }
 .btn-sub { padding: 8px 16px; border: 1px solid #c9ced6; border-radius: 8px; background: #f3f4f6; color: #374151; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 </style>
