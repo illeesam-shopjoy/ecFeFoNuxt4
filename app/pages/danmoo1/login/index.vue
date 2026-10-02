@@ -20,7 +20,8 @@
 
       <div class="flex items-center gap-3 my-6 text-[12px] muted"><span class="flex-1 line"></span>또는<span class="flex-1 line"></span></div>
       <button type="button" class="btn-soft w-full border border-dashed border-[var(--dm-text-3)] !bg-transparent" @click="handleBtnAction('login-demo')"><i class="far fa-user-friends"></i>테스트 계정으로 로그인</button>
-      <p class="muted text-[12.5px] text-center mt-6">회원가입은 준비 중이에요. 테스트 계정(비밀번호 1111)으로 둘러보세요.</p>
+      <nuxt-link :to="{ path: '/signup', query: route.query }" class="btn-soft w-full mt-2"><i class="far fa-user-plus"></i>이메일로 회원가입</nuxt-link>
+      <p class="muted text-[12.5px] text-center mt-6">둘러보기만 하려면 테스트 계정(비밀번호 1111)으로 로그인해도 돼요.</p>
     </div>
 
     <client-only><demo-member-login-modal ref="demoRef" @logged-in="fnAfterLogin" /></client-only>

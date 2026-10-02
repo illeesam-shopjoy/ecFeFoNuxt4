@@ -21,4 +21,7 @@ export interface CmBlogRawType {
   viewCount?: number | null; // 조회수
   blogCateId?: string | null; // 블로그카테고리ID
   regBy?: string | null; // 등록자(회원ID) — 내가 쓴 글 판별용
+  blogTypeCd?: string | null; // 게시글 구분(BLOG/NEWS) — 수정(PUT) 시 그대로 돌려보낸다
+  useYn?: string | null; // 공개여부
+  isNotice?: string | null; // 공지 여부
 }

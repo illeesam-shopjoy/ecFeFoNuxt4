@@ -3,7 +3,7 @@
  * ecBeBo FoCmBlogController(/api/fo/ec/cm/bltn) 를 직접 부른다. 블로그 상세 SEO 서버 렌더링(blog-dtl)만 server/api 를 거친다.
  * 응답 가공은 utils/mapBlog.ts.
  */
-import { authCfg, csrDelete, csrGet, csrPost, idPath } from "~/utils/svcHttp";
+import { authCfg, csrDelete, csrGet, csrPost, csrPut, idPath } from "~/utils/svcHttp";
 import { mapBlog, mapBlogPage } from "~/utils/mapBlog";
 import { beConfig } from "~/utils/beConfig";
 import type { CmBlogRawType } from "~/types/cm/cmBlogRawType";
@@ -30,6 +30,13 @@ export const coBlogSvc = {
   /** POST /fo/ec/cm/bltn — 글 등록(로그인 필요, 등록자=로그인 회원). danmoo1 동네생활 글쓰기용 (2026-10-02). 본문은 화면에서 toSafeHtml 로 정화해 보여준다 */
   create: (body: { blogTitle: string; blogContent: string; blogSummary?: string; blogAuthor?: string; blogCateId?: string }): Promise<CmBlogRawType> =>
     csrPost<CmBlogRawType>(BASE, { blogTypeCd: "BLOG", useYn: "Y", isNotice: "N", ...body }, authCfg()),
+
+  /** PUT /fo/ec/cm/bltn/{id} — 내 글 수정(등록자만). 서버가 본문을 통째로 저장하므로 바뀌지 않는 값(카테고리·구분·공개·조회수)도 함께 보낸다 (2026-10-03 danmoo1) */
+  update: (blogId: string, body: { blogTitle: string; blogContent: string; blogSummary?: string; blogAuthor?: string; blogCateId?: string; blogTypeCd?: string; useYn?: string; isNotice?: string; viewCount?: number }): Promise<CmBlogRawType> =>
+    csrPut<CmBlogRawType>(idPath(BASE, blogId), { blogTypeCd: "BLOG", useYn: "Y", isNotice: "N", ...body }, authCfg()),
+
+  /** DELETE /fo/ec/cm/bltn/{id} — 내 글 삭제(등록자만) */
+  remove: (blogId: string): Promise<void> => csrDelete(idPath(BASE, blogId), authCfg()),
 
   /** POST /fo/ec/cm/bltn/{id}/reply — 댓글 등록(로그인 필요). danmoo1 동네생활 댓글 (2026-10-02, ecBeBo FoCmBlogController.createReply) */
   createReply: (blogId: string, content: string, parentCommentId?: string): Promise<CmBlogReplyType> =>

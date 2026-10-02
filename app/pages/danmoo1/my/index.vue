@@ -109,6 +109,7 @@ const menuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => [
     { key: "sales", label: "판매내역", icon: "far fa-clipboard", to: "/my/prods" },
     { key: "buys", label: "구매내역", icon: "far fa-shopping-bag", to: "/my/orders" },
     { key: "likes", label: "관심목록", icon: "far fa-heart", to: "/my/likes" },
+    { key: "recent", label: "최근 본 물건", icon: "far fa-clock", to: "/my/recent" },
     { key: "coupons", label: "쿠폰함", icon: "far fa-ticket-alt", to: "/my/coupons" },
     { key: "posts", label: "모아보기 (내가 쓴 글)", icon: "far fa-folder-open", to: "/my/posts" },
   ] },

@@ -1,9 +1,12 @@
 <template>
-  <!-- 동네생활 글 상세 — 작성자·시간, 제목, 본문(정화한 HTML), 공감(실제 저장)·공유, 댓글 목록·작성·내 댓글 삭제 -->
+  <!-- 동네생활 글 상세 — 작성자·시간, 제목, 본문(정화한 HTML), 공감(실제 저장)·공유, 댓글 목록·작성·내 댓글 삭제, 내 글이면 ⋯(수정/삭제) -->
   <layout :tabs="false">
     <template #top>
       <dm-title-bar title="동네생활" fallback="/community">
-        <template #right><button type="button" class="icon-btn" aria-label="공유" @click="handleBtnAction('post-share')"><i class="far fa-share-square"></i></button></template>
+        <template #right>
+          <button type="button" class="icon-btn" aria-label="공유" @click="handleBtnAction('post-share')"><i class="far fa-share-square"></i></button>
+          <button v-if="isMinePost" type="button" class="icon-btn" aria-label="내 글 관리" @click="moreOpen = true"><i class="fas fa-ellipsis-v"></i></button>
+        </template>
       </dm-title-bar>
     </template>
     <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
@@ -48,6 +51,14 @@
         <input v-model="commentText" class="input !h-11 flex-1 !rounded-full" :placeholder="authStore.isStLoggedIn ? '댓글을 입력해 주세요' : '로그인하면 댓글을 쓸 수 있어요'" :disabled="sending" maxlength="500" @focus="handleBtnAction('comment-focus')" />
         <button type="submit" class="w-11 h-11 rounded-full bg-[var(--dm-primary)] text-white flex-none disabled:opacity-40" :disabled="!commentText.trim() || sending" aria-label="등록"><i class="fas fa-arrow-up"></i></button>
       </form>
+
+      <!-- 내 글 관리 -->
+      <dm-sheet :open="moreOpen" title="내 글 관리" @close="moreOpen = false">
+        <ul class="divide-y divide-[var(--dm-line)]">
+          <li><nuxt-link :to="{ path: '/write', query: { type: 'community', edit: blogId } }" class="flex items-center h-12 text-[15.5px]" @click="moreOpen = false"><i class="far fa-edit w-7 muted"></i>수정</nuxt-link></li>
+          <li><button type="button" class="w-full h-12 text-left text-[15.5px] text-danger" @click="moreOpen = false; handleBtnAction('post-remove')"><i class="far fa-trash-alt w-7"></i>삭제</button></li>
+        </ul>
+      </dm-sheet>
     </template>
   </layout>
 </template>
@@ -55,6 +66,7 @@
 <script setup lang="ts">
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
+import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
@@ -81,6 +93,7 @@ const pending = ref(true);
 const liked = ref(false);
 const commentText = ref("");
 const sending = ref(false);
+const moreOpen = ref(false);
 const isMinePost = computed(() => !!post.value?.regBy && post.value.regBy === authStore.user?.memberId);
 // 본문이 HTML 이 아니면(시드 글은 줄바꿈 텍스트) 줄바꿈을 <br> 로
 const contentHtml = computed(() => {
@@ -118,6 +131,17 @@ const handleBtnAction = async (cmd: string) => {
       await openAlert("공감 처리에 실패했어요.");
     }
     return;
+  }
+  if (cmd === "post-remove") {
+    if (!(await openConfirm({ title: "글 삭제", message: "이 글을 삭제할까요? 댓글도 함께 사라져요.", variant: "danger", confirmText: "삭제" }))) return;
+    try {
+      await coBlogSvc.remove(blogId);
+      await openAlert({ title: "삭제", message: "글을 삭제했어요.", variant: "success" });
+      return navigateTo("/community", { replace: true });
+    } catch (e) {
+      console.error("[danmoo1/community/[id]] 글 삭제 실패", e);
+      return openAlert(String((e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "").split("::")[0] || "글을 삭제하지 못했어요.");
+    }
   }
   if (cmd === "comment-focus") {
     if (!authStore.isStLoggedIn) return fnAskLogin("댓글은 로그인 후 쓸 수 있어요.");

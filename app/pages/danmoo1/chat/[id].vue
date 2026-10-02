@@ -1,5 +1,5 @@
 <template>
-  <!-- 채팅방 — 상단에 문의 중인 물건 카드(상품 참조 메시지 기준), 메시지 목록(3초마다 새 메시지 폴링), 입력창. 내 메시지(MEMBER)는 오른쭉 주황, 운영자/시스템은 왼쪽 -->
+  <!-- 채팅방 — 상단에 문의 중인 물건 카드(상품 참조 메시지 기준), 메시지 목록(3초마다 새 메시지 폴링), 입력창(+ 사진 전송·자주 쓰는 문구). 내 메시지(MEMBER)는 오른쪽 주황, 운영자/시스템은 왼쪽 -->
   <layout :tabs="false">
     <template #top>
       <dm-title-bar :title="room?.subject || '채팅'" fallback="/chat">
@@ -26,18 +26,21 @@
           <span v-if="!isMine(m)" class="w-8 h-8 rounded-full bg-[var(--dm-primary-soft)] text-[var(--dm-primary)] inline-flex items-center justify-center text-[13px] flex-none mb-4"><i class="fas fa-headset"></i></span>
           <div class="max-w-[72%]">
             <p v-if="!isMine(m) && m.senderNm" class="text-[11px] muted mb-0.5 ml-1">{{ m.senderNm }}</p>
-            <div class="rounded-2xl px-3.5 py-2 text-[15px] break-words whitespace-pre-wrap" :class="isMine(m) ? 'bg-[var(--dm-primary)] text-white rounded-br-md' : 'bg-[var(--dm-chip)] rounded-bl-md'">
-              <img v-if="m.msgTypeCd === 'IMAGE'" :src="m.msgText" alt="사진" class="max-w-full rounded-lg" />
+            <div class="rounded-2xl text-[15px] break-words whitespace-pre-wrap" :class="[isMine(m) ? 'bg-[var(--dm-primary)] text-white rounded-br-md' : 'bg-[var(--dm-chip)] rounded-bl-md', m.msgTypeCd === 'IMAGE' ? 'p-1 overflow-hidden' : 'px-3.5 py-2']">
+              <a v-if="m.msgTypeCd === 'IMAGE'" :href="m.msgText" target="_blank" rel="noopener"><img :src="m.msgText" alt="사진" class="max-w-full max-h-72 rounded-xl" loading="lazy" /></a>
               <template v-else>{{ m.msgText }}</template>
             </div>
           </div>
           <span class="text-[11px] muted flex-none">{{ hm(m.sendDate || m.regDate) }}</span>
         </div>
       </template>
+      <p v-if="uploading" class="text-right text-[12px] muted">사진 보내는 중… {{ uploadPct }}%</p>
     </div>
 
-    <form class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] flex items-center gap-2 px-3 py-2 bg-[var(--dm-bg)] border-t border-[var(--dm-line)] z-40" style="padding-bottom: calc(8px + env(safe-area-inset-bottom))" @submit.prevent="handleBtnAction('msg-send')">
+    <form class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] flex items-center gap-1.5 px-3 py-2 bg-[var(--dm-bg)] border-t border-[var(--dm-line)] z-40" style="padding-bottom: calc(8px + env(safe-area-inset-bottom))" @submit.prevent="handleBtnAction('msg-send')">
       <button type="button" class="icon-btn muted" aria-label="자주 쓰는 문구" @click="quickOpen = true"><i class="far fa-plus-square"></i></button>
+      <button type="button" class="icon-btn muted" aria-label="사진 보내기" :disabled="uploading || !room" @click="fileInput?.click()"><i class="far fa-image"></i></button>
+      <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleBtnAction('img-pick')" />
       <input v-model="text" class="input !h-11 flex-1 !rounded-full" placeholder="메시지 보내기" :disabled="sending || !room" enterkeyhint="send" maxlength="1000" />
       <button type="submit" class="w-11 h-11 rounded-full bg-[var(--dm-primary)] text-white flex-none disabled:opacity-40" :disabled="!text.trim() || sending || !room" aria-label="보내기"><i class="fas fa-arrow-up"></i></button>
     </form>
@@ -61,6 +64,8 @@ import { useAuthStore } from "~/store/useAuthStore";
 import { dmStatusOf } from "~/conts/tenant/danmoo1";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
+import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
+import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
 import { formatWon } from "~/utils/timeAgo";
 import type { CmChattType } from "~/types/cm/cmChattType";
 import type { CmChattMsgType } from "~/types/cm/cmChattMsgType";
@@ -73,6 +78,7 @@ useHead({ title: "채팅" });
 const route = useRoute();
 const authStore = useAuthStore();
 const { openAlert } = useAlert();
+const cdnBase = useRuntimeConfig().public.prodCdnBase as string;
 const chattId = String(route.params.id);
 const room = ref<CmChattType | null>(null);
 const msgs = ref<CmChattMsgType[]>([]);
@@ -80,7 +86,10 @@ const refProd = ref<PdProdType | null>(null);
 const text = ref("");
 const loading = ref(true);
 const sending = ref(false);
+const uploading = ref(false);
+const uploadPct = ref(0);
 const quickOpen = ref(false);
+const fileInput = ref<HTMLInputElement | null>(null);
 let timer: ReturnType<typeof setInterval> | null = null;
 let refProdId = "";
 
@@ -116,12 +125,65 @@ const handleBtnAction = async (cmd: string) => {
     }
     return;
   }
+  if (cmd === "img-pick") {
+    const file = fileInput.value?.files?.[0];
+    if (fileInput.value) fileInput.value.value = "";
+    if (file) await fnSendImage(file);
+    return;
+  }
   console.warn("[handleBtnAction] unknown cmd:", cmd);
 };
 
 /* ##### [03] 내장 사용 함수 ################################################### */
 
 const fnScrollBottom = () => nextTick(() => window.scrollTo({ top: document.body.scrollHeight }));
+
+/* fnShrink — 긴 변 1280px·JPEG 85% 로 줄여 올린다(실패하면 원본) */
+const fnShrink = (file: File): Promise<File> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, 1280 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(img.width * scale));
+        c.height = Math.max(1, Math.round(img.height * scale));
+        c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob((b) => resolve(b ? new File([b], `chat_${Date.now()}.jpg`, { type: "image/jpeg" }) : file), "image/jpeg", 0.85);
+      } catch {
+        resolve(file);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+
+/* fnSendImage — 사진 업로드(CDN, 업무코드 chat) 후 IMAGE 메시지로 전송 */
+const fnSendImage = async (file: File) => {
+  if (!file.type.startsWith("image/")) return openAlert("이미지 파일만 보낼 수 있어요.");
+  if (!room.value || room.value.chattStatusCd === "DONE") return openAlert("종료된 대화에는 사진을 보낼 수 없어요.");
+  uploading.value = true;
+  uploadPct.value = 0;
+  try {
+    const small = await fnShrink(file);
+    if (small.size > 8 * 1024 * 1024) return openAlert("사진은 8MB 이하만 보낼 수 있어요.");
+    const res = await coUploadSvc.uploadMulti([small], "chat", (p) => (uploadPct.value = p));
+    const f = res.files?.[0];
+    const url = fixInternalCdnUrl(resolveCdnUrl(f?.cdnImgUrl || f?.filePath, cdnBase), cdnBase);
+    if (!url || !f?.attachId) throw new Error("업로드 응답에 사진 주소가 없습니다.");
+    const saved = await myChatSvc.sendImage(chattId, url, f.attachId);
+    msgs.value.push(saved);
+    fnScrollBottom();
+  } catch (e) {
+    console.error("[danmoo1/chat/[id]] 사진 전송 실패", e);
+    await openAlert("사진을 보내지 못했어요. 잠시 후 다시 시도해 주세요.");
+  } finally {
+    uploading.value = false;
+  }
+};
 
 /* fnSyncRefProd — 가장 최근 상품 참조 메시지의 물건을 상단 카드로 */
 const fnSyncRefProd = async () => {

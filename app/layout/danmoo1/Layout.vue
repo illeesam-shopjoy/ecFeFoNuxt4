@@ -18,6 +18,15 @@
 import DmBottomTabs from "~/components/danmoo1/dm/DmBottomTabs.vue";
 import DmFab from "~/components/danmoo1/dm/DmFab.vue";
 
+// 모바일 브라우저 상단 색·홈 화면 추가 시 앱처럼 보이게(당근색). 모듈 레이아웃이라 danmoo1 빌드에만 적용된다
+useHead({
+  meta: [
+    { name: "theme-color", content: "#ff6f0f" },
+    { name: "apple-mobile-web-app-capable", content: "yes" },
+    { name: "apple-mobile-web-app-title", content: "danmoo1" },
+  ],
+});
+
 defineProps({
   /** 하단 탭(홈·커뮤니티·동네지도·채팅·나의) 표시 — 상세·채팅방 등 깊은 화면은 false */
   tabs: { type: Boolean, default: true },

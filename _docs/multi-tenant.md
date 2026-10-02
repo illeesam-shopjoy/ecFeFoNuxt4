@@ -95,7 +95,10 @@ ecFeFoNuxt4/
 | `/write` | 동네생활 글(주제 태그·블로그 등록) / 내 물건 팔기(판매자만: 사진 1장(AttachUploader PROD_IMG)·카테고리·판매/나눔·가격 제안 받기·창고·설명) | `POST /fo/ec/cm/bltn`, `POST /fo/ec/pd/my-prod` |
 | `/my` | 나의 danmoo — 프로필·매너온도(고정 36.5)·요약(관심/채팅/쿠폰/판매)·머니(=적립금 잔액)·메뉴 | `/fo/ec/my/info`, `/fo/ec/mb/like`, `/fo/my/coupon`, `/fo/my/chat` |
 | `/my/likes`, `/my/prods`, `/my/orders`, `/my/coupons`, `/my/posts`, `/my/settings` | 관심목록(2열, 해제)·판매내역(판매중/예약·중지/완료 탭)·구매내역(주문)·쿠폰함·모아보기(내가 쓴 글=regBy)·설정(동네·범위·다크 모드·키워드 관리·최근 기록 삭제·계정·앱 정보) | `/fo/ec/pd/my-prod`, `/fo/my/order/list`, `/fo/my/coupon/list`, 블로그 카테고리 글의 `regBy` |
-| `/login` | 이메일 로그인 + 테스트 계정 모달(`?redirect=` 로 복귀). 회원가입은 아직 없다 | `/co/fo-auth/login` |
+| `/login`, `/signup` | 이메일 로그인 + 테스트 계정 모달(`?redirect=` 로 복귀) / **회원가입**(이름·이메일·비밀번호 정책·약관, 가입 사이트=이 배포의 사이트 → 가입 후 자동 로그인) | `/co/fo-auth/login`, `/co/fo-auth/join`(body.siteId, 2026-10-03 백엔드가 X-Site-Id 도 인정) |
+| `/my/recent` | 최근 본 물건(localStorage 상품ID → 단건 조회, 최근 10개) | `/fo/ec/pd/prod/{id}` |
+
+2026-10-03 보강: 판매내역 ⋯ 시트(예약중↔판매중 = `PUT my-prod` 상태, 끌어올리기 = 같은 내용 PUT 으로 updDate 갱신 → 홈 "끌올", 판매완료 = `DELETE my-prod`(ENDED), 수정 = `/write?type=prod&edit=`), 동네생활 내 글 ⋯(수정 `/write?type=community&edit=` = `PUT bltn`(카테고리·구분·조회수 그대로 돌려보냄), 삭제 = `DELETE bltn`), 채팅 사진 전송(`coUploadSvc.uploadMulti(…, "chat")` → `sendImage`), 하단 채팅 탭 안 읽음 수(60초 캐시), theme-color 메타. 테스트 판매자: `dm_user1` 을 ACTIVE 판매자+창고로 시드(`migration_20261003_seed_danmoo1_seller.sql`).
 
 - 모듈 전용 상수(동네 목록·좌표·탭·서비스 메뉴·정렬·가격대·샘플)와 `townOf()`(상품ID 로 동네 고정 배정 — 상품에 동네 데이터가 없어 표시용), `dmStatusOf()`(예약중/판매완료)는 `app/conts/tenant/danmoo1.ts` 의 named export — 이 빌드에만 들어간다. 내 동네·범위·최근 검색·키워드 알림·알바/부동산 관심은 서버 저장이 아니라 localStorage(`dm.*`).
 - 매너온도(36.5°C)·동네 가게·알바·부동산은 데이터가 없어 표시용이며 화면에 "샘플"로 적어 두었다. 회원끼리 1:1 채팅은 백엔드에 없어 고객센터 채팅방으로 대신한다.

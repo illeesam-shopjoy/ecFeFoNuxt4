@@ -21,6 +21,9 @@ export function mapBlog(b: CmBlogRawType, cdnBase: string): CmBlogType {
     blogCateId: b.blogCateId ?? undefined,
     regBy: b.regBy ?? undefined,
     replies: (b.replies ?? []).filter((r) => !r.commentStatusCd || r.commentStatusCd === "ACTIVE"),
+    blogTypeCd: b.blogTypeCd ?? undefined,
+    useYn: b.useYn ?? undefined,
+    isNotice: b.isNotice ?? undefined,
   };
 }
 

@@ -34,8 +34,11 @@ export default defineNuxtPlugin(() => {
   // "버튼을 눌렀는데 아무 일도 안 일어남"이 됐다. → 이동 중이면 되돌린 뒤 같은 목적지로 다시 보낸다(히스토리도 [이전, 목적지]로 깨끗).
   const router = useRouter();
   let navigating: string | null = null; // 진행 중인 라우터 이동의 목적지(fullPath)
+  // 가드 항목을 밀어둔 뒤 라우트가 바뀌었는가 — Vue Router 는 replace 할 때 기존 history.state 를 새 항목에 병합하므로(__modalGuard 플래그가 묻어감)
+  // "지금 state 가 guard 다"만으로는 우리 더미 항목인지 알 수 없다(2026-10-03: 글 삭제 → 알림 닫기 → /community 로 replace 뒤 늦게 돈 unlock() 이 back() 을 불러 지워진 글로 되돌아갔다).
+  let routeChangedSinceGuard = false;
   router.beforeEach((to) => { navigating = to.fullPath; });
-  router.afterEach(() => { navigating = null; });
+  router.afterEach((to, from) => { navigating = null; if (to.fullPath !== from.fullPath) routeChangedSinceGuard = true; });
   router.onError(() => { navigating = null; });
 
   /** 화면에 실제로 보이는 모달이 있는가 — 작은 팝오버(absolute)는 제외하고 fixed 오버레이만 */
@@ -61,6 +64,7 @@ export default defineNuxtPlugin(() => {
     // 뒤로가기가 "이전 페이지 이동" 대신 "모달 닫기"가 되도록, 같은 URL로 더미 히스토리 항목을 하나 밀어둔다.
     history.pushState(MODAL_GUARD_STATE, "", location.href);
     guardPushed = true;
+    routeChangedSinceGuard = false;
   }
   function unlock() {
     if (!locked) return;
@@ -72,11 +76,10 @@ export default defineNuxtPlugin(() => {
     // 닫힌 게 아니라는 뜻) 그 항목을 되돌려 히스토리 스택에 흔적을 남기지 않는다(두 번 뒤로가기 눌러야
     // 하는 상황 방지). 이미 popstate 로 소비된 뒤라면(history.state 가 더 이상 guard 가 아님) 손대지 않는다.
     if (guardPushed && (history.state as typeof MODAL_GUARD_STATE | null)?.__modalGuard) {
-      const resume = navigating; // 모달을 닫은 직후 시작된 이동(확인창 → 로그인 등)이 있으면 back() 의 popstate 가 그것을 취소한다
-      if (resume) {
-        window.addEventListener("popstate", () => { setTimeout(() => { void router.push(resume); }, 0); }, { once: true });
-      }
-      history.back();
+      // 모달을 닫은 직후 라우터 이동(확인창 → 로그인, 알림창 → 목록 등)이 시작돼 있으면 back() 을 하지 않는다 — back() 의 popstate 가
+      // 그 이동을 취소하거나(이전 항목이 다른 화면이면) 지워진 글을 다시 열기까지 했다. 더미 항목 하나가 남아 뒤로가기를 한 번 더 눌러야
+      // 하는 정도가 최선의 타협이다(이동 자체가 안 되는 것보다 낫다). 이동이 없을 때만 깨끗하게 되돌린다.
+      if (!navigating && !routeChangedSinceGuard) history.back();
     }
     guardPushed = false;
   }
