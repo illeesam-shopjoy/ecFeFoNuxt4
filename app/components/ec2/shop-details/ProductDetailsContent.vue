@@ -190,6 +190,8 @@
              기존 flex-nowrap이 좁은 화면에서도 한 줄을 강제해 버튼이 화면 밖으로 밀려나갔다.
              좁은 화면(max-sm)에서는 줄바꿈을 허용하고 버튼은 다음 줄에서 꽉 채워 보이게 한다. -->
         <!-- ===== 상세 페이지 전용 구매 영역 (2026-09-20: ecFeBo 처럼 장바구니 담기·찜·카카오 공유·바로구매·문의하기·배송 안내) ===== -->
+        <!-- 판매자가 이 상품에 건 쿠폰 받기 — 상세 페이지에서만 -->
+        <prod-seller-coupons v-if="detail" :prod-id="item.prodId" />
         <div v-if="detail" ref="buyEl">
           <div class="mb-4 flex items-center gap-3">
             <label class="text-[0.85rem] text-[#555]">수량</label>
@@ -264,6 +266,7 @@ import { prodTypeLabel } from "~/conts/pdConst";
 import { prodOptSwatchColor } from "~/utils/prodOptColor";
 import SizeGuideModal from "~/components/ec2/modals/SizeGuideModal.vue";
 import GiftModal from "~/components/ec2/modals/GiftModal.vue";
+import ProdSellerCoupons from "~/components/ec2/prod-detail/ProdSellerCoupons.vue";
 import { useAuthStore } from "~/store/useAuthStore";
 import OptionStatusHelpModal from "~/components/ec2/modals/OptionStatusHelpModal.vue";
 

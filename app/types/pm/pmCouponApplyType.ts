@@ -17,6 +17,8 @@ export interface PmCouponApplyType {
   maxDiscountAmt?: number; // 최대 할인한도(정률 쿠폰)
   validFrom?: string; // 유효기간 시작 (yyyy-mm-dd)
   validTo?: string; // 유효기간 종료 (yyyy-mm-dd) — 종료가 빠른 쿠폰을 우선 적용
+  /** 있으면 이 상품들에만 쓸 수 있는 쿠폰(판매자 쿠폰). 없으면 상품 제한 없음 */
+  prodIds?: string[];
 }
 
 /**
@@ -33,6 +35,7 @@ export interface AppliedCoupons {
 /** 상품할인쿠폰을 적용할 주문 줄 — key 는 mapCoupon.couponLineKey */
 export interface CouponLine {
   key: string;
+  prodId?: string; // 상품ID — 대상 상품이 정해진 쿠폰(판매자 쿠폰)을 쓸 수 있는 줄인지 판단
   name: string; // 상품명
   amount: number; // 그 줄 금액(단가 × 수량) — 정률 쿠폰·최소주문금액 판단 기준
 }

@@ -41,6 +41,7 @@ export function toApplyCoupon(c: PmCouponType): PmCouponApplyType {
     maxDiscountAmt: Number(c.maxDiscountAmt ?? 0) || undefined,
     validFrom: c.validFrom ? String(c.validFrom).slice(0, 10) : undefined,
     validTo: c.validTo ? String(c.validTo).slice(0, 10) : undefined,
+    prodIds: c.sellerId ? c.prodIds ?? [] : undefined, // 판매자 쿠폰은 대상 상품에만(목록이 비면 어디에도 못 쓴다)
   };
 }
 
@@ -81,8 +82,12 @@ export function productDiscountTotal(lines: CouponLine[], byLine: Record<string,
   return lines.reduce((sum, l) => sum + (byLine[l.key] ? couponDiscount(byLine[l.key]!, l.amount) : 0), 0);
 }
 
+/** 대상 상품이 정해진 쿠폰(판매자 쿠폰)이면 이 줄의 상품이 대상인가. 상품 제한이 없는 쿠폰은 항상 true */
+export const couponFitsLine = (c: PmCouponApplyType, line: CouponLine): boolean => !c.prodIds || (!!line.prodId && c.prodIds.includes(line.prodId));
+
 /** 이 줄에 이 쿠폰을 쓸 수 없는 이유("" = 사용 가능) — 최소 주문금액은 상품할인쿠폰이면 그 줄 금액 기준 */
-export const lineCouponBlockReason = (c: PmCouponApplyType, line: CouponLine, today: string): string => couponBlockReason(c, line.amount, today);
+export const lineCouponBlockReason = (c: PmCouponApplyType, line: CouponLine, today: string): string =>
+  couponFitsLine(c, line) ? couponBlockReason(c, line.amount, today) : "이 상품에는 쓸 수 없는 쿠폰입니다";
 
 /**
  * 상품할인쿠폰 자동 적용 — 큰 줄부터 차례로, 아직 안 쓴 쿠폰 중 그 줄에서 혜택이 가장 큰 쿠폰(같으면 종료가 빠른 것)을 붙인다.
@@ -92,7 +97,7 @@ export function autoPickProductCoupons(pool: PmCouponApplyType[], lines: CouponL
   const used = new Set<string>();
   const out: Record<string, PmCouponApplyType | null> = {};
   [...lines].sort((a, b) => b.amount - a.amount).forEach((l) => {
-    const pick = pickBestCoupon(pool.filter((c) => !used.has(c.couponId)), l.amount, l.amount, today);
+    const pick = pickBestCoupon(pool.filter((c) => !used.has(c.couponId) && couponFitsLine(c, l)), l.amount, l.amount, today);
     if (pick) used.add(pick.couponId);
     out[l.key] = pick;
   });

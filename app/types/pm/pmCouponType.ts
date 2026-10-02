@@ -1,6 +1,8 @@
 /** 쿠폰. 필드명은 ecBeBo(JPA) PmCouponDto.Item(pm_coupon) 기준 — 서버가 내려주는 값을 그대로 담는다(대부분 optional). 내 쿠폰 목록(/fo/my/coupon)도 이 모양이다. */
 export interface PmCouponType {
   couponId: string; // 쿠폰ID (YYMMDDhhmmss+rand4)
+  sellerId?: string | null; // 판매자ID — 있으면 그 판매자가 만든 쿠폰(대상 상품에만 쓸 수 있다)
+  prodIds?: string[] | null; // 판매자 쿠폰의 대상 상품 (내 쿠폰 목록에서만 내려온다)
   couponCd?: string; // 쿠폰코드
   couponNm?: string; // 쿠폰명
   couponTypeCd?: string; // 쿠폰유형 — COUPON_TYPE_CD {RATE:정률 할인, FIXED:정액 할인, PROD_DISCNT:상품할인쿠폰, ORDER_DISCNT:주문할인쿠폰 …}

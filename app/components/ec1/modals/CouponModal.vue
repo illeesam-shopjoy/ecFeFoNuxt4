@@ -76,7 +76,7 @@
  */
 import { computed, reactive, ref, watch } from "vue";
 import { type PmCouponApplyType, type CouponCategory, type AppliedCoupons, type CouponLine } from "~/types/pm/pmCouponApplyType";
-import { COUPON_CATEGORY_LABEL, couponBlockReason, couponDiscount, lineCouponBlockReason, pickBestCoupon, todayYmd } from "~/utils/mapCoupon";
+import { COUPON_CATEGORY_LABEL, couponBlockReason, couponDiscount, couponFitsLine, lineCouponBlockReason, pickBestCoupon, todayYmd } from "~/utils/mapCoupon";
 
 const props = defineProps<{
   /** 내 쿠폰(전체) */
@@ -131,7 +131,7 @@ function productBlock(c: PmCouponApplyType, line: CouponLine): string {
 }
 /** 줄별 "최대 혜택" 쿠폰 ID — 배지 표시용(아직 다른 줄에 안 쓴 쿠폰 기준이 아니라 그 줄에서 단독으로 가장 큰 쿠폰) */
 const bestOfLine = computed<Record<string, string | null>>(() =>
-  Object.fromEntries(props.lines.map((l) => [l.key, pickBestCoupon(productPool.value, l.amount, l.amount, todayYmd())?.couponId ?? null]))
+  Object.fromEntries(props.lines.map((l) => [l.key, pickBestCoupon(productPool.value.filter((c) => couponFitsLine(c, l)), l.amount, l.amount, todayYmd())?.couponId ?? null]))
 );
 /** 주문할인 미리보기 기준 — 지금 고른 상품할인쿠폰을 반영한 금액 */
 const previewBase = computed<Record<CouponCategory, number>>(() => {

@@ -1,5 +1,5 @@
 <template>
-  <!-- 마이페이지 > 프로모션 관리 (/my/promotion, 2026-10-02 · 셀러 Phase 2 · 2C) — 승인된 판매자가 내 상품 대상으로 할인·적립금·상품권을 등록한다.
+  <!-- 마이페이지 > 프로모션 관리 (/my/promotion, 2026-10-02 · 셀러 Phase 2 · 2C) — 승인된 판매자가 내 상품 대상으로 할인·쿠폰·적립금·상품권을 등록한다.
        할인/적립금은 대상 상품(내 상품만)을 골라야 하고, 상품권은 상품 매핑 없이 내 상품 전체에 적용된다. 할인 비용은 판매자가 100% 부담한다. -->
   <my-shell active="promotion" title="프로모션 관리" :file-path="currentFilePath">
     <div v-if="loading" class="py-16 text-center text-gray-400">불러오는 중...</div>
@@ -14,7 +14,7 @@
         판매자 승인이 완료되면 프로모션을 등록할 수 있습니다. (현재 상태: {{ seller.sellerStatusCd === "PENDING" ? "승인 대기" : "이용정지" }})
       </div>
 
-      <div class="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-[#f3f4f6] p-1">
+      <div class="mb-4 grid grid-cols-4 gap-1 rounded-xl bg-[#f3f4f6] p-1">
         <button v-for="t in TABS" :key="t.key" type="button" class="cursor-pointer rounded-lg border-0 py-2.5 text-[0.9rem] font-bold transition" :class="kind === t.key ? 'bg-white text-gray-900 shadow-sm' : 'bg-transparent text-gray-500'" @click="handleBtnAction('promo-switch-tab', t.key)">{{ t.label }}</button>
       </div>
 
@@ -28,7 +28,7 @@
         <div class="grid gap-3 sm:grid-cols-2">
           <label class="block sm:col-span-2"><span class="lb">이름 *</span><input v-model="form.nm" class="in" maxlength="100" /></label>
           <label class="block">
-            <span class="lb">{{ kind === "discnt" ? "할인 방식" : kind === "save" ? "적립 단위" : "상품권 유형" }} *</span>
+            <span class="lb">{{ kind === "discnt" || kind === "coupon" ? "할인 방식" : kind === "save" ? "적립 단위" : "상품권 유형" }} *</span>
             <select v-model="form.valTypeCd" class="in"><option v-for="o in VAL_TYPES[kind]" :key="o.v" :value="o.v">{{ o.l }}</option></select>
           </label>
           <label class="block"><span class="lb">{{ valLabel }} *</span><input v-model.number="form.value" class="in" type="number" min="0" step="any" /></label>
@@ -39,6 +39,7 @@
             <label class="block"><span class="lb">종료일 *</span><input v-model="form.endDate" class="in" type="date" /></label>
           </template>
           <label v-else class="block"><span class="lb">유효기간(개월)</span><input v-model.number="form.expireMonth" class="in" type="number" min="1" /></label>
+          <label v-if="kind === 'coupon'" class="block"><span class="lb">발급 수량 <span class="text-gray-400">— 비우면 제한 없음</span></span><input v-model.number="form.issueLimit" class="in" type="number" min="1" placeholder="예: 100" /></label>
           <label class="block"><span class="lb">상태</span><select v-model="form.statusCd" class="in"><option value="ACTIVE">진행</option><option value="INACTIVE">비활성</option></select></label>
           <label class="block sm:col-span-2"><span class="lb">설명</span><input v-model="form.desc" class="in" maxlength="500" /></label>
           <div v-if="kind !== 'voucher'" class="sm:col-span-2">
@@ -69,6 +70,7 @@
           </div>
           <div class="mt-1 text-[0.85rem] text-gray-700">{{ summary(x) }}</div>
           <div v-if="x.startDate" class="text-[0.8rem] text-gray-500">{{ x.startDate }} ~ {{ x.endDate }}</div>
+          <div v-if="kind === 'coupon'" class="text-[0.8rem] text-gray-500">받아 간 수 {{ x.issueCnt ?? 0 }}장{{ x.issueLimit ? ` / ${x.issueLimit}장` : " (수량 제한 없음)" }}</div>
           <div v-else-if="x.expireMonth" class="text-[0.8rem] text-gray-500">유효기간 {{ x.expireMonth }}개월</div>
         </li>
       </ul>
@@ -94,17 +96,20 @@ usePageTitle("마이페이지 - 프로모션 관리");
 
 const TABS: { key: PmSellerPromoKindType; label: string }[] = [
   { key: "discnt", label: "할인" },
+  { key: "coupon", label: "쿠폰" },
   { key: "voucher", label: "상품권" },
   { key: "save", label: "적립금" },
 ];
-const TAB_LABEL: Record<PmSellerPromoKindType, string> = { discnt: "할인", voucher: "상품권", save: "적립금" };
+const TAB_LABEL: Record<PmSellerPromoKindType, string> = { discnt: "할인", coupon: "쿠폰", voucher: "상품권", save: "적립금" };
 const HINT: Record<PmSellerPromoKindType, string> = {
   discnt: "선택한 내 상품에 정률/정액 할인을 적용합니다. 할인 비용은 판매자가 부담합니다.",
+  coupon: "선택한 내 상품에만 쓸 수 있는 할인 쿠폰입니다. 구매자가 상품 화면에서 [쿠폰 받기]로 받아 결제할 때 씁니다(회원당 1장). 비용은 판매자가 부담합니다.",
   voucher: "내 상품 전체에 쓸 수 있는 상품권입니다. 상품 선택 없이 등록합니다.",
   save: "선택한 내 상품을 구매하면 적립금을 줍니다. 정률(%) 또는 정액(원)으로 설정합니다.",
 };
 const VAL_TYPES: Record<PmSellerPromoKindType, { v: string; l: string }[]> = {
   discnt: [{ v: "RATE", l: "정률 (%)" }, { v: "AMOUNT", l: "정액 (원)" }],
+  coupon: [{ v: "RATE", l: "정률 (%)" }, { v: "AMOUNT", l: "정액 (원)" }],
   voucher: [{ v: "AMOUNT", l: "금액권 (원)" }, { v: "RATE", l: "정률 (%)" }],
   save: [{ v: "%", l: "정률 (%)" }, { v: "KRW", l: "정액 (원)" }],
 };
@@ -117,7 +122,7 @@ const prods = ref<PdMyProdType[]>([]);
 const editing = ref(false);
 const saving = ref(false);
 const err = ref("");
-const blank = () => ({ id: "", nm: "", valTypeCd: "", value: 0, minOrderAmt: 0, maxDiscntAmt: 0, startDate: "", endDate: "", expireMonth: 12, statusCd: "ACTIVE" as "ACTIVE" | "INACTIVE", desc: "", prodIds: [] as string[] });
+const blank = () => ({ id: "", nm: "", valTypeCd: "", value: 0, minOrderAmt: 0, maxDiscntAmt: 0, startDate: "", endDate: "", expireMonth: 12, statusCd: "ACTIVE" as "ACTIVE" | "INACTIVE", desc: "", prodIds: [] as string[], issueLimit: null as number | null });
 const form = reactive(blank());
 
 const valLabel = computed(() => (form.valTypeCd === "RATE" || form.valTypeCd === "%" ? "비율(%)" : "금액(원)"));
@@ -166,7 +171,7 @@ async function openForm(x?: PmSellerPromoType) {
   if (x?.id) {
     try {
       const d = await pmSellerPromoSvc.get(kind.value, x.id); // 대상 상품 prodIds 포함
-      Object.assign(form, blank(), defaults, { id: d.id, nm: d.nm, valTypeCd: d.valTypeCd ?? defaults.valTypeCd, value: d.value ?? 0, minOrderAmt: d.minOrderAmt ?? 0, maxDiscntAmt: d.maxDiscntAmt ?? 0, startDate: d.startDate ?? "", endDate: d.endDate ?? "", expireMonth: d.expireMonth ?? 12, statusCd: d.statusCd === "INACTIVE" ? "INACTIVE" : "ACTIVE", desc: d.desc ?? "", prodIds: d.prodIds ?? [] });
+      Object.assign(form, blank(), defaults, { id: d.id, nm: d.nm, valTypeCd: d.valTypeCd ?? defaults.valTypeCd, value: d.value ?? 0, minOrderAmt: d.minOrderAmt ?? 0, maxDiscntAmt: d.maxDiscntAmt ?? 0, startDate: d.startDate ?? "", endDate: d.endDate ?? "", expireMonth: d.expireMonth ?? 12, statusCd: d.statusCd === "INACTIVE" ? "INACTIVE" : "ACTIVE", desc: d.desc ?? "", prodIds: d.prodIds ?? [], issueLimit: d.issueLimit ?? null });
     } catch (e) {
       return void useNuxtApp().$toast.error(errText(e, "정보를 불러오지 못했습니다."));
     }
@@ -200,6 +205,7 @@ async function save() {
       statusCd: form.statusCd,
       desc: form.desc || undefined,
       prodIds: kind.value !== "voucher" ? form.prodIds : undefined,
+      issueLimit: kind.value === "coupon" && form.issueLimit && form.issueLimit > 0 ? form.issueLimit : undefined,
     };
     if (form.id) await pmSellerPromoSvc.update(kind.value, form.id, body);
     else await pmSellerPromoSvc.create(kind.value, body);

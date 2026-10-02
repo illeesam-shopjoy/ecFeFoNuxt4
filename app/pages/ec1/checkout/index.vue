@@ -446,7 +446,7 @@ const couponModalRef = ref<InstanceType<typeof CouponModal> | null>(null);
 // 상품할인쿠폰은 상품(주문 줄)별로 1개씩(product: 줄키 → 쿠폰), 주문할인·배송비할인은 주문당 1개
 const appliedCoupons = reactive<AppliedCoupons>({ order: null, shipping: null, product: {} });
 // 쿠폰을 붙일 주문 줄 — 단가 × 수량
-const couponLines = computed<CouponLine[]>(() => state.cartProducts.map((i) => ({ key: couponLineKey(i), name: i.prodNm, amount: i.salePrice * (i.orderQuantity ?? 1) })));
+const couponLines = computed<CouponLine[]>(() => state.cartProducts.map((i) => ({ key: couponLineKey(i), prodId: i.prodId, name: i.prodNm, amount: i.salePrice * (i.orderQuantity ?? 1) })));
 type AppliedRow = { key: string; coupon: PmCouponApplyType; lineName?: string; discount: number; touched: boolean; remove: string };
 const appliedCouponList = computed<AppliedRow[]>(() => {
   const rows: AppliedRow[] = [];
