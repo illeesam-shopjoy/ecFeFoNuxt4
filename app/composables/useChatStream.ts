@@ -49,7 +49,7 @@ export function openChatStream(
         if (retry > 0 && ensureAuth) await ensureAuth().catch(() => undefined);
         const base = String(axiosCsr.defaults.baseURL ?? "").replace(/\/+$/, "");
         const res = await fetch(`${base}${path}`, {
-          headers: { ...useAuthHeaders(), Accept: "text/event-stream" },
+          headers: { ...useAuthHeaders(), "X-Site-Id": String(axiosCsr.defaults.headers.common["X-Site-Id"] ?? ""), Accept: "text/event-stream" }, // 멀티테넌트: 백엔드 /api/fo 는 사이트 필수
           signal: ctrl.signal,
           cache: "no-store",
         });

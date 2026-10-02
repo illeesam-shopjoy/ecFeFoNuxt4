@@ -75,6 +75,13 @@ ecFeFoNuxt4/
 5. `.env.site3.ec3.{local,development,production}` 를 만든다(`NUXT_PUBLIC_SITE_ID`=그 site_id, `NUXT_PUBLIC_TENANT_MODULE=ec3`).
 6. `pnpm tenant dev --site site3 --module ec3 --profile local` 로 확인한다.
 
-## 5. 남은 과제 (백엔드)
-- FO 백엔드가 `X-Site-Id` 를 필수로 받아 `sy_site` 와 대조하고, 토큰의 `siteId` 와 다르면 거부하며, 공개 API 의 "기본 사이트로 조용히 대체"(`getSiteIdOrDefault`)를 제거해야 진짜 데이터 격리가 된다. 지금은 프론트가 헤더를 보내기만 한다.
+## 5. 백엔드(ecBeBo) 사이트 확정 — 적용됨 (2026-10-02)
+- `/api/fo/**` 는 **사이트 필수**다. `X-Site-Id` 를 `sy_site`(ACTIVE)와 대조해 확정하고, 헤더가 없으면 로그인 토큰의 siteId 만 인정한다(둘 다 없으면 400). 없는 사이트는 400, 회원 토큰의 사이트와 헤더가 다르면 403.
+- FO 조회는 요청 사이트로 한정된다(상품·카테고리·이벤트·기획전·전시·오프라인쿠폰 등). 다른 사이트의 상품은 "존재하지 않음"으로 응답한다. 기본 사이트로 조용히 대체하던 코드는 없앴다.
+- 규칙은 `ecBeBo/CLAUDE.md` 의 "멀티테넌트 — FO 사이트(siteId) 필수 규칙" 참고.
+
+## 6. 남은 과제
+- `site_id` 컬럼이 없는 테이블(블로그·FAQ·공지·브랜드·문의 등)은 모든 사이트가 같이 본다. 사이트별로 나누려면 컬럼 추가(DDL)와 데이터 이관이 먼저다.
+- `/api/co/**`(로그인·회원가입·공통코드 등)는 아직 헤더가 선택이다. 회원가입·로그인이 요청 사이트를 따르게 하고 `app.site.required=true` 로 켜는 작업이 남았다.
 - 이메일 인증 링크 기준 주소(`app.fo-base-url`) 등 사이트마다 달라지는 백엔드 설정은 사이트별 설정(예: `sy_site.config_json`)으로 옮겨야 한다.
+- 스타일(`app/assets` 의 scss)은 아직 공통이다. 모듈별 테마가 필요해지면 `app/assets/<모듈>` 로 나눈다.
