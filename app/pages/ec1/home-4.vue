@@ -35,16 +35,16 @@
 import { CDN_URL } from "~/conts/baseConst";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import LayoutFour from "~/layout/LayoutFour.vue";
+import LayoutFour from "~/layout/ec1/LayoutFour.vue";
 import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataType } from "~/types/co/coHeroSliderDataType";
-import CategoryArea from "~/components/category/CategoryArea.vue";
-import TrendingProducts from "~/components/products/TrendingProducts.vue";
-import ShopBanner from "~/components/shop-banner/ShopBanner.vue";
-import OfferProductsSlider from "~/components/products/OfferProductsSlider.vue";
-import BlogArea from "~/components/blogs/BlogArea.vue";
-import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
+import CategoryArea from "~/components/ec1/category/CategoryArea.vue";
+import TrendingProducts from "~/components/ec1/products/TrendingProducts.vue";
+import ShopBanner from "~/components/ec1/shop-banner/ShopBanner.vue";
+import OfferProductsSlider from "~/components/ec1/products/OfferProductsSlider.vue";
+import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
+import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
 import { usePageTitle } from "~/composables/usePageTitle";

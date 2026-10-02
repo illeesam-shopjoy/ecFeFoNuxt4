@@ -14,14 +14,14 @@
 <script setup lang="ts">
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import LayoutSix from "~/layout/LayoutSix.vue";
-import HomeHeroSlider from "~/components/hero-banner/HomeHeroSlider.vue";
-import CategoryArea from "~/components/category/CategoryArea.vue";
-import TrendingProductThree from "~/components/products/TrendingProductThree.vue";
-import ShopBanner from "~/components/shop-banner/ShopBanner.vue";
-import SaleOffProduct from "~/components/products/SaleOffProduct.vue";
-import BlogArea from "~/components/blogs/BlogArea.vue";
-import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
+import LayoutSix from "~/layout/ec1/LayoutSix.vue";
+import HomeHeroSlider from "~/components/ec1/hero-banner/HomeHeroSlider.vue";
+import CategoryArea from "~/components/ec1/category/CategoryArea.vue";
+import TrendingProductThree from "~/components/ec1/products/TrendingProductThree.vue";
+import ShopBanner from "~/components/ec1/shop-banner/ShopBanner.vue";
+import SaleOffProduct from "~/components/ec1/products/SaleOffProduct.vue";
+import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
+import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({

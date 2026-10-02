@@ -1,0 +1,46 @@
+<template>
+  <!-- 2026-09-22(요청사항: "블로그 카드항목간 간격이 너무 커") — mb-60(카드 사이) + pb-60(구분선 위 여백)이 겹쳐 카드 사이가 120px나 벌어졌다. 30px씩으로 줄임. -->
+  <div :class="`blog__item mb-30 ${style_2 ? '' : 'blog__border-bottom pb-30'}`">
+    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
+    <div class="blog__thumb fix">
+      <nuxt-link :to="`/blog-dtl/${blog.blogId}`" class="w-img">
+        <app-image
+          :src="blog.img"
+          alt="blog"
+          wrap-class="w-img"
+          :skeleton-style="{ width: '100%', aspectRatio: '16/10' }"
+        />
+      </nuxt-link>
+    </div>
+    <div class="blog__content">
+      <h4 :class="`${style_3 ? '' : 'blog__title'}`">
+        <nuxt-link :to="`/blog-dtl/${blog.blogId}`">
+          <span v-html="blog.blogTitle"></span>
+        </nuxt-link>
+      </h4>
+      <div class="blog__meta">
+        <span
+          >By <a href="#">{{ blog.blogAuthor }}</a></span
+        >
+        <span>/ {{ blog.regDate }}</span>
+      </div>
+      <p>{{ style_3 ? blog.blogSummary.slice(0, 80) : blog.blogSummary }} [...]</p>
+      <nuxt-link :to="`/blog-dtl/${blog.blogId}`" class="os-btn">더 보기</nuxt-link>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
+const currentFilePath = useCurrentFilePath();
+import { useComponentTitle } from "~/composables/useComponentTitle";
+useComponentTitle('블로그 아이템');
+import { type CmBlogType } from "~/types/cm/cmBlogType";
+import AppImage from "~/components/ec1/ui/AppImage.vue";
+
+defineProps<{
+  blog: CmBlogType;
+  style_2?: boolean;
+  style_3?: boolean;
+}>();
+</script>

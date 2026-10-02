@@ -15,8 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import Layout from "~/layout/Layout.vue";
-import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
+import Layout from "~/layout/ec2/Layout.vue";
+import BreadcrumbArea from "~/components/ec2/common/breadcrumb/BreadcrumbArea.vue";
 
 const tenant = useTenant();
 useHead({ title: `${tenant.name} - 소개` });

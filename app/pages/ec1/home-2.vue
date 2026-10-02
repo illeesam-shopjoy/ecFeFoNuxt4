@@ -93,16 +93,16 @@
 <script setup lang="ts">
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import LayoutTwo from "~/layout/LayoutTwo.vue";
+import LayoutTwo from "~/layout/ec1/LayoutTwo.vue";
 import { computed } from "vue";
-import HomeTwoHeroSlider from "~/components/hero-banner/HomeTwoHeroSlider.vue";
-import CategoryArea from "~/components/category/CategoryArea.vue";
-import ProductItem from "~/components/products/ProductItem.vue";
-import AppImage from "~/components/ui/AppImage.vue";
-import ShopBanner from "~/components/shop-banner/ShopBanner.vue";
-import BlogArea from "~/components/blogs/BlogArea.vue";
-import ClientBrandSlider from "~/components/client-brands/ClientBrandSlider.vue";
-import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
+import HomeTwoHeroSlider from "~/components/ec1/hero-banner/HomeTwoHeroSlider.vue";
+import CategoryArea from "~/components/ec1/category/CategoryArea.vue";
+import ProductItem from "~/components/ec1/products/ProductItem.vue";
+import AppImage from "~/components/ec1/ui/AppImage.vue";
+import ShopBanner from "~/components/ec1/shop-banner/ShopBanner.vue";
+import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
+import ClientBrandSlider from "~/components/ec1/client-brands/ClientBrandSlider.vue";
+import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({

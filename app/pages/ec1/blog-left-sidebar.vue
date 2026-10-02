@@ -9,9 +9,9 @@
 <script setup lang="ts">
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import Layout from "~/layout/Layout.vue";
-import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
-import BlogArea from "~/components/blogs/BlogStandardArea.vue";
+import Layout from "~/layout/ec1/Layout.vue";
+import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
+import BlogArea from "~/components/ec1/blogs/BlogStandardArea.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({

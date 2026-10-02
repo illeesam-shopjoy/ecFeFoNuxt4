@@ -203,17 +203,17 @@
 <script setup lang="ts">
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import Layout from "~/layout/Layout.vue";
-import SkeletonBlogDetail from "~/components/ui/SkeletonBlogDetail.vue";
+import Layout from "~/layout/ec1/Layout.vue";
+import SkeletonBlogDetail from "~/components/ec1/ui/SkeletonBlogDetail.vue";
 import { type CmBlogType } from "~/types/cm/cmBlogType";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 import { computed } from "vue";
-import BlogItem from "~/components/blogs/BlogItem.vue";
-import BlogSidebar from "~/components/common/sidebar/BlogSidebar.vue";
-import AppImage from "~/components/ui/AppImage.vue";
-import SkeletonCard from "~/components/ui/SkeletonCard.vue";
+import BlogItem from "~/components/ec1/blogs/BlogItem.vue";
+import BlogSidebar from "~/components/ec1/common/sidebar/BlogSidebar.vue";
+import AppImage from "~/components/ec1/ui/AppImage.vue";
+import SkeletonCard from "~/components/ec1/ui/SkeletonCard.vue";
 import { CDN_URL } from "~/conts/baseConst";
-import FoForm from "~/components/fo/FoForm.vue";
+import FoForm from "~/components/ec1/fo/FoForm.vue";
 import { useFoValidate } from "~/composables/useFoValidate";
 import type { FoFormColumn } from "~/types/fo/foCompType";
 import * as yup from "yup";

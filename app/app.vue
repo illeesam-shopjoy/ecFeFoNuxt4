@@ -25,8 +25,9 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
-import ConfirmModal from "~/components/modals/ConfirmModal.vue";
-import AlertModal from "~/components/modals/AlertModal.vue";
+// 확인/알림 창도 모듈마다 모양이 다르다 — 이 빌드의 모듈 것(app/components/<모듈>)을 쓴다
+import ConfirmModal from "#tenant-components/modals/ConfirmModal.vue";
+import AlertModal from "#tenant-components/modals/AlertModal.vue";
 
 const { public: { appTitle } } = useRuntimeConfig();
 

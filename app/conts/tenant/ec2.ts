@@ -1,6 +1,6 @@
 /**
  * ec2 모듈 설정 — ec1 과 다른 이름·메뉴·기능 스위치를 둔다(확장성 시험). 메뉴는 공통 기본 메뉴 대신 이 모듈이 직접 정한다.
- * 블로그·이벤트 화면은 app/pages/ec1 에만 있어 이 모듈 빌드에는 그 주소가 없다.
+ * 화면은 app/pages/ec2 에 독립으로 있다(블로그·이벤트 화면은 두지 않았다).
  */
 import type { TenantConfigType } from "~/types/tenantConfig";
 

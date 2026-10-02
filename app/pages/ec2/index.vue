@@ -21,10 +21,10 @@
 defineOptions({ name: "HomePage" });
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import Layout from "~/layout/Layout.vue";
-import CategoryArea from "~/components/category/CategoryArea.vue";
-import TrendingProducts from "~/components/products/TrendingProducts.vue";
-import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
+import Layout from "~/layout/ec2/Layout.vue";
+import CategoryArea from "~/components/ec2/category/CategoryArea.vue";
+import TrendingProducts from "~/components/ec2/products/TrendingProducts.vue";
+import SubscribeArea from "~/components/ec2/subscribe/SubscribeArea.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 const tenant = useTenant();

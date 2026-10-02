@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import Layout from "~/layout/Layout.vue";
+import Layout from "~/layout/ec1/Layout.vue";
 import { foPmEventSvc } from "~/svc/fo/ec/pm/foPmEventSvc";
 import type { PmEventDetailType } from "~/types/pm/pmEventViewType";
 import { usePageTitle } from "~/composables/usePageTitle";

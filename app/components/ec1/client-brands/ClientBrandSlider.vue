@@ -1,0 +1,76 @@
+<template>
+  <section :class="`client__area ${style_2 ? '' : 'pt-15 pb-140'}`">
+    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="row">
+        <div class="col-xl-12">
+          <Carousel
+            :items-to-show="5"
+            :wrap-around="true"
+            :snapAlign="'center'"
+            :breakpoints="{
+              1200: {
+                itemsToShow: 5,
+              },
+              992: {
+                itemsToShow: 3,
+              },
+              700: {
+                itemsToShow: 2,
+              },
+              0: {
+                itemsToShow: 1,
+              },
+            }"
+            :class="`client__slider ${style_2 ? 'pt-80 pb-80 border-top-1' : ''} text-center`"
+          >
+            <Slide v-for="(brand, i) in brands" :key="i" class="client__thumb">
+              <a style="cursor: pointer">
+                <app-image
+                  :src="brand"
+                  alt="client"
+                  :img-style="{ width: '100%', height: '130px', objectFit: 'cover', display: 'block' }"
+                  :skeleton-style="{ width: '100%', height: '130px' }"
+                />
+              </a>
+            </Slide>
+          </Carousel>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { CDN_URL } from "~/conts/baseConst";
+import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
+const currentFilePath = useCurrentFilePath();
+import { useComponentTitle } from "~/composables/useComponentTitle";
+useComponentTitle('브랜드 슬라이더');
+import { computed } from "vue";
+import { Carousel, Slide } from "vue3-carousel";
+import AppImage from "~/components/ec1/ui/AppImage.vue";
+import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
+defineProps({
+  style_2: { type: Boolean, default: false },
+});
+
+// 전시 위젯(area_cd=BRAND_LOGO_MAIN)에서 브랜드 로고 목록 로드 — 미등록/조회실패 시 기본값 폴백
+// (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).
+const DEFAULT_BRANDS: string[] = [
+  `${CDN_URL}/cdn/prod/img/client/client-1.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-2.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-3.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-4.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-5.jpg`,
+  `${CDN_URL}/cdn/prod/img/client/client-2.jpg`,
+];
+// 2026-09-13(성능 개선): lazy:true + computed — 화면 마운트를 블로킹하지 않으면서도
+// 늦게 도착한 데이터가 brands에 반영되게 한다.
+const { data: fetchedBrands } = useAsyncData<string[] | null>(
+  "dp-brand-logo-main",
+  () => dpAreaSvc.getFirstWidgetConfig<string[]>("BRAND_LOGO_MAIN"),
+  { lazy: true }
+);
+const brands = computed<string[]>(() => fetchedBrands.value?.length ? fetchedBrands.value : DEFAULT_BRANDS);
+</script>

@@ -1,0 +1,102 @@
+<template>
+  <layout :transparent="true">
+    <xdev-file-path-badge v-if="filePath" :file-path="filePath" position="top-right" :absolute="true" />
+    <breadcrumb-area title="마이페이지" subtitle="마이페이지" />
+
+    <!-- 2026-09-19 — 마이페이지 6개 화면(pages/my/{order,claim,coupon,cache,contact,chatt}.vue)이 함께 쓰는 틀:
+         탭 바 + 등록기간 조회 + 총건수/페이지크기 + 로딩/오류/빈 상태 + 페이지네이션. 각 화면은 목록 내용(default 슬롯)과
+         탭별 필터(top 슬롯)만 채운다. 조회/초기화/기간/페이징 이벤트는 btn-action / select-action 으로 올라간다. 조회 상태는 useMyList(composables/useMyList.ts)가 관리한다. -->
+    <section class="pt-14 pb-24 bg-white">
+      <div class="max-w-7xl mx-auto px-4 md:grid md:grid-cols-[240px_minmax(0,1fr)] md:gap-6">
+        <my-menu :active="tab" />
+        <div class="min-w-0">
+        <!-- 기간 조회 -->
+        <div class="flex flex-wrap items-center gap-2 px-4 py-3 mb-4 bg-white border border-[#e5e7eb] rounded-lg">
+          <span class="text-[0.85rem] text-gray-500 mr-1">등록기간</span>
+          <input v-model="my.dateStart" type="date" class="my-in" aria-label="시작일" />
+          <span class="text-gray-400">~</span>
+          <input v-model="my.dateEnd" type="date" class="my-in" aria-label="종료일" />
+          <select v-model.number="my.preset" class="my-in cursor-pointer" aria-label="기간 선택" @change="emit('select-action', 'searchParam-preset')">
+            <option v-for="p in MY_PRESETS" :key="p.months" :value="p.months">{{ p.label }}</option>
+          </select>
+          <button type="button" class="h-10 px-5 bg-gray-900 text-white border-0 rounded-md text-[0.85rem] font-semibold cursor-pointer" @click="emit('btn-action', 'searchParam-list')">조회</button>
+          <button type="button" class="h-10 px-4 bg-white text-gray-600 border border-[#e5e7eb] rounded-md text-[0.85rem] font-medium cursor-pointer" @click="emit('btn-action', 'searchParam-reset')">초기화</button>
+        </div>
+
+        <!-- 탭별 필터/부가 영역 -->
+        <slot name="top" />
+
+        <!-- 총건수 + 페이지 크기 -->
+        <div class="flex items-center justify-between my-3.5 text-[0.88rem] text-gray-600">
+          <span>총 <b class="text-gray-900">{{ count ?? my.total }}</b>건</span>
+          <select v-model.number="my.pageSize" class="my-in cursor-pointer" aria-label="페이지 크기" @change="emit('select-action', 'pager-size')">
+            <option v-for="s in [10, 20, 50, 100]" :key="s" :value="s">{{ s }}개씩</option>
+          </select>
+        </div>
+
+        <!-- 로딩 / 오류 / 빈 상태 / 목록 -->
+        <div v-if="my.loading && !my.rows.length" class="py-16 text-center text-gray-400">불러오는 중...</div>
+        <div v-else-if="my.errorMsg" class="py-16 text-center text-red-500">{{ my.errorMsg }}</div>
+        <div v-else-if="(shown ?? my.rows.length) === 0" class="py-16 text-center text-gray-400 text-[1rem]">
+          {{ emptyText }}
+          <slot name="empty" />
+        </div>
+        <slot v-else />
+
+        <!-- 목록 아래 안내 -->
+        <slot name="bottom" />
+
+        <!-- 페이지네이션 (페이지 크기는 위 "N개씩" 선택을 쓰므로 fo-pager 의 크기 선택은 숨김) -->
+        <div v-if="my.pageTotalPage > 1" class="mt-8">
+          <fo-pager :pager="my" :show-size="false" :on-set-page="(n) => emit('select-action', 'pager-page', n)" />
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 화면별 모달(예: 주문 진행 안내) -->
+    <slot name="modal" />
+  </layout>
+</template>
+
+<script setup lang="ts">
+import Layout from "~/layout/ec2/Layout.vue";
+import FoPager from "~/components/ec2/fo/FoPager.vue";
+import BreadcrumbArea from "~/components/ec2/common/breadcrumb/BreadcrumbArea.vue";
+import { MY_PRESETS, type MyTabKey } from "~/composables/useMyList";
+import MyMenu from "~/components/ec2/my/MyMenu.vue";
+import type { FoMyListStateType } from "~/types/fo/foMyListType";
+
+// 버튼/선택 이벤트는 ecFeBo 규칙대로 (cmd, param) 로 올려 보내고, 각 화면의 handleBtnAction / handleSelectAction 이 처리한다
+const emit = defineEmits<{
+  (e: "btn-action", cmd: string, param?: unknown): void;
+  (e: "select-action", cmd: string, param?: unknown): void;
+}>();
+
+defineProps<{
+  /** 현재 탭 (MY_TABS 의 key) */
+  tab: MyTabKey;
+  /** 로컬 모드 파일경로 배지용 (useCurrentFilePath()) */
+  filePath?: string | null;
+  /** useMyList() 반환값 */
+  my: FoMyListStateType<object>;
+  /** 목록이 비었을 때 문구 */
+  emptyText: string;
+  /** "총 N건" 을 서버 총건수 대신 다른 값으로 보여줄 때(예: 쿠폰의 미사용/사용 탭 필터 결과) */
+  count?: number;
+  /** 화면에 보여줄 행 수를 my.rows 와 다르게 셀 때(클라이언트 필터가 있는 화면) */
+  shown?: number;
+}>();
+</script>
+
+<style scoped>
+.my-in {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #111827;
+  font-size: 0.85rem;
+}
+</style>

@@ -30,15 +30,15 @@
 <script setup lang="ts">
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import Layout from "~/layout/Layout.vue";
-import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
+import Layout from "~/layout/ec1/Layout.vue";
+import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { ref, reactive, computed } from "vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import { type CmBlogType } from "~/types/cm/cmBlogType";
-import FoPager from "~/components/fo/FoPager.vue";
+import FoPager from "~/components/ec1/fo/FoPager.vue";
 import { useClientPager } from "~/composables/useClientPager";
-import BlogStandardItem from "~/components/blogs/BlogStandardItem.vue";
-import SkeletonCard from "~/components/ui/SkeletonCard.vue";
+import BlogStandardItem from "~/components/ec1/blogs/BlogStandardItem.vue";
+import SkeletonCard from "~/components/ec1/ui/SkeletonCard.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({

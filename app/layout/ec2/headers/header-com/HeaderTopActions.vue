@@ -1,0 +1,115 @@
+<template>
+  <!-- 2026-09-20(요청사항: "상단정보 알림, 로그인정보, 좋아요, 장바구니, 테마, 설정 — 첨부이미지 참고하여 적용") —
+       헤더 우측 액션 영역 공통 컴포넌트: [검색] [로그인정보▾] [♡좋아요(n)] [🛒장바구니(n)] [🔔알림] [🌙테마] [⚙설정].
+       2026-09-21(요청사항: "화면 줄이면 상단에 지금 보이는건 다 보여주고, 종 아이콘은 장바구니 우측") — 알림 종을 장바구니 오른쪽으로 옮기고,
+       좁은 화면(<sm)에서도 검색/좋아요/테마를 숨기지 않는다(대신 버튼을 28px로 줄여 한 줄에 다 들어가게 함).
+       모든 헤더(Header/HeaderTwo/Three/Four)가 이 컴포넌트 하나를 쓴다. 로그인/좋아요/장바구니 수량은 localStorage 기반이라 client-only. -->
+  <!-- 2026-09-29(요청사항: "PC에서 볼때 기본값이 너무 작긴하네") — sm(640px) 이후로는 버튼이 더
+       안 커져서 넓은 데스크탑에서도 작아 보였다. 모바일/태블릿은 그대로 두고 lg(1024px) 이상만 키운다. -->
+  <div class="inline-flex flex-nowrap justify-end items-center gap-0.5 sm:gap-2 lg:gap-3">
+    <a href="#" class="inline-flex w-7 h-7 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-lg sm:rounded-xl items-center justify-center bg-white border border-[#e5e7eb] text-gray-600 hover:border-gray-400 transition" aria-label="검색" title="검색" @click.prevent="emit('search')">
+      <i class="fas fa-search text-[14px] lg:text-[16px]"></i>
+    </a>
+
+    <client-only>
+      <user-dropdown />
+
+      <!-- 좋아요 -->
+      <nuxt-link href="/wishlist" class="hta-btn" aria-label="위시리스트" title="위시리스트">
+        <i class="far fa-heart text-[15px] lg:text-[17px]"></i>
+        <span v-if="wishlist.wishlists.length" class="hta-badge">{{ wishlist.wishlists.length }}</span>
+      </nuxt-link>
+
+      <!-- 장바구니 — 레거시 헤더 CSS(.header__action li:hover .mini-cart)를 그대로 써서 hover 시 미니카트 표시 -->
+      <div class="header__action" style="margin: 0">
+        <ul style="margin: 0; padding: 0">
+          <li style="margin-left: 0">
+            <div>
+              <nuxt-link href="/cart" class="hta-btn" aria-label="장바구니" title="장바구니">
+                <i class="fas fa-shopping-cart text-[15px] lg:text-[17px]"></i>
+                <span v-if="cart.getStTotalPriceQuantity.quantity" class="hta-badge">{{ cart.getStTotalPriceQuantity.quantity }}</span>
+              </nuxt-link>
+            </div>
+            <cart-mini />
+          </li>
+        </ul>
+      </div>
+
+      <!-- 알림 종 — 장바구니 오른쪽 -->
+      <noti-bell />
+
+      <!-- 2026-09-22(요청사항: "다크모드로 전환 아이콘 표시하지 말아줘") — 상단 상시 노출 테마 버튼을 없앤다.
+           전환 기능 자체는 ⚙설정(HeaderSettings.vue) 드롭다운 안의 "다크 모드로 전환" 메뉴로 계속 쓸 수 있다. -->
+
+      <!-- 설정 -->
+      <header-settings />
+    </client-only>
+  </div>
+</template>
+
+<script setup lang="ts">
+import NotiBell from "./NotiBell.vue";
+import UserDropdown from "./UserDropdown.vue";
+import CartMini from "./CartMini.vue";
+import HeaderSettings from "./HeaderSettings.vue";
+import { useAuthStore } from "~/store/useAuthStore";
+import { useCartStore } from "~/store/useCartStore";
+import { useWishlistStore } from "~/store/useWishlistStore";
+
+const emit = defineEmits<{ (e: "search"): void }>();
+const authStore = useAuthStore();
+const cart = useCartStore();
+const wishlist = useWishlistStore();
+</script>
+
+<style scoped>
+.hta-btn {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #444;
+  transition: border-color 0.15s;
+}
+@media (min-width: 640px) {
+  .hta-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+}
+@media (min-width: 1024px) {
+  .hta-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+}
+.hta-btn:hover {
+  border-color: #9ca3af;
+}
+.hta-btn :deep(i) {
+  margin: 0;
+  color: inherit;
+}
+.hta-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #111827;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+</style>

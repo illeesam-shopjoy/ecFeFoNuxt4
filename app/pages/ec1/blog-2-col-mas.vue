@@ -63,15 +63,15 @@
 <script setup lang="ts">
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 const currentFilePath = useCurrentFilePath();
-import Layout from "~/layout/Layout.vue";
-import BreadcrumbArea from "~/components/common/breadcrumb/BreadcrumbArea.vue";
+import Layout from "~/layout/ec1/Layout.vue";
+import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 import { type CmBlogType } from "~/types/cm/cmBlogType";
-import AppImage from "~/components/ui/AppImage.vue";
+import AppImage from "~/components/ec1/ui/AppImage.vue";
 // 2026-09-28(성능 개선): masonry 는 이 페이지에서만 쓰여 전역 플러그인(모든 페이지 초기 번들)에서 이 페이지 로컬 등록으로 이동.
 import MasonryWall from "@yeger/vue-masonry-wall";
-import SkeletonCard from "~/components/ui/SkeletonCard.vue";
+import SkeletonCard from "~/components/ec1/ui/SkeletonCard.vue";
 
 import { usePageTitle } from "~/composables/usePageTitle";
 useHead({

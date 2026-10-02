@@ -7,8 +7,9 @@ import { fileURLToPath } from "node:url";
 // (app/ 밑 파일은 클라이언트 번들에도 들어갈 수 있어 시크릿을 두기엔 부적절).
 import { CDN_URL, API_URL, RUN_MODE, SITE_ID, TENANT_MODULE } from "./app/conts/baseConst";
 
-// 멀티테넌트(2026-10-02): 모듈(ec1, ec2 …)마다 app/conts/tenant/<모듈>.ts(이름·메뉴·기능) + app/pages/<모듈>/(그 모듈만의 화면)을 둔다.
-// 공통 화면은 app/pages 바로 아래, 컴포넌트는 app/components 를 모든 모듈이 같이 쓴다. 이 빌드가 쓸 모듈은 환경파일의 NUXT_PUBLIC_TENANT_MODULE.
+// 멀티테넌트(2026-10-02): 모듈(ec1, ec2 …)마다 화면·컴포넌트·레이아웃을 독립으로 둔다(모양이 모듈마다 다르다).
+//   app/pages/<모듈>/  app/components/<모듈>/  app/layout/<모듈>/  +  app/conts/tenant/<모듈>.ts(이름·메뉴·기능)
+// 토스트(plugins)·유틸(utils)·스토어(store)·svc·composables·types 는 모든 모듈이 같이 쓴다. 이 빌드가 쓸 모듈은 환경파일의 NUXT_PUBLIC_TENANT_MODULE.
 const TENANT_DIR = fileURLToPath(new URL("./app/conts/tenant", import.meta.url));
 const TENANT_MODULES = readdirSync(TENANT_DIR)
   .filter((f) => f.endsWith(".ts"))
@@ -31,7 +32,12 @@ export default defineNuxtConfig({
   // 멀티테넌트: useTenant() 가 읽는 모듈 설정 — 이 빌드의 모듈 것 하나만 연결한다(다른 모듈 설정은 번들에 안 들어간다).
   alias: {
     "#tenant": `${TENANT_DIR}/${TENANT_MODULE}.ts`,
+    // 공통 코드(app.vue, error.vue 등)가 "이 빌드의 모듈" 컴포넌트·레이아웃을 가리킬 때 쓴다. 모듈 안의 파일끼리는 ~/components/<모듈>/… 로 직접 적는다.
+    "#tenant-components": fileURLToPath(new URL(`./app/components/${TENANT_MODULE}`, import.meta.url)),
+    "#tenant-layout": fileURLToPath(new URL(`./app/layout/${TENANT_MODULE}`, import.meta.url)),
   },
+  // 컴포넌트 자동 등록은 이 빌드의 모듈 폴더만 — 이름은 모듈 폴더 기준(<xdev-file-path-badge> 등 그대로)이고 다른 모듈 컴포넌트는 빌드에 안 들어간다.
+  components: [{ path: `~/components/${TENANT_MODULE}` }],
   // 2026-09-13: ecBeBo(로컬 IntelliJ 구동 시 기본 3000)와 포트 충돌 방지 — 로컬 dev 서버는 3100 사용.
   devServer: {
     port: 3100,
@@ -215,7 +221,7 @@ export default defineNuxtConfig({
   },
   hooks: {
     // 멀티테넌트: app/pages/<모듈>/ 의 화면은 "이 빌드의 모듈" 것만 남기고 주소에서 /<모듈> 을 뗀다(app/pages/ec1/blog.vue → /blog).
-    // 다른 모듈의 화면은 라우트에서 빼므로 빌드에 들어가지 않는다. 같은 주소의 공통 화면이 있으면 모듈 화면이 이긴다.
+    // 다른 모듈의 화면은 라우트에서 빼므로 빌드에 들어가지 않는다. (app/pages 바로 아래에 화면을 두면 모든 모듈 공통이 되고 같은 주소면 모듈 화면이 이긴다 — 지금은 쓰지 않는다)
     "pages:extend"(pages) {
       const mine = pages.filter((p) => pageModule(p.file) === TENANT_MODULE);
       const prefix = new RegExp(`^/${TENANT_MODULE}(?=/|$)`);
