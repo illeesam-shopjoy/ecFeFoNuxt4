@@ -1,5 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 // 2026-09-14(요청사항: "nuxt.config.ts 파일의 process.env 정보 baseConst.ts에 정의하고
 // 사용하는건 어때?") — api/cdn/mode 관련 값(전부 public, 노출 무해)의 근원을 baseConst.ts
@@ -7,17 +7,31 @@ import { fileURLToPath } from "node:url";
 // (app/ 밑 파일은 클라이언트 번들에도 들어갈 수 있어 시크릿을 두기엔 부적절).
 import { CDN_URL, API_URL, RUN_MODE, SITE_ID, TENANT_MODULE } from "./app/conts/baseConst";
 
-// 멀티테넌트(2026-10-02): 이 빌드가 쓰는 모듈 레이어. 모듈 폴더가 없으면 빌드 전에 바로 알린다(환경파일의 NUXT_PUBLIC_TENANT_MODULE 오타 방지).
-const TENANT_LAYER = `./tenants/${TENANT_MODULE}`;
-if (!existsSync(fileURLToPath(new URL(TENANT_LAYER, import.meta.url)))) {
-  throw new Error(`[tenant] 모듈 레이어가 없습니다: tenants/${TENANT_MODULE}/ (NUXT_PUBLIC_TENANT_MODULE=${TENANT_MODULE})`);
+// 멀티테넌트(2026-10-02): 모듈(ec1, ec2 …)마다 app/conts/tenant/<모듈>.ts(이름·메뉴·기능) + app/pages/<모듈>/(그 모듈만의 화면)을 둔다.
+// 공통 화면은 app/pages 바로 아래, 컴포넌트는 app/components 를 모든 모듈이 같이 쓴다. 이 빌드가 쓸 모듈은 환경파일의 NUXT_PUBLIC_TENANT_MODULE.
+const TENANT_DIR = fileURLToPath(new URL("./app/conts/tenant", import.meta.url));
+const TENANT_MODULES = readdirSync(TENANT_DIR)
+  .filter((f) => f.endsWith(".ts"))
+  .map((f) => f.slice(0, -3));
+if (!TENANT_MODULES.includes(TENANT_MODULE)) {
+  throw new Error(`[tenant] 모듈 설정이 없습니다: app/conts/tenant/${TENANT_MODULE}.ts (NUXT_PUBLIC_TENANT_MODULE=${TENANT_MODULE})`);
+}
+if (!existsSync(fileURLToPath(new URL(`./app/pages/${TENANT_MODULE}`, import.meta.url)))) {
+  throw new Error(`[tenant] 모듈 화면 폴더가 없습니다: app/pages/${TENANT_MODULE}/ (NUXT_PUBLIC_TENANT_MODULE=${TENANT_MODULE})`);
+}
+
+/** 화면 파일이 app/pages/<모듈>/ 아래에 있으면 그 모듈 이름, 공통 화면이면 null */
+function pageModule(file?: string): string | null {
+  const m = /\/app\/pages\/([^/]+)\//.exec((file ?? "").replace(/\\/g, "/"));
+  return m && TENANT_MODULES.includes(m[1]!) ? m[1]! : null;
 }
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-12-12",
-  // 멀티테넌트: 공통(core)은 이 프로젝트의 app/ 이고, 사이트별 화면·테마·메뉴는 tenants/<모듈>/ 이 채운다(app.config.ts + components/tenant/*).
-  // 레이어보다 프로젝트(app/)가 우선하므로, 모듈이 달라지는 지점은 core 가 "확장 지점"(TenantHome 컴포넌트, app.config 의 tenant)으로 열어 두고 레이어가 채운다.
-  extends: [TENANT_LAYER],
+  // 멀티테넌트: useTenant() 가 읽는 모듈 설정 — 이 빌드의 모듈 것 하나만 연결한다(다른 모듈 설정은 번들에 안 들어간다).
+  alias: {
+    "#tenant": `${TENANT_DIR}/${TENANT_MODULE}.ts`,
+  },
   // 2026-09-13: ecBeBo(로컬 IntelliJ 구동 시 기본 3000)와 포트 충돌 방지 — 로컬 dev 서버는 3100 사용.
   devServer: {
     port: 3100,
@@ -200,13 +214,31 @@ export default defineNuxtConfig({
     },
   },
   hooks: {
+    // 멀티테넌트: app/pages/<모듈>/ 의 화면은 "이 빌드의 모듈" 것만 남기고 주소에서 /<모듈> 을 뗀다(app/pages/ec1/blog.vue → /blog).
+    // 다른 모듈의 화면은 라우트에서 빼므로 빌드에 들어가지 않는다. 같은 주소의 공통 화면이 있으면 모듈 화면이 이긴다.
+    "pages:extend"(pages) {
+      const mine = pages.filter((p) => pageModule(p.file) === TENANT_MODULE);
+      const prefix = new RegExp(`^/${TENANT_MODULE}(?=/|$)`);
+      for (const p of mine) {
+        p.path = p.path.replace(prefix, "") || "/";
+        p.name = (p.name ?? "").replace(new RegExp(`^${TENANT_MODULE}-?`), "") || "index";
+      }
+      const minePaths = new Set(mine.map((p) => p.path));
+      const kept = pages.filter((p) => {
+        const mod = pageModule(p.file);
+        return mod === TENANT_MODULE || (mod === null && !minePaths.has(p.path));
+      });
+      pages.splice(0, pages.length, ...kept);
+      console.log(`[Tenant] 화면 ${kept.length}개 = 공통 ${kept.length - mine.length} + ${TENANT_MODULE} 전용 ${mine.length} (${mine.map((p) => p.path).sort().join(" ")})`);
+      if (process.env.TENANT_PRINT_ROUTES === "1") console.log(`[Tenant] 전체 주소: ${kept.map((p) => p.path).sort().join(" ")}`);
+    },
     ready(nuxt) {
       console.log("\n[Env] NUXT_* 환경변수:");
       Object.keys(process.env)
         .filter((k) => k.startsWith("NUXT_"))
         .sort()
         .forEach((k) => console.log(`  ${k}=${process.env[k] ?? ""}`));
-      console.log(`[Tenant] 사이트=${SITE_ID}  모듈=${TENANT_MODULE}(tenants/${TENANT_MODULE})  사이트(sy_site.site_id)=${SITE_ID}`);
+      console.log(`[Tenant] 사이트=${SITE_ID}  모듈=${TENANT_MODULE}(app/pages/${TENANT_MODULE})  사이트(sy_site.site_id)=${SITE_ID}`);
       console.log("[Env] useRuntimeConfig().public.NAME (적용값):", {
         prodCdnBase: CDN_URL,
         apiBaseUrlDisplay: API_URL,

@@ -9,7 +9,6 @@ export default {
     './app/plugins/**/*.{js,ts}',
     './app/app.vue',
     './app/error.vue',
-    './tenants/*/app/**/*.{vue,js,ts}', // 멀티테넌트: 모듈 레이어의 화면·컴포넌트(2026-10-02)
   ],
   theme: {
     extend: {

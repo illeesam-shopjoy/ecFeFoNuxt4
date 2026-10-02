@@ -1,6 +1,7 @@
 <template>
-  <!-- ec2 홈 화면 — ec1 과 다른 구성(히어로 문구 + 카테고리 + 인기상품 + 구독). 공통 컴포넌트는 core 것을 재사용한다. -->
-  <div>
+  <layout>
+    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
+    <!-- ec2 홈 화면 (멀티테넌트: app/pages/ec2 — 이 모듈로 빌드할 때만 "/" 가 된다). ec1 과 다른 구성이고, 컴포넌트는 공통(app/components)을 재사용한다. -->
     <section class="ec2-hero">
       <div class="max-w-7xl mx-auto px-4 py-20 text-center">
         <p class="m-0 mb-2 text-[0.9rem] font-semibold tracking-widest text-white/80">{{ tenant.moduleId.toUpperCase() }}</p>
@@ -12,18 +13,27 @@
     <category-area />
     <trending-products />
     <subscribe-area />
-  </div>
+  </layout>
 </template>
 
 <script setup lang="ts">
+// nuxt.config.ts app.keepalive.include 매칭용 이름 (뒤로가기 시 스크롤·상태 복원) — ec1 홈과 같은 이름
+defineOptions({ name: "HomePage" });
+import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
+const currentFilePath = useCurrentFilePath();
+import Layout from "~/layout/Layout.vue";
 import CategoryArea from "~/components/category/CategoryArea.vue";
 import TrendingProducts from "~/components/products/TrendingProducts.vue";
 import SubscribeArea from "~/components/subscribe/SubscribeArea.vue";
 
+import { usePageTitle } from "~/composables/usePageTitle";
 const tenant = useTenant();
+useHead({
+  title: tenant.name, // 모듈이 정한 이름(app/conts/tenant/ec2.ts)
+});
+usePageTitle("홈");
 </script>
 
 <style scoped>
-/* 테넌트 대표색(환경파일 NUXT_PUBLIC_THEME_COLOR → tailwind theme)을 쓰는 히어로 */
 .ec2-hero { background: linear-gradient(135deg, #2f6fd6, #1b3f87); }
 </style>

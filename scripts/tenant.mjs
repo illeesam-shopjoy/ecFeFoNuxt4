@@ -5,7 +5,7 @@
  * 사이트·모듈은 "배포(빌드)별로 고정"이다. 환경파일 이름이 곧 테넌트 선택이다:
  *     .env.[사이트].[모듈].[프로파일]      예) .env.site1.ec1.development
  *   · 사이트  = site1, site2 …   (배포 이름표 — 파일명에만 있다. 실제 사이트 값은 환경파일 안의 NUXT_PUBLIC_SITE_ID(= sy_site.site_id) 하나)
- *   · 모듈    = ec1, ec2 …       (tenants/<모듈>/ — 그 사이트가 쓰는 화면·테마·메뉴 묶음)
+ *   · 모듈    = ec1, ec2 …       (app/pages/<모듈>/ 화면 + app/conts/tenant/<모듈>.ts 이름·메뉴 — 그 사이트가 쓰는 묶음)
  *   · 프로파일 = local | development | production
  *
  * 사용법
@@ -15,8 +15,8 @@
  *   기본 사이트·모듈은 환경변수 TENANT_SITE / TENANT_MODULE 로도 바꿀 수 있다(CI 용).
  *
  * 하는 일: ① 환경파일 존재 확인 ② 파일 안의 NUXT_PUBLIC_TENANT_MODULE 이 파일명의 모듈과 같은지, NUXT_PUBLIC_SITE_ID 가 sy_site 에 있는 ACTIVE 사이트인지 확인(복붙 실수 방지)
- *          ③ tenants/<모듈> 존재 확인 ④ `nuxt <명령> --dotenv <환경파일>` 실행
- * nuxt.config.ts 는 로드된 NUXT_PUBLIC_TENANT_MODULE 로 tenants/<모듈> 을 extends 한다.
+ *          ③ app/pages/<모듈>/ · app/conts/tenant/<모듈>.ts 존재 확인 ④ `nuxt <명령> --dotenv <환경파일>` 실행
+ * nuxt.config.ts 는 로드된 NUXT_PUBLIC_TENANT_MODULE 로 그 모듈의 화면(app/pages/<모듈>)과 설정만 빌드에 넣는다.
  */
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -53,7 +53,8 @@ if (!/^[a-z0-9]+$/i.test(opt.site) || !/^[a-z0-9]+$/i.test(opt.module)) die("--s
 const envFile = `.env.${opt.site}.${opt.module}.${opt.profile}`;
 const envPath = path.join(ROOT, envFile);
 if (!existsSync(envPath)) die(`환경파일이 없습니다: ${envFile}\n   (.env.[사이트].[모듈].[프로파일] 형식 — 예: .env.site1.ec1.development)`);
-if (!existsSync(path.join(ROOT, "tenants", opt.module))) die(`모듈 레이어가 없습니다: tenants/${opt.module}/`);
+if (!existsSync(path.join(ROOT, "app", "pages", opt.module))) die(`모듈 화면 폴더가 없습니다: app/pages/${opt.module}/`);
+if (!existsSync(path.join(ROOT, "app", "conts", "tenant", `${opt.module}.ts`))) die(`모듈 설정이 없습니다: app/conts/tenant/${opt.module}.ts`);
 
 // 파일 안의 식별값이 파일명과 같은지 확인 (다른 테넌트 파일을 복사해서 이름만 바꾼 실수 방지)
 const kv = Object.fromEntries(
