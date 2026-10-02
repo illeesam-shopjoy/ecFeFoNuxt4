@@ -16,6 +16,11 @@ export function mapBlog(b: CmBlogRawType, cdnBase: string): CmBlogType {
     regDate: b.regDate ?? "",
     blogSummary: b.blogSummary ?? "",
     blogContent: fixRelativeCdnImgSrc(b.blogContent, cdnBase),
+    // 2026-10-02(danmoo1 동네생활): 조회수·카테고리·등록자·댓글(숨김/삭제 제외)도 넘긴다 — 서버가 안 주면 비어 있다
+    viewCount: b.viewCount ?? undefined,
+    blogCateId: b.blogCateId ?? undefined,
+    regBy: b.regBy ?? undefined,
+    replies: (b.replies ?? []).filter((r) => !r.commentStatusCd || r.commentStatusCd === "ACTIVE"),
   };
 }
 

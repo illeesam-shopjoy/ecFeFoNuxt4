@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import XdevFilePathBadgeOverlayPage from "~/components/ec1/xdev/XdevFilePathBadgeOverlayPage.vue";
+import XdevFilePathBadgeOverlayPage from "~/components/xdev/XdevFilePathBadgeOverlayPage.vue";
 
 const config = useRuntimeConfig()
 const isLocal = config.public.mode === 'local'

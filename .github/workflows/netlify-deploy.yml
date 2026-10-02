@@ -83,3 +83,35 @@ jobs:
           NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
           NOTIFY_EMAIL_FROM: ${{ secrets.NOTIFY_EMAIL_FROM }}
           NOTIFY_EMAIL_APP_PASSWORD: ${{ secrets.NOTIFY_EMAIL_APP_PASSWORD }}
+
+  # ── danmoo1 모듈(당근 스타일, 사이트 7) — 같은 Netlify 사이트에 별칭(alias) 배포 → https://danmoo1--shopjoy-ecfefonuxt4.netlify.app (운영 URL 은 건드리지 않는다). 2026-10-02
+  #    환경파일 .env.site7.danmoo1.production 으로 빌드(scripts/tenant.mjs 가 sy_site 사이트·모듈 대조). 시크릿은 위 운영 잡과 동일. 실패해도 운영 배포(deploy 잡)와는 독립이다.
+  deploy-danmoo1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build (site7 · danmoo1 · production)
+        run: node scripts/tenant.mjs build --site site7 --module danmoo1 --profile production
+        env:
+          NETLIFY: "true"
+          NITRO_PRESET: netlify
+          NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY: ${{ secrets.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY }}
+          TOSSPAYMENTS_SECRET_KEY: ${{ secrets.TOSSPAYMENTS_SECRET_KEY }}
+          TOSSPAYMENTS_PAY_SECRET_KEY: ${{ secrets.TOSSPAYMENTS_PAY_SECRET_KEY }}
+          PAY_SYNC_KEY: ${{ secrets.PAY_SYNC_KEY }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+      - name: Deploy to Netlify (alias danmoo1)
+        run: npx netlify-cli deploy --alias danmoo1 --dir=dist --functions=.netlify/functions-internal --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

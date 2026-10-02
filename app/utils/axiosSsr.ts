@@ -22,9 +22,13 @@ async function nitroInternalAdapter(config: InternalAxiosRequestConfig): Promise
   for (const [k, v] of Object.entries(rawHeaders)) {
     if (v !== undefined && v !== null && v !== false) headers[k] = Array.isArray(v) ? v.join(", ") : String(v);
   }
-  let res: Awaited<ReturnType<typeof $fetch.raw>>;
+  // 2026-10-02: $fetch.raw 의 라우트 타입 추론(nitro 전체 경로 조합)이 모듈별 빌드(danmoo1)에서 "Excessive stack depth" 로 typecheck 를 깨뜨린다 —
+  // 여기서는 임의 문자열 URL 을 넘기므로 추론할 것이 없다. 필요한 응답 모양만 적고 호출 시그니처를 단순화한다(동작 동일).
+  type RawRes = { _data?: unknown; status: number; statusText: string; headers: Headers };
+  const fetchRaw = $fetch.raw as unknown as (url: string, opts: Record<string, unknown>) => Promise<RawRes>;
+  let res: RawRes;
   try {
-    res = await $fetch.raw(target, {
+    res = await fetchRaw(target, {
       method: (config.method ?? "get").toUpperCase() as any,
       headers,
       body: config.data as any,

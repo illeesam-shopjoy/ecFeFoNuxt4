@@ -36,8 +36,9 @@ export default defineNuxtConfig({
     "#tenant-components": fileURLToPath(new URL(`./app/components/${TENANT_MODULE}`, import.meta.url)),
     "#tenant-layout": fileURLToPath(new URL(`./app/layout/${TENANT_MODULE}`, import.meta.url)),
   },
-  // 컴포넌트 자동 등록은 이 빌드의 모듈 폴더만 — 이름은 모듈 폴더 기준(<xdev-file-path-badge> 등 그대로)이고 다른 모듈 컴포넌트는 빌드에 안 들어간다.
-  components: [{ path: `~/components/${TENANT_MODULE}` }],
+  // 컴포넌트 자동 등록은 이 빌드의 모듈 폴더 + 개발도구(xdev) 폴더 — 이름은 그 폴더 기준이고 다른 모듈 컴포넌트는 빌드에 안 들어간다.
+  // 2026-10-02(요청사항: "components/<모듈>/xdev 들은 없어도 될거 같은데") — 파일경로 배지(xdev)는 모양이 아니라 개발도구라 모듈마다 사본을 두지 않고 app/components/xdev 한 벌만 둔다.
+  components: [{ path: "~/components/xdev" }, { path: `~/components/${TENANT_MODULE}` }],
   // 2026-09-13: ecBeBo(로컬 IntelliJ 구동 시 기본 3000)와 포트 충돌 방지 — 로컬 dev 서버는 3100 사용.
   devServer: {
     port: 3100,

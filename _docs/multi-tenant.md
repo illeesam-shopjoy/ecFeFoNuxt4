@@ -8,6 +8,7 @@
 |---|---|
 | `.env.site1.ec1.local` / `.development` / `.production` | 사이트 site1 · 모듈 ec1 (현재 쇼핑몰) |
 | `.env.site2.ec2.local` / `.development` / `.production` | 사이트 site2 · 모듈 ec2 (확장성 시험용) |
+| `.env.site7.danmoo1.local` / `.development` / `.production` | 사이트 site7(`2604010000000007`) · 모듈 danmoo1 (당근 스타일 동네 중고거래, 2026-10-02) |
 | `*.example` | 각 파일의 예제(마스킹) |
 
 - `[사이트]`(site1, site2)는 **배포 이름표**이고 파일명에만 있다. 사이트의 실제 값은 파일 안의 `NUXT_PUBLIC_SITE_ID` **하나**이며 백엔드 `sy_site.site_id`(PK)다.
@@ -19,6 +20,7 @@
 ### 배포 대응
 - 개발(NAS) = `.env.site1.ec1.development` — `z0scripts/shopjoy-apps-dev/ecFeFoNuxt4/deploy.js`
 - 운영(Netlify) = `.env.site1.ec1.production` — GitHub Actions `netlify-deploy.yml` 이 `pnpm run build`(= production 프로파일) 실행
+- danmoo1 미리보기(Netlify 별칭) = `.env.site7.danmoo1.production` — 같은 워크플로의 `deploy-danmoo1` 잡이 `tenant.mjs build --site site7 --module danmoo1 --profile production` 후 `netlify deploy --alias danmoo1` → `https://danmoo1--shopjoy-ecfefonuxt4.netlify.app` (운영 URL 과 별개, NAS 컨테이너는 아직 없음)
 
 ## 2. 실행 — `scripts/tenant.mjs`
 
@@ -49,6 +51,7 @@ ecFeFoNuxt4/
     components/
       ec1/                 ← 모듈 ec1 의 컴포넌트 전체 (products/, modals/, my/, error/ErrorPage.vue …)
       ec2/                 ← 모듈 ec2 의 컴포넌트 전체 (독립된 사본)
+      xdev/                ← 예외: 파일경로 배지(개발도구) 한 벌 — 모양이 아니라 도구라 모듈별 사본을 두지 않는다(nuxt.config components 에 함께 등록, 2026-10-02)
     layout/
       ec1/, ec2/           ← 모듈별 레이아웃·헤더·푸터
     error.vue, app.vue     ← 공통 껍데기: 오류 화면·확인/알림 창은 #tenant-components 로 "이 빌드의 모듈" 것을 연결만 한다
@@ -74,6 +77,31 @@ ecFeFoNuxt4/
 4. `app/conts/tenant/ec3.ts`(id/name/menus/features)를 만든다.
 5. `.env.site3.ec3.{local,development,production}` 를 만든다(`NUXT_PUBLIC_SITE_ID`=그 site_id, `NUXT_PUBLIC_TENANT_MODULE=ec3`).
 6. `pnpm tenant dev --site site3 --module ec3 --profile local` 로 확인한다.
+
+## 4-1. 모듈 danmoo1 — 당근 스타일 동네 중고거래 (2026-10-02)
+휴대폰 당근 캡처를 기준으로 만든 세 번째 모듈. 쇼핑몰(ec1/ec2)과 소스를 공유하지 않고 `app/{pages,components,layout}/danmoo1` 에 독립이다(모달·xdev·ui·MapSwitch 만 ec2 에서 복사). 모바일 우선 반응형 — PC 에서는 가운데 최대 640px 앱 틀(`layout/danmoo1/Layout.vue` 의 `.dm-app` CSS 변수, 다크는 `html.theme-dark`).
+
+| 주소 | 화면 | 데이터 |
+|---|---|---|
+| `/` | 홈 — 내 동네·동네 범위 ▾(localStorage) · 카테고리 칩 · 필터줄(정렬/가격대/거래 가능만) · 중고거래 피드(무한 스크롤, 동네·끌올·예약중/판매완료 표시) · 글쓰기 FAB | `/fo/ec/pd/prod/page`(sort/priceMin/priceMax), `/fo/ec/pd/category` 1단계 |
+| `/search` | 최근 검색어(브라우저 저장)·추천 검색어·내 키워드 → 탭 **중고거래**(상품명 검색 + 필터줄) / **동네생활**(글 제목·내용 `searchValue`), 키워드 알림 등록 | `searchType=prodNm&searchValue`, `/fo/ec/cm/bltn/page?searchValue` |
+| `/noti` | 활동 알림(마이페이지 알림 API, 읽음/삭제) / 새 글(등록한 키워드의 최신 물건) | `/fo/my/noti/*` |
+| `/services` | 전체 서비스 메뉴 — 연결 안 된 것은 "준비 중" | 상수 `DM_SERVICES` |
+| `/community`, `/community/:id` | 동네생활 글 목록(추천=최신·인기=조회수·주제 칩)·**공감(mb_like BLOG, 실제 저장)**·댓글 수 / 상세(공감·공유·**댓글 작성·내 댓글 삭제**) | 블로그 카테고리 `BC000000000000020`(cm_blog 는 site_id 가 없어 카테고리로만 가른다), `POST·DELETE /fo/ec/cm/bltn/{id}/reply`(ecBeBo FoCmBlogController, 2026-10-02 신설) |
+| `/map` | 동네지도(MapSwitch, 동네 바꾸기) + 업체 카테고리 + 동네 가게(표시용 샘플) | 좌표 상수 `DM_TOWN_COORDS` |
+| `/chat`, `/chat/:id` | 채팅 목록(전체/진행중/종료, 안 읽음 점)·채팅방(3초 폴링, **상단에 문의 중인 물건 카드**, 자주 쓰는 문구) — 회원끼리 직접 채팅 API 가 없어 **고객센터 채팅방**(회원당 1개, 운영자 응대). 상품 "채팅하기"·"가격 제안"은 상품 참조(refTypeCd PRODUCT) 메시지로 들어간다 | `/fo/my/chat/*` (`sendRefMsg`) |
+| `/jobs`, `/realty` | 알바·부동산 — 바로가기/매물종류 칩, 상세 시트(지원·문의는 준비 중), 관심(localStorage). 백엔드 데이터 없음, 표시용 샘플 | 상수 |
+| `/prod/:id` | 물건 상세 — 사진 스와이프(n/N)·판매자·상태·설명·**거래 희망 장소(지도)**·**판매자의 다른 물건**(같은 브랜드)·비슷한 물건(같은 카테고리), 하단 ♥·가격·**가격 제안**·채팅하기, 더보기(공유/링크 복사/신고) | `/fo/ec/pd/prod/{id}`, `/fo/ec/mb/like` |
+| `/write` | 동네생활 글(주제 태그·블로그 등록) / 내 물건 팔기(판매자만: 사진 1장(AttachUploader PROD_IMG)·카테고리·판매/나눔·가격 제안 받기·창고·설명) | `POST /fo/ec/cm/bltn`, `POST /fo/ec/pd/my-prod` |
+| `/my` | 나의 danmoo — 프로필·매너온도(고정 36.5)·요약(관심/채팅/쿠폰/판매)·머니(=적립금 잔액)·메뉴 | `/fo/ec/my/info`, `/fo/ec/mb/like`, `/fo/my/coupon`, `/fo/my/chat` |
+| `/my/likes`, `/my/prods`, `/my/orders`, `/my/coupons`, `/my/posts`, `/my/settings` | 관심목록(2열, 해제)·판매내역(판매중/예약·중지/완료 탭)·구매내역(주문)·쿠폰함·모아보기(내가 쓴 글=regBy)·설정(동네·범위·다크 모드·키워드 관리·최근 기록 삭제·계정·앱 정보) | `/fo/ec/pd/my-prod`, `/fo/my/order/list`, `/fo/my/coupon/list`, 블로그 카테고리 글의 `regBy` |
+| `/login` | 이메일 로그인 + 테스트 계정 모달(`?redirect=` 로 복귀). 회원가입은 아직 없다 | `/co/fo-auth/login` |
+
+- 모듈 전용 상수(동네 목록·좌표·탭·서비스 메뉴·정렬·가격대·샘플)와 `townOf()`(상품ID 로 동네 고정 배정 — 상품에 동네 데이터가 없어 표시용), `dmStatusOf()`(예약중/판매완료)는 `app/conts/tenant/danmoo1.ts` 의 named export — 이 빌드에만 들어간다. 내 동네·범위·최근 검색·키워드 알림·알바/부동산 관심은 서버 저장이 아니라 localStorage(`dm.*`).
+- 매너온도(36.5°C)·동네 가게·알바·부동산은 데이터가 없어 표시용이며 화면에 "샘플"로 적어 두었다. 회원끼리 1:1 채팅은 백엔드에 없어 고객센터 채팅방으로 대신한다.
+- 시드: `p2604…/_doc/ddl_pgsql/migration_20261002_seed_danmoo1_site7.sql` — 사이트 7 `tenant_module=danmoo1`, 카테고리 12(CAT07…), site1 상품 36건 복제(PDDM…, 가격 재산정), 테스트 회원 `dm_user1~5@danmoo.com`(비밀번호 1111), 동네생활 글 4건(BLDM…).
+- 공통에 추가된 것: `utils/timeAgo.ts`(상대 시각·원화), `svc/fo/ec/mb/mbLikeSvc.ts`(찜 토글, PRODUCT/BLOG), `coBlogSvc.getPagedWith/create/createReply/deleteReply`, `mapBlog` 가 `viewCount/blogCateId/regBy/replies` 도 넘김, `myChatSvc.sendRefMsg`, `composables/useDmTown.ts`·`useAuthReady.ts`.
+- **`useAuthReady()`**: 화면 onMounted 는 app.vue 의 로그인 복원(onMounted)보다 먼저 실행된다. 새로고침 직후 `authStore.isStLoggedIn` 으로 분기하는 화면은 initPage 첫 줄에서 `await useAuthReady()` 를 해야 한다(안 하면 "관심목록 없음"처럼 비로그인 결과가 나온다). 다른 모듈 화면에도 같은 규칙이 적용된다(ec1/ec2 는 useMyList.ensureLogin 이 비슷한 역할).
 
 ## 5. 백엔드(ecBeBo) 사이트 확정 — 적용됨 (2026-10-02)
 - `/api/fo/**` 는 **사이트 필수**다. `X-Site-Id` 를 `sy_site`(ACTIVE)와 대조해 확정하고, 헤더가 없으면 로그인 토큰의 siteId 만 인정한다(둘 다 없으면 400). 없는 사이트는 400, 회원 토큰의 사이트와 헤더가 다르면 403.

@@ -24,3 +24,6 @@ dist
 
 # npm 잔재 (이 프로젝트는 pnpm 전용, package.json packageManager 참조)
 package-lock.json
+
+# gradle 배포본 — 다른 프로젝트의 gradlew 가 이 폴더를 작업폴더로 실행되면 생긴다(ecFeFoNuxt4 와 무관, 커밋 금지)
+.gradle/

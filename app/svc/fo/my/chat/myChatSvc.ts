@@ -27,6 +27,10 @@ export const myChatSvc = {
   getMessages: (chattId: string, afterMsgId?: string | null): Promise<CmChattMsgType[]> =>
     csrList<CmChattMsgType>(idPath(CHAT, chattId, "/messages"), authCfg({ params: afterMsgId ? { afterMsgId } : undefined })),
 
+  /** POST /fo/my/chat/{id}/msg — 참조(상품 등)가 붙은 메시지 전송. danmoo1 "채팅하기"가 상품 문의 맥락을 방에 남길 때 쓴다(refTypeCd PRODUCT, refId 상품ID) (2026-10-02) */
+  sendRefMsg: (chattId: string, msgText: string, refTypeCd: "PRODUCT" | "ORDER" | "CLAIM", refId: string): Promise<CmChattMsgType> =>
+    csrPost<CmChattMsgType>(idPath(CHAT, chattId, "/msg"), { msgText: requireMsgText(msgText), msgTypeCd: "TEXT", refTypeCd, refId }, authCfg()),
+
   /** POST /fo/my/chat/{id}/msg — 메시지 전송 */
   sendMsg: (chattId: string, msgText: string): Promise<CmChattMsgType> => csrPost<CmChattMsgType>(idPath(CHAT, chattId, "/msg"), { msgText: requireMsgText(msgText) }, authCfg()),
 };

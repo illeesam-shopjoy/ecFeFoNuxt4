@@ -1,4 +1,6 @@
 /** 블로그 타입. 필드명은 ecBeBo(JPA) CmBlogDto.Item 기준 (2026-09 정렬). */
+import type { CmBlogReplyType } from "~/types/cm/cmBlogReplyType";
+
 export interface CmBlogType {
   blogId: string; // 블로그ID (ecBeBo blogId)
   img: string; // 대표 이미지 — ecBeBo files[0].imgUrl (BFF가 뽑아낸 파생값, JPA 원본 컬럼 아님)
@@ -15,6 +17,7 @@ export interface CmBlogType {
   viewCount?: number; // 조회수
   useYn?: string; // 공개여부 Y/N (비공개 글)
   isNotice?: string; // 공지글 여부 Y/N (상단 고정)
+  replies?: CmBlogReplyType[]; // 댓글 목록(정상 상태만) — 2026-10-02 danmoo1 동네생활 댓글
   // ── 공통(감사) 컬럼 ──
   regBy?: string; // 등록자 (reg_by)
   regByNm?: string; // 등록자명 (reg_by_nm)

@@ -1,0 +1,273 @@
+<template>
+  <!-- 첨부파일 위젯 — ecFeBo BaseAttachGrp 대응. 파일을 고르면(여러 개 한 번에 가능) 즉시 /co/cm/upload/multi 로 올리고(미연계),
+       v-model 에는 부모 저장 요청에 그대로 실어 보낼 attachFiles 변경 목록이 담긴다:
+         · 이번에 올린 파일 → { attachId, rowStatus: 'I' }
+         · 수정 화면에서 기존(initialFiles) 첨부를 지우면 → { attachId, rowStatus: 'D' }
+       이번에 올렸다가 지운 파일은 아직 연계 전이므로 서버에서도 바로 삭제한다.
+       2026-09-20: 동영상(파일당 100MB)·여러 종류 파일 지원 — 유형별 용량 한도는 서버(FileUploadUtil)와 동일하게 적용한다. -->
+  <!-- 2026-09-22(요청사항: "파일첨부란 지저분 — 깔끔하게, 핸드폰에서 사진 찍기/동영상 올리기") — 제목 박스·분류코드·"첨부된 파일이 없습니다" 안내를 없애고
+       버튼 한 줄 + (있을 때만) 파일 목록 + 한 줄 안내로 줄였다. 터치 기기(폰/태블릿)에서는 카메라로 바로 찍는 [사진 촬영]/[동영상 촬영] 버튼이 더 나온다.
+       (title/showGrp 속성은 호출부 호환을 위해 남겨두되 더는 그리지 않는다.) -->
+  <div class="rounded-lg border border-dashed border-[#d5dae1] bg-[#fcfcfd] px-3 py-2.5">
+    <div class="flex flex-wrap items-center gap-1">
+      <button type="button" class="attach-btn" :disabled="uploading || rows.length >= maxCount" @click="picker?.click()">
+        <i class="fas fa-paperclip text-[0.72rem]"></i>{{ uploading ? "업로드중…" : "파일 선택" }}
+      </button>
+      <template v-if="touchDevice">
+        <button v-if="canPhoto" type="button" class="attach-btn" :disabled="uploading || rows.length >= maxCount" @click="camPhoto?.click()"><i class="fas fa-camera text-[0.72rem]"></i>사진 촬영</button>
+        <button v-if="canVideo" type="button" class="attach-btn" :disabled="uploading || rows.length >= maxCount" @click="camVideo?.click()"><i class="fas fa-video text-[0.72rem]"></i>동영상 촬영</button>
+      </template>
+      <span class="ml-auto text-[0.72rem] text-gray-400">{{ rows.length }} / {{ maxCount }}</span>
+      <input ref="picker" type="file" multiple class="hidden" :accept="accept.map((e) => '.' + e).join(',')" @change="onPick" />
+      <input ref="camPhoto" type="file" accept="image/*" capture="environment" class="hidden" @change="onPick" />
+      <input ref="camVideo" type="file" accept="video/*" capture="environment" class="hidden" @change="onPick" />
+    </div>
+
+    <ul v-if="rows.length" class="list-none m-0 mt-2 p-0 flex flex-col gap-1">
+      <li v-for="f in rows" :key="f.attachId" class="flex items-center gap-2 rounded-md bg-[#f6f7f9] px-2 py-1 text-[0.8rem]">
+        <img v-if="f.thumb" :src="f.thumb" alt="" class="w-7 h-7 rounded object-cover shrink-0" />
+        <span v-else class="w-7 h-7 rounded bg-white flex items-center justify-center text-gray-400 shrink-0"><i :class="f.isVideo ? 'far fa-file-video' : 'far fa-file'"></i></span>
+        <span class="flex-1 min-w-0 truncate text-gray-800">{{ f.name }}</span>
+        <span class="text-[0.7rem] text-gray-400 shrink-0">{{ fmtSize(f.size) }}</span>
+        <button type="button" class="w-6 h-6 rounded-full border-0 bg-transparent text-gray-400 hover:bg-red-50 hover:text-red-500 cursor-pointer shrink-0" aria-label="삭제" @click="remove(f)"><i class="fal fa-times"></i></button>
+      </li>
+    </ul>
+
+    <div v-if="uploading" class="mt-2">
+      <div class="h-1.5 rounded bg-gray-200 overflow-hidden"><div class="h-full bg-theme transition-[width] duration-150" :style="{ width: progress + '%' }"></div></div>
+      <div class="text-[0.72rem] text-gray-500 mt-1">업로드중… {{ progress }}%<template v-if="progress >= 100"> (서버에서 처리 중 — 동영상은 시간이 걸릴 수 있습니다)</template></div>
+    </div>
+
+    <div class="mt-1.5 text-[0.7rem] leading-snug text-gray-400">{{ limitText }}</div>
+    <div v-if="msg" class="text-[0.78rem] leading-snug mt-1.5 mb-0" :class="msgErr ? 'text-red-500' : 'text-green-600'">{{ msg }}</div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, ref, watch } from "vue";
+import { coUploadSvc } from "~/svc/co/cm/coUploadSvc";
+import { isImageExt, isVideoExt } from "~/utils/mapProduct";
+import { fixInternalCdnUrl, resolveCdnUrl } from "~/utils/cdnUrl";
+import type { SyAttachType } from "~/types/sy/syAttachType";
+import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
+
+interface AttachRow { attachId: string; name: string; size: number; thumb?: string; isVideo: boolean; existing: boolean }
+
+const props = withDefaults(
+  defineProps<{
+    modelValue?: SyAttachChangeType[];
+    grpCode?: string;
+    title?: string;
+    showGrp?: boolean;
+    maxCount?: number;
+    accept?: string[];
+    initialFiles?: SyAttachType[]; // 수정 화면: 이미 연계된 기존 첨부
+    imageMaxMb?: number;
+    docMaxMb?: number;
+    videoMaxMb?: number;
+    etcMaxMb?: number;
+  }>(),
+  {
+    modelValue: () => [],
+    grpCode: "CONTACT_CONTENT_ATTACH",
+    title: "문의 첨부파일",
+    showGrp: true,
+    maxCount: 5,
+    accept: () => ["jpg", "jpeg", "png", "gif", "pdf", "xlsx", "docx", "zip"],
+    initialFiles: () => [],
+    // 서버 FileUploadUtil 한도와 같은 값(2026-09-22: 이미지 5→15MB, 동영상 100→150MB로 상향) — 문서 20MB / 그 외 10MB
+    imageMaxMb: 15,
+    docMaxMb: 20,
+    videoMaxMb: 150,
+    etcMaxMb: 10,
+  }
+);
+// picked: 사용자가 이 위젯에서 고른(업로드할) 파일을 부모에 알린다 — 사진으로 상품정보를 자동 작성하는 화면처럼 파일 자체가 필요한 곳에서 쓴다
+const emit = defineEmits<{ (e: "update:modelValue", v: SyAttachChangeType[]): void; (e: "picked", files: File[]): void }>();
+
+const cdnBase = useRuntimeConfig().public.prodCdnBase as string;
+const picker = ref<HTMLInputElement | null>(null);
+const camPhoto = ref<HTMLInputElement | null>(null);
+const camVideo = ref<HTMLInputElement | null>(null);
+// 폰/태블릿(터치 기기)에서만 카메라 촬영 버튼을 보인다 — 데스크톱에선 capture 가 무시돼 일반 파일 선택과 같아지므로 굳이 안 보인다
+const touchDevice = ref(false);
+onMounted(() => { touchDevice.value = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches === true; });
+// 허용 확장자에 이미지/동영상이 있을 때만 해당 촬영 버튼
+const canPhoto = computed(() => props.accept.some(isImageExt));
+const canVideo = computed(() => props.accept.some(isVideoExt));
+const uploading = ref(false);
+const progress = ref(0);
+const msg = ref("");
+const msgErr = ref(false);
+
+const existing = ref<AttachRow[]>([]); // 기존 첨부(서버에 이미 연계된 것)
+const added = ref<AttachRow[]>([]); // 이번에 올린 것
+const removedIds = ref<string[]>([]); // 지운 기존 첨부
+
+const DOC_EXT = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv"];
+const say = (m: string, err = false) => { msg.value = m; msgErr.value = err; };
+const fmtSize = (n: number) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(n / 1024))}KB`);
+const rows = computed(() => [...existing.value, ...added.value]);
+
+const limitMbOf = (ext: string) => (isVideoExt(ext) ? props.videoMaxMb : isImageExt(ext) ? props.imageMaxMb : DOC_EXT.includes(ext) ? props.docMaxMb : props.etcMaxMb);
+const limitText = computed(() => {
+  const parts: string[] = [];
+  if (props.accept.some(isImageExt)) parts.push(`이미지 ${props.imageMaxMb}MB`);
+  if (props.accept.some(isVideoExt)) parts.push(`동영상 ${props.videoMaxMb}MB`);
+  if (props.accept.some((e) => DOC_EXT.includes(e))) parts.push(`문서 ${props.docMaxMb}MB`);
+  if (props.accept.some((e) => !isImageExt(e) && !isVideoExt(e) && !DOC_EXT.includes(e))) parts.push(`기타 ${props.etcMaxMb}MB`);
+  return `파일당 ${parts.join(" · ")} 이하`;
+});
+
+const toRow = (a: SyAttachType): AttachRow => ({
+  attachId: a.attachId,
+  name: a.fileNm,
+  size: a.fileSize,
+  thumb: isImageExt(a.fileExt) || isVideoExt(a.fileExt) ? a.thumbCdnUrl || (isImageExt(a.fileExt) ? a.cdnImgUrl : undefined) : undefined,
+  isVideo: isVideoExt(a.fileExt),
+  existing: true,
+});
+
+// 수정 대상이 바뀌면(또는 처음) 기존 첨부를 다시 채운다
+watch(() => props.initialFiles, (list) => { existing.value = (list ?? []).map(toRow); added.value = []; removedIds.value = []; }, { immediate: true, deep: true });
+
+// 부모가 v-model 을 비우면(등록 완료 후 초기화) 이번에 올린 것/지운 것 표시도 초기화한다
+watch(() => props.modelValue, (v) => {
+  if (!v.length && (added.value.length || removedIds.value.length)) {
+    added.value = [];
+    removedIds.value = [];
+    existing.value = (props.initialFiles ?? []).map(toRow);
+    say("");
+  }
+});
+
+const sync = () => emit("update:modelValue", [
+  ...added.value.map((f) => ({ attachId: f.attachId, rowStatus: "I" as const })),
+  ...removedIds.value.map((id) => ({ attachId: id, rowStatus: "D" as const })),
+]);
+
+// 2026-09-22(요청사항: "이미지도 고용량파일 화질은 안 떨어지면서도 저용량으로 저장할수 있는
+// 포함으로 가능해 가능하면 해주고") — 원본 해상도는 그대로 두고(다운스케일 없음) WebP로 다시
+// 인코딩해 용량만 줄인다. 캔버스 재인코딩이라 진짜 무손실은 아니지만 quality 0.88이면 원본과
+// 눈으로 구분하기 어려운 수준을 유지하면서 대체로 30~70% 작아진다. 애니메이션(gif)은 첫 프레임만
+// 남으므로 건너뛴다. 실패하거나 오히려 커지면 원본 파일을 그대로 쓴다(안전 fallback).
+const COMPRESSIBLE_IMG_EXT = new Set(["jpg", "jpeg", "png", "webp"]);
+async function compressImageFile(file: File, ext: string): Promise<File> {
+  if (!COMPRESSIBLE_IMG_EXT.has(ext) || typeof createImageBitmap === "undefined") return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close?.();
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.88));
+    if (!blob || blob.size <= 0 || blob.size >= file.size) return file; // 압축 효과 없으면 원본 유지
+    const newName = file.name.replace(/\.[^.]+$/, "") + ".webp";
+    return new File([blob], newName, { type: "image/webp", lastModified: file.lastModified });
+  } catch {
+    return file; // 디코딩 실패 등 — 원본 그대로 업로드(흐름 차단하지 않음)
+  }
+}
+
+async function onPick(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const picked = [...(input.files ?? [])];
+  input.value = "";
+  await handleFiles(picked, true);
+}
+
+/** addFiles — 부모가 파일을 직접 넣는다(예: AI 자동 작성용으로 찍은 사진을 대표 이미지로도 올릴 때). picked 이벤트는 내지 않는다 */
+const addFiles = (files: File[]) => handleFiles(files, false);
+defineExpose({ addFiles });
+
+async function handleFiles(picked: File[], notify: boolean) {
+  if (!picked.length) return;
+  say("");
+  const valid: File[] = [];
+  const skipped: string[] = []; // 거부된 파일 안내 — 이후 업로드 결과 메시지와 합쳐서 보여준다(덮어쓰지 않게)
+  for (let f of picked) {
+    const extOrig = f.name.split(".").pop()?.toLowerCase() ?? "";
+    if (!props.accept.includes(extOrig)) { skipped.push(`${f.name}: 허용되지 않는 형식`); continue; }
+    // 용량 제한 검사 전에 먼저 압축 — 압축 후 용량으로 제한을 판단해야 "고용량 원본이라 거절"되는 일이 줄어든다
+    if (isImageExt(extOrig)) f = await compressImageFile(f, extOrig);
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? extOrig;
+    const limit = limitMbOf(ext);
+    if (f.size > limit * 1048576) { skipped.push(`${f.name}: ${isVideoExt(ext) ? "동영상 " : ""}${limit}MB 초과`); continue; }
+    if (rows.value.length + valid.length >= props.maxCount) { skipped.push(`${f.name}: 최대 ${props.maxCount}개 초과`); continue; }
+    valid.push(f);
+  }
+  const skippedMsg = skipped.length ? ` (제외 ${skipped.length}건 — ${skipped.join(", ")})` : "";
+  if (!valid.length) return say(`첨부할 수 있는 파일이 없습니다${skippedMsg}`, true);
+  if (notify) emit("picked", valid);
+  uploading.value = true;
+  progress.value = 0;
+  try {
+    const res = await coUploadSvc.uploadMulti(valid, props.grpCode, (p) => (progress.value = p));
+    for (const u of res.files ?? []) {
+      const ext = (u.fileExt || "").toLowerCase();
+      const isImg = isImageExt(ext);
+      const isVid = isVideoExt(ext);
+      added.value.push({
+        attachId: u.attachId,
+        name: u.originalName,
+        size: u.fileSize,
+        thumb: isImg || isVid ? fixInternalCdnUrl(resolveCdnUrl(u.thumbCdnUrl || (isImg ? u.cdnImgUrl : undefined), cdnBase), cdnBase) : undefined,
+        isVideo: isVid,
+        existing: false,
+      });
+    }
+    sync();
+    if ((res.failedCount ?? 0) > 0 && !(res.uploadedCount ?? 0)) say(`업로드 실패: ${(res.failedFiles ?? []).join(", ") || "파일 검증 오류"}${skippedMsg}`, true);
+    else if ((res.failedCount ?? 0) > 0) say(`${res.uploadedCount}개 업로드, ${res.failedCount}개 실패 — ${(res.failedFiles ?? []).join(", ")}${skippedMsg}`, true);
+    else say(`${res.uploadedCount ?? valid.length}개 파일이 업로드되었습니다${skippedMsg}`, skipped.length > 0);
+  } catch (e) {
+    const err = e as { data?: { message?: string } };
+    say(`업로드 중 오류가 발생했습니다${err?.data?.message ? ` — ${err.data.message}` : ""}`, true);
+  } finally {
+    uploading.value = false;
+  }
+}
+
+async function remove(f: AttachRow) {
+  if (f.existing) {
+    // 이미 글에 연계된 첨부 — 지금 서버에서 지우지 않고, 저장할 때 rowStatus:'D' 로 연계 해제
+    existing.value = existing.value.filter((x) => x.attachId !== f.attachId);
+    removedIds.value.push(f.attachId);
+    sync();
+    return;
+  }
+  added.value = added.value.filter((x) => x.attachId !== f.attachId);
+  sync();
+  try { await coUploadSvc.deleteAttach(f.attachId); } catch { /* 미연계 고아 파일은 서버 정리 대상 — 화면 동작에는 영향 없음 */ }
+}
+</script>
+
+<style scoped>
+.attach-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  /* 2026-09-22(요청사항: "파일선택/사진촬영/동영상촬영 한 줄에 보이도록 좌우공백이든 폰트든 줄여줘") — 좁은 화면에서 3개가 한 줄에 다 들어가도록 패딩·글자 축소 */
+  padding: 6px 9px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.attach-btn:hover:not(:disabled) {
+  border-color: #bc8246;
+  color: #bc8246;
+}
+.attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>

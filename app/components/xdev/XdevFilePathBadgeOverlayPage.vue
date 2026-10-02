@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import type { FoSelectTreeItemType } from "~/types/fo/foCompType";
-import SelectTree from "~/components/ec1/ui/SelectTree.vue";
+import SelectTree from "~/components/xdev/ui/SelectTree.vue";
 
 const { isPanelsLocked } = useXdevPanelsState();
 

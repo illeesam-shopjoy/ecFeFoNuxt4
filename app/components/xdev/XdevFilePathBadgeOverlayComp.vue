@@ -89,7 +89,7 @@
 
 <script setup lang="ts">
 import type { BadgeEntry } from "~/composables/useFilePathBadgeRegistry";
-import SelectMultiCheck from "~/components/ec2/ui/SelectMultiCheck.vue";
+import SelectMultiCheck from "~/components/xdev/ui/SelectMultiCheck.vue";
 
 const { isPanelsLocked, openPropsId, openDataId, activeBadgeId, defaultSourceEditor, mainPanelRef } = useXdevPanelsState();
 const { badges, checkedIds, hoveredId, componentTitles, toggleChecked, selectAll, deselectAll, setHovered, getTitleForBadge } = useFilePathBadgeRegistry();
