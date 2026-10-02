@@ -79,7 +79,11 @@ if (!rest.includes("--skip-site-check") && process.env.TENANT_SKIP_SITE_CHECK !=
     const hit = rows.find((r) => r.siteId === kv.NUXT_PUBLIC_SITE_ID);
     if (!hit) die(`sy_site 에 site_id "${kv.NUXT_PUBLIC_SITE_ID}" 가 없습니다. (${api})\n   ${envFile} 의 NUXT_PUBLIC_SITE_ID 를 sy_site.site_id 실값으로 맞추거나, 사이트를 먼저 등록하세요.`);
     if (hit.siteStatusCd !== "ACTIVE") die(`sy_site ${hit.siteId}(${hit.siteCode} · ${hit.siteNm}) 의 상태가 ${hit.siteStatusCd} 입니다. ACTIVE 인 사이트만 배포할 수 있습니다.`);
-    console.log(`[tenant] ✔ sy_site 확인: ${hit.siteId} = ${hit.siteCode} · ${hit.siteNm} (${hit.siteStatusCd})`);
+    // 사이트에 FO 모듈(sy_site.tenant_module)이 정해져 있으면 빌드 모듈과 같아야 한다 — 다른 모듈로 잘못 배포하는 것을 막는다(미지정이면 안내만)
+    if (hit.tenantModule && hit.tenantModule !== opt.module) {
+      die(`sy_site ${hit.siteId}(${hit.siteCode} · ${hit.siteNm}) 의 FO 모듈은 "${hit.tenantModule}" 인데 "${opt.module}" 로 빌드하려고 합니다.\n   BO 사이트관리에서 FO 모듈을 바꾸거나, --module ${hit.tenantModule} 로 빌드하세요.`);
+    }
+    console.log(`[tenant] ✔ sy_site 확인: ${hit.siteId} = ${hit.siteCode} · ${hit.siteNm} (${hit.siteStatusCd}, FO 모듈 ${hit.tenantModule || "미지정"})`);
   } catch (e) {
     console.warn(`[tenant] ⚠ sy_site 확인을 건너뜁니다 — 백엔드(${api})에 닿지 않음: ${e?.message ?? e}`);
   }

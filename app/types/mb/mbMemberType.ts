@@ -23,6 +23,8 @@ export interface MbMemberType {
   memberAddrDetail?: string; // 상세주소
   memberMemo?: string; // 메모
   siteId?: string; // 사이트ID
+  siteNm?: string; // 사이트명 (조인)
+  tenantModule?: string; // 소속 사이트의 FO 모듈(ec1, ec2 …) — 목록 응답에서 서버가 채움 (멀티테넌트 2026-10-02)
   passVerifiedYn?: string; // PASS 본인인증 여부 Y/N (더 이상 쓰지 않음 — 이메일 인증으로 대체)
   emailVerifiedYn?: string; // 이메일 링크 인증 여부 Y/N
   emailVerifiedDate?: string; // 이메일 링크 인증 일시

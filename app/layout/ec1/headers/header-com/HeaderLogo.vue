@@ -19,6 +19,8 @@
           <span class="px-[5px] lg:px-[6px] rounded-[3px] border font-mono text-[9px] lg:text-[10px] font-bold" :class="chipClass">{{ modeLabel }}</span>
         </span>
         <span class="hidden lg:block text-[0.68rem] text-[#a3a3a3] opacity-75 whitespace-nowrap overflow-hidden text-ellipsis max-w-[45vw]">api {{ apiHost }} · cdn {{ cdnHost }}</span>
+        <!-- 2026-10-02(요청사항: "상단에 ShopJoy 있는곳에 사이트id 모듈 값 표시해줘") — 이 배포가 고정된 사이트(sy_site.site_id)와 FO 모듈. 비밀값 아님 -->
+        <span class="hidden lg:block text-[0.68rem] text-[#a3a3a3] opacity-75 whitespace-nowrap overflow-hidden text-ellipsis max-w-[45vw]">site {{ tenant.siteId }} · <b class="font-mono text-[#7c3aed]">{{ tenant.moduleId }}</b></span>
       </span>
     </nuxt-link>
   </div>
@@ -36,6 +38,7 @@ import { computed } from "vue";
 withDefaults(defineProps<{ align?: "start" | "center" }>(), { align: "start" });
 
 const { public: pub } = useRuntimeConfig();
+const tenant = useTenant(); // 사이트ID · 모듈 (멀티테넌트, 2026-10-02)
 const RUN_MODE = String(pub.mode ?? "");
 const API_URL = String(pub.apiBaseUrlDisplay ?? "");
 const CDN_URL = String(pub.prodCdnBase ?? "");

@@ -2,6 +2,8 @@
 export interface SySiteType {
   siteId: string; // 사이트ID (YYMMDDhhmmss+rand4)
   siteCode?: string; // 사이트코드
+  siteNm?: string; // 사이트명
+  tenantModule?: string; // 이 사이트가 운영되는 FO 모듈(ec1, ec2 …) — sy_site.tenant_module, 배포 환경파일의 [모듈]과 동일 (멀티테넌트 2026-10-02)
   siteTypeCd?: string; // 사이트유형 — SITE_TYPE_CD {EC:이커머스, ADMIN:관리자, API:API}
   siteTypeCdNm?: string; // 사이트유형 코드명 (JOIN)
   siteDomain?: string; // 도메인
