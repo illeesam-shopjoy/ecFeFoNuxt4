@@ -25,7 +25,7 @@
       <form v-if="editing" class="mb-5 rounded-2xl border border-[#e5e7eb] bg-white p-5" @submit.prevent="handleBtnAction('prod-save')">
         <h3 class="m-0 mb-3 text-[1rem] font-bold text-gray-900">{{ form.prodId ? "상품 수정" : "상품 등록" }}</h3>
         <!-- 사진으로 자동 작성(Claude 연계) — 사진을 찍거나 고르면 상품명·카테고리·상세설명 초안을 채워 준다. 저장 전 판매자가 확인·수정한다 -->
-        <div class="mb-4 rounded-xl border border-[#e0e7ff] bg-[#f5f7ff] px-4 py-3">
+        <div v-if="aiEnabled" class="mb-4 rounded-xl border border-[#e0e7ff] bg-[#f5f7ff] px-4 py-3">
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-[0.88rem] font-bold text-gray-900"><i class="fas fa-magic mr-1 text-[#4f46e5]"></i>사진으로 자동 작성</span>
             <button type="button" class="ai-btn" :disabled="aiLoading" @click="aiCamera?.click()"><i class="fas fa-camera text-[0.75rem]"></i>사진 촬영</button>
@@ -157,7 +157,8 @@ const currentThumb = ref("");
 const blank = () => ({ prodId: "", prodNm: "", categoryId: "", warehouseId: "", salePrice: 0, stdPrice: 0, stockQty: 0, prodStatusCd: "ACTIVE" as "ACTIVE" | "INACTIVE", contentHtml: "" });
 const form = reactive(blank());
 
-// ── 사진으로 자동 작성(Claude 연계) ──
+// ── 사진으로 자동 작성(Claude 연계) ── 모듈 설정(app/conts/tenant/<모듈>.ts 의 features.aiProdDraft)이 켜져 있을 때만 보이고 동작한다
+const aiEnabled = useTenant().features.aiProdDraft === true;
 const aiCamera = ref<HTMLInputElement | null>(null);
 const aiPicker = ref<HTMLInputElement | null>(null);
 const mainImgUploader = ref<{ addFiles: (files: File[]) => Promise<void> } | null>(null);
@@ -220,7 +221,7 @@ async function toAiImage(file: File): Promise<string> {
 
 /** AI 초안 요청 → 입력란 채우기. 이미 적어 둔 상품명·설명이 있으면 덮어쓰기 전에 묻는다 */
 async function runAiDraft() {
-  if (!aiPhoto.value || aiLoading.value) return;
+  if (!aiEnabled || !aiPhoto.value || aiLoading.value) return;
   aiErr.value = "";
   aiLoading.value = true;
   try {

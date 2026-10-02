@@ -8,7 +8,7 @@ const tenant: TenantConfigType = {
   id: "ec1",
   name: "ShopJoy",
   tagline: "패션·라이프스타일 쇼핑몰",
-  features: { seller: true, blog: true, event: true },
+  features: { seller: true, blog: true, event: true, aiProdDraft: false }, // aiProdDraft: 판매 상품 관리의 "사진으로 자동 작성"(Claude 연계) — 호출마다 비용이 들어 꺼 둠(2026-10-02). 켜려면 true + 백엔드 sy_prop app.ai.claude.api-key
 };
 
 export default tenant;

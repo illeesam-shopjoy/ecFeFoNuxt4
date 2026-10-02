@@ -8,7 +8,7 @@ const tenant: TenantConfigType = {
   id: "ec2",
   name: "ShopJoy EC2",
   tagline: "두 번째 사이트 모듈(멀티테넌트 시험)",
-  features: { seller: true, blog: false, event: false },
+  features: { seller: true, blog: false, event: false, aiProdDraft: false }, // aiProdDraft: 사진으로 상품정보 자동 작성(Claude 연계) — 꺼 둠
   menus: [
     { menuTreeId: 1, link: "/", title: "홈" },
     { menuTreeId: 2, link: "/shop", title: "상품" },
