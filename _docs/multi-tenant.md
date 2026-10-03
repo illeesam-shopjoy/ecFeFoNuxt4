@@ -172,7 +172,8 @@ ecFeFoNuxt4/
   나중에 운영 FO 는 토글 없이 로그인 필터로 항상 확인하도록 바꿀 예정.
 
 ## 5-3. 개발 표시줄 — 사이트 바꿔 보기 (2026-10-03, 개발·로컬만)
-- 실행모드가 운영(`prod`·`production`)이 아니면 `app.vue` 가 화면 맨 위에 `DEV 사이트 SI… ▾ · 모듈 … ▾ · 실행모드 dev|local` 줄을 그린다(운영 빌드에는 없다).
+- 실행모드가 운영(`prod`·`production`)이 아니면 `app.vue` 가 **왼쪽 위 작은 버튼**(fixed, 화면 흐름 밖)을 그린다(운영 빌드에는 없다).
+  접힘 `DEV »` → 누르면 글자 폭만큼 `DEV 사이트 SI… ▾ 모듈 … ▾ 실행모드 dev|local «` 로 펼침, `«` 로 접기. 펼침 여부는 localStorage `modu-dev-bar-open`, 사이트를 바꿔 보는 중이면 접혀 있어도 빨간 점(2026-10-04 사용자 요청).
 - 사이트·모듈을 누르면 아래에 바꾸는 칸이 열린다.
   - **사이트**: 사용 중 사이트 목록(`/api/co/sy/site`)에서 골라 [변경] → **로그아웃한 뒤 새로고침**. 고른 값은 쿠키 `modu-dev-site-<모듈>`(30일)에 두고
     `plugins/0.devSite.ts` 가 `useState("devSiteOverride")` 로 옮긴다 → `useTenant().siteId`·요청 헤더 `X-Site-Id`(브라우저)가 그 사이트를 쓴다.

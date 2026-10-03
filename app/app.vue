@@ -1,21 +1,29 @@
 <template>
-  <!-- 2026-10-03: 개발 전용 상단 표시줄(운영 빌드에는 그리지 않는다) — 사이트·모듈·실행모드.
-       사이트·모듈을 누르면 아래에 바꾸는 칸 + [변경]: 사이트는 로그아웃 후 새로고침(쿠키, plugins/0.devSite.ts), 모듈은 빌드마다 고정이라 그 모듈의 개발 주소로 이동.
-       (사용자 요청: "개발에서는 상단에 siteId, module 값 표시해줘 … 클릭하면 항목하단에 수정 후 변경 버튼 … 변경하면 강제 로그아웃 … 개발에서만") -->
-  <div v-if="devBarOn" class="devbar" role="region" aria-label="개발 정보">
+  <!-- 2026-10-03: 개발 전용 표시(운영 빌드에는 그리지 않는다) — 사이트·모듈·실행모드. 사이트·모듈을 누르면 아래에 바꾸는 칸 + [변경]:
+       사이트는 로그아웃 후 새로고침(쿠키, plugins/0.devSite.ts), 모듈은 빌드마다 고정이라 그 모듈의 개발 주소로 이동.
+       (사용자 요청: "개발에서는 상단에 siteId, module 값 표시해줘 … 클릭하면 항목하단에 수정 후 변경 버튼 … 변경하면 강제 로그아웃 … 개발에서만")
+       2026-10-04(사용자 "상단 [DEV] 바가 공간 차지 — 왼쪽 상단에 쬐그만하게 버튼처럼, [DEV] >> 누르면 글씨 보이는 정도까지만 펼치고 << 로 줄이기"):
+       화면 흐름 밖(fixed) 왼쪽 위 작은 버튼. 접힘 "DEV »", 펼침 "DEV 사이트 … 모듈 … 실행모드 … «"(글자 폭만큼). 펼침 여부는 이 브라우저에 기억(localStorage).
+       사이트를 바꿔 보는 중이면 접혀 있어도 빨간 점. -->
+  <div v-if="devBarOn" class="devbar" :class="{ 'devbar--override': tenant.siteOverridden }" role="region" aria-label="개발 정보">
     <div class="devbar__row">
-      <span class="devbar__tag">DEV</span>
-      <button type="button" class="devbar__item" :aria-expanded="devBar.open" title="사이트 바꿔 보기" @click="handleDevBar('toggle')">
-        사이트 <b>{{ tenant.siteId }}</b>
-        <span v-if="tenant.siteOverridden" class="devbar__warn">변경됨 · 빌드 {{ tenant.buildSiteId }}</span>
-        <span aria-hidden="true">▾</span>
+      <button type="button" class="devbar__tag" :aria-expanded="devBar.expanded" :title="devBar.expanded ? '접기' : `펼치기 — 사이트 ${tenant.siteId} · 모듈 ${tenant.moduleId} · 실행모드 ${runModeLabel}`" @click="handleDevBar('expand')">
+        DEV<span v-if="tenant.siteOverridden" class="devbar__dot" aria-hidden="true"></span><span v-if="!devBar.expanded" class="devbar__chev" aria-hidden="true">»</span>
       </button>
-      <button type="button" class="devbar__item" :aria-expanded="devBar.open" title="모듈 바꾸기 — 그 모듈의 개발 주소로 이동" @click="handleDevBar('toggle')">
-        모듈 <b>{{ tenant.moduleId }}</b> <span aria-hidden="true">▾</span>
-      </button>
-      <span class="devbar__item devbar__item--static" :title="`환경파일 ${envNm}`">실행모드 <b>{{ runModeLabel }}</b></span>
+      <template v-if="devBar.expanded">
+        <button type="button" class="devbar__item" :aria-expanded="devBar.open" title="사이트 바꿔 보기" @click="handleDevBar('toggle')">
+          사이트 <b>{{ tenant.siteId }}</b>
+          <span v-if="tenant.siteOverridden" class="devbar__warn">변경됨 · 빌드 {{ tenant.buildSiteId }}</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+        <button type="button" class="devbar__item" :aria-expanded="devBar.open" title="모듈 바꾸기 — 그 모듈의 개발 주소로 이동" @click="handleDevBar('toggle')">
+          모듈 <b>{{ tenant.moduleId }}</b> <span aria-hidden="true">▾</span>
+        </button>
+        <span class="devbar__item devbar__item--static" :title="`환경파일 ${envNm}`">실행모드 <b>{{ runModeLabel }}</b></span>
+        <button type="button" class="devbar__fold" title="접기" aria-label="개발 정보 접기" @click="handleDevBar('expand')">«</button>
+      </template>
     </div>
-    <div v-if="devBar.open" class="devbar__panel">
+    <div v-if="devBar.expanded && devBar.open" class="devbar__panel">
       <label class="devbar__field">
         <span>사이트</span>
         <select v-if="devBar.sites.length" v-model="devBar.site" class="devbar__input">
@@ -102,7 +110,17 @@ const runModeLabel = (() => {
   if (m === "development" || m === "dev") return "dev";
   return m || "prod";
 })();
-const devBar = reactive({ open: false, site: tenant.siteId, module: tenant.moduleId, sites: [] as SySiteType[] });
+/** 펼침 여부 저장 키(이 브라우저에만) — 기본은 접힘 */
+const DEV_BAR_OPEN_KEY = "modu-dev-bar-open";
+const devBar = reactive({ expanded: false, open: false, site: tenant.siteId, module: tenant.moduleId, sites: [] as SySiteType[] });
+onMounted(() => {
+  if (!devBarOn) return;
+  try {
+    devBar.expanded = localStorage.getItem(DEV_BAR_OPEN_KEY) === "Y";
+  } catch {
+    /* 저장소를 못 쓰면 접힌 채로 */
+  }
+});
 /** 모듈 목록 — 개발 배포가 있는 모듈 + 사이트에 등록된 모듈 */
 const devModules = computed(() => {
   const set = new Set<string>([tenant.moduleId, ...Object.keys(DEV_MODULE_PORTS)]);
@@ -113,8 +131,18 @@ const devModules = computed(() => {
 });
 const devBarChanged = computed(() => devBar.site.trim() !== tenant.siteId || devBar.module !== tenant.moduleId);
 
-/** handleDevBar — 표시줄 동작: 열기/닫기 · 변경(사이트=로그아웃+새로고침, 모듈=그 모듈 개발 주소로 이동) · 빌드 값으로 */
-async function handleDevBar(cmd: "toggle" | "close" | "apply" | "reset") {
+/** handleDevBar — 표시 동작: 펼치기/접기 · 바꾸는 칸 열기/닫기 · 변경(사이트=로그아웃+새로고침, 모듈=그 모듈 개발 주소로 이동) · 빌드 값으로 */
+async function handleDevBar(cmd: "expand" | "toggle" | "close" | "apply" | "reset") {
+  if (cmd === "expand") {
+    devBar.expanded = !devBar.expanded;
+    if (!devBar.expanded) devBar.open = false;
+    try {
+      localStorage.setItem(DEV_BAR_OPEN_KEY, devBar.expanded ? "Y" : "N");
+    } catch {
+      /* 저장소를 못 써도 이번 화면에서는 동작 */
+    }
+    return;
+  }
   if (cmd === "toggle" || cmd === "close") {
     devBar.open = cmd === "toggle" ? !devBar.open : false;
     if (devBar.open) {
@@ -177,35 +205,73 @@ async function handleDevBar(cmd: "toggle" | "close" | "apply" | "reset") {
 </script>
 
 <style scoped>
-/* 개발 전용 상단 표시줄 — 모듈 스타일과 섞이지 않게 값을 모두 직접 준다(글꼴·버튼 초기화 포함) */
+/* 개발 전용 표시 — 화면 흐름 밖(fixed) 왼쪽 위 작은 버튼(2026-10-04). 모듈 스타일과 섞이지 않게 값을 모두 직접 준다(글꼴·버튼 초기화 포함) */
 .devbar {
-  position: relative;
-  z-index: 9999;
-  background: #1f2937;
+  position: fixed;
+  top: 4px;
+  left: 4px;
+  z-index: 10000;
+  max-width: calc(100vw - 8px);
+  background: rgba(31, 41, 55, 0.92);
   color: #e5e7eb;
-  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  border-bottom: 2px solid #f59e0b;
+  font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.devbar--override {
+  border-color: #f87171;
 }
 .devbar__row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 10px;
-  padding: 4px 12px;
+  gap: 2px 6px;
+  padding: 2px;
 }
 .devbar__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  padding: 1px 6px;
+  border: 0;
+  border-radius: 4px;
   background: #f59e0b;
   color: #1f2937;
+  font: inherit;
   font-weight: 800;
-  padding: 0 6px;
+  cursor: pointer;
+}
+.devbar__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #dc2626;
+}
+.devbar__chev {
+  font-weight: 800;
+}
+.devbar__fold {
+  margin: 0;
+  padding: 1px 6px;
+  border: 0;
   border-radius: 4px;
+  background: transparent;
+  color: #fbbf24;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.devbar__fold:hover {
+  background: #374151;
 }
 .devbar__item {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   margin: 0;
-  padding: 2px 6px;
+  padding: 1px 4px;
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
@@ -229,12 +295,20 @@ async function handleDevBar(cmd: "toggle" | "close" | "apply" | "reset") {
   color: #fca5a5;
 }
 .devbar__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px 10px;
-  border-top: 1px solid #374151;
+  width: max-content;
+  max-width: min(560px, calc(100vw - 16px));
+  padding: 8px 10px 10px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 .devbar__field {
   display: inline-flex;
@@ -243,9 +317,9 @@ async function handleDevBar(cmd: "toggle" | "close" | "apply" | "reset") {
   margin: 0;
 }
 .devbar__input {
-  height: 26px;
+  height: 24px;
   min-width: 120px;
-  max-width: 360px;
+  max-width: 340px;
   padding: 0 6px;
   border: 1px solid #4b5563;
   border-radius: 4px;
@@ -254,7 +328,7 @@ async function handleDevBar(cmd: "toggle" | "close" | "apply" | "reset") {
   font: inherit;
 }
 .devbar__btn {
-  height: 26px;
+  height: 24px;
   margin: 0;
   padding: 0 10px;
   border: 1px solid #4b5563;
