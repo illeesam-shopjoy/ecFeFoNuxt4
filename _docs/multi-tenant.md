@@ -164,7 +164,10 @@ ecFeFoNuxt4/
 - 앱 시작 때(홈 포함) `plugins/siteModuleCheck.client.ts` 가 `GET /api/co/sy/site/{siteId}` 로 사이트의 FO 모듈을 대조한다(`composables/useSiteModuleCheck.ts`).
   맞지 않으면 **상단 로고(이름) 옆에 빨간 (X)** — 마우스를 올리면 "사이트(SI…)와 모듈(…)가 맞지 않습니다." + 사이트의 FO 모듈.
   위치: ec1·ec2 `HeaderLogo.vue`, homepg1·datavisual1 `Layout.vue` 로고, danmoo1 `DmTopBar.vue`(동네 이름 옆), bbm1 레이아웃.
-- **"사이트 정상여부 체크" 토글**(기본 꺼짐, localStorage `modu-fo-site-check` = Y/N) — ec1·ec2 상단 ⚙ 설정, danmoo1 상단 맨 오른쪽 ⚙(설정 시트)·설정 화면, ecFeBo FO ⚙ 설정.
+- **"사이트 정상여부 체크" 토글**(기본 꺼짐, localStorage `modu-fo-site-check` = Y/N) — ec1·ec2 상단 ⚙ 설정, danmoo1 상단 맨 오른쪽 ⚙(설정 시트)·설정 화면,
+  homepg1·datavisual1 상단 맨 오른쪽 ⚙ 드롭다운(다크 모드 포함), ecFeBo FO ⚙ 설정.
+- **상단 오른쪽 공통 구성(2026-10-03, 사용자 "상단 제일 우측에 설정 … 알림아이콘 … 공통적으로 로그인버튼")**: `[로그인 | 이름·로그아웃] [🔔 알림] [⚙ 설정]`, ⚙ 가 맨 오른쪽.
+  homepg1·datavisual1 은 로그인 화면(`/login`, 아이디·비밀번호 + 테스트 회원 모달, 길이 제한 없음)이 새로 생겼다. 알림은 `myNotiSvc`(목록 10건·안 읽은 수·읽음·모두 읽음).
   켜면 요청마다 `X-Site-Check: Y` 를 보내고, 백엔드(`SiteModuleGuard`)가 **로그인·소셜 로그인 때** 사이트의 FO 모듈과 `X-Module` 이 다르면 "사이트(…)와 모듈(…)가 맞지 않습니다." 로 거부한다.
   나중에 운영 FO 는 토글 없이 로그인 필터로 항상 확인하도록 바꿀 예정.
 
