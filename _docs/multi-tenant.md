@@ -164,9 +164,23 @@ ecFeFoNuxt4/
 - 앱 시작 때(홈 포함) `plugins/siteModuleCheck.client.ts` 가 `GET /api/co/sy/site/{siteId}` 로 사이트의 FO 모듈을 대조한다(`composables/useSiteModuleCheck.ts`).
   맞지 않으면 **상단 로고(이름) 옆에 빨간 (X)** — 마우스를 올리면 "사이트(SI…)와 모듈(…)가 맞지 않습니다." + 사이트의 FO 모듈.
   위치: ec1·ec2 `HeaderLogo.vue`, homepg1·datavisual1 `Layout.vue` 로고, danmoo1 `DmTopBar.vue`(동네 이름 옆), bbm1 레이아웃.
-- **"사이트 정상여부 체크" 토글**(기본 꺼짐, localStorage `modu-fo-site-check` = Y/N) — ec1·ec2 상단 ⚙ 설정, danmoo1 설정 화면, ecFeBo FO ⚙ 설정.
+- **"사이트 정상여부 체크" 토글**(기본 꺼짐, localStorage `modu-fo-site-check` = Y/N) — ec1·ec2 상단 ⚙ 설정, danmoo1 상단 맨 오른쪽 ⚙(설정 시트)·설정 화면, ecFeBo FO ⚙ 설정.
   켜면 요청마다 `X-Site-Check: Y` 를 보내고, 백엔드(`SiteModuleGuard`)가 **로그인·소셜 로그인 때** 사이트의 FO 모듈과 `X-Module` 이 다르면 "사이트(…)와 모듈(…)가 맞지 않습니다." 로 거부한다.
   나중에 운영 FO 는 토글 없이 로그인 필터로 항상 확인하도록 바꿀 예정.
+
+## 5-3. 개발 표시줄 — 사이트 바꿔 보기 (2026-10-03, 개발·로컬만)
+- 실행모드가 운영(`prod`·`production`)이 아니면 `app.vue` 가 화면 맨 위에 `DEV 사이트 SI… ▾ · 모듈 … ▾ · 실행모드 dev|local` 줄을 그린다(운영 빌드에는 없다).
+- 사이트·모듈을 누르면 아래에 바꾸는 칸이 열린다.
+  - **사이트**: 사용 중 사이트 목록(`/api/co/sy/site`)에서 골라 [변경] → **로그아웃한 뒤 새로고침**. 고른 값은 쿠키 `modu-dev-site-<모듈>`(30일)에 두고
+    `plugins/0.devSite.ts` 가 `useState("devSiteOverride")` 로 옮긴다 → `useTenant().siteId`·요청 헤더 `X-Site-Id`(브라우저)가 그 사이트를 쓴다.
+    고른 사이트의 모듈이 이 빌드와 다르면 로고 옆 (X) 가 뜬다. [빌드 값으로] 로 되돌린다.
+  - **모듈**: 빌드마다 고정(그 모듈 화면만 번들에 들어감)이라 바꿀 수 없다 → NAS 개발 배포(22001~22006, `utils/devSite.ts` 의 `DEV_MODULE_PORTS`)면
+    그 모듈의 개발 주소로 `?devSite=<사이트>` 를 붙여 이동, 로컬은 `npm run local:<모듈>` 안내만.
+- 서버 렌더(SEO 단위화면의 server/api)는 빌드 사이트로 조회한다 — 바꾼 사이트의 상세는 브라우저 전체 조회로 채워진다(개발 전용이라 감수).
+
+## 5-4. 모듈 기본 테마 (2026-10-03)
+- 모듈 설정 `defaultTheme: "light" | "dark"` — 사용자가 고른 적이 없으면(localStorage `theme` 없음) 이 값. danmoo1 = `dark`(사용자 "기본스킨 검정").
+- 다크가 기본인 모듈은 nuxt.config `app.head.script` 가 첫 그리기 전에 `html.theme-dark` 를 붙인다(깜빡임 방지). 로딩 화면 색도 `server/plugins/2.boot-loading-style.ts` 에 모듈별로.
 
 ## 6. 남은 과제
 - `site_id` 컬럼이 없는 테이블(블로그·FAQ·공지·브랜드·문의 등)은 모든 사이트가 같이 본다. 사이트별로 나누려면 컬럼 추가(DDL)와 데이터 이관이 먼저다.

@@ -15,6 +15,8 @@ const tenant: TenantConfigType = {
   // 이 모듈의 전역 스타일 — app/assets/danmoo1/ (2026-10-03: 모듈마다 스타일을 따로 둔다. 쇼핑몰 테마 scss·다크테마를 모듈별 사본으로)
   css: ["vue3-carousel/dist/carousel.css", "~/assets/danmoo1/scss/main.scss", "~/assets/danmoo1/theme-dark.css"],
   features: { seller: true, blog: true, event: false, community: true },
+  // 2026-10-03(사용자 요청: "danmoo1 기본스킨 검정으로 해줘") — 처음 들어오면 다크. 설정에서 바꾸면 그 값(localStorage "theme")이 우선
+  defaultTheme: "dark",
   // 당근은 상단 메뉴 대신 하단 탭(DmBottomTabs)을 쓴다 — 메뉴는 전체 서비스 화면(/services)
   menus: [
     { menuTreeId: 1, link: "/", title: "홈" },

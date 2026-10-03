@@ -11,7 +11,8 @@ export default defineNuxtPlugin(() => {
   const { public: pub } = useRuntimeConfig();
   axiosCsr.defaults.baseURL = `${String(pub.beBaseUrl).replace(/\/+$/, "")}/api`;
   // 멀티테넌트: 이 배포의 사이트(sy_site.site_id)를 모든 요청에 실어 보낸다 — 백엔드는 이 값을 sy_site 와 대조해 사이트를 확정한다(토큰의 siteId 가 있으면 그것이 우선).
-  axiosCsr.defaults.headers.common["X-Site-Id"] = String(pub.siteId);
+  // 2026-10-03: 브라우저에서는 개발 표시줄로 바꿔 본 사이트(useTenant, plugins/0.devSite.ts)를 쓴다. 서버의 axiosCsr 기본값은 요청끼리 공유되므로 빌드 사이트 그대로 둔다.
+  axiosCsr.defaults.headers.common["X-Site-Id"] = import.meta.client ? useTenant().siteId : String(pub.siteId);
   // 2026-10-03: 이 배포의 FO 모듈(ec1, danmoo1 …)도 함께 보낸다 — 백엔드가 사이트·모듈 짝을 확인할 수 있게(로그인 시 "사이트 정상여부 체크")
   axiosCsr.defaults.headers.common["X-Module"] = useTenant().moduleId;
   if (import.meta.client && !interceptorAdded) {

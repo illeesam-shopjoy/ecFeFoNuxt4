@@ -22,7 +22,7 @@ if (!existsSync(fileURLToPath(new URL(`./app/pages/${TENANT_MODULE}`, import.met
 }
 // 2026-10-03: 앱 제목·테마색은 환경파일이 아니라 모듈 설정(app/conts/tenant/<모듈>.ts 의 appTitle/themeColor)에서 읽는다 — 환경파일은 프로파일(.env.local/.development/.production)별 하나만 둔다.
 //   테마색은 tailwind.config.ts 가 process.env.NUXT_PUBLIC_THEME_COLOR 로 읽으므로 여기서 환경변수에도 넣어 준다(tailwind 설정은 이 파일 다음에 로드된다).
-const TENANT_CFG = (await import(`${TENANT_DIR}/${TENANT_MODULE}.ts`)).default as { name?: string; appTitle?: string; themeColor?: string; css?: string[] };
+const TENANT_CFG = (await import(`${TENANT_DIR}/${TENANT_MODULE}.ts`)).default as { name?: string; appTitle?: string; themeColor?: string; css?: string[]; defaultTheme?: "light" | "dark" };
 const APP_TITLE = TENANT_CFG.appTitle ?? TENANT_CFG.name ?? "shopjoy";
 const THEME_COLOR = TENANT_CFG.themeColor ?? "#bc8246";
 process.env.NUXT_PUBLIC_THEME_COLOR = THEME_COLOR;
@@ -115,6 +115,11 @@ export default defineNuxtConfig({
           innerHTML: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">`,
         },
       ],
+      // 2026-10-03: 기본 테마가 다크인 모듈(danmoo1 — 사용자 "기본스킨 검정")은 첫 그리기 전에 html.theme-dark 를 붙인다.
+      //   plugins/theme.client.ts 의 복원은 앱이 뜬 뒤라 그 사이 밝은 화면이 잠깐 보인다. 사용자가 고른 값(localStorage "theme")이 있으면 그것을 따른다.
+      script: TENANT_CFG.defaultTheme === "dark"
+        ? [{ key: "theme-default-dark", innerHTML: "(function(){try{var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('theme-dark')}catch(e){document.documentElement.classList.add('theme-dark')}})()" }]
+        : [],
       // 2026-09-23(요청사항: "핸드폰에서 netlify FO 열때 흰백색이 1~2.5초 보이고 오픈되 — 은은한 배경효과나
       // 이미지 보여주면 좋겠는데" / "백지화면대신 움직이는 별효과 이런거가 보였으면 좋겠어") — 이 로딩용
       // 배경+별 효과는 nuxt.config의 app.head가 아니라 server/plugins/2.boot-loading-style.ts 의

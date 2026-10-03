@@ -127,7 +127,10 @@ onMounted(() => {
 
 const schema = yup.object({
   email: yup.string().required("이메일을 입력해 주세요").email("올바른 이메일 주소를 입력해 주세요").label("이메일"),
-  password: yup.string().required("비밀번호를 입력해 주세요").min(6, "비밀번호는 6자 이상이어야 합니다").label("비밀번호"),
+  // 2026-10-03: 개발·로컬은 6자 제한을 두지 않는다 — 기본통과 비밀번호 1111(사용자 규칙)을 그대로 넣어 로그인할 수 있게. 운영은 그대로 6자 이상
+  password: isProdRunMode(useRuntimeConfig().public.mode)
+    ? yup.string().required("비밀번호를 입력해 주세요").min(6, "비밀번호는 6자 이상이어야 합니다").label("비밀번호")
+    : yup.string().required("비밀번호를 입력해 주세요").label("비밀번호"),
 });
 
 const form = reactive({ email: "", password: "" });

@@ -18,6 +18,8 @@
 const BOOT_TONES: Record<string, { bg: string; core: string; glow: string }> = {
   homepg1: { bg: "#f0f4ff 0%,#e2ebff 50%,#f0f4ff 100%", core: "#e6f7ff", glow: "#0099cc" },
   datavisual1: { bg: "#0d1117 0%,#141c2c 50%,#0d1117 100%", core: "#e0f7ff", glow: "#00aaff" },
+  // 2026-10-03: danmoo1 기본 테마가 다크(사용자 "기본스킨 검정") — 로딩 화면도 검정 바탕 + 당근색 빛
+  danmoo1: { bg: "#121314 0%,#1b1d1f 50%,#121314 100%", core: "#ffe6d5", glow: "#ff6f0f" },
 };
 const DEFAULT_TONE = { bg: "#fdf8f0 0%,#f8ecd9 50%,#fdf8f0 100%", core: "#fff4d6", glow: "#f0b429" };
 
