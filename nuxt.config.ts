@@ -9,7 +9,7 @@ import { CDN_URL, API_URL, RUN_MODE, SITE_ID, TENANT_MODULE } from "./app/conts/
 
 // 멀티테넌트(2026-10-02): 모듈(ec1, ec2 …)마다 화면·컴포넌트·레이아웃을 독립으로 둔다(모양이 모듈마다 다르다).
 //   app/pages/<모듈>/  app/components/<모듈>/  app/layout/<모듈>/  +  app/conts/tenant/<모듈>.ts(이름·메뉴·기능)
-// 토스트(plugins)·유틸(utils)·스토어(store)·svc·composables·types 는 모든 모듈이 같이 쓴다. 이 빌드가 쓸 모듈은 환경파일의 NUXT_PUBLIC_TENANT_MODULE.
+// 토스트(plugins)·유틸(utils)·스토어(store)·svc·composables·types 는 모든 모듈이 같이 쓴다. 이 빌드가 쓸 모듈은 NUXT_PUBLIC_TENANT_MODULE(scripts/tenant.mjs 의 --module 인자, 2026-10-03부터 환경파일에는 없다).
 const TENANT_DIR = fileURLToPath(new URL("./app/conts/tenant", import.meta.url));
 const TENANT_MODULES = readdirSync(TENANT_DIR)
   .filter((f) => f.endsWith(".ts"))
@@ -20,6 +20,12 @@ if (!TENANT_MODULES.includes(TENANT_MODULE)) {
 if (!existsSync(fileURLToPath(new URL(`./app/pages/${TENANT_MODULE}`, import.meta.url)))) {
   throw new Error(`[tenant] 모듈 화면 폴더가 없습니다: app/pages/${TENANT_MODULE}/ (NUXT_PUBLIC_TENANT_MODULE=${TENANT_MODULE})`);
 }
+// 2026-10-03: 앱 제목·테마색은 환경파일이 아니라 모듈 설정(app/conts/tenant/<모듈>.ts 의 appTitle/themeColor)에서 읽는다 — 환경파일은 프로파일(.env.local/.development/.production)별 하나만 둔다.
+//   테마색은 tailwind.config.ts 가 process.env.NUXT_PUBLIC_THEME_COLOR 로 읽으므로 여기서 환경변수에도 넣어 준다(tailwind 설정은 이 파일 다음에 로드된다).
+const TENANT_CFG = (await import(`${TENANT_DIR}/${TENANT_MODULE}.ts`)).default as { name?: string; appTitle?: string; themeColor?: string };
+const APP_TITLE = TENANT_CFG.appTitle ?? TENANT_CFG.name ?? "shopjoy";
+const THEME_COLOR = TENANT_CFG.themeColor ?? "#bc8246";
+process.env.NUXT_PUBLIC_THEME_COLOR = THEME_COLOR;
 
 /** 화면 파일이 app/pages/<모듈>/ 아래에 있으면 그 모듈 이름, 공통 화면이면 null */
 function pageModule(file?: string): string | null {
@@ -196,11 +202,11 @@ export default defineNuxtConfig({
       // 미로드) 기본값을 "prod"로 둬야 실제 운영 배포 상태와 표시가 일치한다.
       mode: RUN_MODE,
       envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
-      appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
-      /** 멀티테넌트: 백엔드 사이트(sy_site.site_id) / 모듈 — useTenant() 와 axios·beApi 의 X-Site-Id 헤더가 쓴다 */
+      appTitle: APP_TITLE,
+      /** 멀티테넌트: 백엔드 사이트(sy_site.site_id) / 모듈 — useTenant() 와 axios·beApi 의 X-Site-Id 헤더가 쓴다. 값은 scripts/tenant.mjs 의 --site / --module 인자 */
       siteId: SITE_ID,
       tenantModule: TENANT_MODULE,
-      themeColor: process.env.NUXT_PUBLIC_THEME_COLOR ?? "#bc8246",
+      themeColor: THEME_COLOR,
       /** 토스페이먼츠 클라이언트 키 (결제창 호출용, 테스트/라이브 구분) */
       tossPaymentClientKey: process.env.NUXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY ?? "",
       /** 토스 결제창(API 개별 연동) 클라이언트 키 test_ck_/live_ck_ — 주문 화면의 결제수단 선택(카드/계좌이체/가상계좌/간편결제) 결제창용 */
@@ -251,7 +257,8 @@ export default defineNuxtConfig({
         apiBaseUrlDisplay: API_URL,
         mode: RUN_MODE,
         envNm: process.env.NUXT_PUBLIC_ENV_NM ?? ".env",
-        appTitle: process.env.NUXT_PUBLIC_APP_TITLE ?? "shopjoy",
+        appTitle: APP_TITLE,
+        themeColor: THEME_COLOR,
       });
     },
   },

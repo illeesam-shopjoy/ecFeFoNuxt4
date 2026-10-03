@@ -11,6 +11,10 @@ export interface TenantConfigType {
   name: string;
   /** 한 줄 소개(선택) */
   tagline?: string;
+  /** 브라우저 탭 제목(useHead titleTemplate) — 없으면 name. 2026-10-03: 환경파일 NUXT_PUBLIC_APP_TITLE 에서 이리로 이동 */
+  appTitle?: string;
+  /** 테넌트 대표색(tailwind `theme` 색) — 없으면 #bc8246. 2026-10-03: 환경파일 NUXT_PUBLIC_THEME_COLOR 에서 이리로 이동 */
+  themeColor?: string;
   /** 상단·모바일 메뉴. 없으면 공통 기본 메뉴(conts/foMenus.ts)를 쓴다 */
   menus?: SyMenuTreeType[];
   /** 모듈별 기능 스위치 (예: { seller: true }) — 화면이 필요할 때 useTenant().features 로 읽는다 */

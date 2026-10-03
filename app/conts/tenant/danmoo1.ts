@@ -10,6 +10,8 @@ const tenant: TenantConfigType = {
   id: "danmoo1",
   name: "danmoo1",
   tagline: "우리 동네 중고거래",
+  appTitle: "danmoo1",
+  themeColor: "#ff6f0f",
   features: { seller: true, blog: true, event: false, community: true },
   // 당근은 상단 메뉴 대신 하단 탭(DmBottomTabs)을 쓴다 — 메뉴는 전체 서비스 화면(/services)
   menus: [
