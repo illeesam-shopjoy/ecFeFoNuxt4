@@ -84,8 +84,8 @@ jobs:
           NOTIFY_EMAIL_FROM: ${{ secrets.NOTIFY_EMAIL_FROM }}
           NOTIFY_EMAIL_APP_PASSWORD: ${{ secrets.NOTIFY_EMAIL_APP_PASSWORD }}
 
-  # ── danmoo1 모듈(당근 스타일, 사이트 7) — 같은 Netlify 사이트에 별칭(alias) 배포 → https://danmoo1--shopjoy-ecfefonuxt4.netlify.app (운영 URL 은 건드리지 않는다). 2026-10-02
-  #    환경파일 .env.site7.danmoo1.production 으로 빌드(scripts/tenant.mjs 가 sy_site 사이트·모듈 대조). 시크릿은 위 운영 잡과 동일. 실패해도 운영 배포(deploy 잡)와는 독립이다.
+  # ── danmoo1 모듈(당근 스타일, 사이트 3) — 같은 Netlify 사이트에 별칭(alias) 배포 → https://danmoo1--shopjoy-ecfefonuxt4.netlify.app (운영 URL 은 건드리지 않는다). 2026-10-02
+  #    환경파일 .env.site3.danmoo1.production 으로 빌드(scripts/tenant.mjs 가 sy_site 사이트·모듈 대조). 시크릿은 위 운영 잡과 동일. 실패해도 운영 배포(deploy 잡)와는 독립이다.
   deploy-danmoo1:
     runs-on: ubuntu-latest
     steps:
@@ -99,8 +99,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build (site7 · danmoo1 · production)
-        run: node scripts/tenant.mjs build --site site7 --module danmoo1 --profile production
+      - name: Build (site3 · danmoo1 · production)
+        run: node scripts/tenant.mjs build --site site3 --module danmoo1 --profile production
         env:
           NETLIFY: "true"
           NITRO_PRESET: netlify

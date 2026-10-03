@@ -8,7 +8,7 @@
 |---|---|
 | `.env.site1.ec1.local` / `.development` / `.production` | 사이트 site1 · 모듈 ec1 (현재 쇼핑몰) |
 | `.env.site2.ec2.local` / `.development` / `.production` | 사이트 site2 · 모듈 ec2 (확장성 시험용) |
-| `.env.site7.danmoo1.local` / `.development` / `.production` | 사이트 site7(`2604010000000007`) · 모듈 danmoo1 (당근 스타일 동네 중고거래, 2026-10-02) |
+| `.env.site3.danmoo1.local` / `.development` / `.production` | 사이트 site3(`2604010000000003`) · 모듈 danmoo1 (당근 스타일 동네 중고거래, 2026-10-02 사이트 7 로 시작 → 2026-10-03 사이트 3 으로 이전) |
 | `*.example` | 각 파일의 예제(마스킹) |
 
 - `[사이트]`(site1, site2)는 **배포 이름표**이고 파일명에만 있다. 사이트의 실제 값은 파일 안의 `NUXT_PUBLIC_SITE_ID` **하나**이며 백엔드 `sy_site.site_id`(PK)다.
@@ -20,7 +20,7 @@
 ### 배포 대응
 - 개발(NAS) = `.env.site1.ec1.development` — `z0scripts/shopjoy-apps-dev/ecFeFoNuxt4/deploy.js`
 - 운영(Netlify) = `.env.site1.ec1.production` — GitHub Actions `netlify-deploy.yml` 이 `pnpm run build`(= production 프로파일) 실행
-- danmoo1 미리보기(Netlify 별칭) = `.env.site7.danmoo1.production` — 같은 워크플로의 `deploy-danmoo1` 잡이 `tenant.mjs build --site site7 --module danmoo1 --profile production` 후 `netlify deploy --alias danmoo1` → `https://danmoo1--shopjoy-ecfefonuxt4.netlify.app` (운영 URL 과 별개, NAS 컨테이너는 아직 없음)
+- danmoo1 미리보기(Netlify 별칭) = `.env.site3.danmoo1.production` — 같은 워크플로의 `deploy-danmoo1` 잡이 `tenant.mjs build --site site3 --module danmoo1 --profile production` 후 `netlify deploy --alias danmoo1` → `https://danmoo1--shopjoy-ecfefonuxt4.netlify.app` (운영 URL 과 별개, NAS 컨테이너는 아직 없음)
 
 ## 2. 실행 — `scripts/tenant.mjs`
 
@@ -102,7 +102,7 @@ ecFeFoNuxt4/
 
 - 모듈 전용 상수(동네 목록·좌표·탭·서비스 메뉴·정렬·가격대·샘플)와 `townOf()`(상품ID 로 동네 고정 배정 — 상품에 동네 데이터가 없어 표시용), `dmStatusOf()`(예약중/판매완료)는 `app/conts/tenant/danmoo1.ts` 의 named export — 이 빌드에만 들어간다. 내 동네·범위·최근 검색·키워드 알림·알바/부동산 관심은 서버 저장이 아니라 localStorage(`dm.*`).
 - 매너온도(36.5°C)·동네 가게·알바·부동산은 데이터가 없어 표시용이며 화면에 "샘플"로 적어 두었다. 회원끼리 1:1 채팅은 백엔드에 없어 고객센터 채팅방으로 대신한다.
-- 시드: `p2604…/_doc/ddl_pgsql/migration_20261002_seed_danmoo1_site7.sql` — 사이트 7 `tenant_module=danmoo1`, 카테고리 12(CAT07…), site1 상품 36건 복제(PDDM…, 가격 재산정), 테스트 회원 `dm_user1~5@danmoo.com`(비밀번호 1111), 동네생활 글 4건(BLDM…).
+- 시드: `p2604…/_doc/ddl_pgsql/migration_20261002_seed_danmoo1_site7.sql` — (최초) 사이트 7 `tenant_module=danmoo1` → 2026-10-03 사이트 3(`2604010000000003`, site3)으로 이전(sy_site.tenant_module 과 site_id/reg_site_id='…07' 데이터 전부 '…03' 으로; DB 이관은 별도 SQL 로 수동 실행), 카테고리 12(CAT07…), site1 상품 36건 복제(PDDM…, 가격 재산정), 테스트 회원 `dm_user1~5@danmoo.com`(비밀번호 1111), 동네생활 글 4건(BLDM…).
 - 공통에 추가된 것: `utils/timeAgo.ts`(상대 시각·원화), `svc/fo/ec/mb/mbLikeSvc.ts`(찜 토글, PRODUCT/BLOG), `coBlogSvc.getPagedWith/create/createReply/deleteReply`, `mapBlog` 가 `viewCount/blogCateId/regBy/replies` 도 넘김, `myChatSvc.sendRefMsg`, `composables/useDmTown.ts`·`useAuthReady.ts`.
 - **`useAuthReady()`**: 화면 onMounted 는 app.vue 의 로그인 복원(onMounted)보다 먼저 실행된다. 새로고침 직후 `authStore.isStLoggedIn` 으로 분기하는 화면은 initPage 첫 줄에서 `await useAuthReady()` 를 해야 한다(안 하면 "관심목록 없음"처럼 비로그인 결과가 나온다). 다른 모듈 화면에도 같은 규칙이 적용된다(ec1/ec2 는 useMyList.ensureLogin 이 비슷한 역할).
 
