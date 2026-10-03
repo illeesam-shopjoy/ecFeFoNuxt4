@@ -52,6 +52,9 @@ for (let i = 0; i < argv.length; i++) {
   if (m) opt[m[1]] = m[2] ?? argv[++i];
   else rest.push(a);
 }
+// preview 는 이미 빌드된 결과(.output)를 띄우는 명령이라, 사이트·모듈을 주지 않으면 빌드에 들어 있는 값을 그대로 쓴다
+// (기본값 ec1 을 환경변수로 넣으면 다른 모듈로 빌드한 결과의 런타임 사이트 설정이 SI260001 로 덮인다 — 2026-10-03)
+const keepBuilt = cmd === "preview" && !opt.site && !opt.module;
 if (!opt.site && !opt.module) {
   opt.site = DEFAULT_SITE;
   opt.module = DEFAULT_MODULE;
@@ -82,7 +85,7 @@ for (const k of ["NUXT_PUBLIC_SITE_ID", "NUXT_PUBLIC_TENANT_MODULE", "NUXT_PUBLI
 //   · 백엔드에 닿으면: 없거나 ACTIVE 가 아니거나 모듈이 다르면 중단(잘못된 사이트·모듈로 빌드·배포되는 것을 막는다). 사이트의 FO 모듈이 미지정이면 안내만
 //   · 닿지 않으면(오프라인·로컬 백엔드 미기동): 경고만 하고 진행
 //   · 건너뛰기: --skip-site-check 또는 TENANT_SKIP_SITE_CHECK=1
-const skipCheck = rest.includes("--skip-site-check") || process.env.TENANT_SKIP_SITE_CHECK === "1";
+const skipCheck = keepBuilt || rest.includes("--skip-site-check") || process.env.TENANT_SKIP_SITE_CHECK === "1"; // preview(빌드된 값 그대로)는 대조할 사이트 인자가 없다
 if (!skipCheck) {
   const api = (kv.NUXT_API_BASE_URL || "https://22300.illeesam.synology.me").replace(/\/+$/, "");
   try {
@@ -107,11 +110,15 @@ if (!skipCheck) {
 for (const d of ["pages", "components", "layout"]) if (!existsSync(path.join(ROOT, "app", d, opt.module))) die(`모듈 폴더가 없습니다: app/${d}/${opt.module}/`);
 if (!existsSync(path.join(ROOT, "app", "conts", "tenant", `${opt.module}.ts`))) die(`모듈 설정이 없습니다: app/conts/tenant/${opt.module}.ts`);
 
-console.log(`[tenant] ▶ nuxt ${cmd}  사이트=${opt.site}  모듈=${opt.module}  프로파일=${opt.profile}  (${envFile})`);
+console.log(keepBuilt
+  ? `[tenant] ▶ nuxt preview  사이트·모듈=빌드된 값 그대로  프로파일=${opt.profile}  (${envFile})`
+  : `[tenant] ▶ nuxt ${cmd}  사이트=${opt.site}  모듈=${opt.module}  프로파일=${opt.profile}  (${envFile})`);
 // pnpm/npx 설치 여부와 무관하게 동작하도록 nuxt CLI 를 node 로 직접 실행한다(Windows 에서 shell 도 필요 없다)
 const nuxtBin = path.join(ROOT, "node_modules", "nuxt", "bin", "nuxt.mjs");
 if (!existsSync(nuxtBin)) die("node_modules 에 nuxt 가 없습니다. 먼저 의존성을 설치해 주세요 (pnpm install).");
 // 사이트·모듈은 인자 → 환경변수. nuxt 의 dotenv 로딩은 이미 있는 환경변수를 덮어쓰지 않으므로 환경파일에 같은 키가 있어도 인자가 이긴다.
-const env = { ...process.env, NUXT_PUBLIC_SITE_ID: opt.site, NUXT_PUBLIC_TENANT_MODULE: opt.module, NUXT_PUBLIC_ENV_NM: envFile };
+const env = keepBuilt
+  ? { ...process.env, NUXT_PUBLIC_ENV_NM: envFile }
+  : { ...process.env, NUXT_PUBLIC_SITE_ID: opt.site, NUXT_PUBLIC_TENANT_MODULE: opt.module, NUXT_PUBLIC_ENV_NM: envFile };
 const child = spawn(process.execPath, [nuxtBin, cmd, "--dotenv", envFile, ...rest.filter((a) => a !== "--skip-site-check")], { cwd: ROOT, stdio: "inherit", env });
 child.on("exit", (code) => process.exit(code ?? 1));

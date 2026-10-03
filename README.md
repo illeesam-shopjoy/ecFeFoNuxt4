@@ -54,67 +54,42 @@ Nuxt는 실행 명령에 따라 아래 파일을 자동 병합합니다. (하단
 
 ---
 
-## 실행 명령 전체 목록 (dotenv)
+## 실행 명령 전체 목록 (멀티테넌트, 2026-10-03)
 
-| run 명령            | 파일                                                | `MODE` 표시 | 용도                           |
-| ------------------- | --------------------------------------------------- | ----------- | ------------------------------ |
-| `npm run dev`       | _(자동)_ `.env` → `.env.development` → `.env.local` | `dev`       | 일반 개발 서버                 |
-| `npm run dev:local` | `.env.local`                                        | `local`     | 로컬 개인 설정으로 개발 서버   |
-| `npm run dev:prod`  | `.env.production`                                   | `prod`      | 운영 환경값으로 개발 서버 확인 |
+스크립트 이름 = **`[명령]:[프로파일]:[모듈]`**. 환경파일은 프로파일(`.env.local` / `.env.development` / `.env.production`)마다 하나이고, 사이트(`sy_site.site_id`)·모듈은 `scripts/tenant.mjs` 인자로 함께 넘긴다. 자세한 구조는 `_docs/multi-tenant.md`.
 
-| build 명령            | 파일                                               | `MODE` 표시 | 용도                |
-| --------------------- | -------------------------------------------------- | ----------- | ------------------- |
-| `npm run build`       | _(자동)_ `.env` → `.env.production` → `.env.local` | `prod`      | 기본 운영 빌드      |
-| `npm run build:dev`   | `.env.development`                                 | `dev`       | 개발 환경 단독 빌드 |
-| `npm run build:local` | `.env.local`                                       | `local`     | 로컬 설정으로 빌드  |
-| `npm run build:prod`  | `.env.production`                                  | `prod`      | 운영 환경 단독 빌드 |
+| 모듈 | 사이트 ID | 개발서버(local) | 개발서버(development) | 빌드 local | 빌드 development | 빌드 production |
+| --- | --- | --- | --- | --- | --- | --- |
+| ec1 (쇼핑몰) | `SI260001` | `local:ec1` | `dev:ec1` | `build:local:ec1` | `build:dev:ec1` | `build:prod:ec1` |
+| ec2 (시험용) | `SI260002` | `local:ec2` | `dev:ec2` | `build:local:ec2` | `build:dev:ec2` | `build:prod:ec2` |
+| danmoo1 (당근 스타일) | `SI260003` | `local:danmoo1` | `dev:danmoo1` | `build:local:danmoo1` | `build:dev:danmoo1` | `build:prod:danmoo1` |
 
-| preview 명령            | 파일                                | `MODE` 표시 | 용도                    |
-| ----------------------- | ----------------------------------- | ----------- | ----------------------- |
-| `npm run preview`       | _(자동)_ `.env` → `.env.production` | `prod`      | 빌드 결과 미리보기      |
-| `npm run preview:local` | `.env.local`                        | `local`     | 로컬 설정 단독 미리보기 |
-| `npm run preview:dev`   | `.env.development`                  | `dev`       | 개발 환경 단독 미리보기 |
-| `npm run preview:prod`  | `.env.production`                   | `prod`      | 운영 환경 단독 미리보기 |
-
-| generate 명령      | 파일                                | `MODE` 표시 | 용도                   |
-| ------------------ | ----------------------------------- | ----------- | ---------------------- |
-| `npm run generate` | _(자동)_ `.env` → `.env.production` | `prod`      | 정적 사이트 생성 (SSG) |
-
-### 개발 서버
+| 그 밖의 명령 | 설명 |
+| --- | --- |
+| `npm run local` / `npm run dev` | ec1 개발서버(각각 `.env.local` / `.env.development`) |
+| `npm run build` | ec1 운영 빌드 — Netlify 운영 배포(GitHub Actions)가 쓰는 이름 |
+| `npm run preview` / `npm run preview:dev` | 빌드 결과 미리보기(사이트·모듈은 빌드된 값 그대로) |
+| `npm run typecheck -- --site SI260003 --module danmoo1` | 모듈별 타입 검사(인자 없으면 ec1) |
+| `npm run generate` | 정적 사이트 생성(SSG) |
 
 ```bash
-npm run dev          # 기본 개발 (.env.development 자동)
-npm run dev:local    # 로컬 설정 적용
-npm run dev:prod     # 운영 환경값으로 로컬 확인
-```
-
-### 빌드 / 배포
-
-```bash
-npm run build        # 기본 운영 빌드 (.env.production 자동)
-npm run build:dev    # 개발 환경 단독 빌드
-npm run build:local  # 로컬 설정으로 빌드
-npm run build:prod   # 운영 환경 단독 빌드
-
-npm run preview       # 빌드 결과 미리보기 (.env.production 자동)
-npm run preview:dev   # 개발 환경 단독 미리보기
-npm run preview:local # 로컬 설정 단독 미리보기
-npm run preview:prod  # 운영 환경 단독 미리보기
-
-npm run generate     # SSG 정적 사이트 생성
+npm run local:ec2              # ec2 개발서버, .env.local (백엔드 localhost:3000)
+npm run dev:danmoo1            # danmoo1 개발서버, .env.development (NAS 백엔드)
+npm run build:prod:danmoo1     # danmoo1 운영 빌드
+npm run dev -- --site SI260002 --module ec2   # 목록에 없는 조합은 직접(사이트·모듈은 항상 함께)
 ```
 
 ---
 
 ## 환경별 개발 흐름
 
-| 단계                | 명령                                          | 비고                                         |
-| ------------------- | --------------------------------------------- | -------------------------------------------- |
-| 최초 설치           | `npm install`                                 |                                              |
-| 로컬 개발           | `npm run dev`                                 | `.env.local`로 개인 설정 오버라이드 가능     |
-| 운영 환경 로컬 확인 | `npm run dev:prod`                            | `.env.production` 값으로 동작 검증           |
-| 운영 빌드 검증      | `npm run build:prod` + `npm run preview:prod` | `.env.production` 기준 최종 확인             |
-| 운영 배포           | `npm run build:prod` → 서버 실행              | `.env.production` 실제 운영 값으로 교체 필요 |
+| 단계                | 명령                                            | 비고                                       |
+| ------------------- | ----------------------------------------------- | ------------------------------------------ |
+| 최초 설치           | `npm install`                                   |                                            |
+| 로컬 개발           | `npm run local:ec1` (모듈별 `local:<모듈>`)     | `.env.local` — 백엔드 localhost:3000       |
+| 개발 백엔드로 확인  | `npm run dev:ec1` (모듈별 `dev:<모듈>`)         | `.env.development` — NAS 백엔드            |
+| 운영 빌드 검증      | `npm run build:prod:ec1` + `npm run preview`    | `.env.production` 기준 최종 확인           |
+| 배포                | NAS: `z0scripts/shopjoy-apps-dev/ecFeFoNuxt4`, 운영: main push → GitHub Actions(Netlify) | 빌드 전 sy_site 사이트·모듈 대조 |
 
 ---
 
