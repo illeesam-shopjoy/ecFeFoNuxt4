@@ -1,0 +1,1154 @@
+@use "variables" as *;
+@use "mixins" as *;
+/*----------------------------------------*/
+/*  01. Theme default CSS
+/*----------------------------------------*/
+
+/* 1. Theme default css */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* 2026-09-13(요청사항: "마우스 클릭하여 움직이면 우측에 공백란이 나오네") — 특정 페이지의
+   요소 하나가 뷰포트보다 살짝 넓어지면(음수 마진 grid, flex-wrap 버튼 줄 등) 드래그/스와이프로
+   오른쪽에 빈 공간이 딸려 나오는 가로 스크롤이 생긴다. html/body(뷰포트 자체의 스크롤 컨테이너)에
+   가로 스크롤을 원천 차단해 어떤 하위요소가 살짝 넘쳐도 화면 전체가 옆으로 밀리지 않게 한다
+   (position: sticky는 뷰포트 기준이라 영향 없음). */
+/* 2026-09-20 수정: 위 주석은 "position: sticky는 뷰포트 기준이라 영향 없음" 이라 했지만 틀렸다 — body 에 overflow(hidden)가 있으면 body 가
+   스크롤 컨테이너가 되어(실제로는 스크롤되지 않는다) 그 안의 sticky 요소(상품상세 탭바 등)가 절대 고정되지 않았다.
+   html 은 뷰포트 자체라 hidden 을 유지하고, body 는 스크롤 컨테이너를 만들지 않는 clip 으로 바꿔 가로 넘침 차단 효과만 남긴다.
+   (clip 미지원 브라우저는 기존처럼 hidden 으로 폴백) */
+html {
+  overflow-x: hidden;
+}
+body {
+  overflow-x: hidden;
+}
+@supports (overflow: clip) {
+  body {
+    overflow-x: clip;
+  }
+}
+// 2026-09-23(요청사항: "핸드폰에서 열 때 흰백색이 1~2.5초 보이고 오픈되 — 은은한 배경효과 보여주면 좋겠는데") —
+// nuxt.config.ts의 app.head.style이 로드 직후(하이드레이션 전)엔 옅은 그라디언트를 임시로 깔아둔다.
+// 이 앱 CSS가 로드되면 이 규칙(같은 body 선택자, 나중에 실림)이 그걸 원래 흰 배경으로 되돌린다 —
+// 로딩 중 잠깐만 보이고 로드 후엔 그대로 흰 화면이어야 하므로 명시적으로 다시 흰색을 선언한다.
+body {
+  background: #fff;
+}
+// 2026-09-23(요청사항: "백지화면대신 움직이는 별효과 이런거가 보였으면 좋겠어") — 위 인라인 <style>이
+// body::before 가상요소로 반짝이는 별을 깔아뒀는데, 이 앱 CSS가 로드된 뒤에는 그 가상요소 자체를
+// content:none 으로 없애 완전히 사라지게 한다(로딩 중에만 보여야 하므로 — z-index가 최상단이라
+// 없애지 않으면 로드 후에도 실제 화면 위에 계속 떠 있게 된다).
+body::before {
+  content: none;
+}
+body {
+  font-family: $font-kr;
+  font-size: 14px;
+  font-weight: normal;
+  color: $body-text-color;
+  line-height: 24px;
+}
+
+.w-img {
+  & img {
+    width: 100%;
+  }
+}
+.m-img {
+  & img {
+    max-width: 100%;
+  }
+}
+
+a,
+.btn,
+button,
+span,
+p,
+i,
+input,
+select,
+textarea,
+li,
+img,
+*::after,
+*::before,
+.transition-3,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @include transition(0.3s);
+}
+a:focus,
+.button:focus {
+  text-decoration: none;
+  outline: none;
+}
+a {
+  text-decoration: none;
+}
+a:focus,
+a:hover {
+  color: inherit;
+  text-decoration: none;
+}
+a,
+button {
+  color: inherit;
+  outline: none;
+  border: none;
+}
+button:hover {
+  cursor: pointer;
+}
+button:focus {
+  outline: 0;
+  border: 0;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+.capitalize {
+  text-transform: capitalize;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $pop;
+  color: $heading-color;
+  margin-top: 0px;
+  font-weight: 500;
+  line-height: 1.2;
+  @include transition(0.3s);
+}
+
+h1 {
+  font-size: 40px;
+}
+h2 {
+  font-size: 36px;
+}
+h3 {
+  font-size: 27px;
+}
+h4 {
+  font-size: 20px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 14px;
+}
+ul {
+  margin: 0px;
+  padding: 0px;
+}
+li {
+  list-style: none;
+}
+.carousel {
+  text-align: inherit;
+}
+p {
+  font-family: $pop;
+  font-size: 14px;
+  font-weight: normal;
+  color: $body-text-color;
+  margin-bottom: 15px;
+  line-height: 24px;
+}
+
+*::-moz-selection {
+  background: $theme-color;
+  color: $white;
+  text-shadow: none;
+}
+::-moz-selection {
+  background: $theme-color;
+  color: $white;
+  text-shadow: none;
+}
+::selection {
+  background: $theme-color;
+  color: $white;
+  text-shadow: none;
+}
+
+/*--
+    - Input Placeholder
+-----------------------------------------*/
+*::-moz-placeholder {
+  color: $black;
+  font-size: 14px;
+  opacity: 1;
+}
+*::placeholder {
+  color: $black;
+  font-size: 14px;
+  opacity: 1;
+}
+
+/*--
+    - Common Classes
+-----------------------------------------*/
+.slider-active {
+  box-shadow: none;
+  cursor: initial;
+}
+.fix {
+  overflow: hidden;
+}
+.clear {
+  clear: both;
+}
+
+.f-left {
+  float: left;
+}
+.f-right {
+  float: right;
+}
+
+.p-relative {
+  position: relative;
+}
+.p-absolute {
+  position: absolute;
+}
+/*--
+    - Background color
+-----------------------------------------*/
+.grey-bg {
+  background: $grey;
+}
+
+.theme-bg {
+  background: $theme-color;
+}
+.white-bg {
+  background: $white;
+}
+.black-bg {
+  background: $black;
+}
+
+.footer-bg {
+  background: $footer-bg;
+}
+
+.dark-soft-bg {
+  background: #282828;
+}
+
+/*--
+    - color
+-----------------------------------------*/
+
+.text-white h1,
+.text-white h2,
+.text-white h3,
+.text-white h4,
+.text-white h5,
+.text-white h6,
+.text-white p,
+.text-white span,
+.text-white li,
+.text-white a {
+  color: $white !important;
+}
+
+.white-color {
+  color: $white;
+}
+
+.theme-color {
+  color: $theme-color !important;
+}
+.black-color {
+  color: $black;
+}
+// .primary-color {
+// 	color: #222;
+// }
+
+// others common css here :)
+
+/* spacing */
+
+.mb-265 {
+  margin-bottom: 265px;
+}
+
+.mt--95 {
+  margin-top: -95px;
+}
+
+/* padding */
+
+.pl-250 {
+  padding-left: 250px;
+  @media #{$laptop} {
+    padding-left: 50px;
+  }
+  @media #{$lg} {
+    padding-left: 25px;
+  }
+  @media #{$md} {
+    padding-left: 25px;
+  }
+  @media #{$sm} {
+    padding-left: 25px;
+  }
+  @media #{$xs} {
+    padding-left: 10px;
+  }
+}
+
+/* box spacing */
+
+.box-25 {
+  padding-left: 25px;
+  padding-right: 25px;
+  @media #{$sm} {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  @media #{$xs} {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+}
+
+.box-m-15 {
+  margin-left: 15px;
+  margin-right: 15px;
+  @media #{$sm} {
+    margin-left: 15px;
+    margin-right: 15px;
+  }
+  @media #{$xs} {
+    margin-left: 15px;
+    margin-right: 15px;
+  }
+}
+
+.box-white {
+  @media #{$xs} {
+    padding-top: 0;
+  }
+}
+
+.box-white-inner {
+  position: relative;
+  &::before {
+    position: absolute;
+    content: "";
+    top: -50px;
+    left: -50px;
+    width: calc(100% + 100px);
+    height: calc(100% + 30px);
+    background: #ffffff;
+    @media #{$laptop} {
+      top: -15px;
+      left: -15px;
+      width: calc(100% + 30px);
+      height: calc(100% + 30px);
+    }
+    @media #{$lg} {
+      top: -30px;
+      left: -30px;
+      width: calc(100% + 60px);
+      height: calc(100% + 60px);
+    }
+    @media #{$md} {
+      top: -40px;
+      left: -35px;
+      width: calc(100% + 70px);
+      height: calc(100% + 80px);
+    }
+    @media #{$sm} {
+      top: -20px;
+      left: -20px;
+      width: calc(100% + 40px);
+      height: calc(100% + 40px);
+    }
+    @media #{$xs} {
+      top: -15px;
+      left: -15px;
+      width: calc(100% + 30px);
+      height: calc(100% + 30px);
+    }
+  }
+}
+
+.box-pb-40 {
+  padding-bottom: 40px;
+  @media #{$sm} {
+    padding-bottom: 30px;
+  }
+  @media #{$xs} {
+    padding-bottom: 15px;
+  }
+}
+
+/* custom container*/
+@media #{$large} {
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container-xl {
+    max-width: 1140px;
+  }
+}
+.custom-container {
+  padding-left: 0;
+  padding-right: 0;
+}
+.custom-container-2 {
+  @media (min-width: 1400px) {
+    max-width: 1220px;
+  }
+}
+/* btn */
+
+.os-btn {
+  position: relative;
+  display: inline-block;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: 600;
+  height: 50px;
+  line-height: 46px;
+  padding: 0 42px;
+  border: 2px solid $border;
+  color: $black-2;
+  background: transparent;
+  z-index: 1;
+  font-size: 12px;
+  // 2026-09-14(요청사항: "모든 버튼이 스타일이 딱딱한데 약간의 그라데이션을 주든해서 이쁘면
+  // 좋겠어") — 각진 사각형이 딱딱해 보이는 부분을 라운드로 완화. overflow:hidden은 :hover 때
+  // ::after(채움 효과)가 둥근 모서리 밖으로 각지게 삐져나오지 않게 하기 위함.
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  & span {
+    color: $theme-color;
+  }
+  &::after {
+    position: absolute;
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: $theme-color;
+    z-index: -1;
+  }
+  &:hover {
+    color: $white;
+    border-color: $theme-color;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+    &::after {
+      height: 100%;
+    }
+    & span {
+      color: $white;
+    }
+  }
+  &-2 {
+    border-color: $black-2;
+  }
+  &-3 {
+    padding: 0 77px;
+  }
+  &-4 {
+    &::after {
+      background: #666;
+    }
+  }
+  &-black {
+    color: $white;
+    background: linear-gradient(135deg, #4a4a4a 0%, #1c1c1c 100%);
+    border-color: $black-2;
+    &::after {
+      background-color: $theme-color;
+    }
+    &:hover {
+      border-color: $theme-color;
+    }
+  }
+  &-white {
+    color: $white;
+    border-color: $white;
+    &:hover {
+      color: $black-2;
+      border-color: $white;
+      &::after {
+        background: $white;
+      }
+    }
+  }
+  // 2026-09-14(요청사항: "검정색 로그인 버튼으로 변경했네 좀 안이쁘다" → 테마색(#bc8246)으로
+  // 바꿨더니 "이 색도 안이뻐 밝은 연두, 밝은회색 쪽이 나을거 같아" → 밝은 연두 선택) —
+  // os-btn-black을 로그인/회원가입 제출 버튼에 썼더니 바로 아래 os-btn-black 링크와 겹쳐
+  // 검정 버튼이 두 개 연달아 나와 밋밋했던 게 시작점. 밝은 배경이라 글자는 어두운색 유지.
+  &-green {
+    color: $black-2;
+    background: linear-gradient(135deg, #a3d160 0%, #7cb342 100%);
+    border-color: #8bc34a;
+    &::after {
+      background-color: #689f38;
+    }
+    &:hover {
+      color: $white;
+      border-color: #689f38;
+    }
+  }
+}
+.os-btn-4 {
+  position: relative;
+  display: inline-block;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: 600;
+  height: 50px;
+  line-height: 46px;
+  padding: 0 42px;
+  border: 2px solid $black-2;
+  color: $black-2;
+  background: transparent;
+  z-index: 1;
+  font-size: 12px;
+  & span {
+    color: $theme-color;
+  }
+  &::after {
+    position: absolute;
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: $theme-2-color;
+    z-index: -1;
+  }
+  &:hover {
+    color: $white;
+    border-color: $theme-2-color;
+    &::after {
+      height: 100%;
+    }
+    & span {
+      color: $white;
+    }
+  }
+}
+// 2026-09-14 버그수정(요청사항: "상위 3개상품 마우스 오버할때 글씨와, 버튼 보이는데
+// 스타일이 너무 흐려서 안보여") — 흰 글씨(color:$white) 밑에 올리브색(theme-2-color:
+// #8a8f6a) 배경이 깔리는데, 이 조합의 명암비가 약 3.4:1로 낮아(WCAG AA 4.5:1 미달)
+// 특히 12px의 작은 글씨에선 흐리게 보였다. text-shadow로 외곽을 살짝 어둡게 눌러
+// 배경색이 무엇이든 글씨가 도드라지게 한다.
+.os-btn-5 {
+  position: relative;
+  display: inline-block;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: 600;
+  height: 50px;
+  line-height: 46px;
+  padding: 0 42px;
+  border: 2px solid $border;
+  color: $white;
+  background: transparent;
+  z-index: 1;
+  font-size: 12px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  & span {
+    color: $theme-color;
+  }
+  &::after {
+    position: absolute;
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: $theme-2-color;
+    z-index: -1;
+  }
+  &:hover {
+    color: $white;
+    border-color: $theme-2-color;
+    &::after {
+      height: 100%;
+    }
+    & span {
+      color: $white;
+    }
+  }
+}
+.link-btn {
+  font-size: 12px;
+  color: $black-soft;
+  text-transform: capitalize;
+  font-weight: 500;
+  &:hover {
+    color: $theme-color;
+  }
+}
+.action-btn {
+  background: $black;
+  color: $white;
+  font-size: 14px;
+  padding: 15px 31.9px;
+  transition: 0.3s;
+  &:hover {
+    background: $theme-2-color;
+    color: $white;
+  }
+}
+
+/* section title */
+.section {
+  &__title {
+    position: relative;
+    &::after {
+      border-top: 1px solid $border;
+      content: "";
+      left: 0;
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      width: 100%;
+    }
+    & h2 {
+      display: inline-block;
+      font-weight: 400;
+      position: relative;
+      background: #fff none repeat scroll 0 0;
+      padding: 0 50px;
+      z-index: 1;
+      @media #{$xs} {
+        font-size: 30px;
+        padding: 0 15px;
+      }
+    }
+    & p {
+      color: $black-soft-2;
+      margin-bottom: 0;
+    }
+    &-2 {
+      padding-left: 130px;
+      padding-right: 130px;
+      font-size: 24px;
+      text-transform: uppercase;
+      color: $black;
+      font-weight: 700;
+      @media #{$sm,$xs} {
+        font-size: 20px;
+      }
+      @media #{$xs} {
+        padding-right: 0;
+        padding-left: 0;
+      }
+      & span {
+        padding: 0 70px;
+        display: inline-block;
+        position: relative;
+        @media #{$sm,$xs} {
+          padding: 0 30px;
+        }
+        &::before,
+        &::after {
+          width: 130px;
+          height: 4px;
+          background: transparent;
+          position: absolute;
+          content: "";
+          top: 13px;
+          border-top: 1px solid #ebebeb;
+          border-bottom: 1px solid #ebebeb;
+          @media #{$xs} {
+            display: none;
+          }
+        }
+        &::before {
+          right: 100%;
+        }
+        &::after {
+          left: 100%;
+        }
+      }
+    }
+  }
+  &__wrapper {
+    & .sub-title {
+      margin: 0 auto 10px;
+      max-width: 600px;
+    }
+  }
+}
+
+/* page title area */
+
+.page {
+  &__title {
+    height: 530px;
+    @include background();
+    @media #{$sm} {
+      height: 400px;
+    }
+    @media #{$xs} {
+      height: 350px;
+    }
+    &-inner {
+      & h1 {
+        font-size: 36px;
+        color: $black-2;
+        text-transform: capitalize;
+        margin-bottom: 25px;
+      }
+      @media #{$sm} {
+        margin-top: 100px;
+      }
+      @media #{$xs} {
+        margin-top: 100px;
+      }
+    }
+    &-breadcrumb {
+      & .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 0;
+        @include border-radius(0);
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      & .breadcrumb-item {
+        font-size: 12px;
+        text-transform: capitalize;
+        color: $black-soft;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        & + .breadcrumb-item::before {
+          content: ' / ';
+          padding-right: 6px;
+          color: $black-soft;
+        }
+        & a {
+          &:hover {
+            color: $theme-color;
+          }
+        }
+        &.active {
+          color: $black-2;
+          &::before {
+            color: $black-soft;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* rating */
+
+.rating {
+  & ul {
+    & li {
+      display: inline-block;
+      & span {
+        font-size: 10px;
+        color: $theme-color;
+      }
+    }
+  }
+  &.rating-shop {
+    & ul {
+      display: inline-block;
+      & li {
+        & span {
+          font-size: 12px;
+          color: $theme-color;
+        }
+      }
+    }
+    & span {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    &-2 {
+      & ul {
+        & li {
+          & span {
+            color: $theme-2-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+.rating-left {
+  position: relative;
+  padding-left: 25px;
+  margin-left: 25px;
+  &::after {
+    position: absolute;
+    content: "";
+    left: 0;
+    top: 50%;
+    @include transform(translateY(-50%));
+    height: 12px;
+    width: 1px;
+    background: #dcdcdc;
+  }
+  & a {
+    &:hover {
+      color: $theme-color;
+    }
+  }
+}
+
+/* 2026-09-22(요청사항: "배너와 그 아래 내용 사이 공백이 너무 커 — 다른 화면도") — 배너(.page__title) 바로 아래 첫 영역은 화면마다 pt-100/pt-120 이 제각각이라
+   본문이 한참 아래에서 시작했다. 폰/태블릿은 20px, 넓은 화면은 48px 로 통일(선택자 특이도가 .pt-100 등 유틸 클래스보다 높아 그대로 덮는다). */
+.page__title + section,
+.page__title + div,
+.page__title + main {
+  padding-top: 20px;
+  @media (min-width: 768px) {
+    padding-top: 48px;
+  }
+}
+
+/* 2026-09-22(요청사항: "footer 란도 불필요한 공백") — 푸터 바로 위 본문 영역이 pb-100 등 큰 아래 여백을 그대로 가져 푸터 앞이 한참 비어 보였다. 푸터 바로 앞 영역만 줄인다. */
+:is(.pb-70, .pb-90, .pb-100, .pb-110, .pb-120):has(+ .footer__area) {
+  padding-bottom: 32px;
+  @media (min-width: 768px) {
+    padding-bottom: 56px;
+  }
+}
+
+/* 2026-09-22(요청사항: "모든 모달 스타일 확인하여 이쁘게 개선") — 모달 공통 버튼/모양. 모달 컴포넌트는 이 클래스를 쓴다(.mbtn / .mbtn-primary / .mbtn-ghost / .modal-x). */
+.mbtn {
+  display: inline-flex;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s, filter 0.15s;
+  &:active:not(:disabled) {
+    transform: scale(0.985);
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+.mbtn-primary {
+  background: linear-gradient(135deg, #34302b, #15130f);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(20, 15, 5, 0.22);
+  &:hover:not(:disabled) {
+    filter: brightness(1.25);
+    box-shadow: 0 6px 16px rgba(20, 15, 5, 0.28);
+  }
+}
+.mbtn-ghost {
+  background: #fff;
+  border-color: #d8dce2;
+  color: #4b5563;
+  &:hover:not(:disabled) {
+    background: #f5f6f8;
+    border-color: #bfc4cc;
+  }
+}
+/* 모달 오른쪽 위 닫기(X) 버튼 */
+.modal-x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.06);
+  color: #555;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  &:hover {
+    background: rgba(0, 0, 0, 0.12);
+  }
+}
+/* 모달 안 스크롤이 끝에 닿아도 남은 스크롤이 뒤 화면으로 번지지 않게(scroll chaining 차단) */
+[role="dialog"],
+[role="dialog"] *,
+[role="alertdialog"],
+[role="alertdialog"] * {
+  overscroll-behavior: contain;
+}
+
+/* 2026-09-22 전화하기/메일 보내기 아이콘 버튼(연락처·이메일 값 오른쪽) */
+.contact-act {
+  display: inline-flex;
+  height: 28px;
+  width: 28px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+  &:hover {
+    background: #2563eb;
+    color: #fff;
+  }
+}
+
+/* scroll to top */
+/* 2026-09-15(요청사항: "최상위버튼과, 채팅버튼이 겹치는네 최하단에 바가 들어올수 있으니
+   약간 공백을둬줘") — ChatWidget.vue의 채팅 플로팅 버튼(right:24px, bottom:40px, 54px 원)과
+   같은 우측 하단에 겹쳐 있었다. 채팅 버튼 위로 띄우고, 화면 맨 아래엔 결제하기 같은 고정
+   바가 올라올 수 있는 여유 공간을 남긴다(기존 bottom:30px → 106px). */
+/* 2026-09-22(요청사항: "최상위/채팅 아이콘 정렬이 안 맞고 최대한 우측, 위치는 서로 반대로") — 맨 위로(40px)를 맨 아래, 채팅(54px)을 그 위로 바꾸고
+   두 버튼의 가운데 세로선을 맞춘다(채팅 right:12px+27 = 맨 위로 right:19px+20 = 우측에서 39px). */
+#scroll a {
+  position: fixed;
+  right: 19px;
+  bottom: calc(40px + var(--fab-lift, 0px)); /* 상품상세 하단 구매바가 나오면 그만큼 위로(ProdBuyBar.vue) */
+  transition: bottom 0.2s ease;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  font-size: 15px;
+  color: $white;
+  list-style-type: none;
+  background: $theme-color;
+  margin-right: 0;
+  border: 1px solid $theme-color;
+  /* 2026-09-22(요청사항: "맨 위로 아이콘이 네모/동그란거 2개 나오는데 동그란거 하나만") — 네이버 등 인앱 브라우저가 자체
+     "맨 위로" 원형 버튼을 화면에 따로 얹는 경우가 있어(그건 그 앱 자체 UI라 이 사이트 코드로 없앨 수 없음) 우리 쪽 버튼도
+     똑같이 원형으로 맞춰 둘 다 같은 모양이 되게 한다. */
+  border-radius: 50%;
+  z-index: 999;
+}
+#scroll .scroll-link {
+  border: 1px solid $theme-2-color;
+  background: $theme-2-color;
+}
+
+/* border bottom 1*/
+
+.border-top-1 {
+  border-top: 1px solid $border;
+}
+
+/* sidebar */
+
+.sidebar {
+  &__wrapper {
+    @media #{$md} {
+      margin-top: 50px;
+    }
+    @media #{$sm} {
+      margin-top: 50px;
+    }
+    @media #{$xs} {
+      margin-top: 50px;
+    }
+  }
+  &__widget {
+  }
+  &__widget-title {
+    & h3 {
+      font-size: 20px;
+      margin-bottom: 0;
+    }
+  }
+  &__links {
+    & ul {
+      & li {
+        margin-bottom: 8px;
+        & a {
+          color: $black-soft;
+          &:hover {
+            color: $black-2;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* basic page navigation */
+
+.basic-pagination {
+  & ul {
+    display: block;
+    & li {
+      display: inline-block;
+      margin: 0 5px;
+      &.active {
+        & a {
+          border-color: $black;
+        }
+      }
+      & a {
+        height: 35px;
+        width: 35px;
+        background: transparent;
+        color: $black;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 31px;
+        margin: 0px;
+        display: inline-block;
+        text-align: center;
+        border: 2px solid $border;
+        &:hover {
+          border-color: $black;
+        }
+      }
+    }
+  }
+}
+
+//hover effect
+
+.effectThree a {
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+.effectThree a img {
+  -webkit-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transform: scale(1);
+  -webkit-transition: all 0.35s ease 0s;
+  -o-transition: all 0.35s ease 0s;
+  transition: all 0.35s ease 0s;
+}
+.effectThree a:before,
+.effectThree a:after {
+  content: "";
+  opacity: 0;
+  filter: alpha(opacity=0);
+  position: absolute;
+  -webkit-transition: all 0.35s ease 0s;
+  -o-transition: all 0.35s ease 0s;
+  transition: all 0.35s ease 0s;
+  z-index: 1;
+}
+.effectThree a:before {
+  border-bottom: 1px solid #ffffff;
+  border-top: 1px solid #ffffff;
+  bottom: 20px;
+  left: 10px;
+  right: 10px;
+  top: 20px;
+  -webkit-transform: scale(1, 0);
+  -ms-transform: scale(1, 0);
+  -o-transform: scale(1, 0);
+  transform: scale(1, 0);
+}
+.effectThree a:after {
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #ffffff;
+  left: 20px;
+  right: 20px;
+  bottom: 10px;
+  top: 10px;
+  -webkit-transform: scale(0, 1);
+  -ms-transform: scale(0, 1);
+  -o-transform: scale(0, 1);
+  transform: scale(0, 1);
+}
+.effectThree a:hover:before,
+.effectThree a:hover:after {
+  opacity: 1;
+  filter: alpha(opacity=100);
+  -webkit-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transform: scale(1);
+}
+.effectThree a:hover img {
+  -webkit-transform: scale(1.05);
+  -ms-transform: scale(1.05);
+  -o-transform: scale(1.05);
+  transform: scale(1.05);
+}
+
+/* 2026-09-14(요청사항: "위시리스트 추가하면 하드색상 븐홍색계열로 변경해줘") — vue3-toastify
+   success 토스트(위시리스트 추가 시 $toast.success)의 기본 아이콘/진행바 색이 초록(#07bc0c)
+   이라 버건디/와인색 계열로 교체. 라이브러리가 CSS 커스텀 프로퍼티로 색을 노출해줘서(진행바·
+   아이콘 모두 --toastify-color-success를 var()로 참조) 이 값 하나만 덮어쓰면 둘 다 바뀐다. */
+:root {
+  --toastify-color-success: #8c1c3f;
+}
+
+/* 에디터(HtmlEditor)로 쓴 리뷰/Q&A 본문 표시 */
+.he-view {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #374151;
+  word-break: break-word;
+  & p { margin: 0 0 0.5em; }
+  & p:last-child { margin-bottom: 0; }
+  & img { max-width: 100%; height: auto; border-radius: 6px; margin: 4px 0; }
+  & ul, & ol { margin: 0.4em 0; padding-left: 1.4em; }
+  & ul { list-style: disc; }
+  & ol { list-style: decimal; }
+  & blockquote { margin: 0.5em 0; padding: 0.2em 0.9em; border-left: 3px solid #e5e7eb; color: #6b7280; }
+  & a { color: #2563eb; text-decoration: underline; }
+  & h2, & h3, & h4 { margin: 0.6em 0 0.3em; font-size: 1.05em; font-weight: 700; }
+}
+
+/* 상품목록 좌측: 선택된 카테고리 강조 (굵게 + 테마색 + 왼쪽 굵은 띠 + 옅은 배경) */
+.categories .shop-accordion-btn.cat-selected,
+.categories__list a.cat-selected {
+  font-weight: 700 !important;
+  color: #bc8246 !important;
+  background: #faf3ea;
+  box-shadow: inset 4px 0 0 #bc8246;
+  padding-left: 12px !important;
+  border-radius: 4px;
+}
+.categories__list a.cat-selected::before {
+  content: "✓";
+  margin-right: 6px;
+  font-weight: 800;
+}

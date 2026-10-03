@@ -12,7 +12,7 @@
 | `*.example` | 각 파일의 예제(마스킹) |
 
 - 환경파일에는 **프로파일 성격의 값만** 둔다: 백엔드/CDN 주소, 실행 모드, 결제·소셜·지도 키. 사이트·모듈·제목·테마색은 두지 않는다(있어도 무시, `tenant.mjs` 가 경고).
-- 모듈 = `--module <모듈>`(`app/{pages,components,layout}/[모듈]` + `app/conts/tenant/[모듈].ts`) → `NUXT_PUBLIC_TENANT_MODULE`.
+- 모듈 = `--module <모듈>`(`app/{pages,components,layout,assets}/[모듈]` + `app/conts/tenant/[모듈].ts`) → `NUXT_PUBLIC_TENANT_MODULE`.
 - 사이트 = `--site <sy_site.site_id>` → `NUXT_PUBLIC_SITE_ID`. **`--site` 와 `--module` 은 항상 함께 준다**(하나만 주면 중단). 현재: ec1 → `SI260001`(site_code `SHOPJOY`), ec2 → `SI260002`(`site2`), danmoo1 → `SI260003`(`site3`, 2026-10-02 사이트 7 로 시작 → 10-03 사이트 3 으로 이전). 둘 다 생략하면 ec1 · `SI260001`.
 - 앱 제목·테마색 = 모듈 설정 `app/conts/tenant/<모듈>.ts` 의 `appTitle` / `themeColor`(nuxt.config.ts 가 읽어 runtimeConfig·tailwind `theme` 색에 넣는다).
 - 모든 API 요청에 `X-Site-Id: <사이트>` 헤더가 붙는다(브라우저 axios, SEO SSR → 백엔드 호출 모두).
@@ -24,7 +24,7 @@
 
 ## 2. 실행 — `scripts/tenant.mjs`
 
-package.json scripts 이름 = **`[명령]:[프로파일]:[모듈]`** (2026-10-03). 모듈 = ec1(SI260001) · ec2(SI260002) · danmoo1(SI260003).
+package.json scripts 이름 = **`[명령]:[프로파일]:[모듈]`** (2026-10-03). 모듈 = ec1(SI260001) · ec2(SI260002) · danmoo1(SI260003) · homepg1(SI260004) · datavisual1(SI260005).
 
 | 용도 | local | development | production |
 |---|---|---|---|
@@ -60,12 +60,15 @@ ecFeFoNuxt4/
     components/
       ec1/                 ← 모듈 ec1 의 컴포넌트 전체 (products/, modals/, my/, error/ErrorPage.vue …)
       ec2/                 ← 모듈 ec2 의 컴포넌트 전체 (독립된 사본)
-      xdev/                ← 예외: 파일경로 배지(개발도구) 한 벌 — 모양이 아니라 도구라 모듈별 사본을 두지 않는다(nuxt.config components 에 함께 등록, 2026-10-02)
     layout/
-      ec1/, ec2/           ← 모듈별 레이아웃·헤더·푸터
+      ec1/, ec2/           ← 모듈별 레이아웃·헤더·푸터 (모듈 전용 TS 도우미도 여기: homepg1/hpUi.ts, datavisual1/dvUi.ts·dvChart.ts)
+    assets/
+      ec1/, ec2/, danmoo1/ ← 모듈별 전역 스타일 (쇼핑몰 테마 scss/ + theme-dark.css 사본, 2026-10-03)
+      homepg1/, datavisual1/ ← 모듈별 전역 스타일 style.css (+ 이미지)
+      prod/                ← 공통: 이미지·아이콘 폰트(Font Awesome) — /cdn/prod/… 주소로 서빙, DB 데이터가 이 주소를 쓴다
     error.vue, app.vue     ← 공통 껍데기: 오류 화면·확인/알림 창은 #tenant-components 로 "이 빌드의 모듈" 것을 연결만 한다
     conts/tenant/
-      ec1.ts, ec2.ts       ← 모듈 설정: 이름·메뉴·기능 스위치 (TenantConfigType)
+      ec1.ts, ec2.ts …     ← 모듈 설정: 이름·메뉴·기능 스위치·전역 스타일 목록(css) (TenantConfigType)
     plugins/ utils/ store/ svc/ composables/ types/ conts/   ← 공통: 토스트(vue3-toastify)·유틸·스토어·API 호출·타입
   scripts/tenant.mjs       ← 테넌트 실행기
 ```
@@ -75,7 +78,8 @@ ecFeFoNuxt4/
 - **모듈 안에서는 자기 모듈 경로를 직접 적는다.** `app/pages/ec1/**`, `app/components/ec1/**`, `app/layout/ec1/**` 의 import 는 `~/components/ec1/…`, `~/layout/ec1/…` 이다. 다른 모듈 폴더를 import 하지 않는다.
 - **공통 코드가 모듈 컴포넌트를 써야 할 때는 별칭을 쓴다.** `#tenant-components/…`(= `app/components/<이 빌드의 모듈>`), `#tenant-layout/…`. 예: `app/error.vue`, `app/app.vue`.
 - **토스트·JS 유틸·스토어·svc·composables·types 는 공통이다.** 여기에는 모양(마크업·스타일)을 넣지 않는다.
-- **주소에 모듈 이름은 붙지 않는다.** `app/pages/ec1/blog.vue` 의 주소는 `/blog` 다(nuxt.config.ts 의 `pages:extend` 가 접두어를 뗀다). 컴포넌트 자동 등록 이름도 모듈 폴더 기준이라 `<xdev-file-path-badge>` 처럼 그대로 쓴다.
+- **전역 스타일도 모듈별이다(2026-10-03).** `app/assets/<모듈>/` 에 두고 모듈 설정의 `css` 목록(필수)으로 빌드에 넣는다 — nuxt.config 가 폴더·목록이 없으면 빌드를 멈춘다. 쇼핑몰 테마(.row·.card·body·h1 …)와 모양이 다른 모듈은 그 테마를 넣지 않는다. 앱 CSS 가 오기 전 부팅 화면 색(server/plugins/2.boot-loading-style.ts)도 모듈별로 고를 수 있다.
+- **주소에 모듈 이름은 붙지 않는다.** `app/pages/ec1/blog.vue` 의 주소는 `/blog` 다(nuxt.config.ts 의 `pages:extend` 가 접두어를 뗀다). 컴포넌트 자동 등록 이름도 모듈 폴더 기준이다(`app/components/<모듈>` 만 등록 — 2026-10-03 로컬 전용 파일경로 배지 xdev 는 지웠다).
 - **빌드에는 그 배포의 모듈 것만 들어간다.** ec1 빌드에 ec2 의 화면·컴포넌트·레이아웃·설정은 없고(주소도 없음), 반대도 같다.
 - 빌드 로그의 `[Tenant] 화면 N개 = 공통 0 + ec1 전용 N (…)` 로 구성을 확인한다.
 
@@ -83,13 +87,13 @@ ecFeFoNuxt4/
 1. 백엔드 `sy_site` 에 사이트를 등록하고 `site_id` 를 확인한다.
 2. 가까운 모듈의 폴더 세 개를 통째로 복사한다: `app/pages/ec1` → `ec3`, `app/components/ec1` → `ec3`, `app/layout/ec1` → `ec3`.
 3. 복사한 폴더 안의 `~/components/ec1/`, `~/layout/ec1/` 를 `ec3` 으로 일괄 바꾼다. 필요 없는 화면은 지우고 달라지는 부분을 고친다.
-4. `app/conts/tenant/ec3.ts`(id/name/menus/features)를 만든다.
+4. `app/conts/tenant/ec3.ts`(id/name/menus/features/css)를 만든다. 스타일 폴더 `app/assets/ec3/` 도 만든다(쇼핑몰 테마면 `app/assets/ec1` 을 복사하고 css 목록의 경로를 ec3 으로).
 5. `app/conts/tenant/ec3.ts` 에 `appTitle`/`themeColor` 를 넣는다(환경파일은 새로 만들지 않는다 — 프로파일별 `.env.*` 공용).
 6. package.json scripts 에 `local:ec3` / `dev:ec3` / `build:local:ec3` / `build:dev:ec3` / `build:prod:ec3` 를 추가한다(`--site <그 site_id> --module ec3`).
 7. `npm run local:ec3` 로 확인한다.
 
 ## 4-1. 모듈 danmoo1 — 당근 스타일 동네 중고거래 (2026-10-02)
-휴대폰 당근 캡처를 기준으로 만든 세 번째 모듈. 쇼핑몰(ec1/ec2)과 소스를 공유하지 않고 `app/{pages,components,layout}/danmoo1` 에 독립이다(모달·xdev·ui·MapSwitch 만 ec2 에서 복사). 모바일 우선 반응형 — PC 에서는 가운데 최대 640px 앱 틀(`layout/danmoo1/Layout.vue` 의 `.dm-app` CSS 변수, 다크는 `html.theme-dark`).
+휴대폰 당근 캡처를 기준으로 만든 세 번째 모듈. 쇼핑몰(ec1/ec2)과 소스를 공유하지 않고 `app/{pages,components,layout}/danmoo1` 에 독립이다(모달·ui·MapSwitch 만 ec2 에서 복사). 모바일 우선 반응형 — PC 에서는 가운데 최대 640px 앱 틀(`layout/danmoo1/Layout.vue` 의 `.dm-app` CSS 변수, 다크는 `html.theme-dark`).
 
 | 주소 | 화면 | 데이터 |
 |---|---|---|
@@ -116,6 +120,35 @@ ecFeFoNuxt4/
 - 공통에 추가된 것: `utils/timeAgo.ts`(상대 시각·원화), `svc/fo/ec/mb/mbLikeSvc.ts`(찜 토글, PRODUCT/BLOG), `coBlogSvc.getPagedWith/create/createReply/deleteReply`, `mapBlog` 가 `viewCount/blogCateId/regBy/replies` 도 넘김, `myChatSvc.sendRefMsg`, `composables/useDmTown.ts`·`useAuthReady.ts`.
 - **`useAuthReady()`**: 화면 onMounted 는 app.vue 의 로그인 복원(onMounted)보다 먼저 실행된다. 새로고침 직후 `authStore.isStLoggedIn` 으로 분기하는 화면은 initPage 첫 줄에서 `await useAuthReady()` 를 해야 한다(안 하면 "관심목록 없음"처럼 비로그인 결과가 나온다). 다른 모듈 화면에도 같은 규칙이 적용된다(ec1/ec2 는 useMyList.ensureLogin 이 비슷한 역할).
 
+## 4-2. 모듈 homepg1 — 모두누리(MODUNURI) 회사 홈페이지 (2026-10-03, 사이트 SI260004)
+원본 `C:\_pjt_github\p2604_modunuri_illeesam\homepage_v26\modunuri_v260329`(Vue CDN SPA, `api/base/site-config.json`)을 옮겼다. 회사 정보·메뉴·솔루션·상품·FAQ·블로그·구축 이력은 `app/conts/tenant/homepg1.ts` 상수(백엔드 데이터 없음). 스타일 `app/assets/homepg1/style.css`(라이트 기본 + `html[data-theme=dark]`, 저장 키 `modunuri-theme`). 배포: Netlify 별칭 `https://homepg1--shopjoy-ecfefonuxt4.netlify.app`.
+
+| 주소 | 화면 |
+|---|---|
+| `/` | 히어로·실적·주요 제품(솔루션)·추천 상품(17·14·15)·상담 배너 |
+| `/about`, `/solution` | 회사소개(창업 스토리·핵심 가치·구축사이트 36건·사업자등록증명 이미지·연락처) / 솔루션 6종(도입 문의 → 고객센터에 관심 서비스 미리 선택) |
+| `/products`, `/products/:id` | 상품목록(카테고리 칩=판매중 수, 검색, 판매중 먼저, 6개씩 스크롤, `?cat=`) / 상세(데모·도입 문의·주문하기·공유, 사양, 같은 카테고리 관련 상품). 상단 "상품상세" 메뉴 = 마지막으로 본 상품 |
+| `/order?pid=` | **주문하기** — 판매중 상품 선택·주문자 정보·계좌이체 안내 → ecBeBo 고객문의 접수(유형 `솔루션 주문`, 본문에 상품·가격·회사명·요청사항) → **접수번호(contactId)** 표시(입금 메모용) |
+| `/contact?service=&pid=` | **고객센터(문의하기)** — 상담 양식 → ecBeBo 고객문의 접수(유형 `솔루션 상담`, 본문에 회사명·관심 서비스·문의 상품) → 접수번호 알림 |
+| `/blog`, `/blog/:no`, `/faq`, `/location` | 블로그 6건(이전/다음 글) · FAQ · 위치(구글 지도 embed, 교통) |
+
+- 문의·주문 접수는 `coContactSvc.submitReceipt` → `POST /api/fo/ec/cm/contact`(FoCmContactController, 비회원 허용). `sy_contact.reg_site_id` = SI260004, 담당자는 **ecFeBo BO 문의관리**에서 유형(category_cd) `솔루션 상담`/`솔루션 주문`으로 보고 답변한다. 접수 알림(메일·시스템)은 백엔드가 비동기로 보낸다.
+- 원본에서 바꾼 점: 상품번호 17 중복(쇼핑을 즐거움 admin → 19), 상대경로 데모 주소 → 절대주소(쇼핑몰=운영 Nuxt FO, admin=ecFeBo BO, DataVisual=datavisual1 별칭, 나머지 홈페이지 데모=illeesam.netlify.app), 판매안함 상품(1~9)의 없는 데모 주소(demo.modunuri.kr) 제거 → 데모 버튼이 상담 신청 안내. 원본의 문의·주문은 저장되지 않았다(placeholder POST).
+
+## 4-3. 모듈 datavisual1 — DataVisual 데이터 시각화 대시보드 (2026-10-03, 사이트 SI260005)
+원본 `C:\_pjt_github\p2604_modunuri_illeesam\dataVisual_v26\datavisual_v260406`(Vue CDN + Chart.js 4)을 옮겼다. 차트 값은 화면에서 만든 예시(랜덤) — 백엔드 호출 없음. Chart.js 4 + `chartjs-adapter-date-fns`(시간축)는 이 모듈 위젯만 import 해서 다른 모듈 번들에는 없다. 스타일 `app/assets/datavisual1/style.css`(다크 기본, 저장 키 `dv-theme`). 배포: `https://datavisual1--shopjoy-ecfefonuxt4.netlify.app`.
+
+| 주소 | 화면 |
+|---|---|
+| `/` | 대시보드 — 기간 선택 + DashboardPanel(KPI 4·라인·도넛·바·에어리어·게이지 2·데이터 테이블) |
+| `/gallery` | 차트 갤러리 — 전체/통계/차트/데이터/실시간 탭, 위젯 13종 |
+| `/realtime` | 실시간 — RealtimePanel(3초 KPI, 1초 시계열 산점도 3, 게이지 4) |
+| `/panels?tab=` | 패널 보기 — 대시보드/분석/그리드(2컬럼·3컬럼·혼합·실시간 단일)/실시간 |
+| `/manager`, `/layout` | 위젯 관리(종류별 추가·제거·설정, 바로 저장) / 레이아웃 편집(12칸 격자, 끌어 자리 바꾸기·W±H±·삭제·추가, [저장]) — 둘이 같은 배치(localStorage `dv_layout`)를 고친다 |
+
+- 위젯 `app/components/datavisual1/widgets/*`(공통 틀 DvWidgetCard), 패널 `panels/DashboardPanel·RealtimePanel`(두 화면이 같이 씀 — 분석·그리드 패널은 패널 화면에 합침). 차트 공통 `app/layout/datavisual1/dvChart.ts`(`useDvChart`: 마운트 50ms 뒤 그리기·테마 바뀌면 색 다시 읽어 새로 그리기·떠날 때 지우기).
+- 원본에서 바꾼 점: 차트 색에 CSS 변수 문자열('var(--text-muted)')을 넘겨 캔버스가 기본 회색으로 그리던 것 → 실제 색으로 바꿔 넘기고 테마 전환 시 다시 그림, 위젯 관리 변경이 저장되지 않던 것 → 레이아웃과 같은 배치에 저장, 히트맵 칸이 24보다 적을 때 시간 표기.
+
 ## 5. 백엔드(ecBeBo) 사이트 확정 — 적용됨 (2026-10-02)
 - `/api/fo/**` 는 **사이트 필수**다. `X-Site-Id` 를 `sy_site`(ACTIVE)와 대조해 확정하고, 헤더가 없으면 로그인 토큰의 siteId 만 인정한다(둘 다 없으면 400). 없는 사이트는 400, 회원 토큰의 사이트와 헤더가 다르면 403.
 - FO 조회는 요청 사이트로 한정된다(상품·카테고리·이벤트·기획전·전시·오프라인쿠폰 등). 다른 사이트의 상품은 "존재하지 않음"으로 응답한다. 기본 사이트로 조용히 대체하던 코드는 없앴다.
@@ -130,4 +163,4 @@ ecFeFoNuxt4/
 - `site_id` 컬럼이 없는 테이블(블로그·FAQ·공지·브랜드·문의 등)은 모든 사이트가 같이 본다. 사이트별로 나누려면 컬럼 추가(DDL)와 데이터 이관이 먼저다.
 - `/api/co/**`(로그인·회원가입·공통코드 등)는 아직 헤더가 선택이다. 회원가입·로그인이 요청 사이트를 따르게 하고 `app.site.required=true` 로 켜는 작업이 남았다.
 - 이메일 인증 링크 기준 주소(`app.fo-base-url`) 등 사이트마다 달라지는 백엔드 설정은 사이트별 설정(예: `sy_site.config_json`)으로 옮겨야 한다.
-- 스타일(`app/assets` 의 scss)은 아직 공통이다. 모듈별 테마가 필요해지면 `app/assets/<모듈>` 로 나눈다.
+- (해결 2026-10-03) 스타일은 `app/assets/<모듈>` 로 나눴다. ec1·ec2·danmoo1 은 같은 쇼핑몰 테마의 사본이라, 셋에 같이 반영할 수정은 각 폴더에 각각 한다.

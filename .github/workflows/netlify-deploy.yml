@@ -116,3 +116,55 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+  # ── homepg1 모듈(모두누리 회사 홈페이지, 사이트 SI260004) — 같은 Netlify 사이트에 별칭 배포 → https://homepg1--shopjoy-ecfefonuxt4.netlify.app. 2026-10-03
+  #    결제·소셜 로그인이 없는 모듈이라 그 시크릿은 넘기지 않는다. 문의·주문 접수는 브라우저가 ecBeBo(/api/fo/ec/cm/contact)를 직접 부른다. 실패해도 다른 잡과 독립.
+  deploy-homepg1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build (사이트 SI260004 · homepg1 · production)
+        run: pnpm run build:prod:homepg1
+        env:
+          NETLIFY: "true"
+          NITRO_PRESET: netlify
+      - name: Deploy to Netlify (alias homepg1)
+        run: npx netlify-cli deploy --alias homepg1 --dir=dist --functions=.netlify/functions-internal --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+  # ── datavisual1 모듈(DataVisual 데이터 시각화 대시보드, 사이트 SI260005) — 별칭 배포 → https://datavisual1--shopjoy-ecfefonuxt4.netlify.app. 2026-10-03
+  #    차트 데이터는 화면에서 만든 예시 값이라 백엔드·시크릿이 필요 없다. 실패해도 다른 잡과 독립.
+  deploy-datavisual1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build (사이트 SI260005 · datavisual1 · production)
+        run: pnpm run build:prod:datavisual1
+        env:
+          NETLIFY: "true"
+          NITRO_PRESET: netlify
+      - name: Deploy to Netlify (alias datavisual1)
+        run: npx netlify-cli deploy --alias datavisual1 --dir=dist --functions=.netlify/functions-internal --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

@@ -1,11 +1,16 @@
 import type { Config } from 'tailwindcss'
 
+// 2026-10-03(요청사항: "app/assets 아래 스타일 각 모듈별로 스타일 있어야 해") — 유틸리티 클래스도 이 빌드의 모듈 파일에서만 뽑는다.
+// 예전엔 모든 모듈(ec1·ec2·danmoo1 …)의 화면을 다 훑어 어느 빌드든 남의 모듈 클래스까지 CSS 에 들어갔다.
+// 모듈은 scripts/tenant.mjs 가 넣는 NUXT_PUBLIC_TENANT_MODULE(nuxt.config 보다 먼저 정해진다). 없으면(편집기 자동완성 등) 전부.
+const M = process.env.NUXT_PUBLIC_TENANT_MODULE || '*'
+
 export default {
   content: [
-    './app/components/**/*.{vue,js,ts}',
-    './app/layout/**/*.vue',
+    `./app/components/${M}/**/*.{vue,js,ts}`,
+    `./app/layout/${M}/**/*.vue`,
     './app/layouts/**/*.vue',
-    './app/pages/**/*.vue',
+    `./app/pages/${M}/**/*.vue`,
     './app/plugins/**/*.{js,ts}',
     './app/app.vue',
     './app/error.vue',

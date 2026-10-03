@@ -22,10 +22,20 @@ if (!existsSync(fileURLToPath(new URL(`./app/pages/${TENANT_MODULE}`, import.met
 }
 // 2026-10-03: 앱 제목·테마색은 환경파일이 아니라 모듈 설정(app/conts/tenant/<모듈>.ts 의 appTitle/themeColor)에서 읽는다 — 환경파일은 프로파일(.env.local/.development/.production)별 하나만 둔다.
 //   테마색은 tailwind.config.ts 가 process.env.NUXT_PUBLIC_THEME_COLOR 로 읽으므로 여기서 환경변수에도 넣어 준다(tailwind 설정은 이 파일 다음에 로드된다).
-const TENANT_CFG = (await import(`${TENANT_DIR}/${TENANT_MODULE}.ts`)).default as { name?: string; appTitle?: string; themeColor?: string };
+const TENANT_CFG = (await import(`${TENANT_DIR}/${TENANT_MODULE}.ts`)).default as { name?: string; appTitle?: string; themeColor?: string; css?: string[] };
 const APP_TITLE = TENANT_CFG.appTitle ?? TENANT_CFG.name ?? "shopjoy";
 const THEME_COLOR = TENANT_CFG.themeColor ?? "#bc8246";
 process.env.NUXT_PUBLIC_THEME_COLOR = THEME_COLOR;
+// 2026-10-03(요청사항: "app/assets 아래 스타일 각 모듈별로 스타일 있어야 해") — 전역 스타일도 모듈마다 따로 둔다: app/assets/<모듈>/ + 모듈 설정의 css 목록.
+//   예전엔 모든 모듈이 쇼핑몰 테마(app/assets/prod/scss, theme-dark.css) 한 벌을 같이 썼다 — 홈페이지(homepg1)·대시보드(datavisual1)처럼
+//   모양이 전혀 다른 모듈은 그 전역 규칙(.row·.card·body·h1 …)과 섞이면 화면이 깨진다. app/assets/prod 에는 공통 이미지·아이콘 폰트만 남는다(/cdn/prod/… 주소).
+if (!existsSync(fileURLToPath(new URL(`./app/assets/${TENANT_MODULE}`, import.meta.url)))) {
+  throw new Error(`[tenant] 모듈 스타일 폴더가 없습니다: app/assets/${TENANT_MODULE}/ (NUXT_PUBLIC_TENANT_MODULE=${TENANT_MODULE})`);
+}
+if (!TENANT_CFG.css?.length) {
+  throw new Error(`[tenant] 모듈 설정에 css(전역 스타일 목록)가 없습니다: app/conts/tenant/${TENANT_MODULE}.ts — 예: css: ["~/assets/${TENANT_MODULE}/style.css"]`);
+}
+const GLOBAL_CSS = TENANT_CFG.css;
 
 /** 화면 파일이 app/pages/<모듈>/ 아래에 있으면 그 모듈 이름, 공통 화면이면 null */
 function pageModule(file?: string): string | null {
@@ -42,9 +52,10 @@ export default defineNuxtConfig({
     "#tenant-components": fileURLToPath(new URL(`./app/components/${TENANT_MODULE}`, import.meta.url)),
     "#tenant-layout": fileURLToPath(new URL(`./app/layout/${TENANT_MODULE}`, import.meta.url)),
   },
-  // 컴포넌트 자동 등록은 이 빌드의 모듈 폴더 + 개발도구(xdev) 폴더 — 이름은 그 폴더 기준이고 다른 모듈 컴포넌트는 빌드에 안 들어간다.
-  // 2026-10-02(요청사항: "components/<모듈>/xdev 들은 없어도 될거 같은데") — 파일경로 배지(xdev)는 모양이 아니라 개발도구라 모듈마다 사본을 두지 않고 app/components/xdev 한 벌만 둔다.
-  components: [{ path: "~/components/xdev" }, { path: `~/components/${TENANT_MODULE}` }],
+  // 컴포넌트 자동 등록은 이 빌드의 모듈 폴더만 — 이름은 그 폴더 기준이고 다른 모듈 컴포넌트는 빌드에 안 들어간다.
+  // 2026-10-03(요청사항: "app/components/xdev 필요없는거 같은데 확인해보고 삭제해줘") — 로컬 전용 파일경로 배지·컴포넌트 정보 오버레이(xdev)와
+  //   그것만 쓰던 useCurrentFilePath·usePageTitle·useComponentTitle·useFilePathBadgeRegistry·useShowFilePathBadge·useXdevPanelsState 를 지웠다(운영·개발 배포에선 원래 안 보였다).
+  components: [{ path: `~/components/${TENANT_MODULE}` }],
   // 2026-09-13: ecBeBo(로컬 IntelliJ 구동 시 기본 3000)와 포트 충돌 방지 — 로컬 dev 서버는 3100 사용.
   devServer: {
     port: 3100,
@@ -54,7 +65,11 @@ export default defineNuxtConfig({
       open: "chrome",
     },
   },
-  css: ["vue3-carousel/dist/carousel.css", "~/assets/prod/scss/main.scss", "~/assets/theme-dark.css"],
+  css: GLOBAL_CSS,
+  // 2026-10-03: Tailwind 유틸리티도 이 빌드의 모듈 화면·컴포넌트에서만 뽑는다 — 기본값은 app/pages/**, app/components/** 전부를 훑어
+  //   homepg1·datavisual1 빌드에도 쇼핑몰 모듈들의 클래스가 들어갔다. strict 면 pages:extend(모듈 화면만 남김)·등록된 컴포넌트 파일만 본다.
+  //   모듈 레이아웃 폴더(app/layout/<모듈>)는 tailwind.config.ts 의 content 가 더한다.
+  tailwindcss: { experimental: { strictScanContentPaths: true } },
   modules: [
     "@nuxtjs/tailwindcss",
     [
@@ -132,7 +147,7 @@ export default defineNuxtConfig({
     "/shop-4-col": { redirect: { to: "/shop", statusCode: 301 } },
     "/account": { redirect: { to: "/my/profile", statusCode: 302 } }, // 옛 마이페이지 주소
   },
-  // CDN: app/assets 폴더 전체(prod/{css,fonts,img,scss})를 /cdn 경로로 정적 서빙 (절대경로로 해석 보장)
+  // CDN: app/assets 폴더 전체(공통 prod/{css,fonts,img} + 모듈별 스타일 폴더)를 /cdn 경로로 정적 서빙 (절대경로로 해석 보장)
   // 예: app/assets/prod/img/logo.png → /cdn/prod/img/logo.png
   nitro: {
     publicAssets: [

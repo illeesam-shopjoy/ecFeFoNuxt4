@@ -10,6 +10,8 @@ const tenant: TenantConfigType = {
   tagline: "두 번째 사이트 모듈(멀티테넌트 시험)",
   appTitle: "shopjoy ec2",
   themeColor: "#2f6fd6",
+  // 이 모듈의 전역 스타일 — app/assets/ec2/ (2026-10-03: 모듈마다 스타일을 따로 둔다. 쇼핑몰 테마 scss·다크테마를 모듈별 사본으로)
+  css: ["vue3-carousel/dist/carousel.css", "~/assets/ec2/scss/main.scss", "~/assets/ec2/theme-dark.css"],
   features: { seller: true, blog: false, event: false, aiProdDraft: false }, // aiProdDraft: 사진으로 상품정보 자동 작성(Claude 연계) — 꺼 둠
   menus: [
     { menuTreeId: 1, link: "/", title: "홈" },

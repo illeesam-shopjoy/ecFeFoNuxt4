@@ -19,4 +19,10 @@ export interface TenantConfigType {
   menus?: SyMenuTreeType[];
   /** 모듈별 기능 스위치 (예: { seller: true }) — 화면이 필요할 때 useTenant().features 로 읽는다 */
   features?: Record<string, boolean>;
+  /**
+   * 이 모듈 빌드의 전역 스타일(nuxt.config `css`) — 필수. 모듈 스타일은 app/assets/<모듈>/ 에 따로 둔다(2026-10-03).
+   * 쇼핑몰 모듈(ec1·ec2·danmoo1)은 테마 scss·다크테마 사본, 홈페이지(homepg1)·대시보드(datavisual1)는 자기 스타일시트 하나.
+   * 경로는 nuxt 별칭(~ = app) 기준, node_modules 패키지 css 도 넣을 수 있다(예: vue3-carousel/dist/carousel.css).
+   */
+  css: string[];
 }

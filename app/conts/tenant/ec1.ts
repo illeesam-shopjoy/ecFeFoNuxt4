@@ -10,6 +10,8 @@ const tenant: TenantConfigType = {
   tagline: "패션·라이프스타일 쇼핑몰",
   appTitle: "shopjoy",
   themeColor: "#bc8246",
+  // 이 모듈의 전역 스타일 — app/assets/ec1/ (2026-10-03: 모듈마다 스타일을 따로 둔다. 쇼핑몰 테마 scss·다크테마를 모듈별 사본으로)
+  css: ["vue3-carousel/dist/carousel.css", "~/assets/ec1/scss/main.scss", "~/assets/ec1/theme-dark.css"],
   features: { seller: true, blog: true, event: true, aiProdDraft: false }, // aiProdDraft: 판매 상품 관리의 "사진으로 자동 작성"(Claude 연계) — 호출마다 비용이 들어 꺼 둠(2026-10-02). 켜려면 true + 백엔드 sy_prop app.ai.claude.api-key
 };
 

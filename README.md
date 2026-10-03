@@ -63,6 +63,8 @@ Nuxt는 실행 명령에 따라 아래 파일을 자동 병합합니다. (하단
 | ec1 (쇼핑몰) | `SI260001` | `local:ec1` | `dev:ec1` | `build:local:ec1` | `build:dev:ec1` | `build:prod:ec1` |
 | ec2 (시험용) | `SI260002` | `local:ec2` | `dev:ec2` | `build:local:ec2` | `build:dev:ec2` | `build:prod:ec2` |
 | danmoo1 (당근 스타일) | `SI260003` | `local:danmoo1` | `dev:danmoo1` | `build:local:danmoo1` | `build:dev:danmoo1` | `build:prod:danmoo1` |
+| homepg1 (모두누리 홈페이지) | `SI260004` | `local:homepg1` | `dev:homepg1` | `build:local:homepg1` | `build:dev:homepg1` | `build:prod:homepg1` |
+| datavisual1 (데이터 시각화) | `SI260005` | `local:datavisual1` | `dev:datavisual1` | `build:local:datavisual1` | `build:dev:datavisual1` | `build:prod:datavisual1` |
 
 | 그 밖의 명령 | 설명 |
 | --- | --- |

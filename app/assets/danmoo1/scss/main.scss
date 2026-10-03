@@ -16,7 +16,7 @@
 @use 'mobile-menu';
 @use 'common';
 @use 'grid';
-@import '../css/fontAwesome5Pro.css';
+@import '../../prod/css/fontAwesome5Pro.css'; // 아이콘 폰트는 모든 모듈 공통(app/assets/prod — 폰트 파일과 같은 곳)
 
 // 2026-09-22(요청사항: "제거될때 toast 표시 아이콘 빨강이 아닌 오렌지색이나, 분홍색이면 좋겠어 — 오류처럼 느껴져") —
 // 장바구니/위시리스트/비교 "제거됨" 토스트는 $toast.error() 대신 $toast.warning()을 쓰도록 바꾸고(각 store 파일),

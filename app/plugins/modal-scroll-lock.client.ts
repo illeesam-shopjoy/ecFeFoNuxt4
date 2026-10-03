@@ -8,7 +8,7 @@
  *  1) 화면에 보이는 모달/오버레이(role=dialog·alertdialog·aria-modal, 열린 .body-overlay)가 하나라도 있으면 <html>/<body> 를 overflow:hidden 으로 잠근다
  *     (스크롤바가 사라지며 화면이 밀리지 않게 그 너비만큼 padding-right 보정). 모두 닫히면 원래대로 되돌린다. MutationObserver 로 열림/닫힘을 감지한다.
  *  2) 잠긴 동안 터치로 끌 때, 모달 안에서 실제로 더 스크롤할 수 있는 영역(내용이 넘치고 끝에 안 닿음)이 아니면 touchmove 를 막는다(iOS 대응).
- *  3) 전역 CSS(assets/prod/scss/_common.scss)에서 모달 내부 스크롤 영역에 overscroll-behavior: contain 을 준다.
+ *  3) 전역 CSS(쇼핑몰 모듈 app/assets/<모듈>/scss/_common.scss)에서 모달 내부 스크롤 영역에 overscroll-behavior: contain 을 준다.
  *
  * 2026-09-23(요청사항: "큰이미지 모달등 모달 화면이 오픈되고있을때 핸드폰 뒤로가기 누르면 모달닫는걸 해줘 —
  * 현재증상은 이전페이지로 이동하고있네") — 모달이 열릴 때 히스토리에 더미 항목을 하나 밀어넣어두고(같은

@@ -8,7 +8,7 @@
          데스크탑에서도 폰과 거의 같은 크기였다. 모바일/태블릿 크기는 그대로 두고 lg(1024px)
          이상에서만 로고 아이콘·글자를 한 단계 더 키운다. -->
     <nuxt-link href="/" class="inline-flex items-center gap-0.5 lg:gap-1.5 min-w-0 no-underline" aria-label="ShopJoy 홈">
-      <!-- <img> 로 둬야 다크모드(html invert 필터, assets/theme-dark.css)에서 img 규칙으로 색이 되돌려진다 -->
+      <!-- <img> 로 둬야 다크모드(html invert 필터, app/assets/<모듈>/theme-dark.css)에서 img 규칙으로 색이 되돌려진다 -->
       <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-7 h-7 sm:w-9 sm:h-9 lg:w-11 lg:h-11" />
       <span class="flex flex-col min-w-0 leading-[1.1] text-left">
         <!-- 2026-09-22(요청사항: "ShopJoy 글씨 더 작게 — width 최소한으로") — 폭을 최대한 덜 차지하도록 더 줄임 -->
