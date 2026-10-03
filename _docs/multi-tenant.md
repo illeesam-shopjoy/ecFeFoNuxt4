@@ -12,27 +12,32 @@
 | `*.example` | 각 파일의 예제(마스킹) |
 
 - 환경파일에는 **프로파일 성격의 값만** 둔다: 백엔드/CDN 주소, 실행 모드, 결제·소셜·지도 키. 사이트·모듈·제목·테마색은 두지 않는다(있어도 무시, `tenant.mjs` 가 경고).
-- 사이트 = `--site <sy_site.site_id>`: ec1 → `2604010000000001`(site_code `SHOPJOY`), ec2 → `2604010000000002`(`site2`), danmoo1 → `2604010000000003`(`site3`, 2026-10-02 사이트 7 로 시작 → 10-03 사이트 3 으로 이전). `tenant.mjs` 가 `NUXT_PUBLIC_SITE_ID` 환경변수로 넣는다.
-- 모듈 = `--module <모듈>`(`app/{pages,components,layout}/[모듈]` + `app/conts/tenant/[모듈].ts`) → `NUXT_PUBLIC_TENANT_MODULE`. 생략 시 사이트 `2604010000000001` · 모듈 ec1.
+- 모듈 = `--module <모듈>`(`app/{pages,components,layout}/[모듈]` + `app/conts/tenant/[모듈].ts`) → `NUXT_PUBLIC_TENANT_MODULE`.
+- 사이트 = `--site <sy_site.site_id>` → `NUXT_PUBLIC_SITE_ID`. **생략하면 `sy_site.tenant_module` 이 그 모듈인 ACTIVE 사이트를 찾아 쓴다**(정확히 1개여야 하고, 백엔드에 닿아야 한다). 현재: ec1 → `2604010000000001`(site_code `SHOPJOY`), ec2 → `2604010000000002`(`site2`), danmoo1 → `2604010000000003`(`site3`, 2026-10-02 사이트 7 로 시작 → 10-03 사이트 3 으로 이전). 둘 다 생략하면 ec1 · `2604010000000001`.
 - 앱 제목·테마색 = 모듈 설정 `app/conts/tenant/<모듈>.ts` 의 `appTitle` / `themeColor`(nuxt.config.ts 가 읽어 runtimeConfig·tailwind `theme` 색에 넣는다).
 - 모든 API 요청에 `X-Site-Id: <사이트>` 헤더가 붙는다(브라우저 axios, SEO SSR → 백엔드 호출 모두).
 
 ### 배포 대응
 - 개발(NAS) = `.env.development` + ec1 — `z0scripts/shopjoy-apps-dev/ecFeFoNuxt4/deploy.js` 가 `tenant.mjs build --site 2604010000000001 --module ec1 --profile development`
 - 운영(Netlify) = `.env.production` + ec1 — GitHub Actions `netlify-deploy.yml` 이 `pnpm run build`
-- danmoo1 미리보기(Netlify 별칭) = `.env.production` + danmoo1 — 같은 워크플로의 `deploy-danmoo1` 잡이 `pnpm run build:danmoo1` 후 `netlify deploy --alias danmoo1` → `https://danmoo1--shopjoy-ecfefonuxt4.netlify.app` (운영 URL 과 별개, NAS 컨테이너는 아직 없음)
+- danmoo1 미리보기(Netlify 별칭) = `.env.production` + danmoo1 — 같은 워크플로의 `deploy-danmoo1` 잡이 `pnpm run build -- --site 2604010000000003 --module danmoo1` 후 `netlify deploy --alias danmoo1` → `https://danmoo1--shopjoy-ecfefonuxt4.netlify.app` (운영 URL 과 별개, NAS 컨테이너는 아직 없음)
 
 ## 2. 실행 — `scripts/tenant.mjs`
 
+package.json scripts 는 **프로파일만** 정한다(`local` / `dev` / `build` / `build:dev` / `build:local` / `preview` / `preview:dev` / `typecheck`). 사이트·모듈은 `--` 뒤에 붙인다.
+
 ```
-pnpm tenant dev   --site 2604010000000002 --module ec2     --profile local
-pnpm tenant build --site 2604010000000003 --module danmoo1 --profile production
+npm run dev                                                # ec1 · 2604010000000001 · development (기본)
+npm run dev -- --module ec2                                # ec2, 사이트는 sy_site 에서 찾음
+npm run build -- --module danmoo1                          # danmoo1 production
+npm run build -- --site 2604010000000003 --module danmoo1  # 사이트 명시(sy_site 와 대조만)
+npm run typecheck -- --module ec2
+pnpm tenant preview --module ec2 --profile local           # 직접 호출
 ```
-package.json scripts(모듈 3개): `local` / `dev` / `build` / `build:dev` / `build:local` / `preview`(ec1), `local:ec2` / `dev:ec2` / `build:ec2` / `build:dev:ec2`, `local:danmoo1` / `dev:danmoo1` / `build:danmoo1` / `build:dev:danmoo1`, `typecheck` / `typecheck:ec2` / `typecheck:danmoo1`.
 
 실행기는 빌드 전에 다음을 확인한다. 하나라도 어긋나면 중단한다.
 1. 환경파일 `.env.<프로파일>` 이 있는가, `app/{pages,components,layout}/<모듈>/` 와 `app/conts/tenant/<모듈>.ts` 가 있는가
-2. `--site` 가 숫자 형식인가, 백엔드 `sy_site` 에 있고 ACTIVE 인가, 사이트의 FO 모듈(`sy_site.tenant_module`)이 `--module` 과 같은가 — 통과하면 `사이트코드 · 이름`을 출력해 눈으로 확인한다. 백엔드에 닿지 않으면 경고만 하고 진행한다(`--skip-site-check` 로 건너뛸 수 있다).
+2. `sy_site` 대조 — `--site` 만 주면 모듈을 그 사이트의 FO 모듈로, `--module` 만 주면 그 모듈을 쓰는 ACTIVE 사이트(정확히 1개)를 사이트로, 둘 다 주면 사이트가 ACTIVE 이고 FO 모듈이 같은지. 통과하면 `사이트코드 · 이름`을 출력해 눈으로 확인한다. 백엔드에 닿지 않으면 경고만 하고 진행한다(사이트를 못 정하면 기본 사이트). `--skip-site-check` 로 건너뛸 수 있다(typecheck 가 그렇게 한다).
 3. 환경파일에 사이트·모듈·제목·테마색 키가 남아 있으면 무시한다고 경고한다(인자가 우선).
 
 ## 3. 폴더 구조
@@ -75,8 +80,8 @@ ecFeFoNuxt4/
 2. 가까운 모듈의 폴더 세 개를 통째로 복사한다: `app/pages/ec1` → `ec3`, `app/components/ec1` → `ec3`, `app/layout/ec1` → `ec3`.
 3. 복사한 폴더 안의 `~/components/ec1/`, `~/layout/ec1/` 를 `ec3` 으로 일괄 바꾼다. 필요 없는 화면은 지우고 달라지는 부분을 고친다.
 4. `app/conts/tenant/ec3.ts`(id/name/menus/features)를 만든다.
-5. `app/conts/tenant/ec3.ts` 에 `appTitle`/`themeColor` 를 넣고, package.json scripts 에 `local:ec3` / `dev:ec3` / `build:ec3` / `build:dev:ec3` / `typecheck:ec3` 를 추가한다(환경파일은 새로 만들지 않는다 — 프로파일별 `.env.*` 공용).
-6. `pnpm tenant dev --site <그 site_id> --module ec3 --profile local` 로 확인한다.
+5. `app/conts/tenant/ec3.ts` 에 `appTitle`/`themeColor` 를 넣는다(환경파일·scripts 는 새로 만들지 않는다 — 프로파일별 `.env.*` 와 scripts 공용).
+6. `npm run local -- --module ec3` 로 확인한다(사이트는 sy_site 의 FO 모듈로 찾는다).
 
 ## 4-1. 모듈 danmoo1 — 당근 스타일 동네 중고거래 (2026-10-02)
 휴대폰 당근 캡처를 기준으로 만든 세 번째 모듈. 쇼핑몰(ec1/ec2)과 소스를 공유하지 않고 `app/{pages,components,layout}/danmoo1` 에 독립이다(모달·xdev·ui·MapSwitch 만 ec2 에서 복사). 모바일 우선 반응형 — PC 에서는 가운데 최대 640px 앱 틀(`layout/danmoo1/Layout.vue` 의 `.dm-app` CSS 변수, 다크는 `html.theme-dark`).
