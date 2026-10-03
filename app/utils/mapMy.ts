@@ -39,7 +39,7 @@ export function buildJoinPayload(name: string, email: string, password: string, 
         (k === "sellerNm" && typeof v === "string" && v.trim() !== "") ||
         (k === "sellerTypeCd" && (v === "INDIVIDUAL" || v === "COMPANY")) ||
         (k === "sellerAttachFiles" && Array.isArray(v)) || // 판매자 신청 서류 — AttachUploader 의 attachFiles 변경목록(2026-10-02)
-        (k === "siteId" && typeof v === "string" && /^\d{16}$/.test(v)) // 가입 사이트(sy_site.site_id) — 멀티테넌트 모듈(danmoo1 등)의 가입은 자기 사이트로(2026-10-03)
+        (k === "siteId" && typeof v === "string" && /^[A-Z0-9]{6,21}$/.test(v)) // 가입 사이트(sy_site.site_id, 2026-10-03부터 SI260001 형식) — 멀티테넌트 모듈(danmoo1 등)의 가입은 자기 사이트로(2026-10-03)
     )
   );
   return { memberNm, loginId, loginPwdHash, ...(emailVerifyId ? { emailVerifyId } : {}), ...safe };

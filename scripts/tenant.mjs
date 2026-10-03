@@ -5,16 +5,16 @@
  * 사이트·모듈은 "배포(빌드)별로 고정"이다. 어떤 사이트·모듈로 빌드할지는 **실행 명령의 인자**가 정하고,
  * 환경파일은 프로파일(local | development | production)별로 하나만 둔다:
  *     .env.[프로파일]            예) .env.development
- *   · --site    = 백엔드 sy_site.site_id (예: 2604010000000001) — 모든 API 요청에 X-Site-Id 헤더로 나간다
+ *   · --site    = 백엔드 sy_site.site_id (예: SI260001) — 모든 API 요청에 X-Site-Id 헤더로 나간다
  *   · --module  = ec1 | ec2 | danmoo1 … (app/{pages,components,layout}/<모듈>/ + app/conts/tenant/<모듈>.ts)
  *   · --profile = local | development | production (환경파일 선택)
- *   --site 와 --module 은 **항상 함께** 준다(하나만 주면 중단). 둘 다 생략하면 ec1 · 2604010000000001 (기본).
+ *   --site 와 --module 은 **항상 함께** 준다(하나만 주면 중단). 둘 다 생략하면 ec1 · SI260001 (기본).
  *
  * 사용법 — package.json scripts 는 프로파일만 정하고, 사이트·모듈은 뒤에 붙인다:
- *   npm run dev                                                   → ec1 · 2604010000000001 · development (기본)
- *   npm run dev -- --site 2604010000000002 --module ec2           → ec2
- *   npm run build -- --site 2604010000000003 --module danmoo1     → danmoo1 production
- *   npm run typecheck -- --site 2604010000000002 --module ec2
+ *   npm run dev                                                   → ec1 · SI260001 · development (기본)
+ *   npm run dev -- --site SI260002 --module ec2           → ec2
+ *   npm run build -- --site SI260003 --module danmoo1     → danmoo1 production
+ *   npm run typecheck -- --site SI260002 --module ec2
  *   (pnpm 은 `--` 없이 `pnpm run build --site … --module …` 도 된다 — `--` 가 와도 그 뒤의 --site/--module/--profile 을 읽는다)
  *   직접: node scripts/tenant.mjs <nuxt 명령> --site <siteId> --module <모듈> --profile <프로파일> [nuxt 추가인자…]
  *   환경변수 TENANT_SITE / TENANT_MODULE / TENANT_PROFILE 로도 줄 수 있다(CI 용).
@@ -31,7 +31,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PROFILES = ["local", "development", "production"];
-const DEFAULT_SITE = "2604010000000001";
+const DEFAULT_SITE = "SI260001";
 const DEFAULT_MODULE = "ec1";
 
 function die(msg) {
@@ -57,10 +57,10 @@ if (!opt.site && !opt.module) {
   opt.module = DEFAULT_MODULE;
 } else if (!opt.site || !opt.module) {
   die(`--site 와 --module 은 함께 줘야 합니다. (받은 값: --site "${opt.site || "없음"}" --module "${opt.module || "없음"}")
-   예) --site 2604010000000003 --module danmoo1`);
+   예) --site SI260003 --module danmoo1`);
 }
 if (!PROFILES.includes(opt.profile)) die(`--profile 은 ${PROFILES.join(" | ")} 중 하나여야 합니다. (받은 값: "${opt.profile}")`);
-if (opt.site && !/^\d{10,21}$/.test(opt.site)) die(`--site 는 백엔드 sy_site.site_id(숫자 10~21자)여야 합니다. (받은 값: "${opt.site}")  예) --site 2604010000000001`);
+if (opt.site && !/^[A-Z0-9]{6,21}$/.test(opt.site)) die(`--site 는 백엔드 sy_site.site_id(영대문자·숫자, 예: SI260001)여야 합니다. (받은 값: "${opt.site}")  예) --site SI260001`);
 if (opt.module && !/^[a-z0-9]+$/i.test(opt.module)) die("--module 은 영문·숫자만 쓸 수 있습니다. 예) --module ec1");
 
 const envFile = `.env.${opt.profile}`;

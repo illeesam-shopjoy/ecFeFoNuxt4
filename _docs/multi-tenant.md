@@ -13,25 +13,25 @@
 
 - 환경파일에는 **프로파일 성격의 값만** 둔다: 백엔드/CDN 주소, 실행 모드, 결제·소셜·지도 키. 사이트·모듈·제목·테마색은 두지 않는다(있어도 무시, `tenant.mjs` 가 경고).
 - 모듈 = `--module <모듈>`(`app/{pages,components,layout}/[모듈]` + `app/conts/tenant/[모듈].ts`) → `NUXT_PUBLIC_TENANT_MODULE`.
-- 사이트 = `--site <sy_site.site_id>` → `NUXT_PUBLIC_SITE_ID`. **`--site` 와 `--module` 은 항상 함께 준다**(하나만 주면 중단). 현재: ec1 → `2604010000000001`(site_code `SHOPJOY`), ec2 → `2604010000000002`(`site2`), danmoo1 → `2604010000000003`(`site3`, 2026-10-02 사이트 7 로 시작 → 10-03 사이트 3 으로 이전). 둘 다 생략하면 ec1 · `2604010000000001`.
+- 사이트 = `--site <sy_site.site_id>` → `NUXT_PUBLIC_SITE_ID`. **`--site` 와 `--module` 은 항상 함께 준다**(하나만 주면 중단). 현재: ec1 → `SI260001`(site_code `SHOPJOY`), ec2 → `SI260002`(`site2`), danmoo1 → `SI260003`(`site3`, 2026-10-02 사이트 7 로 시작 → 10-03 사이트 3 으로 이전). 둘 다 생략하면 ec1 · `SI260001`.
 - 앱 제목·테마색 = 모듈 설정 `app/conts/tenant/<모듈>.ts` 의 `appTitle` / `themeColor`(nuxt.config.ts 가 읽어 runtimeConfig·tailwind `theme` 색에 넣는다).
 - 모든 API 요청에 `X-Site-Id: <사이트>` 헤더가 붙는다(브라우저 axios, SEO SSR → 백엔드 호출 모두).
 
 ### 배포 대응
-- 개발(NAS) = `.env.development` + ec1 — `z0scripts/shopjoy-apps-dev/ecFeFoNuxt4/deploy.js` 가 `tenant.mjs build --site 2604010000000001 --module ec1 --profile development`
+- 개발(NAS) = `.env.development` + ec1 — `z0scripts/shopjoy-apps-dev/ecFeFoNuxt4/deploy.js` 가 `tenant.mjs build --site SI260001 --module ec1 --profile development`
 - 운영(Netlify) = `.env.production` + ec1 — GitHub Actions `netlify-deploy.yml` 이 `pnpm run build`
-- danmoo1 미리보기(Netlify 별칭) = `.env.production` + danmoo1 — 같은 워크플로의 `deploy-danmoo1` 잡이 `pnpm run build -- --site 2604010000000003 --module danmoo1` 후 `netlify deploy --alias danmoo1` → `https://danmoo1--shopjoy-ecfefonuxt4.netlify.app` (운영 URL 과 별개, NAS 컨테이너는 아직 없음)
+- danmoo1 미리보기(Netlify 별칭) = `.env.production` + danmoo1 — 같은 워크플로의 `deploy-danmoo1` 잡이 `pnpm run build -- --site SI260003 --module danmoo1` 후 `netlify deploy --alias danmoo1` → `https://danmoo1--shopjoy-ecfefonuxt4.netlify.app` (운영 URL 과 별개, NAS 컨테이너는 아직 없음)
 
 ## 2. 실행 — `scripts/tenant.mjs`
 
 package.json scripts 는 **프로파일만** 정한다(`local` / `dev` / `build` / `build:dev` / `build:local` / `preview` / `preview:dev` / `typecheck`). 사이트·모듈은 `--` 뒤에 붙인다.
 
 ```
-npm run dev                                                # ec1 · 2604010000000001 · development (기본)
-npm run dev -- --site 2604010000000002 --module ec2        # ec2
-npm run build -- --site 2604010000000003 --module danmoo1  # danmoo1 production
-npm run typecheck -- --site 2604010000000002 --module ec2
-pnpm run build --site 2604010000000003 --module danmoo1    # pnpm 은 `--` 없이(워크플로가 이렇게 쓴다 — pnpm 은 `--` 를 인자로 그대로 넘기지만 tenant.mjs 가 건너뛴다)
+npm run dev                                                # ec1 · SI260001 · development (기본)
+npm run dev -- --site SI260002 --module ec2        # ec2
+npm run build -- --site SI260003 --module danmoo1  # danmoo1 production
+npm run typecheck -- --site SI260002 --module ec2
+pnpm run build --site SI260003 --module danmoo1    # pnpm 은 `--` 없이(워크플로가 이렇게 쓴다 — pnpm 은 `--` 를 인자로 그대로 넘기지만 tenant.mjs 가 건너뛴다)
 ```
 예제 스크립트 `local:ec2` / `local:danmoo1` 도 있다.
 
@@ -107,7 +107,7 @@ ecFeFoNuxt4/
 
 - 모듈 전용 상수(동네 목록·좌표·탭·서비스 메뉴·정렬·가격대·샘플)와 `townOf()`(상품ID 로 동네 고정 배정 — 상품에 동네 데이터가 없어 표시용), `dmStatusOf()`(예약중/판매완료)는 `app/conts/tenant/danmoo1.ts` 의 named export — 이 빌드에만 들어간다. 내 동네·범위·최근 검색·키워드 알림·알바/부동산 관심은 서버 저장이 아니라 localStorage(`dm.*`).
 - 매너온도(36.5°C)·동네 가게·알바·부동산은 데이터가 없어 표시용이며 화면에 "샘플"로 적어 두었다. 회원끼리 1:1 채팅은 백엔드에 없어 고객센터 채팅방으로 대신한다.
-- 시드: `p2604…/_doc/ddl_pgsql/migration_20261002_seed_danmoo1_site7.sql` — (최초) 사이트 7 `tenant_module=danmoo1` → 2026-10-03 사이트 3(`2604010000000003`, site3)으로 이전(sy_site.tenant_module 과 site_id/reg_site_id='…07' 데이터 전부 '…03' 으로; DB 이관은 별도 SQL 로 수동 실행), 카테고리 12(CAT07…), site1 상품 36건 복제(PDDM…, 가격 재산정), 테스트 회원 `dm_user1~5@danmoo.com`(비밀번호 1111), 동네생활 글 4건(BLDM…).
+- 시드: `p2604…/_doc/ddl_pgsql/migration_20261002_seed_danmoo1_site7.sql` — (최초) 사이트 7 `tenant_module=danmoo1` → 2026-10-03 사이트 3(`SI260003`, site3)으로 이전(sy_site.tenant_module 과 site_id/reg_site_id='…07' 데이터 전부 '…03' 으로; DB 이관은 별도 SQL 로 수동 실행), 카테고리 12(CAT07…), site1 상품 36건 복제(PDDM…, 가격 재산정), 테스트 회원 `dm_user1~5@danmoo.com`(비밀번호 1111), 동네생활 글 4건(BLDM…).
 - 공통에 추가된 것: `utils/timeAgo.ts`(상대 시각·원화), `svc/fo/ec/mb/mbLikeSvc.ts`(찜 토글, PRODUCT/BLOG), `coBlogSvc.getPagedWith/create/createReply/deleteReply`, `mapBlog` 가 `viewCount/blogCateId/regBy/replies` 도 넘김, `myChatSvc.sendRefMsg`, `composables/useDmTown.ts`·`useAuthReady.ts`.
 - **`useAuthReady()`**: 화면 onMounted 는 app.vue 의 로그인 복원(onMounted)보다 먼저 실행된다. 새로고침 직후 `authStore.isStLoggedIn` 으로 분기하는 화면은 initPage 첫 줄에서 `await useAuthReady()` 를 해야 한다(안 하면 "관심목록 없음"처럼 비로그인 결과가 나온다). 다른 모듈 화면에도 같은 규칙이 적용된다(ec1/ec2 는 useMyList.ensureLogin 이 비슷한 역할).
 
