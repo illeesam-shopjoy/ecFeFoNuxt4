@@ -71,7 +71,7 @@
                 <tr v-if="!rows.length">
                   <td colspan="7" class="py-10 text-center text-gray-400">{{ loading ? "조회 중…" : "조회 결과가 없습니다." }}</td>
                 </tr>
-                <tr v-for="m in rows" :key="m.memberId" class="row cursor-pointer" :class="{ 'opacity-50 pointer-events-none': loggingIn !== null && loggingIn !== m.loginId }" @click="loginAs(m)">
+                <tr v-for="m in rows" :key="m.memberId" class="dml-row cursor-pointer" :class="{ 'opacity-50 pointer-events-none': loggingIn !== null && loggingIn !== m.loginId }" @click="loginAs(m)">
                   <td class="td font-mono font-semibold text-gray-900">{{ m.loginId }}</td>
                   <td class="td whitespace-nowrap">{{ m.memberNm || "-" }}</td>
                   <td class="td whitespace-nowrap">{{ m.memberPhone || "-" }}</td>
@@ -249,7 +249,8 @@ defineExpose({ show });
 .in:focus { border-color: #bc8246; }
 .th { padding: 6px 8px; border-bottom: 1px solid #ece4d8; font-weight: 600; white-space: nowrap; }
 .td { padding: 7px 8px; border-bottom: 1px solid #f1ece4; background: #fff; }
-.row:hover .td { background: #fdf6ee; }
+/* 2026-10-03: 클래스명 .row 는 테마 전역 그리드(.row{display:flex;flex-wrap:wrap}, scss/_grid.scss)와 겹쳐 표 행이 줄바꿈되며 깨졌다 → dml-row */
+.dml-row:hover .td { background: #fdf6ee; }
 .pg { min-width: 28px; height: 28px; padding: 0 6px; border: 1px solid #e5e0d6; border-radius: 6px; background: #fff; color: #666; cursor: pointer; }
 .pg:disabled { opacity: 0.35; cursor: default; }
 .pg-on { background: #111; border-color: #111; color: #fff; font-weight: 700; }
