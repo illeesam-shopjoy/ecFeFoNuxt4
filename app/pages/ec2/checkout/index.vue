@@ -658,7 +658,8 @@ async function handleFormSubmit() {
   const method: PayMethodCd = payMethod.value;
   const provider = getPayProvider(method);
   try {
-    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? Object.values(appliedCoupons.product).find((c) => c) ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value, payMethod: method, pgCd: provider.pg }));
+    // od.13 보완 — 배송비(배송비 쿠폰 적용 후)·쿠폰 할인 합계도 저장해 주문 생성 시 od_order 에 남긴다(클레임 환불 계산의 전제)
+    sessionStorage.setItem("checkout_ctx", JSON.stringify({ couponId: (appliedCoupons.order ?? Object.values(appliedCoupons.product).find((c) => c) ?? appliedCoupons.shipping)?.couponId, totalAmt: subtotalRef.value, cashUseAmt: cashUse.value, payMethod: method, pgCd: provider.pg, shippingFee: Math.max(0, baseShip.value - calc.value.shipDiscount), couponDiscountAmt: couponDiscountTotal.value }));
   } catch {
     /* 저장소를 못 써도 결제는 진행 */
   }

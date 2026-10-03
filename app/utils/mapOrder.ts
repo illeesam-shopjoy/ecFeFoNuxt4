@@ -14,6 +14,11 @@ export function buildOrderCreatePayload(body: OdOrderCreateType): Record<string,
     accessChannelCd: body.accessChannelCd ?? "WEB_PC",
     items: body.items,
     ...(body.couponId ? { couponId: body.couponId } : {}),
+    // od.13 보완 — 값이 있을 때만 보낸다(없으면 백엔드 null 유지)
+    ...(body.payMethodCd ? { payMethodCd: body.payMethodCd } : {}),
+    ...(body.outboundShippingFee != null ? { outboundShippingFee: body.outboundShippingFee } : {}),
+    ...(body.couponDiscountAmt != null ? { couponDiscountAmt: body.couponDiscountAmt } : {}),
+    ...(body.cacheUseAmt != null ? { cacheUseAmt: body.cacheUseAmt } : {}),
   };
 }
 

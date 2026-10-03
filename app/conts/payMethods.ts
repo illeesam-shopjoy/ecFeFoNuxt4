@@ -67,4 +67,9 @@ export function payMethodFromDbCd(cd: string | null | undefined): PayMethodCd | 
   const m: Record<string, PayMethodCd> = { CARD: "CARD", TRANSFER: "TRANSFER", VBANK: "VIRTUAL_ACCOUNT", KAKAO: "KAKAOPAY", NAVER: "NAVERPAY", TOSS: "TOSSPAY" };
   return (cd && m[cd]) || null;
 }
+/** 화면 결제수단 → 서버 PAY_METHOD 코드(od_order/od_pay.pay_method_cd). 2026-10-03 od.13 보완 — 주문 생성 시 선택 수단을 함께 저장 */
+export function payMethodToDbCd(cd: string | null | undefined): string | undefined {
+  const m: Record<string, string> = { CARD: "CARD", TRANSFER: "TRANSFER", VIRTUAL_ACCOUNT: "VBANK", KAKAOPAY: "KAKAO", NAVERPAY: "NAVER", TOSSPAY: "TOSS" };
+  return (cd && m[cd]) || undefined;
+}
 export const payMethodOf = (cd: string): PayMethodDef | undefined => PAY_METHODS.find((m) => m.cd === cd);

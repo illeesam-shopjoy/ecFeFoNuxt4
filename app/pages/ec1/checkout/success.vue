@@ -38,6 +38,7 @@ import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vu
 import { usePrice } from "~/composables/usePrice";
 import { paymentSvc } from "~/svc/co/payments/paymentSvc";
 import { foOrderSvc } from "~/svc/fo/ec/order/foOrderSvc";
+import { payMethodToDbCd } from "~/conts/payMethods";
 import { useCartStore } from "~/store/useCartStore";
 import { useAuthStore } from "~/store/useAuthStore";
 import type { OdPayConfirmResType } from "~/types/od/odPayConfirmResType";
@@ -91,13 +92,14 @@ onMounted(async () => {
     }
 
     // 결제 화면에서 저장해 둔 적용 쿠폰/상품합계
-    let ctx: { couponId?: string; totalAmt?: number } = {};
+    let ctx: { couponId?: string; totalAmt?: number; cashUseAmt?: number; payMethod?: string; shippingFee?: number; couponDiscountAmt?: number } = {};
     try {
       ctx = JSON.parse(sessionStorage.getItem("checkout_ctx") ?? "{}");
     } catch {
       /* 무시 */
     }
-    const created = await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: ctx.totalAmt ?? amount.value, couponId: ctx.couponId, items });
+    // od.13 보완 — 결제수단/배송비/쿠폰할인/캐시사용액을 주문에 남겨 클레임 환불 계산(배송비 환불·안분)에 쓴다
+    const created = await foOrderSvc.createOrder({ payAmt: amount.value, totalAmt: ctx.totalAmt ?? amount.value, couponId: ctx.couponId, items, payMethodCd: payMethodToDbCd(ctx.payMethod), outboundShippingFee: ctx.shippingFee, couponDiscountAmt: ctx.couponDiscountAmt, cacheUseAmt: ctx.cashUseAmt });
 
     pay.value = await paymentSvc.confirmPayment({ paymentKey, orderId: orderIdQuery, amount: amount.value, keyType: "pay", orderRefId: created?.orderId });
     status.value = "success";
