@@ -51,6 +51,8 @@ export interface PdProdType {
   brandId?: string; // 브랜드ID
   vendorId?: string; // 업체ID
   sellerId?: string; // 판매자ID (sl_seller.seller_id) — 2026-09-29(셀러 Phase 1) 상품평/Q&A 답변·숨김 권한 판단에 사용
+  sellerNm?: string; // 판매자명 (조인: sl_seller) — 개인간 거래 사이트는 회원 이름
+  tradeMethodCds?: string; // 거래방법(개인간 거래) — 콤마 구분 DIRECT(직거래)/DOOR(문고리거래)/PARCEL(택배거래), 쇼핑몰 상품은 없음 (2026-10-03)
   prodCode?: string; // 상품코드(SKU)
   currCd?: string; // 통화코드 (KRW/USD/CNY/JPY, 기본 KRW) - 환율 변환은 하지 않음
   currCdNm?: string; // 통화코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)

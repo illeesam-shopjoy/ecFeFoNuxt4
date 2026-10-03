@@ -26,6 +26,7 @@ export interface PdMyProdType {
   contentHtml?: string; // 상세 조회에서만 채움
   warehouseId?: string; // 상품 기본 출고 창고
   warehouseNm?: string;
+  tradeMethodCds?: string; // 거래방법(개인간 거래) — 콤마 구분 DIRECT/DOOR/PARCEL
   prodSkuId?: string; // 단품의 SKU
   stockQty?: number; // SKU 재고 합계
   skus?: PdMySkuStockType[];
@@ -38,7 +39,10 @@ export interface PdMyProdSaveType {
   salePrice: number;
   stdPrice?: number;
   stockQty: number;
-  warehouseId: string;
+  /** 출고 창고 — 쇼핑몰 사이트는 필수, 개인간 거래 사이트(danmoo1)는 선택 */
+  warehouseId?: string;
+  /** 거래방법 — 콤마 구분 DIRECT(직거래)/DOOR(문고리거래)/PARCEL(택배거래). 개인간 거래 사이트는 1개 이상 필수 */
+  tradeMethodCds?: string;
   contentHtml?: string;
   prodStatusCd?: "ACTIVE" | "INACTIVE";
   /** 대표이미지 — AttachUploader 로 먼저 올린 미연계 파일의 attachId. 수정 시 주면 교체, 생략하면 기존 유지 */

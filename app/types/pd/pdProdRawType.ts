@@ -39,6 +39,8 @@ export interface PdProdRawType {
   categoryId?: string | null;
   brandId?: string | null;
   sellerId?: string | null; // 판매자ID (sl_seller.seller_id) — 2026-09-29(셀러 Phase 1)
+  sellerNm?: string | null; // 판매자명 (조인: sl_seller) — 개인간 거래 사이트는 회원 이름
+  tradeMethodCds?: string | null; // 거래방법(개인간 거래) — 콤마 구분 DIRECT(직거래)/DOOR(문고리거래)/PARCEL(택배거래), 쇼핑몰 상품은 null (2026-10-03)
   prodNm: string;
   prodCode?: string | null;
   prodTypeCd?: string | null; // 상품유형 SINGLE/OPTION/GROUP/SET/GIFT

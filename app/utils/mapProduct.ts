@@ -106,6 +106,8 @@ export function mapProduct(p: PdProdRawType, cdnBase: string): Record<string, un
     prodId: p.prodId,
     prodTypeCd: p.prodTypeCd ?? undefined,
     sellerId: p.sellerId ?? undefined, // 2026-09-29(셀러 Phase 1) — 상품평/Q&A 답변·숨김 권한 판단
+    sellerNm: p.sellerNm ?? undefined,
+    tradeMethodCds: p.tradeMethodCds ?? undefined, // 2026-10-03 개인간 거래(danmoo1) 거래방법
     img,
     thumbImg,
     bigImg: fullImg || undefined,
@@ -229,6 +231,8 @@ export function buildProdPageQuery(params: PdProdPageParamsType): Record<string,
   if (params.isNew) q.isNew = "Y";
   if (params.isSale) q.isSale = "Y";
   if (params.prodTypeCd) q.prodTypeCd = params.prodTypeCd;
+  if (params.sellerId) q.sellerId = params.sellerId;
+  if (params.tradeMethodCd) q.tradeMethodCd = params.tradeMethodCd;
   return q;
 }
 

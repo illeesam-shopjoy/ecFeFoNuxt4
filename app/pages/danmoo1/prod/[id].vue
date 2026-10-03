@@ -1,5 +1,5 @@
 <template>
-  <!-- 물건 상세 — 사진(가로 스와이프) · 판매자 · 상태/제목/카테고리/시간 · 설명 · 거래 희망 장소 · 판매자의 다른 물건 · 비슷한 물건, 하단 고정바(관심 ♥ · 가격/가격 제안 · 채팅하기) -->
+  <!-- 물건 상세 — 사진(가로 스와이프) · 판매자 · 상태/제목/카테고리/시간 · 설명 · 거래 방법(직거래/문고리/택배) · 거래 희망 장소 · 판매자의 다른 물건 · 비슷한 물건, 하단 고정바(관심 ♥ · 가격/가격 제안 · 채팅하기) -->
   <layout :tabs="false">
     <template #top>
       <dm-title-bar title="" fallback="/">
@@ -42,10 +42,21 @@
         <button type="button" class="text-[13px] muted underline mt-3" @click="handleBtnAction('prod-report')">이 게시글 신고하기</button>
       </section>
 
-      <!-- 거래 희망 장소 -->
-      <section class="px-4 pt-5 pb-6 border-t border-[var(--dm-line)]">
+      <!-- 거래 방법 (2026-10-03, 판매자가 고른 것 — 이 기능 전에 올린 물건은 없을 수 있다) -->
+      <section v-if="tradeMethods.length" class="px-4 pt-5 pb-5 border-t border-[var(--dm-line)]">
+        <h2 class="text-[17px] font-extrabold mb-3">거래 방법</h2>
+        <ul class="space-y-2.5">
+          <li v-for="m in tradeMethods" :key="m.code" class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-[var(--dm-primary-soft)] text-[var(--dm-primary)] inline-flex items-center justify-center flex-none"><i :class="m.icon"></i></span>
+            <div><b class="text-[15px]">{{ m.label }}</b><p class="text-[13px] muted">{{ m.desc }}</p></div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 거래 희망 장소 — 직거래·문고리거래(동네에서 주고받기)일 때. 택배만이면 숨긴다 -->
+      <section v-if="meetsInTown" class="px-4 pt-5 pb-6 border-t border-[var(--dm-line)]">
         <h2 class="text-[17px] font-extrabold">거래 희망 장소</h2>
-        <p class="text-[13.5px] muted mt-1 mb-3"><i class="fas fa-map-marker-alt primary mr-1"></i>성남시 {{ prodTown }} 근처 · 직거래</p>
+        <p class="text-[13.5px] muted mt-1 mb-3"><i class="fas fa-map-marker-alt primary mr-1"></i>성남시 {{ prodTown }} 근처{{ placeMethods ? ` · ${placeMethods}` : "" }}</p>
         <client-only>
           <div class="rounded-xl overflow-hidden"><map-switch :addr="`성남시 ${prodTown}`" :lat="coords.lat" :lng="coords.lng" height-css="180px" toolbar-position="bottom" /></div>
           <template #fallback><div class="skeleton h-[180px] rounded-xl"></div></template>
@@ -112,7 +123,7 @@ import MapSwitch from "~/components/danmoo1/common/map/MapSwitch.vue";
 import { pushLocalList, useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
-import { DM_RECENT_VIEW_KEY, coordsOf, dmStatusOf, townOf } from "~/conts/tenant/danmoo1";
+import { DM_RECENT_VIEW_KEY, coordsOf, dmStatusOf, dmTradeMethods, townOf } from "~/conts/tenant/danmoo1";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { mbLikeSvc } from "~/svc/fo/ec/mb/mbLikeSvc";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
@@ -147,7 +158,12 @@ const images = computed(() => {
   const list = (p.prodImgs ?? []).map((i) => i.url).filter((u): u is string => !!u);
   return list.length ? list : [p.img].filter(Boolean);
 });
-const sellerNm = computed(() => prod.value?.brandNm || prod.value?.brand?.brandNm || prod.value?.vendorNm || "danmoo 이웃");
+// 개인간 거래 물건은 판매자 = 회원(sellerNm). 예전 시드 상품은 브랜드/업체 이름
+const sellerNm = computed(() => prod.value?.sellerNm || prod.value?.brandNm || prod.value?.brand?.brandNm || prod.value?.vendorNm || "danmoo 이웃");
+const tradeMethods = computed(() => dmTradeMethods(prod.value?.tradeMethodCds));
+/** 동네에서 만나거나(직거래) 문 앞에 두는(문고리) 거래가 있거나, 거래 방법이 없던 예전 물건이면 장소를 보여 준다 */
+const meetsInTown = computed(() => !tradeMethods.value.length || tradeMethods.value.some((m) => m.code === "DIRECT" || m.code === "DOOR"));
+const placeMethods = computed(() => (tradeMethods.value.length ? tradeMethods.value.filter((m) => m.code !== "PARCEL").map((m) => m.label).join(" · ") : "직거래"));
 const prodTown = computed(() => (prod.value ? townOf(prod.value.prodId, town.value) : town.value));
 const coords = computed(() => coordsOf(prodTown.value));
 const status = computed(() => (prod.value ? dmStatusOf(prod.value) : null));
@@ -238,12 +254,17 @@ const fnLoadLiked = async () => {
   }
 };
 
-/* fnLoadRelated — 같은 카테고리 물건 6개 + 같은 브랜드(판매자) 물건 4개, 자기 자신 제외 */
+/* fnLoadRelated — 같은 카테고리 물건 6개 + 같은 판매자 물건 4개(회원이 올린 물건은 판매자ID, 예전 시드 상품은 브랜드), 자기 자신 제외 */
 const fnLoadRelated = async (p: PdProdType) => {
   const not = (x: PdProdType) => x.prodId !== p.prodId;
+  const sameSeller = p.sellerId
+    ? pdProductSvc.getPaged({ pageNo: 1, pageSize: 5, sellerId: p.sellerId, sort: "regDate desc" }).catch(() => null)
+    : p.brandId
+      ? pdProductSvc.getPaged({ pageNo: 1, pageSize: 5, brandIds: [p.brandId], sort: "regDate desc" }).catch(() => null)
+      : Promise.resolve(null);
   const [cat, br] = await Promise.all([
     pdProductSvc.getPaged({ pageNo: 1, pageSize: 7, categoryIds: p.categoryId ? [p.categoryId] : undefined, sort: "regDate desc" }).catch((e) => { console.error("[danmoo1/prod] 비슷한 물건 조회 실패", e); return null; }),
-    p.brandId ? pdProductSvc.getPaged({ pageNo: 1, pageSize: 5, brandIds: [p.brandId], sort: "regDate desc" }).catch(() => null) : Promise.resolve(null),
+    sameSeller,
   ]);
   sellerProds.value = (br?.items ?? []).filter(not).slice(0, 4);
   const sellerIds = new Set(sellerProds.value.map((x) => x.prodId));

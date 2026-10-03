@@ -17,5 +17,7 @@ export interface PdProdPageParamsType {
   isBest?: boolean; // 베스트 상품만 (서버 필터)
   isSale?: boolean; // 할인 상품만 (서버 필터, 정가 > 판매가)
   isNew?: boolean; // 신상품만 (서버 필터)
+  sellerId?: string; // 판매자 한 명의 상품만(예: 판매자의 다른 물건)
+  tradeMethodCd?: string; // 거래방법(개인간 거래) — DIRECT/DOOR/PARCEL 중 하나를 포함한 상품만 (2026-10-03)
   prodTypeCd?: string; // 상품유형 단일선택 — PROD_TYPE_CD {SINGLE:단품, OPTION:옵션상품, GROUP:묶음상품, SET:세트상품, GIFT:사은품} (2026-09-22, conts/pdConst.ts 참조)
 }

@@ -106,6 +106,7 @@ const fnLoadFeed = async (reset: boolean) => {
       sort: filter.value.sort,
       priceMin: filter.value.priceMin,
       priceMax: filter.value.priceMax,
+      tradeMethodCd: filter.value.tradeMethodCd,
     });
     if (my !== seq) return;
     items.value = reset ? r.items : [...items.value, ...r.items];
@@ -119,7 +120,7 @@ const fnLoadFeed = async (reset: boolean) => {
   }
 };
 
-watch([cateId, () => filter.value.sort, () => filter.value.priceMin, () => filter.value.priceMax], () => fnLoadFeed(true));
+watch([cateId, () => filter.value.sort, () => filter.value.priceMin, () => filter.value.priceMax, () => filter.value.tradeMethodCd], () => fnLoadFeed(true));
 
 /* initPage — 카테고리와 첫 페이지를 같이 조회, 바닥에 닿으면 다음 페이지(무한 스크롤) */
 let io: IntersectionObserver | null = null;

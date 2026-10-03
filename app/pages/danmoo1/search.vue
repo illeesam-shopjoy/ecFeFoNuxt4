@@ -168,7 +168,7 @@ const fnSearch = async (word: string) => {
 const fnLoadProds = async (reset: boolean) => {
   loading.value = true;
   try {
-    const r = await pdProductSvc.getPaged({ pageNo: reset ? 1 : page.value + 1, pageSize: 20, keyword: submittedQ.value, sort: filter.value.sort, priceMin: filter.value.priceMin, priceMax: filter.value.priceMax });
+    const r = await pdProductSvc.getPaged({ pageNo: reset ? 1 : page.value + 1, pageSize: 20, keyword: submittedQ.value, sort: filter.value.sort, priceMin: filter.value.priceMin, priceMax: filter.value.priceMax, tradeMethodCd: filter.value.tradeMethodCd });
     items.value = reset ? r.items : [...items.value, ...r.items];
     total.value = r.pageTotalCount;
     counts.prod = r.pageTotalCount;
@@ -197,7 +197,7 @@ const fnLoadPosts = async () => {
   }
 };
 
-watch([() => filter.value.sort, () => filter.value.priceMin, () => filter.value.priceMax], () => { if (submitted.value) fnLoadProds(true); });
+watch([() => filter.value.sort, () => filter.value.priceMin, () => filter.value.priceMax, () => filter.value.tradeMethodCd], () => { if (submitted.value) fnLoadProds(true); });
 watch(tab, (t) => { if (submitted.value) router.replace({ query: { q: submittedQ.value, tab: t } }); });
 
 /* initPage — 최근 검색어·키워드 복원, ?q= 로 들어오면 바로 검색, 아니면 입력칸 포커스 */

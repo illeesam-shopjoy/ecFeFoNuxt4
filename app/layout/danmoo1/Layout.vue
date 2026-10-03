@@ -89,14 +89,17 @@ html.theme-dark {
 .dm-main {
   min-height: calc(100vh - 56px);
 }
-/* 공통 소품 — 템플릿 전역 scss(ec1/ec2 용)의 제목·문단 여백을 이 틀 안에서는 되돌린다 */
-.dm-app h1, .dm-app h2, .dm-app h3, .dm-app h4, .dm-app p, .dm-app ul { margin: 0; color: inherit; line-height: inherit; }
-.dm-app ul { padding: 0; list-style: none; }
-.dm-app a { color: inherit; text-decoration: none; }
-.dm-app button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-.dm-app input, .dm-app textarea, .dm-app select { font: inherit; color: var(--dm-text); }
-.dm-app ::placeholder { color: var(--dm-text-3); }
-.dm-app img { display: block; }
+/* 공통 소품 — 템플릿 전역 scss(ec1/ec2 용)의 제목·문단 여백을 이 틀 안에서는 되돌린다.
+   2026-10-03: .dm-app 을 :where() 로 감싸 우선순위를 요소 선택자(0,0,1)로 낮췄다 — 예전(.dm-app button = 0,1,1)엔 Tailwind 유틸(0,1,0)보다 세서
+   bg-[…]·border·mt-…·px-… 같은 클래스가 버튼·문단·목록에서 조용히 무시됐다(판매하기/나눔하기 선택 표시가 안 보이던 원인).
+   테마 전역 규칙(p, button … 0,0,1)보다는 이 스타일이 나중에 로드돼 계속 이긴다. */
+:where(.dm-app) h1, :where(.dm-app) h2, :where(.dm-app) h3, :where(.dm-app) h4, :where(.dm-app) p, :where(.dm-app) ul { margin: 0; color: inherit; line-height: inherit; }
+:where(.dm-app) ul { padding: 0; list-style: none; }
+:where(.dm-app) a { color: inherit; text-decoration: none; }
+:where(.dm-app) button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:where(.dm-app) input, :where(.dm-app) textarea, :where(.dm-app) select { font: inherit; color: var(--dm-text); }
+:where(.dm-app) ::placeholder { color: var(--dm-text-3); }
+:where(.dm-app) img { display: block; }
 .dm-app .line { border-top: 1px solid var(--dm-line); }
 .dm-app .muted { color: var(--dm-text-2); }
 .dm-app .primary { color: var(--dm-primary); }

@@ -76,6 +76,7 @@ import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import { mbLikeSvc } from "~/svc/fo/ec/mb/mbLikeSvc";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
+import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
@@ -92,6 +93,7 @@ const money = ref<number | null>(null);
 const likeCnt = ref<number | null>(null);
 const couponCnt = ref<number | null>(null);
 const chatCnt = ref<number | null>(null);
+const sellCnt = ref<number | null>(null); // 내가 올린 물건 중 판매중·예약중(판매완료 제외)
 const townOpen = ref(false);
 const ready = ref(false);
 
@@ -99,7 +101,7 @@ const stats = computed(() => [
   { label: "관심", value: likeCnt.value, to: "/my/likes" },
   { label: "채팅", value: chatCnt.value, to: "/chat" },
   { label: "쿠폰", value: couponCnt.value, to: "/my/coupons" },
-  { label: "판매", value: (authStore.user?.sellerIds?.length ?? 0) > 0 ? "판매자" : "-", to: "/my/prods" },
+  { label: "판매", value: sellCnt.value, to: "/my/prods" },
 ]);
 const menuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => [
   { title: "나의 거래", items: [
@@ -145,7 +147,7 @@ const handleSelectAction = async (cmd: string, param: MenuItem | string) => {
     if (param.key === "logout") {
       if (!(await openConfirm({ title: "로그아웃", message: "로그아웃 할까요?" }))) return;
       await authStore.setStLogout();
-      money.value = likeCnt.value = couponCnt.value = chatCnt.value = null;
+      money.value = likeCnt.value = couponCnt.value = chatCnt.value = sellCnt.value = null;
       return;
     }
     return openAlert({ title: param.label, message: "준비 중인 기능이에요.", variant: "info" });
@@ -155,22 +157,24 @@ const handleSelectAction = async (cmd: string, param: MenuItem | string) => {
 
 /* ##### [03] 내장 사용 함수 ################################################### */
 
-/* initPage — 로그인 복원을 기다린 뒤 머니·관심·쿠폰·채팅 수 */
+/* initPage — 로그인 복원을 기다린 뒤 머니·관심·쿠폰·채팅·판매 수 */
 const initPage = async () => {
   await useAuthReady();
   ready.value = true;
   if (!authStore.isStLoggedIn) return;
   const safe = <T,>(p: Promise<T>, label: string): Promise<T | null> => p.catch((e) => { console.error(`[danmoo1/my] ${label} 조회 실패`, e); return null; });
-  const [m, likes, coupons, chats] = await Promise.all([
+  const [m, likes, coupons, chats, prods] = await Promise.all([
     safe(myInfoSvc.getCacheBalance(), "머니 잔액"),
     safe(mbLikeSvc.getMyLikes("PRODUCT"), "관심"),
     safe(myCouponSvc.getList({}), "쿠폰"),
     safe(myChatSvc.getMyList(), "채팅"),
+    safe(pdMyProdSvc.getMyProds(), "판매 물건"),
   ]);
   money.value = m ?? 0;
   likeCnt.value = likes?.length ?? 0;
   couponCnt.value = coupons?.length ?? 0;
   chatCnt.value = chats?.length ?? 0;
+  sellCnt.value = (prods ?? []).filter((x) => x.prodStatusCd !== "ENDED").length;
 };
 onMounted(initPage);
 </script>

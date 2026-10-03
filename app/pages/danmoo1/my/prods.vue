@@ -1,11 +1,12 @@
 <template>
-  <!-- 판매내역 — 내가 올린 물건(판매자 상품 API). 상태별 탭(판매중/예약중·중지/완료), 물건마다 ⋯ 시트(예약중↔판매중, 끌어올리기, 수정, 판매완료). 판매자가 아니면 안내 -->
+  <!-- 판매내역 — 내가 올린 물건(판매자 상품 API). 상태별 탭(판매중/예약중·중지/완료), 물건마다 ⋯ 시트(예약중↔판매중, 끌어올리기, 수정, 판매완료).
+       danmoo1 은 개인간 거래 사이트라 판매자 승인이 없다 — 로그인한 회원 누구나(처음 올릴 때 서버가 개인 판매자를 만든다, 2026-10-03) -->
   <layout :tabs="false">
     <template #top>
       <dm-title-bar title="판매내역" fallback="/my">
-        <template #right><nuxt-link v-if="isSeller" to="/write?type=prod" class="text-[14px] primary font-bold px-2">물건 올리기</nuxt-link></template>
+        <template #right><nuxt-link v-if="authStore.isStLoggedIn" to="/write?type=prod" class="text-[14px] primary font-bold px-2">물건 올리기</nuxt-link></template>
       </dm-title-bar>
-      <div v-if="isSeller" class="dm-segs">
+      <div v-if="authStore.isStLoggedIn" class="dm-segs">
         <button v-for="t in TABS" :key="t.key" type="button" class="dm-seg" :class="{ on: tab === t.key }" @click="tab = t.key">{{ t.label }} <span class="text-[12px] muted">{{ countOf(t.key) }}</span></button>
       </div>
     </template>
@@ -13,7 +14,6 @@
     <dm-empty v-if="ready && !authStore.isStLoggedIn" icon="far fa-clipboard" title="로그인하면 판매내역을 볼 수 있어요">
       <nuxt-link :to="{ path: '/login', query: { redirect: '/my/prods' } }" class="btn-primary mt-3 px-8">로그인</nuxt-link>
     </dm-empty>
-    <dm-empty v-else-if="ready && !isSeller" icon="far fa-store" title="판매자만 물건을 올릴 수 있어요" desc="판매자 신청·승인은 ShopJoy 마이페이지(판매자 신청)에서 할 수 있어요. 승인된 계정으로 로그인하면 여기서 물건을 올리고 관리해요" />
     <div v-else-if="!ready || loading" class="p-8 text-center muted">불러오는 중…</div>
     <dm-empty v-else-if="!visible.length" icon="far fa-box-open" :title="prods.length ? '해당하는 물건이 없어요' : '판매 중인 물건이 없어요'">
       <nuxt-link v-if="!prods.length" to="/write?type=prod" class="btn-primary mt-3 px-8">첫 물건 올리기</nuxt-link>
@@ -25,8 +25,8 @@
           <div class="flex-1 min-w-0">
             <span class="inline-block text-[11px] px-1.5 py-0.5 rounded mb-1" :class="badgeCls(p.prodStatusCd)">{{ statusNm(p.prodStatusCd) }}</span>
             <p class="text-[15.5px] clamp-2">{{ p.prodNm }}</p>
-            <p class="text-[16px] font-bold mt-1">{{ formatWon(p.salePrice) }}</p>
-            <p class="text-[12.5px] muted mt-0.5">재고 {{ p.stockQty ?? 0 }} · {{ p.warehouseNm || "창고 미지정" }}</p>
+            <p class="text-[16px] font-bold mt-1">{{ p.salePrice ? formatWon(p.salePrice) : "나눔" }}</p>
+            <p class="text-[12.5px] muted mt-0.5">{{ dmTradeMethods(p.tradeMethodCds).map((m) => m.label).join(" · ") || "거래 방법 미지정" }}</p>
           </div>
         </nuxt-link>
         <button type="button" class="icon-btn self-start muted" aria-label="더보기" @click="handleSelectAction('prod-menu', p)"><i class="fas fa-ellipsis-v"></i></button>
@@ -56,6 +56,7 @@ import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
 import { formatWon } from "~/utils/timeAgo";
+import { dmTradeMethods } from "~/conts/tenant/danmoo1";
 import type { PdMyProdType, PdMyProdSaveType } from "~/types/pd/pdMyProdType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
@@ -64,7 +65,6 @@ useHead({ title: "판매내역" });
 const authStore = useAuthStore();
 const { openAlert } = useAlert();
 const { openConfirm } = useConfirm();
-const isSeller = computed(() => (authStore.user?.sellerIds?.length ?? 0) > 0);
 const TABS = [{ key: "on", label: "판매중" }, { key: "hold", label: "예약·중지" }, { key: "done", label: "완료" }] as const;
 const tab = ref<(typeof TABS)[number]["key"]>("on");
 const prods = ref<PdMyProdType[]>([]);
@@ -107,7 +107,8 @@ const handleBtnAction = async (cmd: string) => {
         salePrice: Number(detail.salePrice ?? 0),
         stdPrice: detail.stdPrice ?? undefined,
         stockQty: Number(detail.stockQty ?? p.stockQty ?? 1),
-        warehouseId: detail.warehouseId ?? p.warehouseId ?? "",
+        warehouseId: detail.warehouseId || undefined, // 개인간 거래는 창고가 없을 수 있다
+        tradeMethodCds: detail.tradeMethodCds || undefined, // 그대로 유지(서버는 빠지면 기존 값 유지)
         contentHtml: detail.contentHtml ?? undefined,
         prodStatusCd: cmd === "prod-reserve" ? "INACTIVE" : "ACTIVE",
       };
@@ -132,7 +133,7 @@ const handleBtnAction = async (cmd: string) => {
 const initPage = async () => {
   await useAuthReady();
   ready.value = true;
-  if (!authStore.isStLoggedIn || !isSeller.value) return;
+  if (!authStore.isStLoggedIn) return; // 아직 올린 적 없는 회원은 서버가 빈 목록을 준다
   loading.value = true;
   try {
     prods.value = await pdMyProdSvc.getMyProds();

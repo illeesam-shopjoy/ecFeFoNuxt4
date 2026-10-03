@@ -1,5 +1,7 @@
 <template>
-  <!-- 글쓰기/수정 — 동네생활 글(블로그 등록·수정) / 내 물건 팔기(판매자 상품 등록·수정: 사진 1장·카테고리·가격/나눔·설명·창고). ?edit=<id> 면 수정. 로그인 필요 -->
+  <!-- 글쓰기/수정 — 동네생활 글(블로그 등록·수정) / 내 물건 팔기(상품 등록·수정: 사진 1장·카테고리·가격/나눔·거래 방법·설명). ?edit=<id> 면 수정. 로그인 필요.
+       2026-10-03: danmoo1 은 개인간 거래 사이트 — 로그인한 회원 누구나 바로 올린다(처음 올릴 때 서버가 개인 판매자를 만든다), 창고 없음,
+       거래 방법은 직거래·문고리거래·택배거래 중 하나 이상(사용자 "사람간 직거래, 문고리거래, 택배거래가 주야"). -->
   <layout :tabs="false">
     <template #top>
       <dm-title-bar :title="titleText" :back="false" close fallback="/">
@@ -28,8 +30,7 @@
 
     <!-- 내 물건 팔기 -->
     <template v-else>
-      <dm-empty v-if="!isSeller" icon="far fa-store" title="판매자만 물건을 올릴 수 있어요" desc="판매자 신청·승인은 ShopJoy 마이페이지(판매자 신청)에서 할 수 있어요. 승인된 계정으로 로그인하면 여기서 바로 올릴 수 있어요" />
-      <form v-else class="px-4 py-4 space-y-4" @submit.prevent="handleBtnAction('write-submit')">
+      <form class="px-4 py-4 space-y-4" @submit.prevent="handleBtnAction('write-submit')">
         <attach-uploader v-model="imgChanges" :title="editId ? '사진 (새로 올리면 교체)' : '사진 (대표 1장)'" :show-grp="false" grp-code="PROD_IMG" :max-count="1" :accept="['jpg', 'jpeg', 'png', 'gif', 'webp']" />
         <img v-if="editId && item.thumbnailUrl && !imgChanges.length" :src="item.thumbnailUrl" alt="현재 사진" class="w-24 h-24 rounded-lg object-cover" />
         <input v-model="item.prodNm" class="input" placeholder="제목(상품명)" maxlength="200" />
@@ -43,13 +44,28 @@
         </div>
         <div v-if="!item.free" class="relative"><input v-model.number="item.salePrice" type="number" min="0" step="100" class="input !pl-7" placeholder="가격" /><span class="absolute left-3 top-1/2 -translate-y-1/2 muted">₩</span></div>
         <label v-if="!item.free" class="flex items-center gap-2 text-[14px]"><input v-model="item.offerOk" type="checkbox" class="w-4 h-4 accent-[var(--dm-primary)]" />가격 제안 받기</label>
-        <select v-model="item.warehouseId" class="input">
-          <option value="">출고 창고 선택</option>
-          <option v-for="w in warehouses" :key="w.warehouseId" :value="w.warehouseId">{{ w.warehouseNm }}</option>
-        </select>
-        <p v-if="!warehouses.length && warehousesLoaded" class="text-[12.5px] text-danger">등록된 창고가 없어요. ShopJoy 마이페이지 &gt; 판매자 창고에서 창고를 먼저 만들어 주세요.</p>
-        <textarea v-model="item.content" class="input !h-40 py-3 resize-none" placeholder="물건 상태, 구매 시기, 거래 방법 등을 적어 주세요." maxlength="4000"></textarea>
-        <p class="text-[13px] muted"><i class="fas fa-map-marker-alt primary mr-1"></i>거래 희망 장소: {{ town }} 근처 (내 동네 설정에서 바꿀 수 있어요)</p>
+        <div>
+          <p class="text-[15px] font-bold mb-2">거래 방법 <span class="text-[12.5px] muted font-normal">여러 개 고를 수 있어요</span></p>
+          <div class="grid grid-cols-3 gap-2" role="group" aria-label="거래 방법">
+            <button
+              v-for="m in DM_TRADE_METHODS"
+              :key="m.code"
+              type="button"
+              class="h-[68px] rounded-lg flex flex-col items-center justify-center gap-1 text-[14px] font-semibold border"
+              :class="item.tradeMethods.includes(m.code) ? 'border-[var(--dm-primary)] text-[var(--dm-primary)] bg-[var(--dm-primary-soft)]' : 'border-[var(--dm-line)] bg-[var(--dm-bg)]'"
+              :aria-pressed="item.tradeMethods.includes(m.code)"
+              @click="handleSelectAction('trade-toggle', m.code)"
+            >
+              <i :class="m.icon" class="text-[18px]"></i>{{ m.label }}
+            </button>
+          </div>
+          <ul class="mt-2 space-y-1 text-[12.5px] muted">
+            <li v-for="m in pickedMethods" :key="m.code"><b class="text-[var(--dm-text)]">{{ m.label }}</b> — {{ m.desc }}{{ TRADE_TIP[m.code] }}</li>
+            <li v-if="!pickedMethods.length" class="text-danger">거래 방법을 하나 이상 골라 주세요.</li>
+          </ul>
+        </div>
+        <textarea v-model="item.content" class="input !h-40 py-3 resize-none" placeholder="물건 상태, 구매 시기, 택배비 등을 적어 주세요." maxlength="4000"></textarea>
+        <p v-if="placeLine" class="text-[13px] muted"><i class="fas fa-map-marker-alt primary mr-1"></i>{{ placeLine }} (내 동네 설정에서 바꿀 수 있어요)</p>
       </form>
     </template>
   </layout>
@@ -63,12 +79,10 @@ import AttachUploader from "~/components/danmoo1/ui/AttachUploader.vue";
 import { useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
-import { DM_BLOG_CATE_ID, DM_COMMUNITY_CHIPS } from "~/conts/tenant/danmoo1";
+import { DM_BLOG_CATE_ID, DM_COMMUNITY_CHIPS, DM_TRADE_METHODS, dmTradeMethods, type DmTradeMethodCd } from "~/conts/tenant/danmoo1";
 import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
-import { slSellerWarehouseSvc } from "~/svc/fo/ec/sl/slSellerWarehouseSvc";
 import type { PdCategoryType } from "~/types/pd/pdCategoryType";
-import type { SlSellerWarehouseType } from "~/types/sl/slSellerWarehouseType";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import type { CmBlogType } from "~/types/cm/cmBlogType";
 
@@ -84,7 +98,6 @@ const TOPICS = DM_COMMUNITY_CHIPS.filter((c) => c !== "추천" && c !== "인기"
 const type = ref<(typeof TYPES)[number]["key"]>(route.query.type === "prod" ? "prod" : "community");
 const editId = computed(() => String(route.query.edit ?? "").trim());
 const topic = ref("");
-const isSeller = computed(() => (authStore.user?.sellerIds?.length ?? 0) > 0);
 const saving = ref(false);
 const ready = ref(false);
 const loadingEdit = ref(false);
@@ -93,16 +106,20 @@ useHead({ title: () => titleText.value });
 
 const post = reactive({ title: "", content: "" });
 let editingPost: CmBlogType | null = null; // 수정 중인 글(카테고리·구분·조회수를 그대로 돌려보내기 위해)
-const item = reactive({ prodNm: "", categoryId: "", salePrice: null as number | null, free: false, offerOk: true, warehouseId: "", content: "", stockQty: 1, stdPrice: undefined as number | undefined, thumbnailUrl: "" });
+const item = reactive({ prodNm: "", categoryId: "", salePrice: null as number | null, free: false, offerOk: true, tradeMethods: ["DIRECT"] as DmTradeMethodCd[], content: "", stockQty: 1, stdPrice: undefined as number | undefined, thumbnailUrl: "" });
 const imgChanges = ref<SyAttachChangeType[]>([]);
 const cates = ref<PdCategoryType[]>([]);
-const warehouses = ref<SlSellerWarehouseType[]>([]);
-const warehousesLoaded = ref(false);
+const catesLoaded = ref(false);
+/** 거래 방법별 덧붙임 안내 */
+const TRADE_TIP: Record<string, string> = { DIRECT: "", DOOR: " · 주소는 채팅으로만 알려 주세요", PARCEL: " · 택배비는 설명에 적어 주세요" };
+const pickedMethods = computed(() => dmTradeMethods(item.tradeMethods.join(",")));
+/** 직거래·문고리는 동네에서 주고받으니 거래 희망 장소를 붙인다(택배만이면 없음) */
+const placeLine = computed(() => (item.tradeMethods.includes("DIRECT") || item.tradeMethods.includes("DOOR") ? `거래 희망 장소: ${town.value} 근처` : ""));
 
 const canSubmit = computed(() =>
   authStore.isStLoggedIn && (type.value === "community"
     ? post.title.trim().length > 0 && post.content.trim().length >= 5
-    : isSeller.value && item.prodNm.trim().length > 0 && !!item.categoryId && !!item.warehouseId && (item.free || (item.salePrice ?? -1) >= 0)),
+    : item.prodNm.trim().length > 0 && !!item.categoryId && item.tradeMethods.length > 0 && (item.free || (item.salePrice ?? -1) >= 0)),
 );
 
 // 입력 텍스트 ↔ 안전한 HTML(태그 이스케이프, 줄마다 <p>)
@@ -132,7 +149,7 @@ const handleBtnAction = async (cmd: string) => {
         const saved = await coBlogSvc.create(body);
         return navigateTo(`/community/${saved.blogId}`, { replace: true });
       }
-      const extra = [item.offerOk && !item.free ? "가격 제안 환영해요." : "", `거래 희망 장소: ${town.value} 근처`].filter(Boolean).join("\n");
+      const extra = [item.offerOk && !item.free ? "가격 제안 환영해요." : "", placeLine.value].filter(Boolean).join("\n");
       const content = item.content.trim();
       const body = {
         prodNm: item.prodNm.trim(),
@@ -140,7 +157,7 @@ const handleBtnAction = async (cmd: string) => {
         salePrice: item.free ? 0 : Number(item.salePrice ?? 0),
         stdPrice: item.stdPrice,
         stockQty: item.stockQty || 1,
-        warehouseId: item.warehouseId,
+        tradeMethodCds: dmTradeMethods(item.tradeMethods.join(",")).map((m) => m.code).join(","),
         contentHtml: toHtml(editId.value && !content ? extra : [content, extra].filter(Boolean).join("\n\n")),
         prodStatusCd: "ACTIVE" as const,
         attachId: imgChanges.value.find((f) => f.rowStatus === "I")?.attachId,
@@ -156,23 +173,30 @@ const handleBtnAction = async (cmd: string) => {
     }
     return;
   }
-  console.warn("[handleBtnAction] unknown cmd:", cmd);
+  console.warn("[handleBtnAction] 알 수 없는 명령:", cmd);
+};
+
+/* handleSelectAction — 선택 액션 dispatch (cmd: '{영역명}-기능명') */
+const handleSelectAction = (cmd: string, code: DmTradeMethodCd) => {
+  if (cmd === "trade-toggle") {
+    item.tradeMethods = item.tradeMethods.includes(code) ? item.tradeMethods.filter((c) => c !== code) : [...item.tradeMethods, code];
+    return;
+  }
+  console.warn("[handleSelectAction] 알 수 없는 명령:", cmd);
 };
 
 /* ##### [03] 내장 사용 함수 ################################################### */
 
-/* fnLoadProdForm — 판매자용: 카테고리(1단계) + 내 창고(1개면 자동 선택) */
+/* fnLoadProdForm — 물건 등록 폼: 카테고리(1단계). 창고는 쓰지 않는다(개인간 거래) */
 const fnLoadProdForm = async () => {
-  if (!authStore.isStLoggedIn || !isSeller.value || warehousesLoaded.value) return;
+  if (!authStore.isStLoggedIn || catesLoaded.value) return;
   try {
-    const [c, w] = await Promise.all([pdMyProdSvc.getCategories(), slSellerWarehouseSvc.getMyWarehouses()]);
+    const c = await pdMyProdSvc.getCategories();
     cates.value = c.filter((x) => x.categoryDepth === 1).sort((a, b) => (a.sortOrd ?? 0) - (b.sortOrd ?? 0));
-    warehouses.value = w;
-    if (w.length === 1 && !item.warehouseId) item.warehouseId = w[0]!.warehouseId;
   } catch (e) {
-    console.error("[danmoo1/write] 카테고리/창고 조회 실패", e);
+    console.error("[danmoo1/write] 카테고리 조회 실패", e);
   } finally {
-    warehousesLoaded.value = true;
+    catesLoaded.value = true;
   }
 };
 
@@ -197,7 +221,8 @@ const fnLoadEdit = async () => {
       item.categoryId = d.categoryId ?? "";
       item.salePrice = Number(d.salePrice ?? 0);
       item.free = !Number(d.salePrice ?? 0);
-      item.warehouseId = d.warehouseId ?? "";
+      const methods = dmTradeMethods(d.tradeMethodCds).map((m) => m.code);
+      item.tradeMethods = methods.length ? methods : ["DIRECT"]; // 이 기능 전에 올린 물건은 직거래로 시작
       item.stockQty = Number(d.stockQty ?? 1) || 1;
       item.stdPrice = d.stdPrice ?? undefined;
       item.thumbnailUrl = d.thumbnailUrl ?? "";

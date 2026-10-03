@@ -87,6 +87,22 @@ export function dmStatusOf(p: Pick<PdProdType, "soldOutYn" | "saleStateCd" | "pr
   return null;
 }
 
+/**
+ * 거래 방법(개인간 거래, 2026-10-03 사용자 "사람간 직거래, 문고리거래, 택배거래가 주야") — 상품 pd_prod.trade_method_cds 에 콤마로 저장된다.
+ * 순서도 서버와 같다(DIRECT → DOOR → PARCEL).
+ */
+export const DM_TRADE_METHODS = [
+  { code: "DIRECT", label: "직거래", short: "직거래", icon: "fas fa-handshake", desc: "만나서 주고받아요" },
+  { code: "DOOR", label: "문고리거래", short: "문고리", icon: "fas fa-door-closed", desc: "문 앞에 두고 비대면으로 주고받아요" },
+  { code: "PARCEL", label: "택배거래", short: "택배", icon: "fas fa-box", desc: "택배로 보내요" },
+] as const;
+export type DmTradeMethodCd = (typeof DM_TRADE_METHODS)[number]["code"];
+/** "DIRECT,PARCEL" → 그 거래 방법들(정해진 순서). 비었으면 빈 배열 */
+export function dmTradeMethods(cds?: string | null) {
+  const set = new Set((cds ?? "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean));
+  return DM_TRADE_METHODS.filter((m) => set.has(m.code));
+}
+
 /** 하단 탭 */
 export const DM_TABS = [
   { key: "home", label: "홈", to: "/", icon: "fas fa-home" },

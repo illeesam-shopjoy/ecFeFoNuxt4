@@ -1,5 +1,5 @@
 <template>
-  <!-- 중고거래 목록 한 줄 — 사진(정방형) · 상품명 · 동네·시간(끌올) · 가격 · 예약중/판매완료 (당근 홈 피드) -->
+  <!-- 중고거래 목록 한 줄 — 사진(정방형) · 상품명 · 동네·시간(끌올) · 가격 · 예약중/판매완료 · 거래 방법(문고리·택배, 2026-10-03) (당근 홈 피드) -->
   <nuxt-link :to="`/prod/${prod.prodId}`" class="dm-card">
     <div class="dm-card__img">
       <img v-if="prod.img" :src="prod.img" :alt="prod.prodNm" loading="lazy" />
@@ -14,6 +14,9 @@
         <span v-if="prod.stdPrice && prod.stdPrice > prod.salePrice" class="dm-card__std">{{ formatWon(prod.stdPrice) }}</span>
       </div>
       <div class="dm-card__foot">
+        <!-- 직거래는 기본이라 표시하지 않고 문고리·택배만 -->
+        <span v-for="m in tags" :key="m.code" class="dm-card__tag"><i :class="m.icon"></i> {{ m.short }}</span>
+        <span class="flex-1"></span>
         <span v-if="(prod.reviewCnt ?? 0) > 0"><i class="far fa-comment-dots"></i> {{ prod.reviewCnt }}</span>
         <span v-if="likeCnt > 0"><i class="far fa-heart"></i> {{ likeCnt }}</span>
       </div>
@@ -25,7 +28,7 @@
 import type { PdProdType } from "~/types/pd/pdProdType";
 import { formatWon, timeAgo } from "~/utils/timeAgo";
 import { useDmTown } from "~/composables/useDmTown";
-import { dmStatusOf, townOf } from "~/conts/tenant/danmoo1";
+import { dmStatusOf, dmTradeMethods, townOf } from "~/conts/tenant/danmoo1";
 
 const props = defineProps<{ prod: PdProdType; likeCnt?: number }>();
 const { town: myTown } = useDmTown();
@@ -33,6 +36,7 @@ const likeCnt = computed(() => props.likeCnt ?? 0);
 const town = computed(() => townOf(props.prod.prodId, myTown.value));
 const status = computed(() => dmStatusOf(props.prod));
 const price = computed(() => formatWon(props.prod.discntPrice ?? props.prod.salePrice));
+const tags = computed(() => dmTradeMethods(props.prod.tradeMethodCds).filter((m) => m.code !== "DIRECT"));
 // 등록 뒤 한 시간 넘게 지나서 수정됐으면 당근의 "끌올"처럼 표시
 const bumped = computed(() => {
   const r = Date.parse(String(props.prod.regDate ?? "").replace(" ", "T"));
@@ -55,7 +59,9 @@ const when = computed(() => timeAgo(bumped.value ? props.prod.updDate : props.pr
 .dm-card__status.reserved { background: #2f9e44; }
 .dm-card__status.sold { background: var(--dm-text-2); }
 .dm-card__std { font-size: 12px; color: var(--dm-text-3); text-decoration: line-through; }
-.dm-card__foot { margin-top: auto; display: flex; justify-content: flex-end; gap: 10px; font-size: 13px; color: var(--dm-text-2); }
+.dm-card__foot { margin-top: auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--dm-text-2); }
+.dm-card__tag { font-size: 11.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: var(--dm-chip); color: var(--dm-text-2); }
+.dm-card__tag + .dm-card__tag { margin-left: -6px; }
 @media (min-width: 480px) {
   .dm-card__img { width: 128px; height: 128px; }
 }
