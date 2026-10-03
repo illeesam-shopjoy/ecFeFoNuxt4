@@ -197,8 +197,19 @@ const fnSyncRefProd = async () => {
   }
 };
 
+/* fnStopPoll — 3초 폴링 중지 (2026-10-03 API오류로그 정비) */
+const fnStopPoll = () => {
+  if (timer) clearInterval(timer);
+  timer = null;
+};
+
 /* fnPoll — 마지막 메시지 이후 새 메시지만 가져온다 */
 const fnPoll = async () => {
+  // 2026-10-03 API오류로그 정비: 로그아웃(비로그인) 상태면 폴링을 멈춘다 — 3초마다 401 오류로그가 쌓이던 문제
+  if (!authStore.isStLoggedIn) {
+    fnStopPoll();
+    return;
+  }
   try {
     const last = msgs.value[msgs.value.length - 1]?.chattMsgId ?? null;
     const more = await myChatSvc.getMessages(chattId, last);
@@ -210,6 +221,9 @@ const fnPoll = async () => {
     }
   } catch (e) {
     console.error("[danmoo1/chat/[id]] 메시지 조회 실패", e);
+    // 2026-10-03 API오류로그 정비: 401(axiosCsr 가 토큰 갱신까지 시도한 뒤에도 인증 실패)이면 폴링 중지
+    const err = e as { statusCode?: number; response?: { status?: number } };
+    if (err?.statusCode === 401 || err?.response?.status === 401) fnStopPoll();
   }
 };
 
@@ -223,13 +237,15 @@ const initPage = async () => {
     msgs.value = list;
     await fnSyncRefProd();
     fnScrollBottom();
+    // 2026-10-03 API오류로그 정비: 첫 조회가 성공했을 때만 3초 폴링을 시작한다(실패한 방을 계속 두드려 오류로그가 쌓이던 문제)
+    fnStopPoll();
+    timer = setInterval(fnPoll, 3000);
   } catch (e) {
     console.error("[danmoo1/chat/[id]] 채팅방 조회 실패", e);
     await openAlert("채팅방을 불러오지 못했어요.");
   } finally {
     loading.value = false;
   }
-  timer = setInterval(fnPoll, 3000);
 };
 onMounted(initPage);
 onBeforeUnmount(() => { if (timer) clearInterval(timer); });

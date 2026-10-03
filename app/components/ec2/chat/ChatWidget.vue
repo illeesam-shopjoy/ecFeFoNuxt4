@@ -383,6 +383,7 @@ function fnChatScrollBottom() {
 let lastFetchAt = 0;
 async function fnFetchNewMsgs() {
   if (!chatState.roomId || chatState.roomId === "_local" || !chatState.open) return;
+  if (!authStore.isStLoggedIn) return; // 2026-10-03 API오류로그 정비: 비로그인(로그아웃) 상태면 조회하지 않는다 — 401 오류로그 누적 방지
   lastFetchAt = Date.now();
   try {
     const real = chatState.msgs.filter((m) => !String(m.chattMsgId).startsWith("_"));
@@ -397,6 +398,9 @@ async function fnFetchNewMsgs() {
     }
   } catch (err) {
     console.warn("[chatFetch]", err);
+    // 2026-10-03 API오류로그 정비: 401(axiosCsr 가 토큰 갱신까지 시도한 뒤에도 인증 실패)이면 폴링·스트림을 멈춘다 — 3초마다 401 반복 방지
+    const e = err as { statusCode?: number; response?: { status?: number } };
+    if (e?.statusCode === 401 || e?.response?.status === 401) fnStopChatPoll();
   }
 }
 

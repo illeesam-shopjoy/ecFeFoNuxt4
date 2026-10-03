@@ -47,9 +47,16 @@ export function openChatStream(
       ctrl = new AbortController();
       try {
         if (retry > 0 && ensureAuth) await ensureAuth().catch(() => undefined);
+        // 2026-10-03 API오류로그 정비: 인증 헤더(로그인 토큰)가 없으면 재연결하지 않고 끝낸다 —
+        // 로그아웃·토큰 갱신 실패 뒤에도 백오프 재시도가 401 을 계속 내 오류로그가 쌓이던 문제
+        const authHeaders = useAuthHeaders();
+        if (!authHeaders.Authorization) {
+          onState?.(false);
+          break;
+        }
         const base = String(axiosCsr.defaults.baseURL ?? "").replace(/\/+$/, "");
         const res = await fetch(`${base}${path}`, {
-          headers: { ...useAuthHeaders(), "X-Site-Id": String(axiosCsr.defaults.headers.common["X-Site-Id"] ?? ""), Accept: "text/event-stream" }, // 멀티테넌트: 백엔드 /api/fo 는 사이트 필수
+          headers: { ...authHeaders, "X-Site-Id": String(axiosCsr.defaults.headers.common["X-Site-Id"] ?? ""), Accept: "text/event-stream" }, // 멀티테넌트: 백엔드 /api/fo 는 사이트 필수
           signal: ctrl.signal,
           cache: "no-store",
         });

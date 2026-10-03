@@ -192,8 +192,15 @@ async function loadUnread(silent = true) {
       shake.value = true; // 새 알림이 오면 종이 잠깐 흔들린다
       setTimeout(() => (shake.value = false), 2000);
     }
-  } catch {
-    /* 알림 수 조회 실패는 조용히 무시(다음 폴링에서 재시도) */
+  } catch (e) {
+    // 2026-10-03 API오류로그 정비: 401 이면(axiosCsr 가 토큰 갱신까지 시도한 뒤에도 인증 실패) 로그아웃 처리 —
+    // 로그인 상태로 남아 60초마다 401 을 반복(오류로그 누적)하던 문제. isLoggedIn 이 false 가 되면 폴링도 멈춘다.
+    const err = e as { statusCode?: number; response?: { status?: number } };
+    if (err?.statusCode === 401 || err?.response?.status === 401) {
+      await authStore.setStLogout();
+      return;
+    }
+    /* 그 외 알림 수 조회 실패는 조용히 무시(다음 폴링에서 재시도) */
   }
 }
 

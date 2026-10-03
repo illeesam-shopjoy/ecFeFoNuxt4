@@ -126,30 +126,20 @@ export const useAuthStore = defineStore("auth", {
     },
 
     /** 앱 부팅 시 인증 상태 복원 — ecBeBo에 "내 정보 조회" API가 없어 네트워크 호출 없이
-     *  localStorage 캐시를 그대로 신뢰한다(loadStToken에서 이미 복원됨). oauth_ 토큰만 예외적으로
-     *  payload에서 직접 복원(기존 방식 유지). */
+     *  localStorage 캐시를 그대로 신뢰한다(loadStToken에서 이미 복원됨).
+     *  2026-10-03: 예전 소셜로그인이 남긴 oauth_ 토큰은 더 이상 복원하지 않고 세션을 정리한다(아래 참조). */
     async loadStAuthInfo() {
       if (!this.token) {
         this.initialized = true;
         return;
       }
 
-      // OAuth 토큰 처리 (oauth_ 로 시작하는 토큰은 payload에서 사용자 복원) — 기존 로직 유지
+      // 2026-10-03 API오류로그 정비: 2026-09-25 소셜로그인 ecBeBo JWT 전환 이전 세션이 남긴 "oauth_" 접두 토큰은
+      // ecBeBo 가 검증할 수 없는 비 JWT 라, 로그인 상태로 복원하면 알림종(NotiBell)이 60초마다 401 을 받아 오류로그가
+      // 끝없이 쌓였다(axiosCsr 도 oauth_ 토큰은 갱신 대상에서 빼므로 스스로 풀리지 않음). → 세션을 정리하고 비로그인으로 시작한다.
+      // (setStLogout 은 oauth_ 토큰이면 서버 호출 없이 저장소·쿠키만 지운다)
       if (this.token.startsWith("oauth_")) {
-        try {
-          let base64 = this.token.slice(6).replace(/-/g, "+").replace(/_/g, "/");
-          const pad = base64.length % 4;
-          if (pad) base64 += "=".repeat(4 - pad);
-          const json = atob(base64);
-          const payload = JSON.parse(json) as { email?: string; name?: string; id?: string };
-          this.user = {
-            memberId: payload.id ?? "0",
-            userNm: payload.name || payload.email || "User",
-            userEmail: payload.email || "",
-          };
-        } catch {
-          this.setStLogout();
-        }
+        await this.setStLogout();
         this.initialized = true;
         return;
       }
