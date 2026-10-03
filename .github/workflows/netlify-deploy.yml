@@ -85,7 +85,7 @@ jobs:
           NOTIFY_EMAIL_APP_PASSWORD: ${{ secrets.NOTIFY_EMAIL_APP_PASSWORD }}
 
   # ── danmoo1 모듈(당근 스타일, 사이트 3) — 같은 Netlify 사이트에 별칭(alias) 배포 → https://danmoo1--shopjoy-ecfefonuxt4.netlify.app (운영 URL 은 건드리지 않는다). 2026-10-02
-  #    `pnpm run build -- --site 2604010000000003 --module danmoo1` = tenant.mjs build --profile production, 환경파일 .env.production (scripts/tenant.mjs 가 sy_site 사이트·모듈 대조). 시크릿은 위 운영 잡과 동일. 실패해도 운영 배포(deploy 잡)와는 독립이다.
+  #    `pnpm run build --site 2604010000000003 --module danmoo1` = tenant.mjs build --profile production, 환경파일 .env.production (scripts/tenant.mjs 가 sy_site 사이트·모듈 대조). 시크릿은 위 운영 잡과 동일. 실패해도 운영 배포(deploy 잡)와는 독립이다.
   deploy-danmoo1:
     runs-on: ubuntu-latest
     steps:
@@ -100,7 +100,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build (사이트 2604010000000003 · danmoo1 · production)
-        run: pnpm run build -- --site 2604010000000003 --module danmoo1
+        # pnpm 은 `--` 를 인자로 그대로 넘긴다(npm 과 다름) → `--` 없이 붙인다. tenant.mjs 는 `--` 가 와도 --site/--module 을 읽는다(2026-10-03 사고 재발 방지)
+        run: pnpm run build --site 2604010000000003 --module danmoo1
         env:
           NETLIFY: "true"
           NITRO_PRESET: netlify

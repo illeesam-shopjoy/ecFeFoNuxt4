@@ -13,7 +13,7 @@
 
 - 환경파일에는 **프로파일 성격의 값만** 둔다: 백엔드/CDN 주소, 실행 모드, 결제·소셜·지도 키. 사이트·모듈·제목·테마색은 두지 않는다(있어도 무시, `tenant.mjs` 가 경고).
 - 모듈 = `--module <모듈>`(`app/{pages,components,layout}/[모듈]` + `app/conts/tenant/[모듈].ts`) → `NUXT_PUBLIC_TENANT_MODULE`.
-- 사이트 = `--site <sy_site.site_id>` → `NUXT_PUBLIC_SITE_ID`. **생략하면 `sy_site.tenant_module` 이 그 모듈인 ACTIVE 사이트를 찾아 쓴다**(정확히 1개여야 하고, 백엔드에 닿아야 한다). 현재: ec1 → `2604010000000001`(site_code `SHOPJOY`), ec2 → `2604010000000002`(`site2`), danmoo1 → `2604010000000003`(`site3`, 2026-10-02 사이트 7 로 시작 → 10-03 사이트 3 으로 이전). 둘 다 생략하면 ec1 · `2604010000000001`.
+- 사이트 = `--site <sy_site.site_id>` → `NUXT_PUBLIC_SITE_ID`. **`--site` 와 `--module` 은 항상 함께 준다**(하나만 주면 중단). 현재: ec1 → `2604010000000001`(site_code `SHOPJOY`), ec2 → `2604010000000002`(`site2`), danmoo1 → `2604010000000003`(`site3`, 2026-10-02 사이트 7 로 시작 → 10-03 사이트 3 으로 이전). 둘 다 생략하면 ec1 · `2604010000000001`.
 - 앱 제목·테마색 = 모듈 설정 `app/conts/tenant/<모듈>.ts` 의 `appTitle` / `themeColor`(nuxt.config.ts 가 읽어 runtimeConfig·tailwind `theme` 색에 넣는다).
 - 모든 API 요청에 `X-Site-Id: <사이트>` 헤더가 붙는다(브라우저 axios, SEO SSR → 백엔드 호출 모두).
 
@@ -28,16 +28,16 @@ package.json scripts 는 **프로파일만** 정한다(`local` / `dev` / `build`
 
 ```
 npm run dev                                                # ec1 · 2604010000000001 · development (기본)
-npm run dev -- --module ec2                                # ec2, 사이트는 sy_site 에서 찾음
-npm run build -- --module danmoo1                          # danmoo1 production
-npm run build -- --site 2604010000000003 --module danmoo1  # 사이트 명시(sy_site 와 대조만)
-npm run typecheck -- --module ec2
-pnpm tenant preview --module ec2 --profile local           # 직접 호출
+npm run dev -- --site 2604010000000002 --module ec2        # ec2
+npm run build -- --site 2604010000000003 --module danmoo1  # danmoo1 production
+npm run typecheck -- --site 2604010000000002 --module ec2
+pnpm run build --site 2604010000000003 --module danmoo1    # pnpm 은 `--` 없이(워크플로가 이렇게 쓴다 — pnpm 은 `--` 를 인자로 그대로 넘기지만 tenant.mjs 가 건너뛴다)
 ```
+예제 스크립트 `local:ec2` / `local:danmoo1` 도 있다.
 
 실행기는 빌드 전에 다음을 확인한다. 하나라도 어긋나면 중단한다.
 1. 환경파일 `.env.<프로파일>` 이 있는가, `app/{pages,components,layout}/<모듈>/` 와 `app/conts/tenant/<모듈>.ts` 가 있는가
-2. `sy_site` 대조 — `--site` 만 주면 모듈을 그 사이트의 FO 모듈로, `--module` 만 주면 그 모듈을 쓰는 ACTIVE 사이트(정확히 1개)를 사이트로, 둘 다 주면 사이트가 ACTIVE 이고 FO 모듈이 같은지. 통과하면 `사이트코드 · 이름`을 출력해 눈으로 확인한다. 백엔드에 닿지 않으면 경고만 하고 진행한다(사이트를 못 정하면 기본 사이트). `--skip-site-check` 로 건너뛸 수 있다(typecheck 가 그렇게 한다).
+2. `--site` 가 숫자 형식인가, 백엔드 `sy_site` 에 있고 ACTIVE 인가, 사이트의 FO 모듈(`sy_site.tenant_module`)이 `--module` 과 같은가 — 통과하면 `사이트코드 · 이름`을 출력해 눈으로 확인한다. 백엔드에 닿지 않으면 경고만 하고 진행한다. `--skip-site-check` 로 건너뛸 수 있다(typecheck 가 그렇게 한다).
 3. 환경파일에 사이트·모듈·제목·테마색 키가 남아 있으면 무시한다고 경고한다(인자가 우선).
 
 ## 3. 폴더 구조
