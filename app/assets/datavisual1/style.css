@@ -434,6 +434,102 @@ a { color:inherit; text-decoration:none; }
 }
 .theme-toggle:hover { border-color:var(--blue); }
 
+/* ── Header actions: [로그인 | 이름·로그아웃] [🔔 알림] [⚙ 설정] (2026-10-03) ──
+   아이콘 버튼은 사이드바 토글과 같은 .theme-toggle 모양(예전 🌙 테마 버튼은 ⚙ 설정 안 "다크 모드" 줄로 옮겼다). */
+.dv-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto; }
+.dv-hd-btn {
+  display:inline-flex; align-items:center; justify-content:center; height:34px; padding:0 14px; border-radius:8px;
+  border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary);
+  font-size:0.78rem; font-weight:700; font-family:inherit; white-space:nowrap; cursor:pointer; transition:all 0.18s;
+}
+.dv-hd-btn:hover { border-color:var(--blue); color:var(--blue); }
+.dv-hd-btn--primary { border-color:var(--blue); background:var(--blue); color:#fff; }
+.dv-hd-btn--primary:hover { color:#fff; opacity:0.88; box-shadow:0 0 0 3px var(--blue-dim); }
+.dv-user { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:180px; font-size:0.8rem; color:var(--text-primary); }
+.dv-user-avatar {
+  width:28px; height:28px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,var(--blue),var(--purple)); color:#fff; font-size:0.75rem; font-weight:900;
+}
+.dv-user-name { font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dv-user-name small { margin-left:2px; font-size:0.72rem; font-weight:500; color:var(--text-muted); }
+
+.dv-pop-wrap { position:relative; display:flex; }
+.dv-icon-btn { position:relative; }
+.dv-icon-btn.is-open { border-color:var(--blue); color:var(--blue); background:var(--blue-dim); }
+.dv-icon-btn svg { transition:transform 0.3s ease; }
+.dv-icon-btn--gear.is-open svg { transform:rotate(60deg); }
+.dv-icon-badge {
+  position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 5px; border-radius:9px; border:2px solid var(--bg-base);
+  background:var(--red); color:#fff; font-size:0.6rem; font-weight:800; line-height:1; display:flex; align-items:center; justify-content:center;
+}
+
+.dv-pop {
+  position:absolute; top:calc(100% + 11px); right:0; z-index:60; width:300px; overflow:hidden; text-align:left;
+  background:var(--bg-modal); border:1px solid var(--border); border-radius:12px; box-shadow:0 18px 48px rgba(0,0,0,0.28);
+  animation:dvPopIn 0.16s ease;
+}
+.dv-pop--noti { width:340px; }
+@keyframes dvPopIn { from { opacity:0; transform:translateY(-6px); } }
+.dv-pop-head {
+  display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid var(--border);
+  font-size:0.82rem; color:var(--text-primary);
+}
+.dv-pop-head b { font-weight:800; }
+.dv-pop-link { padding:4px 8px; border:none; border-radius:6px; background:none; color:var(--blue); font-size:0.72rem; font-weight:700; font-family:inherit; cursor:pointer; }
+.dv-pop-link:hover:not(:disabled) { background:var(--blue-dim); }
+.dv-pop-link:disabled { opacity:0.4; cursor:default; }
+.dv-pop-body { max-height:380px; overflow-y:auto; overscroll-behavior:contain; }
+.dv-pop-msg { padding:32px 16px; text-align:center; font-size:0.8rem; color:var(--text-muted); }
+.dv-pop-msg.is-error { color:var(--red); }
+.dv-pop-guest { padding:26px 20px 22px; text-align:center; }
+.dv-pop-guest-ico { width:46px; height:46px; margin:0 auto 12px; border-radius:12px; background:var(--blue-dim); display:flex; align-items:center; justify-content:center; font-size:1.25rem; }
+.dv-pop-guest p { margin-bottom:14px; font-size:0.82rem; line-height:1.6; color:var(--text-secondary); }
+.dv-noti-list { list-style:none; }
+.dv-noti-item {
+  display:flex; gap:10px; width:100%; padding:11px 14px; border:none; border-bottom:1px solid var(--border);
+  background:none; text-align:left; font-family:inherit; cursor:pointer; transition:background 0.15s;
+}
+.dv-noti-list li:last-child .dv-noti-item { border-bottom:none; }
+.dv-noti-item:hover { background:var(--blue-dim); }
+.dv-noti-dot { width:7px; height:7px; margin-top:6px; border-radius:50%; flex-shrink:0; background:transparent; }
+.dv-noti-item.is-unread .dv-noti-dot { background:var(--cyan); box-shadow:0 0 8px var(--cyan); }
+.dv-noti-text { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.dv-noti-title { font-size:0.82rem; line-height:1.45; color:var(--text-secondary); }
+.dv-noti-item.is-unread .dv-noti-title { font-weight:700; color:var(--text-primary); }
+.dv-noti-content { font-size:0.76rem; line-height:1.6; color:var(--text-secondary); white-space:pre-line; word-break:break-word; }
+.dv-noti-time { font-size:0.68rem; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+
+/* 설정 — 줄 단위 스위치 */
+.dv-set-row {
+  display:flex; align-items:center; gap:10px; width:100%; padding:10px 14px; border:none; background:none;
+  color:var(--text-primary); font-size:0.82rem; font-family:inherit; text-align:left; cursor:pointer; transition:background 0.15s;
+}
+.dv-set-row:hover { background:var(--blue-dim); }
+.dv-set-ico { width:20px; flex-shrink:0; text-align:center; }
+.dv-set-label { flex:1; font-weight:600; }
+.dv-set-help { padding:0 14px 10px 44px; font-size:0.7rem; line-height:1.55; color:var(--text-muted); }
+.dv-switch { position:relative; width:34px; height:19px; border-radius:999px; flex-shrink:0; background:var(--track); border:1px solid var(--border); transition:background 0.2s; }
+.dv-switch i { position:absolute; top:1px; left:1px; width:15px; height:15px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.3); transition:left 0.2s; }
+.dv-switch.is-on { background:var(--blue); border-color:var(--blue); }
+.dv-switch.is-on i { left:16px; }
+.dv-set-env { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; padding:10px 14px 12px; border-top:1px solid var(--border); }
+.dv-set-chip { padding:2px 8px; border-radius:6px; background:var(--track); font-size:0.66rem; color:var(--text-muted); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+.dv-set-chip b { color:var(--text-secondary); }
+.dv-set-warn { width:100%; font-size:0.7rem; font-weight:700; color:var(--red); }
+
+/* 좁은 화면: 이름은 머리글자만·버튼을 조금 작게(로그인 상태에서도 375px 에 넘치지 않게), 팝오버는 머리글 아래 화면 너비로(기준 = 머리글) */
+@media (max-width:639px) {
+  .dv-header { padding:0 12px; gap:6px; }
+  .dv-actions { gap:6px; }
+  .dv-user-name { display:none; }
+  .dv-user-avatar { width:26px; height:26px; }
+  .dv-hd-btn { height:32px; padding:0 9px; font-size:0.74rem; }
+  .dv-icon-btn { width:32px; height:32px; }
+  .dv-pop-wrap { position:static; }
+  .dv-pop, .dv-pop--noti { top:calc(100% + 6px); left:12px; right:12px; width:auto; }
+}
+@media (max-width:359px) { .dv-logo-sub { display:none; } }
+
 /* ── Data Table ── */
 .dv-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
 .dv-table th {

@@ -696,22 +696,112 @@ textarea.form-input { resize: vertical; line-height: 1.6; }
 /* ── Divider ── */
 .divider { border: none; border-top: 1px solid var(--border); }
 
-/* ── Theme Toggle Button ── */
-.theme-toggle {
-  background: var(--blue-dim);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: var(--transition);
-  flex-shrink: 0;
+/* ── Header actions: [로그인 | 이름·로그아웃] [🔔 알림] [⚙ 설정] (2026-10-03) ──
+   예전 원형 테마 버튼(.theme-toggle)은 ⚙ 설정 안의 "다크 모드" 줄로 옮겼고, 원형 아이콘 버튼 모양은 .hp-icon-btn 이 잇는다. */
+.hp-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: auto; }
+.hp-hd-btn {
+  display: inline-flex; align-items: center; justify-content: center; height: 34px; padding: 0 14px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary);
+  font-size: 0.8rem; font-weight: 600; font-family: inherit; white-space: nowrap; cursor: pointer; transition: var(--transition);
 }
-.theme-toggle:hover { background: var(--blue-dim); border-color: var(--blue); transform: scale(1.08); }
+.hp-hd-btn:hover { border-color: var(--blue); color: var(--blue); }
+.hp-hd-btn--primary { border: none; background: linear-gradient(135deg, var(--blue), #0077aa); color: #ffffff; font-weight: 700; }
+.hp-hd-btn--primary:hover { color: #ffffff; opacity: 0.9; box-shadow: 0 4px 16px var(--blue-dim); }
+[data-theme="dark"] .hp-hd-btn--primary,
+[data-theme="dark"] .hp-hd-btn--primary:hover { color: #0a0e1a; }
+.hp-user { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 180px; font-size: 0.82rem; color: var(--text-primary); }
+.hp-user-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--blue), var(--green)); color: #ffffff; font-size: 0.78rem; font-weight: 800;
+}
+.hp-user-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hp-user-name small { margin-left: 2px; font-size: 0.75rem; font-weight: 500; color: var(--text-muted); }
+
+.hp-pop-wrap { position: relative; display: flex; }
+.hp-icon-btn {
+  position: relative; width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--blue-dim); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: var(--transition);
+}
+.hp-icon-btn:hover, .hp-icon-btn.is-open { border-color: var(--blue); color: var(--blue); }
+.hp-icon-btn:hover { transform: scale(1.06); }
+.hp-icon-btn svg { transition: transform 0.3s ease; }
+.hp-icon-btn--gear.is-open svg { transform: rotate(60deg); }
+.hp-icon-badge {
+  position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; border: 2px solid var(--bg-base);
+  background: #e53935; color: #ffffff; font-size: 0.6rem; font-weight: 800; line-height: 1; display: flex; align-items: center; justify-content: center;
+}
+
+/* 팝오버 — 다크 카드색이 반투명이라 팝오버만 불투명하게 */
+.hp-pop {
+  position: absolute; top: calc(100% + 12px); right: 0; z-index: 60; width: 300px; overflow: hidden; text-align: left;
+  background: #ffffff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 16px 48px rgba(10, 14, 26, 0.16);
+  animation: hpPopIn 0.16s ease;
+}
+[data-theme="dark"] .hp-pop { background: #121828; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); }
+.hp-pop--noti { width: 340px; }
+@keyframes hpPopIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hp-pop-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text-primary); }
+.hp-pop-head b { font-weight: 800; }
+.hp-pop-sub { flex: 1; font-size: 0.72rem; color: var(--text-muted); }
+.hp-pop-link { padding: 4px 8px; border: none; border-radius: 6px; background: none; color: var(--blue); font-size: 0.75rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+.hp-pop-link:hover:not(:disabled) { background: var(--blue-dim); }
+.hp-pop-link:disabled { opacity: 0.4; cursor: default; }
+.hp-pop-body { max-height: 380px; overflow-y: auto; overscroll-behavior: contain; }
+.hp-pop-msg { padding: 32px 16px; text-align: center; font-size: 0.82rem; color: var(--text-muted); }
+.hp-pop-msg.is-error { color: #e53e3e; }
+[data-theme="dark"] .hp-pop-msg.is-error { color: #fc8181; }
+.hp-pop-guest { padding: 28px 20px 24px; text-align: center; }
+.hp-pop-guest-ico { width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 50%; background: var(--blue-dim); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+.hp-pop-guest p { margin-bottom: 16px; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); }
+.hp-noti-list { list-style: none; }
+.hp-noti-item {
+  display: flex; gap: 10px; width: 100%; padding: 12px 16px; border: none; border-bottom: 1px solid var(--border);
+  background: none; text-align: left; font-family: inherit; cursor: pointer; transition: background 0.15s;
+}
+.hp-noti-list li:last-child .hp-noti-item { border-bottom: none; }
+.hp-noti-item:hover { background: var(--blue-dim); }
+.hp-noti-dot { width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; flex-shrink: 0; background: transparent; }
+.hp-noti-item.is-unread .hp-noti-dot { background: var(--blue); box-shadow: 0 0 0 3px var(--blue-dim); }
+.hp-noti-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hp-noti-title { font-size: 0.84rem; line-height: 1.45; color: var(--text-secondary); }
+.hp-noti-item.is-unread .hp-noti-title { font-weight: 700; color: var(--text-primary); }
+.hp-noti-content { font-size: 0.78rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-line; word-break: break-word; }
+.hp-noti-time { font-size: 0.7rem; color: var(--text-muted); }
+
+/* 설정 — 줄 단위 스위치 */
+.hp-set-row {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 16px; border: none; background: none;
+  color: var(--text-primary); font-size: 0.85rem; font-family: inherit; text-align: left; cursor: pointer; transition: background 0.15s;
+}
+.hp-set-row:hover { background: var(--blue-dim); }
+.hp-set-ico { width: 20px; flex-shrink: 0; text-align: center; }
+.hp-set-label { flex: 1; font-weight: 600; }
+.hp-set-help { padding: 0 16px 10px 46px; font-size: 0.72rem; line-height: 1.55; color: var(--text-muted); }
+.hp-switch { position: relative; width: 36px; height: 20px; border-radius: 999px; flex-shrink: 0; background: rgba(128, 144, 176, 0.38); transition: background 0.2s; }
+.hp-switch i { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: left 0.2s; }
+.hp-switch.is-on { background: var(--blue); }
+.hp-switch.is-on i { left: 18px; }
+.hp-set-env { margin-top: 4px; padding: 10px 16px 12px; border-top: 1px solid var(--border); font-size: 0.7rem; line-height: 1.6; color: var(--text-muted); }
+.hp-set-env b { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; color: var(--text-secondary); }
+.hp-set-warn { display: block; font-weight: 700; color: #e53935; }
+
+/* 좁은 화면: 이름은 머리글자만·버튼을 조금 작게(로그인 상태에서도 375px 에 넘치지 않게), 팝오버는 머리글 아래 화면 너비로(기준 = 머리글).
+   가로 스크롤 상단 메뉴는 오른쪽 버튼들에 밀려 "홈" 한 칸만 남으므로 숨긴다 — 같은 메뉴가 ☰ 서랍에 있다 */
+@media (max-width: 639px) {
+  .hp-header { padding: 0 12px; gap: 8px; }
+  .hp-topnav { display: none; }
+  .hp-actions { gap: 6px; }
+  .hp-user-name { display: none; }
+  .hp-user-avatar { width: 26px; height: 26px; }
+  .hp-hd-btn { height: 32px; padding: 0 9px; font-size: 0.75rem; }
+  .hp-icon-btn { width: 32px; height: 32px; }
+  .hp-pop-wrap { position: static; }
+  .hp-pop, .hp-pop--noti { top: calc(100% + 6px); left: 12px; right: 12px; width: auto; }
+}
+@media (max-width: 359px) { .hp-logo-text { display: none; } }
 
 /* ── Animations ── */
 @keyframes fadeUp {
