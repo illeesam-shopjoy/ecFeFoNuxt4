@@ -27,6 +27,8 @@ export interface MbMemberType {
   tenantModule?: string; // 소속 사이트의 FO 모듈(ec1, ec2 …) — 목록 응답에서 서버가 채움 (멀티테넌트 2026-10-02)
   defaultSellerId?: string; // (기본)판매자ID — 소속 판매자(sl_seller_member, ACTIVE) 중 기본 → 대표 → 첫 번째, 목록 응답에서 서버가 채움 (2026-10-03)
   defaultSellerNm?: string; // (기본)판매자명
+  defaultSellerSiteId?: string; // (기본)판매자의 사이트ID (sl_seller.site_id) — 목록 응답에서 서버가 채움 (2026-10-03)
+  defaultSellerSiteNm?: string; // (기본)판매자의 사이트명
   sellerCnt?: number; // 소속 판매자 수 — 2 이상이면 "외 n"
   passVerifiedYn?: string; // PASS 본인인증 여부 Y/N (더 이상 쓰지 않음 — 이메일 인증으로 대체)
   emailVerifiedYn?: string; // 이메일 링크 인증 여부 Y/N

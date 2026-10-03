@@ -59,9 +59,17 @@ html.theme-dark {
   --dm-primary-soft: #3a2415;
   --dm-chip: #2a2d31;
 }
+/* 2026-10-04(사용자 "목록의 바깥 바탕영역 검정색 아주조금만 회색톤으로 — 목록과 구분이 잘 안되서") — PC 에서 640px 틀 바깥 바탕은 --dm-page.
+   라이트는 예전 그대로(--dm-bg-soft 와 같은 #f7f8f9), 다크는 목록(--dm-bg #1b1d1f)보다 살짝 밝은 회색이라 틀이 구분된다. */
+:root {
+  --dm-page: #f7f8f9;
+}
+html.theme-dark {
+  --dm-page: #2a2c30;
+}
 .dm-app {
   min-height: 100vh;
-  background: var(--dm-bg-soft);
+  background: var(--dm-page);
   color: var(--dm-text);
   font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   font-size: 15px;
@@ -78,6 +86,10 @@ html.theme-dark {
 @media (min-width: 641px) {
   .dm-frame {
     box-shadow: 0 0 0 1px var(--dm-line);
+  }
+  /* 다크: 회색 바깥 위에 틀이 떠 보이게 테두리를 한 단계 밝게 + 옅은 그림자 */
+  html.theme-dark .dm-frame {
+    box-shadow: 0 0 0 1px #3a3d42, 0 0 28px rgba(0, 0, 0, 0.45);
   }
 }
 .dm-top {
