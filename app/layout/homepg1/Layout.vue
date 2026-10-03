@@ -13,7 +13,7 @@
       <nuxt-link to="/" class="hp-logo" aria-label="홈">
         <div class="hp-logo-mark">🌐</div>
         <div class="hp-logo-text">
-          <span class="hp-logo-name">{{ HP_SITE.name }}</span>
+          <span class="hp-logo-name">{{ HP_SITE.name }}<span v-if="smc.mismatch" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;border-radius:50%;background:#e53935;color:#fff;font-size:10px;font-weight:700;line-height:1;vertical-align:middle;cursor:help" :title="smc.message" role="img" :aria-label="smc.message">✕</span></span>
           <span class="hp-logo-en">{{ HP_SITE.nameEn }}</span>
         </div>
       </nuxt-link>
@@ -93,6 +93,7 @@
 import { HP_SIDEBAR_MENU, HP_SITE, HP_TOP_MENU, hpLastProductId, type HpMenuItem } from "~/conts/tenant/homepg1";
 import { useHpToast } from "~/layout/homepg1/hpUi";
 import faviconUrl from "~/assets/homepg1/img/favicon.png";
+const { state: smc } = useSiteModuleCheck(); // 사이트·모듈 짝 — 맞지 않으면 로고 옆 (X) (2026-10-03)
 
 const route = useRoute();
 const toast = useHpToast();

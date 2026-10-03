@@ -5,6 +5,8 @@
       <span class="truncate">{{ town }}</span>
       <i class="fas fa-chevron-down text-[13px]" aria-hidden="true"></i>
     </button>
+    <!-- 2026-10-03: 사이트·모듈 짝이 맞지 않으면 (X) — 마우스를 올리면 사유 -->
+    <span v-if="smc.mismatch" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;border-radius:50%;background:#e53935;color:#fff;font-size:10px;font-weight:700;line-height:1;vertical-align:middle;cursor:help" :title="smc.message" role="img" :aria-label="smc.message">✕</span>
     <div class="dm-topbar__right">
       <slot name="right">
         <nuxt-link to="/search" class="icon-btn" aria-label="검색"><i class="far fa-search"></i></nuxt-link>
@@ -38,6 +40,7 @@ import { useDmTown } from "~/composables/useDmTown";
 import { useAuthStore } from "~/store/useAuthStore";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { myNotiSvc } from "~/svc/fo/my/myNotiSvc";
+const { state: smc } = useSiteModuleCheck(); // 사이트·모듈 짝 — 맞지 않으면 로고 옆 (X) (2026-10-03)
 
 const { town, setTown, range, setRange } = useDmTown();
 const townOpen = ref(false);

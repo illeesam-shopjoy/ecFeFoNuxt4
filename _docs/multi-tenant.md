@@ -39,7 +39,7 @@ npm run typecheck -- --site SI260003 --module danmoo1
 pnpm run build --site SI260003 --module danmoo1    # pnpm 은 `--` 없이도 된다(pnpm 이 넘기는 `--` 는 tenant.mjs 가 건너뛴다)
 ```
 
-실행기는 빌드 전에 다음을 확인한다. 하나라도 어긋나면 중단한다.
+실행기는 빌드 전에 다음을 확인한다. 1·3 이 어긋나면 중단하고, 2(사이트·모듈 짝)는 **2026-10-03 부터 경고만 하고 실행한다**(로컬·개발·운영 모두 — 사용자 요청 "일단 실행해주고").
 1. 환경파일 `.env.<프로파일>` 이 있는가, `app/{pages,components,layout}/<모듈>/` 와 `app/conts/tenant/<모듈>.ts` 가 있는가
 2. `--site` 가 사이트 ID 형식(SI260001)인가, 백엔드 `sy_site` 에 있고 ACTIVE 인가, 사이트의 FO 모듈(`sy_site.tenant_module`)이 `--module` 과 같은가 — 통과하면 `사이트코드 · 이름`을 출력해 눈으로 확인한다. 백엔드에 닿지 않으면 경고만 하고 진행한다. `--skip-site-check` 로 건너뛸 수 있다(typecheck 가 그렇게 한다).
 3. 환경파일에 사이트·모듈·제목·테마색 키가 남아 있으면 무시한다고 경고한다(인자가 우선).
@@ -155,9 +155,18 @@ ecFeFoNuxt4/
 - 규칙은 `ecBeBo/CLAUDE.md` 의 "멀티테넌트 — FO 사이트(siteId) 필수 규칙" 참고.
 
 ## 5-1. 사이트 ↔ 모듈 매핑은 DB(sy_site.tenant_module)에도 둔다 (2026-10-02)
-- BO 사이트관리(SySiteDtl)의 "FO 모듈" 필드. 환경파일의 `[모듈]`과 같아야 하며, `scripts/tenant.mjs` 가 다르면 빌드를 중단한다(미지정이면 안내만).
+- BO 사이트관리(SySiteDtl)의 "FO 모듈" 필드. 실행 인자 `--module` 과 같아야 한다. `scripts/tenant.mjs` 는 다르면 경고만 하고 실행한다(2026-10-03).
 - 회원(mb_member.site_id)·BO 사용자(sy_user.reg_site_id)의 "모듈"은 이 값을 사이트로 따라간다 — 임시로그인(테스트 회원/사용자 선택) 목록의 모듈 컬럼·필터가 이것이다(백엔드 SiteRegistry 가 캐시).
 - 헤더 로고 아래에 이 배포의 `site <site_id> · <모듈>` 을 표시한다(useTenant).
+
+## 5-2. 사이트·모듈 짝 확인 — 화면 (X) 표시 · 로그인 체크 토글 (2026-10-03)
+- 모든 FO 요청에 `X-Site-Id`(사이트)와 함께 **`X-Module`**(이 배포의 모듈)을 보낸다(`plugins/beClient.ts`, 채팅 SSE 포함). ecFeBo 의 FO(foApiAxios)도 같다.
+- 앱 시작 때(홈 포함) `plugins/siteModuleCheck.client.ts` 가 `GET /api/co/sy/site/{siteId}` 로 사이트의 FO 모듈을 대조한다(`composables/useSiteModuleCheck.ts`).
+  맞지 않으면 **상단 로고(이름) 옆에 빨간 (X)** — 마우스를 올리면 "사이트(SI…)와 모듈(…)가 맞지 않습니다." + 사이트의 FO 모듈.
+  위치: ec1·ec2 `HeaderLogo.vue`, homepg1·datavisual1 `Layout.vue` 로고, danmoo1 `DmTopBar.vue`(동네 이름 옆), bbm1 레이아웃.
+- **"사이트 정상여부 체크" 토글**(기본 꺼짐, localStorage `modu-fo-site-check` = Y/N) — ec1·ec2 상단 ⚙ 설정, danmoo1 설정 화면, ecFeBo FO ⚙ 설정.
+  켜면 요청마다 `X-Site-Check: Y` 를 보내고, 백엔드(`SiteModuleGuard`)가 **로그인·소셜 로그인 때** 사이트의 FO 모듈과 `X-Module` 이 다르면 "사이트(…)와 모듈(…)가 맞지 않습니다." 로 거부한다.
+  나중에 운영 FO 는 토글 없이 로그인 필터로 항상 확인하도록 바꿀 예정.
 
 ## 6. 남은 과제
 - `site_id` 컬럼이 없는 테이블(블로그·FAQ·공지·브랜드·문의 등)은 모든 사이트가 같이 본다. 사이트별로 나누려면 컬럼 추가(DDL)와 데이터 이관이 먼저다.

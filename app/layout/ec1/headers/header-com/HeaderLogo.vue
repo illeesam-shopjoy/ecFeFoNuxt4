@@ -12,7 +12,8 @@
       <img src="/logo/shopjoy-palm.svg" alt="" width="36" height="36" class="shrink-0 w-7 h-7 sm:w-9 sm:h-9 lg:w-11 lg:h-11" />
       <span class="flex flex-col min-w-0 leading-[1.1] text-left">
         <!-- 2026-09-22(요청사항: "ShopJoy 글씨 더 작게 — width 최소한으로") — 폭을 최대한 덜 차지하도록 더 줄임 -->
-        <span class="text-[0.68rem] sm:text-[0.8rem] lg:text-[1.05rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy</span>
+        <!-- 2026-10-03(요청사항: "site + module 이 맞지 않으면 상단 로고 표시에 (X)아이콘, 마우스 오버하면 메시지") — useSiteModuleCheck(앱 시작 때 백엔드 sy_site 대조) -->
+        <span class="text-[0.68rem] sm:text-[0.8rem] lg:text-[1.05rem] font-extrabold tracking-[-0.3px] text-[#2b2b2b]">ShopJoy<span v-if="smc.mismatch" class="inline-flex items-center justify-center w-[14px] h-[14px] lg:w-4 lg:h-4 ml-1 rounded-full bg-[#e53935] text-white text-[9px] lg:text-[10px] font-bold leading-none align-middle cursor-help" :title="smc.message" role="img" :aria-label="smc.message">✕</span></span>
         <span class="flex flex-wrap items-center gap-1 text-[0.6rem] sm:text-[0.6rem] lg:text-[0.78rem] font-medium tracking-[0.08em] text-[#8a8a8a]">
           <!-- 2026-09-21(요청사항: 폰에서 로고 폭 줄이기) — 좁은 화면(<sm)에선 "쇼핑의 즐거움" 문구를 빼고 그 자리에 환경 배지(prod)만 보인다 -->
           <span class="max-sm:hidden">쇼핑의 즐거움</span>
@@ -39,6 +40,7 @@ withDefaults(defineProps<{ align?: "start" | "center" }>(), { align: "start" });
 
 const { public: pub } = useRuntimeConfig();
 const tenant = useTenant(); // 사이트ID · 모듈 (멀티테넌트, 2026-10-02)
+const { state: smc } = useSiteModuleCheck(); // 사이트·모듈 짝 — 맞지 않으면 이름 옆 (X) (2026-10-03)
 const RUN_MODE = String(pub.mode ?? "");
 const API_URL = String(pub.apiBaseUrlDisplay ?? "");
 const CDN_URL = String(pub.prodCdnBase ?? "");

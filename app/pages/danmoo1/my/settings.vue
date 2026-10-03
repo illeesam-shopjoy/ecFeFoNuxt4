@@ -13,6 +13,8 @@
 
     <section class="px-4 pt-6">
       <h2 class="text-[15px] font-extrabold muted mb-1">화면</h2>
+      <!-- 2026-10-03: 사이트 정상여부 체크(기본 꺼짐, localStorage) — 켜면 로그인할 때 서버가 사이트·모듈 짝을 확인한다 -->
+      <button type="button" class="dm-menu" :aria-pressed="siteCheck.on.value" @click="siteCheck.toggle()"><span><i class="far fa-shield-check"></i>사이트 정상여부 체크</span><span class="r"><span class="w-11 h-6 rounded-full relative transition" :class="siteCheck.on.value ? 'bg-[var(--dm-primary)]' : 'bg-[var(--dm-line)]'"><span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" :class="siteCheck.on.value ? 'left-[22px]' : 'left-0.5'"></span></span></span></button>
       <button type="button" class="dm-menu" @click="handleBtnAction('theme-toggle')"><span><i class="far fa-moon"></i>다크 모드</span><span class="r"><span class="w-11 h-6 rounded-full relative transition" :class="dark ? 'bg-[var(--dm-primary)]' : 'bg-[var(--dm-line)]'"><span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" :class="dark ? 'left-[22px]' : 'left-0.5'"></span></span></span></button>
     </section>
 
@@ -63,6 +65,7 @@ import { readLocalList, useDmTown, writeLocalList } from "~/composables/useDmTow
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { DM_KEYWORD_ALERT_KEY, DM_NEIGHBORHOODS, DM_RANGE_OPTIONS, DM_RECENT_SEARCH_KEY, DM_RECENT_VIEW_KEY } from "~/conts/tenant/danmoo1";
+const siteCheck = useSiteCheckToggle(); // 사이트 정상여부 체크 토글 (기본 꺼짐, localStorage, 2026-10-03)
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 

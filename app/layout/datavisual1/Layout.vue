@@ -15,7 +15,7 @@
       <nuxt-link to="/" class="dv-logo" aria-label="대시보드">
         <div class="dv-logo-mark">📊</div>
         <div>
-          <div class="dv-logo-name">DataVisual</div>
+          <div class="dv-logo-name">DataVisual<span v-if="smc.mismatch" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;border-radius:50%;background:#e53935;color:#fff;font-size:10px;font-weight:700;line-height:1;vertical-align:middle;cursor:help" :title="smc.message" role="img" :aria-label="smc.message">✕</span></div>
           <div class="dv-logo-sub">DASHBOARD</div>
         </div>
       </nuxt-link>
@@ -80,6 +80,7 @@
 <script setup lang="ts">
 import { DV_SIDEBAR_MENU, DV_TOP_MENU, DV_VERSION } from "~/conts/tenant/datavisual1";
 import { dvApplyTheme, useDvTheme, useDvToast } from "~/layout/datavisual1/dvUi";
+const { state: smc } = useSiteModuleCheck(); // 사이트·모듈 짝 — 맞지 않으면 로고 옆 (X) (2026-10-03)
 
 const route = useRoute();
 const toast = useDvToast();

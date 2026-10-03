@@ -19,7 +19,7 @@
  *   직접: node scripts/tenant.mjs <nuxt 명령> --site <siteId> --module <모듈> --profile <프로파일> [nuxt 추가인자…]
  *   환경변수 TENANT_SITE / TENANT_MODULE / TENANT_PROFILE 로도 줄 수 있다(CI 용).
  *
- * 하는 일: ① 환경파일·모듈 폴더·모듈 설정 존재 확인 ② sy_site 대조 — 사이트가 ACTIVE 로 있고 FO 모듈(tenant_module)이 빌드 모듈과 맞는지
+ * 하는 일: ① 환경파일·모듈 폴더·모듈 설정 존재 확인 ② sy_site 대조 — 사이트가 ACTIVE 로 있고 FO 모듈(tenant_module)이 빌드 모듈과 맞는지(2026-10-03 부터 맞지 않아도 경고만 하고 실행)
  *          ③ NUXT_PUBLIC_SITE_ID / NUXT_PUBLIC_TENANT_MODULE / NUXT_PUBLIC_ENV_NM 을 환경변수로 넣고 `nuxt <명령> --dotenv .env.<프로파일>` 실행
  *             (nuxt 는 이미 있는 환경변수를 dotenv 값으로 덮어쓰지 않는다 — 인자가 파일보다 우선)
  * nuxt.config.ts 는 NUXT_PUBLIC_TENANT_MODULE 로 그 모듈의 화면·컴포넌트·레이아웃·설정(제목·테마색)만 빌드에 넣는다.
@@ -82,7 +82,8 @@ for (const k of ["NUXT_PUBLIC_SITE_ID", "NUXT_PUBLIC_TENANT_MODULE", "NUXT_PUBLI
 }
 
 // ── sy_site 대조: --site 가 실제 DB(sy_site.site_id)에 있고 ACTIVE 인지, 사이트의 FO 모듈(tenant_module)이 --module 과 같은지 백엔드 공개 API 로 확인하고 사이트 코드·이름을 출력한다 ──
-//   · 백엔드에 닿으면: 없거나 ACTIVE 가 아니거나 모듈이 다르면 중단(잘못된 사이트·모듈로 빌드·배포되는 것을 막는다). 사이트의 FO 모듈이 미지정이면 안내만
+//   · 백엔드에 닿으면: 없거나 ACTIVE 가 아니거나 모듈이 다르면 **경고만 하고 실행한다**(2026-10-03 사용자 요청 "로컬, 개발, 운영 일단 실행해주고").
+//     실행된 화면은 앱 시작 때 같은 대조를 해서 상단 로고 옆에 (X) 표시를 띄운다(useSiteModuleCheck). 로그인 차단은 FO 설정의 "사이트 정상여부 체크" 토글로.
 //   · 닿지 않으면(오프라인·로컬 백엔드 미기동): 경고만 하고 진행
 //   · 건너뛰기: --skip-site-check 또는 TENANT_SKIP_SITE_CHECK=1
 const skipCheck = keepBuilt || rest.includes("--skip-site-check") || process.env.TENANT_SKIP_SITE_CHECK === "1"; // preview(빌드된 값 그대로)는 대조할 사이트 인자가 없다
@@ -93,15 +94,21 @@ if (!skipCheck) {
     const body = await res.json();
     const rows = Array.isArray(body?.data) ? body.data : body?.data?.pageList ?? [];
     const hit = rows.find((r) => r.siteId === opt.site);
-    if (!hit) die(`sy_site 에 site_id "${opt.site}" 가 없습니다. (${api})
-   --site 를 sy_site.site_id 실값으로 맞추거나, BO 사이트관리에서 사이트를 먼저 등록하세요.`);
-    const label = `${hit.siteId}(${hit.siteCode} · ${hit.siteNm})`;
-    if (hit.siteStatusCd !== "ACTIVE") die(`sy_site ${label} 의 상태가 ${hit.siteStatusCd} 입니다. ACTIVE 인 사이트만 배포할 수 있습니다.`);
-    if (hit.tenantModule && hit.tenantModule !== opt.module) {
-      die(`sy_site ${label} 의 FO 모듈은 "${hit.tenantModule}" 인데 "${opt.module}" 로 빌드하려고 합니다.
-   BO 사이트관리에서 FO 모듈을 바꾸거나, --module ${hit.tenantModule} 로 빌드하세요.`);
+    const warn = (msg) => console.warn(`
+[tenant] ⚠ ${msg}
+   (실행은 계속합니다 — 화면 상단 로고 옆에 (X) 로 표시됩니다)
+`);
+    if (!hit) {
+      warn(`sy_site 에 site_id "${opt.site}" 가 없습니다. (${api}) — 백엔드가 이 사이트의 요청을 거부합니다. --site 를 sy_site.site_id 실값으로 맞추세요.`);
+    } else {
+      const label = `${hit.siteId}(${hit.siteCode} · ${hit.siteNm})`;
+      if (hit.siteStatusCd !== "ACTIVE") warn(`sy_site ${label} 의 상태가 ${hit.siteStatusCd} 입니다.`);
+      if (hit.tenantModule && hit.tenantModule !== opt.module) {
+        warn(`사이트(${opt.site})와 모듈(${opt.module})가 맞지 않습니다 — sy_site ${label} 의 FO 모듈은 "${hit.tenantModule}".`);
+      } else {
+        console.log(`[tenant] ✔ sy_site 확인: ${label} (${hit.siteStatusCd}, FO 모듈 ${hit.tenantModule || "미지정"})`);
+      }
     }
-    console.log(`[tenant] ✔ sy_site 확인: ${label} (${hit.siteStatusCd}, FO 모듈 ${hit.tenantModule || "미지정"})`);
   } catch (e) {
     if (e?.message?.startsWith("[tenant]")) throw e;
     console.warn(`[tenant] ⚠ sy_site 확인을 건너뜁니다 — 백엔드(${api})에 닿지 않음: ${e?.message ?? e}`);

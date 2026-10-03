@@ -16,6 +16,11 @@
     <div v-show="open" class="absolute top-[calc(100%+10px)] right-0 w-[248px] bg-white rounded-xl border border-[#eee] shadow-[0_10px_35px_rgba(0,0,0,0.14)] py-2 z-[9999] text-left" @click="onMenuClick">
       <nuxt-link href="/compare" class="hs-item"><span class="hs-ico">⚖️</span>상품비교</nuxt-link>
       <button type="button" class="hs-item" data-keep-open @click="theme.toggle()"><span class="hs-ico">{{ theme.dark.value ? "☀️" : "🌙" }}</span>{{ theme.dark.value ? "라이트 모드로 전환" : "다크 모드로 전환" }}</button>
+      <!-- 2026-10-03(요청사항: "site 정상여부 체크 토글아이콘 (기본값:disable) — enable 되면 로그인시 사이트의 모듈 정상인지 체크, localStorage 에 계속 저장") -->
+      <button type="button" class="hs-item" data-keep-open :aria-pressed="siteCheck.on.value" title="켜면 로그인할 때 서버가 이 배포의 사이트와 모듈이 맞는지 확인하고, 맞지 않으면 로그인을 막습니다" @click="siteCheck.toggle()">
+        <span class="hs-ico">🛡️</span><span class="flex-1">사이트 정상여부 체크</span>
+        <span class="hs-switch" :class="{ 'hs-switch--on': siteCheck.on.value }"><i></i></span>
+      </button>
 
       <div class="my-1.5 border-t border-[#f0f0f0]"></div>
       <div class="px-4"><share-tools-buttons variant="menu" /></div>
@@ -47,6 +52,7 @@ const config = useRuntimeConfig();
 const isLocal = config.public.mode === "local";
 const route = useRoute();
 const theme = useTheme();
+const siteCheck = useSiteCheckToggle(); // 사이트 정상여부 체크 토글 (기본 꺼짐, localStorage)
 
 const open = ref(false);
 const wrapRef = ref<HTMLElement | null>(null);
@@ -103,5 +109,31 @@ onUnmounted(() => document.removeEventListener("click", handleOutside));
 .hs-ico {
   width: 18px;
   text-align: center;
+}
+.hs-switch {
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: #d1d5db;
+  transition: background 0.15s;
+}
+.hs-switch i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: left 0.15s;
+}
+.hs-switch--on {
+  background: #bc8246;
+}
+.hs-switch--on i {
+  left: 16px;
 }
 </style>
