@@ -1,6 +1,5 @@
 <template>
   <div class="sidebar__wrapper">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="sidebar__widget mb-55">
       <div class="widget__search relative">
         <form action="#">
@@ -160,10 +159,6 @@
 <script setup lang="ts">
 import type { CmBlogSidebarCategoryType } from "~/types/cm/cmBlogSidebarCategoryType";
 
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('블로그 사이드바');
 import { ref, computed } from "vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import AppImage from "~/components/ec1/ui/AppImage.vue";

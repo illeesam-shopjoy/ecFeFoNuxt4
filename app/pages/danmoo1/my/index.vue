@@ -6,7 +6,6 @@
         <template #right><nuxt-link to="/my/settings" class="icon-btn" aria-label="설정"><i class="far fa-cog"></i></nuxt-link></template>
       </dm-title-bar>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <!-- 프로필 -->
     <section class="px-4 py-5">
@@ -69,7 +68,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -82,7 +80,6 @@ import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
 /* ##### [01] 초기 변수 정의 ################################################## */
 
 type MenuItem = { key: string; label: string; icon: string; to?: string };
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "나의 danmoo" });
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);

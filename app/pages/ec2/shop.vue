@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="상품목록" subtitle="상품목록" />
 
     <!-- 스켈레톤 그리드 — 2026-09-13 버그수정: "브랜드 클릭하니 화면이 백지현상" — 필터
@@ -380,8 +379,6 @@
 <script setup lang="ts">
 // 2026-09-23: nuxt.config.ts app.keepalive.include 매칭용 이름 (뒤로가기 시 필터·불러온 페이지·스크롤 복원)
 defineOptions({ name: "ShopPage" });
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec2/Layout.vue";
 import BreadcrumbArea from "~/components/ec2/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonCard from "~/components/ec2/ui/SkeletonCard.vue";
@@ -404,13 +401,11 @@ import { type PdProdType } from "~/types/pd/pdProdType";
 import { PROD_TYPE_LABEL } from "~/conts/pdConst";
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated } from "vue";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useSeoMeta({
   title: "쇼핑 | Outstock",
   ogTitle: "쇼핑 | Outstock",
   description: "다양한 상품을 쇼핑하세요.",
 });
-usePageTitle("쇼핑");
 
 // 2026-09-13 추가: 헤더 검색(SearchModal)에서 /shop?q=검색어 로 넘어왔을 때 적용.
 const route = useRoute();

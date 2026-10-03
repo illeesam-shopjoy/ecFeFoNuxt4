@@ -3,7 +3,6 @@
   <!-- 2026-09-14(요청사항: "tailwind 로 전환할수 있으면 전환시켜줘") — skeleton-* 커스텀 클래스를
        Tailwind로 대체. shimmer 애니메이션은 tailwind.config.ts의 animate-shimmer 재사용. -->
   <section class="blog__area pt-55">
-    <xdev-file-path-badge file-path="app/components/ui/SkeletonBlogDetail.vue" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <div class="row">
         <div class="col-xl-9 col-lg-8">
@@ -35,6 +34,4 @@
 </template>
 
 <script setup lang="ts">
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('스켈레톤 블로그');
 </script>

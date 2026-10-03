@@ -1,6 +1,5 @@
 <template>
   <li v-for="(item, i) in social_links" :key="i">
-    <xdev-file-path-badge file-path="app/components/social/Social.vue" :absolute="true" />
     <a :href="item.link" :target="item.target" :style="colored ? { color: item.color } : undefined">
       <i :class="item.icon"></i>
     </a>
@@ -8,10 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { useComponentTitle } from "~/composables/useComponentTitle";
 // colored: 각 SNS 브랜드 색으로 표시(2026-09-20 요청: 문의하기 좌측 하단 링크를 해당 링크 컬러로)
 defineProps<{ colored?: boolean }>();
-useComponentTitle('소셜 링크');
 </script>
 
 <script lang="ts">

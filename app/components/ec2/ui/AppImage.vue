@@ -3,7 +3,6 @@
        Tailwind로 대체(.app-image-wrap > img 자식결합자는 <img>에 기본 클래스를 직접 부여하는
        방식으로 대체). shimmer 애니메이션은 tailwind.config.ts의 animate-shimmer 재사용. -->
   <div ref="wrapRef" :class="['relative block overflow-hidden', wrapClass]" :style="[wrapStyle, containerAspectStyle]">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 스켈레톤 (로딩 중 — deferUntilVisible로 아직 뷰포트 근처에 안 왔을 때도 이 상태) -->
     <div v-if="loading" class="absolute inset-0 rounded animate-shimmer bg-gradient-to-r from-[#f0f0f0] via-[#e0e0e0] to-[#f0f0f0] bg-[length:200%_100%]" :style="skeletonStyle" />
 
@@ -36,10 +35,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('이미지');
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 
 // noImage 폴백 SVG (인라인 data URI)

@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="위시리스트" subtitle="위시리스트" />
     <client-only>
       <section class="cart-area pt-[16px] md:pt-[100px] pb-100">
@@ -48,8 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { onMounted } from "vue";
@@ -60,11 +57,9 @@ import FoGrid from "~/components/ec1/fo/FoGrid.vue";
 import { prodTypeLabel } from "~/conts/pdConst";
 import type { FoGridColumn } from "~/types/fo/foCompType";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "위시리스트",
 });
-usePageTitle("위시리스트");
 
 const state = useWishlistStore();
 const columns: FoGridColumn[] = [

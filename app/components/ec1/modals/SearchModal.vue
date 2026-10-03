@@ -1,6 +1,5 @@
 <template>
   <section :class="`header__search white-bg transition-3 ${showSearch ? 'search-opened' : ''}`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <div class="flex flex-wrap">
         <div class="w-full">
@@ -68,10 +67,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('검색 팝업');
 import { onMounted, ref } from "vue";
 import { POPULAR_KEYWORDS, RECOMMEND_KEYWORDS } from "~/conts/searchKeywords";
 import { useRouter } from "vue-router";

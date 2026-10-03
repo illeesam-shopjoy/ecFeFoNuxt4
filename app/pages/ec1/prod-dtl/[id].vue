@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="상품 상세" subtitle="상품 상세" parent-title="상품 목록" parent-link="/shop" heading-tag="div" />
 
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
@@ -381,8 +380,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonProductDetail from "~/components/ec1/ui/SkeletonProductDetail.vue";
@@ -438,7 +435,6 @@ const { data: relatedList } = useAsyncData<PdProdType[]>(
 );
 const relatedProducts = computed(() => relatedList.value.filter((p) => p.prodId !== item.value?.prodId).slice(0, 4));
 
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useGa } from "~/composables/useGa";
 useSeoMeta({
   title: () => (item.value ? `${item.value.prodNm} | Outstock` : "상품 상세"),
@@ -474,7 +470,6 @@ useHead(() => ({
       ]
     : [],
 }));
-usePageTitle("상품 상세");
 if (seo.value) useCdnCache(300); // 서버 렌더 결과(SEO 정보 있음)만 Netlify CDN 5분 캐시 — 변하는 데이터(상품평 등)는 SSR 에 없어 안전, 오류/빈 페이지는 캐시 안 함
 
 // GA4: 상세 조회 데이터 기준으로 page_view 전송

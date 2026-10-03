@@ -9,7 +9,6 @@
         </template>
       </dm-title-bar>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <div v-if="pending" class="space-y-3"><div class="skeleton aspect-square"></div><div class="p-4 space-y-2"><div class="skeleton h-6 w-3/4 rounded"></div><div class="skeleton h-4 w-1/3 rounded"></div><div class="skeleton h-24 rounded"></div></div></div>
 
@@ -110,7 +109,6 @@ import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
 import DmMiniCard from "~/components/danmoo1/dm/DmMiniCard.vue";
 import MapSwitch from "~/components/danmoo1/common/map/MapSwitch.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { pushLocalList, useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -124,7 +122,6 @@ import type { PdProdType } from "~/types/pd/pdProdType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 const route = useRoute();
 const authStore = useAuthStore();
 const { town } = useDmTown();

@@ -2,7 +2,6 @@
   <!-- 전체 서비스 — 당근 "메뉴" 화면. 그룹별 아이콘 격자, 연결 안 된 서비스는 "준비 중" 안내 -->
   <layout :tabs="false">
     <template #top><dm-title-bar title="전체 서비스" :back="false" close /></template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <section v-for="g in DM_SERVICES" :key="g.group" class="px-4 pt-6">
       <h2 class="text-[17px] font-extrabold mb-3">{{ g.group }}</h2>
@@ -31,10 +30,8 @@
 <script setup lang="ts">
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { DM_SERVICES } from "~/conts/tenant/danmoo1";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "전체 서비스" });
 const tenant = useTenant();
 const envNm = useRuntimeConfig().public.envNm;

@@ -1,6 +1,6 @@
 <template>
   <!-- 2026-09-20 ecFeBo 화면 구조로 통일 / 2026-09-19 — 마이페이지 > 문의 (/my/contact). ecFeBo MyContact.js 이식. 기간 서버 페이징, 행 클릭 시 문의 내용/답변 펼침. -->
-  <my-page-frame tab="contact" :my="my" :file-path="currentFilePath" empty-text="문의 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
+  <my-page-frame tab="contact" :my="my" empty-text="문의 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #empty>
       <div class="mt-4"><nuxt-link to="/contact" class="os-btn os-btn-black os-btn-3 inline-block">1:1 문의하기</nuxt-link></div>
     </template>
@@ -23,8 +23,6 @@
 <script setup lang="ts">
 import MyPageFrame from "~/components/ec2/my/MyPageFrame.vue";
 import FoGrid from "~/components/ec2/fo/FoGrid.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import type { SyCodeType } from "~/types/sy/syCodeType";
@@ -34,9 +32,7 @@ import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 문의" });
-usePageTitle("마이페이지 - 문의");
 
 const CONTACT_STATUS_KOR: Record<string, string> = { REQUEST: "요청", REQUESTED: "요청", PROCESSING: "처리중", COMPLETE: "답변완료", CANCEL: "취소됨" };
 const CONTACT_COLOR: Record<string, string> = { 요청: "#3b82f6", 접수: "#3b82f6", 처리중: "#f97316", 답변완료: "#22c55e", 완료: "#22c55e", 취소됨: "#9ca3af" };

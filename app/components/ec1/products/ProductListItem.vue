@@ -1,6 +1,5 @@
 <template>
   <div class="product__wrapper mb-40 group">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="row">
       <div class="col-xl-4 col-lg-4">
         <!-- 2026-09-14(요청사항: "마우스 오버하면 리로드 효과로 보여주는데 비니, 원피스, 팔찌
@@ -75,10 +74,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('상품 목록 아이템');
 import { ref, computed } from "vue";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import ProductModal from "../modals/ProductModal.vue";

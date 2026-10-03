@@ -3,7 +3,7 @@
        ecFeBo MyOrder.js 이식. 기간 + 주문상태 서버 페이징, 행 클릭 시 상품/결제/배송 펼침. 목록은 <fo-grid>.
        2026-09-20(요청사항: "ecFeBo DpDispWidgetPreview.js 처럼 구조 통일") — [01]초기변수 [02]액션모음(handleBtnAction/handleSelectAction/fnCallbackModal) [03]내장함수(fnLoadCodes/handleSearchList/initPage).
        2026-10-03(클레임-부분환불 계약 §7) — 펼친 주문에 [취소 신청]/[반품 신청]/[교환 신청] 버튼(주문상품의 claimableTypeCds 로 노출) → ClaimRequestModal, 신청 완료 시 목록 재조회. 결제수단(payMethodCdNm) 표시. -->
-  <my-page-frame tab="order" :my="my" :file-path="currentFilePath" empty-text="주문 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
+  <my-page-frame tab="order" :my="my" empty-text="주문 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="flex flex-wrap items-center gap-1 px-3.5 py-2.5 mb-4 bg-[#f4f6f8] rounded-lg text-[0.8rem]">
         <button type="button" class="px-3 py-1 rounded-full border-0 cursor-pointer font-bold" :class="searchParam.orderStatusCd === '' ? 'bg-green-600 text-white' : 'bg-white text-gray-500'" @click="handleSelectAction('orders-status', '')">주문</button>
@@ -89,8 +89,6 @@
 import MyPageFrame from "~/components/ec2/my/MyPageFrame.vue";
 import FoGrid from "~/components/ec2/fo/FoGrid.vue";
 import ClaimRequestModal from "~/components/ec2/modals/ClaimRequestModal.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import { myOrderSvc } from "~/svc/fo/my/myOrderSvc";
@@ -102,10 +100,8 @@ import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 const { formatPrice } = usePrice();
 useHead({ title: "마이페이지 - 주문" });
-usePageTitle("마이페이지 - 주문");
 
 const ORDER_STEPS = [
   { cd: "ORDER", label: "주문완료" },

@@ -1,6 +1,5 @@
 <template>
   <div class="country-select">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <label>국가 <span class="required">*</span></label>
     <select>
       <option value="">선택하세요</option>
@@ -18,8 +17,4 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('국가 선택');
 </script>

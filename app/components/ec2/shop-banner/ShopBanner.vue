@@ -1,6 +1,5 @@
 <template>
   <div class="banner__area-2 pb-60">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 2026-09-29(요청사항: "화면늘리면 계속 늘어나는데 원래 이미지의 어느 비율까지만 늘어나면
          좋겠어") — container-fluid는 max-width가 없어(_grid.scss 참조) 초광폭 화면에서 배너
          이미지가 끝없이 커졌다. 사이트의 다른 폭넓은 섹션(TrendingProducts 등)과 동일하게
@@ -39,10 +38,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('쇼핑 배너');
 import AppImage from "~/components/ec2/ui/AppImage.vue";
 
 defineProps<{ style_2?: boolean; style_3?: boolean }>();

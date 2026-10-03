@@ -1,6 +1,5 @@
 <template>
   <section :class="`extra__info transition-3 ${showSidebar ? 'info-opened' : ''}`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="extra__info-inner">
       <div class="extra__info-close text-end" @click="showSidebar = false">
         <a @click.prevent="showSidebar = false" href="#" class="extra__info-close-btn">
@@ -54,10 +53,6 @@
 <script setup lang="ts">
 import type { SyMenuMobileType } from "~/types/sy/syMenuMobileType";
 
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('오프캔버스 메뉴');
 import { ref } from "vue";
 
 // 2026-09-22(요청사항: "1레벨 메뉴를 클릭하면 첫번째 메뉴 오픈하면되") — 평소엔 아코디언(한 번에 하나만 펼침).

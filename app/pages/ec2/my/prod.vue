@@ -1,7 +1,7 @@
 <template>
   <!-- 마이페이지 > 판매 상품 관리 (/my/prod, 2026-10-02 · 셀러 Phase 2 · 2B) — 승인된 판매자가 단품(SINGLE) 상품을 등록/수정/판매종료한다.
        출고 창고는 필수(내 창고 중 선택, 기본 출고지가 미리 선택됨). 상품 소유·유형·사이트는 서버가 정한다. -->
-  <my-shell active="prod" title="판매 상품 관리" :file-path="currentFilePath">
+  <my-shell active="prod" title="판매 상품 관리">
     <div v-if="loading" class="py-16 text-center text-gray-400">불러오는 중...</div>
 
     <div v-else-if="!seller" class="rounded-2xl border border-dashed border-gray-300 py-14 text-center">
@@ -117,8 +117,6 @@
 import { defineAsyncComponent } from "vue";
 import MyShell from "~/components/ec2/my/MyShell.vue";
 import AttachUploader from "~/components/ec2/ui/AttachUploader.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
 import { slSellerSvc } from "~/svc/fo/ec/sl/slSellerSvc";
@@ -131,9 +129,7 @@ import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 // TipTap(ProseMirror) 번들이 커서 에디터가 실제로 그려질 때 별도 파일로 받는다
 const HtmlEditor = defineAsyncComponent(() => import("~/components/ec2/ui/HtmlEditor.vue"));
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 판매 상품 관리" });
-usePageTitle("마이페이지 - 판매 상품 관리");
 
 const STATUS_LABEL: Record<PdMyProdStatusCd, string> = { ACTIVE: "판매중", INACTIVE: "판매중지", ENDED: "판매종료", DRAFT: "임시저장" };
 const STATUS_CLASS: Record<PdMyProdStatusCd, string> = {

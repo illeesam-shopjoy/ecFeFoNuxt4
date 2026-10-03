@@ -2,7 +2,7 @@
   <!-- 2026-09-20 ecFeBo 화면 구조로 통일 / 2026-09-19 — 마이페이지 > 쿠폰 (/my/coupon). ecFeBo MyCoupon.js 이식. 등록 폼(<fo-form>) + 미사용/사용 탭(클라이언트 필터) + 쿠폰 목록(<fo-grid>).
        2026-09-22(요청사항: "쿠폰발급번호 제시해줘 ... 쿠폰 프로모션에 해당 쿠폰들 미리 만들어줘") — 코드 등록이 "준비 중"이던 걸
        실제 오프라인 쿠폰(무료등록쿠폰) API로 연결하고, 코드를 몰라도 목록에서 바로 고를 수 있는 등록 모달 버튼을 추가했다. -->
-  <my-page-frame tab="coupon" :my="my" :file-path="currentFilePath" empty-text="사용 가능한 쿠폰이 없습니다." :count="shown().length" :shown="shown().length" @btn-action="handleBtnAction" @select-action="handleSelectAction">
+  <my-page-frame tab="coupon" :my="my" empty-text="사용 가능한 쿠폰이 없습니다." :count="shown().length" :shown="shown().length" @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="p-4 mb-4 bg-white border border-[#e5e7eb] rounded-lg">
         <fo-form :columns="regCols" :form="regForm" :cols="1" :gap="8" @submit="handleBtnAction('coupon-register')">
@@ -34,8 +34,6 @@ import MyPageFrame from "~/components/ec1/my/MyPageFrame.vue";
 import FoGrid from "~/components/ec1/fo/FoGrid.vue";
 import FoForm from "~/components/ec1/fo/FoForm.vue";
 import OfflineCouponRegisterModal from "~/components/ec1/modals/OfflineCouponRegisterModal.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, ymd } from "~/composables/useMyList";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
 import { offlineCouponSvc } from "~/svc/fo/ec/pm/offlineCouponSvc";
@@ -46,10 +44,8 @@ const offlineModalRef = ref<InstanceType<typeof OfflineCouponRegisterModal> | nu
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 const { formatPrice } = usePrice();
 useHead({ title: "마이페이지 - 쿠폰" });
-usePageTitle("마이페이지 - 쿠폰");
 
 const COUPON_TABS = [
   { key: "unused", label: "미사용" },

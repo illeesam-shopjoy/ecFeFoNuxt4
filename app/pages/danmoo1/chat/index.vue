@@ -9,7 +9,6 @@
         <button v-for="t in TABS" :key="t.key" type="button" class="dm-seg" :class="{ on: tab === t.key }" @click="tab = t.key">{{ t.label }}</button>
       </div>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <dm-empty v-if="ready && !authStore.isStLoggedIn" icon="far fa-comment-dots" title="로그인하면 채팅을 볼 수 있어요">
       <nuxt-link :to="{ path: '/login', query: { redirect: '/chat' } }" class="btn-primary mt-3 px-8">로그인</nuxt-link>
@@ -40,7 +39,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myChatSvc } from "~/svc/fo/my/chat/myChatSvc";
@@ -49,7 +47,6 @@ import type { CmChattType } from "~/types/cm/cmChattType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "채팅" });
 const authStore = useAuthStore();
 const { openAlert } = useAlert();

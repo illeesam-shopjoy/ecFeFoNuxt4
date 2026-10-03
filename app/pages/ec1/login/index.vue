@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <!-- 2026-09-14(요청사항: "로그인 화면에서 큰베너 말고 작은배너로 보여도 될거 같아") —
          404/오류 페이지와 같은 compact(얇은 브레드크럼) 배너로 변경. -->
     <!-- 2026-09-21(요청사항: "로그인도 배너 넣어줘") — 다른 화면처럼 큰 배너(제목 + 경로)를 다시 보여준다. -->
@@ -89,8 +88,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import DemoMemberLoginModal from "~/components/ec1/modals/DemoMemberLoginModal.vue";
@@ -105,11 +102,9 @@ import { useAuthStore } from "~/store/useAuthStore";
 import { consumeLoginReturn, setLoginReturn } from "~/utils/loginReturn";
 import { useRouter } from "vue-router";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "로그인",
 });
-usePageTitle("로그인");
 
 const authStore = useAuthStore();
 const router = useRouter();

@@ -1,5 +1,5 @@
 <template>
-  <my-shell active="review" title="상품평 관리" :file-path="currentFilePath">
+  <my-shell active="review" title="상품평 관리">
     <div v-if="loading" class="py-12 text-center text-gray-400">불러오는 중...</div>
     <div v-else-if="!list.length" class="rounded-2xl border border-dashed border-gray-300 py-14 text-center text-gray-400">작성한 상품평이 없습니다.</div>
     <ul v-else class="m-0 grid list-none gap-3 p-0">
@@ -23,17 +23,13 @@
 
 <script setup lang="ts">
 import MyShell from "~/components/ec1/my/MyShell.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myBoardSvc } from "~/svc/fo/ec/my/myBoardSvc";
 import { pdReviewSvc } from "~/svc/fo/ec/pd/pdReviewSvc";
 import { htmlToText, toSafeHtml } from "~/utils/htmlSafe";
 import type { PdMyReviewType } from "~/types/pd/pdMyReviewType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 상품평 관리" });
-usePageTitle("마이페이지 - 상품평 관리");
 
 const loading = ref(true);
 const list = ref<PdMyReviewType[]>([]);

@@ -1,6 +1,5 @@
 <template>
   <layout-four>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <section class="slider__area slider__area-4 tp_hero relative">
       <Carousel :items-to-show="1" :wrap-around="true" class="slider-active">
         <Slide v-for="item in slider_data" :key="item.heroSliderId" class="single-slider single-slider-2 slider__height-4 flex items-center" :style="{ backgroundImage: `url(${item.bgImg})` }">
@@ -33,8 +32,6 @@
 
 <script setup lang="ts">
 import { CDN_URL } from "~/conts/baseConst";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import LayoutFour from "~/layout/ec1/LayoutFour.vue";
 import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
@@ -47,11 +44,9 @@ import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
 import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "홈 4",
 });
-usePageTitle("홈 4");
 
 // 전시 위젯(area_cd=HERO_SLIDER_HOME4)에서 슬라이드 로드 — 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).

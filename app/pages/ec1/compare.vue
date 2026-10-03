@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="비교" subtitle="비교" />
     <section class="compare__area pt-[16px] md:pt-[120px] pb-120">
       <div class="max-w-7xl mx-auto px-4">
@@ -90,8 +89,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { onMounted } from "vue";
@@ -100,11 +97,9 @@ import { useCompareStore } from "~/store/useCompareStore";
 import AppImage from "~/components/ec1/ui/AppImage.vue";
 import { prodTypeLabel } from "~/conts/pdConst";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "비교",
 });
-usePageTitle("비교");
 
 const state = useCompareStore();
 const cartState = useCartStore();

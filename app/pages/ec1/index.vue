@@ -1,6 +1,5 @@
 <template>
   <layout>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <!-- ec1 홈 화면 (멀티테넌트: app/pages/ec1 — 이 모듈로 빌드할 때만 "/" 가 된다). 컴포넌트는 공통(app/components)을 그대로 쓴다. -->
     <home-hero-slider />
     <category-area />
@@ -16,8 +15,6 @@
 <script setup lang="ts">
 // 2026-09-23: nuxt.config.ts app.keepalive.include 매칭용 이름 (뒤로가기 시 스크롤·상태 복원)
 defineOptions({ name: "HomePage" });
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import HomeHeroSlider from "~/components/ec1/hero-banner/HomeHeroSlider.vue";
 import CategoryArea from "~/components/ec1/category/CategoryArea.vue";
@@ -28,9 +25,7 @@ import ClientBrandSlider from "~/components/ec1/client-brands/ClientBrandSlider.
 import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
 import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: useTenant().name, // 모듈이 정한 이름(app/conts/tenant/ec1.ts)
 });
-usePageTitle("홈");
 </script>

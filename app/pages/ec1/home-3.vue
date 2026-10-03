@@ -1,6 +1,5 @@
 <template>
   <layout-three>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <main class="box-25">
       <home-two-hero-slider />
       <category-area :style_2="true" />
@@ -55,8 +54,6 @@
 import type { DpTestimonialHome3Type } from "~/types/dp/dpTestimonialType";
 
 import { CDN_URL } from "~/conts/baseConst";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import LayoutThree from "~/layout/ec1/LayoutThree.vue";
 import { ref } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
@@ -72,11 +69,9 @@ import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "Home Three",
 });
-usePageTitle("홈 3");
 
 const testimonialBg = `${CDN_URL}/cdn/prod/img/testimonial/testimonial-bg.jpg`;
 const currentSlide = ref(0);

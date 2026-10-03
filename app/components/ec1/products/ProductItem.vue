@@ -1,6 +1,5 @@
 <template>
   <div class="product__wrapper mb-60 group">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 2026-09-14(요청사항: "마우스 오버하면 리로드 효과로 보여주는데 비니, 원피스, 팔찌
          처럼 이미지 좀더 키지는 효과로 변경해줄수 있어?") — 기존엔 호버 시 두 번째 이미지
          (thumbImg)가 겹쳐 나타나는 "이미지 전환" 효과였는데, 카테고리 배너(CategoryArea.vue,
@@ -85,10 +84,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle("상품 아이템");
 import { ref, computed } from "vue";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import { useCartStore } from "~/store/useCartStore";

@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <!-- 2026-09-19(요청사항: "이벤트상세 … ecFeFoNuxt4 페이지에 만들어줘") — ecFeBo(pages/fo/EventView.js) 이식.
          히어로 배너 + 이벤트 혜택 카드 + 이벤트 대상 + 유의사항 + 목록으로. -->
@@ -74,12 +73,9 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import { foPmEventSvc } from "~/svc/fo/ec/pm/foPmEventSvc";
 import type { PmEventDetailType } from "~/types/pm/pmEventViewType";
-import { usePageTitle } from "~/composables/usePageTitle";
 
 const route = useRoute();
 const id = String(route.params.id ?? "");
@@ -91,7 +87,6 @@ const { item: ev, pending, seo } = await useSeoDetail<PmEventDetailType>(
   () => (id ? foPmEventSvc.getById(id) : Promise.resolve(null))
 );
 
-usePageTitle("이벤트 상세");
 useHead({ title: computed(() => (ev.value?.title ? `${ev.value.title}` : "이벤트 상세")) });
 useSeoMeta({
   ogTitle: () => ev.value?.title ?? "이벤트 상세",

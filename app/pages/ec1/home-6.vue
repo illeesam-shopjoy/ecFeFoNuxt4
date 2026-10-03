@@ -1,6 +1,5 @@
 <template>
   <layout-six>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <home-hero-slider :style_2="true" />
     <category-area :style_4="true" />
     <trending-product-three />
@@ -12,8 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import LayoutSix from "~/layout/ec1/LayoutSix.vue";
 import HomeHeroSlider from "~/components/ec1/hero-banner/HomeHeroSlider.vue";
 import CategoryArea from "~/components/ec1/category/CategoryArea.vue";
@@ -23,9 +20,7 @@ import SaleOffProduct from "~/components/ec1/products/SaleOffProduct.vue";
 import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
 import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "홈 6",
 });
-usePageTitle("홈 6");
 </script>

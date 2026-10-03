@@ -2,7 +2,6 @@
   <!-- 로그인 — 이메일/비밀번호(ecBeBo FoAuth) + 테스트 계정 모달. 회원가입은 danmoo1 에 아직 없다(ShopJoy 가입 계정·시드 계정으로 로그인) -->
   <layout :tabs="false">
     <template #top><dm-title-bar title="로그인" :back="false" close fallback="/" /></template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <div class="px-5 pt-10 pb-8 max-w-[420px] mx-auto">
       <div class="text-center mb-8">
@@ -32,14 +31,12 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DemoMemberLoginModal from "~/components/danmoo1/modals/DemoMemberLoginModal.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "로그인" });
 const route = useRoute();
 const authStore = useAuthStore();

@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="위치안내" subtitle="위치안내" />
 
     <!-- 2026-09-19(요청사항: "회사위치 … ecFeFoNuxt4 페이지에 만들어줘") — ecFeBo(pages/fo/Location.js) 이식.
@@ -72,15 +71,11 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import MapSwitch from "~/components/ec1/common/map/MapSwitch.vue";
-import { usePageTitle } from "~/composables/usePageTitle";
 
 useHead({ title: "위치안내" });
-usePageTitle("위치안내");
 
 // 본사 좌표/주소/연락처 — ecFeBo Location.js 와 동일 값
 // 성남대로 997번길 49-14 실제 좌표(OSM 지오코딩) — 이전 값(37.4407,127.1468)은 신흥역 부근이라 어긋났음

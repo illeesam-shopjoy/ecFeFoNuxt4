@@ -9,7 +9,6 @@
         </template>
       </dm-title-bar>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <div v-if="pending" class="p-4 space-y-3"><div class="skeleton h-5 w-1/3 rounded"></div><div class="skeleton h-7 w-4/5 rounded"></div><div class="skeleton h-40 rounded"></div></div>
     <template v-else-if="post">
@@ -67,7 +66,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -80,7 +78,6 @@ import type { CmBlogReplyType } from "~/types/cm/cmBlogReplyType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 const route = useRoute();
 const authStore = useAuthStore();
 const { town } = useDmTown();

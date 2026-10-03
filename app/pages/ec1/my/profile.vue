@@ -1,5 +1,5 @@
 <template>
-  <my-shell active="profile" title="개인정보 수정" :file-path="currentFilePath">
+  <my-shell active="profile" title="개인정보 수정">
     <div v-if="loading" class="py-16 text-center text-gray-400">불러오는 중...</div>
     <div v-else class="space-y-5">
       <div class="rounded-2xl border border-[#e5e7eb] bg-white p-6">
@@ -53,15 +53,11 @@ import EmailVerifyRow from "~/components/ec1/my/EmailVerifyRow.vue";
 import SnsLinkRow from "~/components/ec1/my/SnsLinkRow.vue";
 import ProfileEditModal from "~/components/ec1/modals/ProfileEditModal.vue";
 import PasswordChangeModal from "~/components/ec1/modals/PasswordChangeModal.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
 import type { MbMemberProfileType } from "~/types/mb/mbMemberProfileType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 개인정보 수정" });
-usePageTitle("마이페이지 - 개인정보 수정");
 
 const authStore = useAuthStore();
 const loading = ref(true);

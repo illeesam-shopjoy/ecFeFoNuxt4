@@ -1,6 +1,5 @@
 <template>
   <section class="product__area pt-60 pb-100">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 2026-09-13(요청사항: "인기상품 4열 상품 width를 우측란처럼 약간 크게해줘") —
          max-w-7xl(1280px)이 데모 대비 좁아 카드 4열이 작아 보였다.
          2026-09-14(요청사항: "인기상품 화면늘리면 15% 더 늘어나도 될거 같은데") — 1600px → 1840px(+15%). -->
@@ -49,10 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('트렌드 상품');
 import { ref, watch } from "vue";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import { type PdProdType } from "~/types/pd/pdProdType";

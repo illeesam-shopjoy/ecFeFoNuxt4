@@ -7,7 +7,6 @@
        커스텀 클래스를 Tailwind로 대체. "/" 구분자는 li가 정확히 2개뿐이라 두 번째 li에
        before:content-['/']를 직접 부여(형제선택자 대체). -->
   <section v-if="compact" class="page__title-compact py-15 border-b border-[#eee]">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <nav aria-label="브레드크럼">
         <ol class="flex gap-2 list-none m-0 p-0 text-[0.85rem] text-[#888]">
@@ -19,7 +18,6 @@
     </div>
   </section>
   <section v-else class="page__title relative flex items-center" :style="{ backgroundImage: `url(${bg})` }">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <div class="row">
         <div class="col-xl-12">
@@ -44,10 +42,6 @@
 
 <script setup lang="ts">
 import { CDN_URL } from "~/conts/baseConst";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('브레드크럼');
 const bg = `${CDN_URL}/cdn/prod/img/page-title/page-title-1.jpg`;
 
 withDefaults(

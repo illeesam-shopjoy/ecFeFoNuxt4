@@ -1,6 +1,5 @@
 <template>
   <layout :white_bg="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
     <skeleton-blog-detail v-if="pending" />
 
@@ -201,8 +200,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import SkeletonBlogDetail from "~/components/ec1/ui/SkeletonBlogDetail.vue";
 import { type CmBlogType } from "~/types/cm/cmBlogType";
@@ -227,9 +224,7 @@ const { data: item, pending } = useAsyncData<CmBlogType | null>("blog-details-pr
   return coBlogSvc.getById(first.blogId);
 });
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({ title: "블로그 상세" });
-usePageTitle("블로그 상세");
 
 // ── 추천 글 (옛 BlogDetailsArea) ─────────────────────────────
 // 2026-09-13(성능 개선): lazy:true — 보조 콘텐츠라 화면이 뜬 뒤 비동기로 채워지게 한다.

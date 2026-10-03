@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="주문/결제" subtitle="주문/결제" />
     <client-only>
       <div v-if="state.cartProducts.length === 0" class="text-center pt-[16px] md:pt-[100px] pb-100">
@@ -260,8 +259,6 @@ import { myPaySvc } from "~/svc/fo/ec/my/myPaySvc";
 import { prodCouponSvc } from "~/svc/fo/ec/pm/prodCouponSvc";
 import type { PmProdCouponType } from "~/types/pm/pmProdCouponType";
 import { getPayProvider } from "~/utils/payProvider";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import CountrySelect from "~/components/ec1/checkout/CountrySelect.vue";
@@ -283,11 +280,9 @@ import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
 import EmailVerifyBox from "~/components/ec1/fo/EmailVerifyBox.vue";
 
 const state = useCartStore();
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "주문/결제",
 });
-usePageTitle("주문/결제");
 
 const { formatPrice } = usePrice();
 

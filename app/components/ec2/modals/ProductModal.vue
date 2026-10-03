@@ -1,6 +1,5 @@
 <template>
   <Teleport to="body">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 2026-09-14(요청사항: "상세보기시 부모화면의 최상단이 위로 보여 모달에서는 모달이
          최상위가 되어야 해") — 헤더의 스크롤 고정용 .sticky 클래스가 z-index:999(!important,
          _header.scss)라 기존 z-50/z-[100]보다 높아, 모달이 떠 있는 동안 뒤 페이지가 스크롤돼
@@ -56,10 +55,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('상품 모달');
 import { ref, watch } from "vue";
 import ProductDetailsContent from "~/components/ec2/shop-details/ProductDetailsContent.vue";
 import { type PdProdType } from "~/types/pd/pdProdType";

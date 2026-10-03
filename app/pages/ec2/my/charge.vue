@@ -1,5 +1,5 @@
 <template>
-  <my-shell active="cache" title="캐쉬 충전" :file-path="currentFilePath">
+  <my-shell active="cache" title="캐쉬 충전">
     <div class="rounded-2xl border border-[#e5e7eb] bg-white p-6">
       <div class="mb-4 flex items-baseline justify-between">
         <span class="text-[0.9rem] text-gray-500">충전 금액</span>
@@ -24,15 +24,11 @@
 <script setup lang="ts">
 /** 캐쉬 충전 — 토스 결제위젯으로 금액을 결제하면 /my/charge-success 가 승인·충전을 마무리한다. */
 import MyShell from "~/components/ec2/my/MyShell.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { loadScriptOnce } from "~/utils/loadScript";
 import type { OdTossPaymentsFactoryType, OdTossWidgetsType } from "~/types/od/odTossType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 캐쉬 충전" });
-usePageTitle("마이페이지 - 캐쉬 충전");
 const { formatPrice } = usePrice();
 
 const MIN = 1000;

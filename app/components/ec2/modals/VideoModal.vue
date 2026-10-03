@@ -1,13 +1,10 @@
 <template>
   <div id="video-overlay" class="video-overlay" @click="closeVideo">
-    <xdev-file-path-badge file-path="app/components/modals/VideoModal.vue" :absolute="true" />
     <a class="video-overlay-close" @click.prevent="closeVideo">x</a>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('동영상 모달');
 
 // 2026-09-14 버그수정(요청사항: "영상 라이트박스 플레이되도록 확인하여 수정해줘") —
 // 이 컴포넌트는 원래 <script setup>(useComponentTitle용) + 별도 Options API <script>

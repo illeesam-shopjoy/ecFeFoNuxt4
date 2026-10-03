@@ -1,6 +1,5 @@
 <template>
   <section :class="`slider__area ${style_2 ? 'slider__area-2' : ''} relative tp_hero`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <Carousel :items-to-show="1" :wrap-around="true" class="slider-active">
       <!-- 2026-09-14: style_2(home-6 전용)는 slider__height-6을 써야 하는데 -5(home-5 전용, home-5.vue의
            별도 인라인 Carousel이 씀)를 잘못 재사용하고 있어서 두 페이지 배너 높이가 서로 발이 묶여
@@ -30,10 +29,6 @@
 
 <script setup lang="ts">
 import { CDN_URL } from "~/conts/baseConst";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('히어로 슬라이더');
 import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataType } from "~/types/co/coHeroSliderDataType";

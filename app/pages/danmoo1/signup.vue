@@ -2,7 +2,6 @@
   <!-- 회원가입 — 이름·이메일·비밀번호(정책 검사)·약관 동의. 가입 사이트는 이 배포의 사이트(X-Site-Id, body.siteId). 가입 후 바로 로그인해 돌아갈 곳으로 -->
   <layout :tabs="false">
     <template #top><dm-title-bar title="회원가입" fallback="/login" /></template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <form class="px-5 pt-6 pb-10 max-w-[420px] mx-auto space-y-4" @submit.prevent="handleBtnAction('signup-submit')">
       <p class="text-[14px] muted">{{ town }} 이웃이 되어 보세요. 이메일로 가입하면 바로 시작할 수 있어요.</p>
@@ -42,7 +41,6 @@
 <script setup lang="ts">
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -50,7 +48,6 @@ import { checkPassword, isPasswordValid } from "~/utils/passwordPolicy";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "회원가입" });
 const route = useRoute();
 const authStore = useAuthStore();

@@ -11,7 +11,6 @@
       </div>
       <dm-chips v-if="tab === '동네생활'" v-model="chip" :items="chipItems" />
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <dm-empty v-if="tab !== '동네생활'" icon="far fa-users" :title="`${tab}은 준비 중이에요`" desc="지금은 동네생활 글만 볼 수 있어요" />
     <template v-else>
@@ -48,7 +47,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmChips, { type DmChipItem } from "~/components/danmoo1/dm/DmChips.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -61,7 +59,6 @@ import type { CmBlogType } from "~/types/cm/cmBlogType";
 /* ##### [01] 초기 변수 정의 ################################################## */
 
 defineOptions({ name: "CommunityPage" });
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "동네생활" });
 const route = useRoute();
 const authStore = useAuthStore();

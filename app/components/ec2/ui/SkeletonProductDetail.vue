@@ -8,7 +8,6 @@
        그 아래 가로로 늘어선 작은 썸네일 줄이다. 순서·배치를 실제와 맞췄다. pt-100/pb-90 도 실제 페이지(prod-dtl/[id].vue
        shop__top)가 쓰는 pt-16(폰)/md:pt-60, pb-60 으로 맞춰서 로딩→실제 전환 시 배너 아래 여백이 갑자기 바뀌지 않게 했다. -->
   <section class="shop__area pb-65">
-    <xdev-file-path-badge file-path="app/components/ui/SkeletonProductDetail.vue" :absolute="true" />
     <div class="shop__top pt-[16px] pb-60 md:pt-[60px] bg-white">
       <div class="max-w-7xl mx-auto px-4">
         <div class="row">
@@ -41,6 +40,4 @@
 </template>
 
 <script setup lang="ts">
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('스켈레톤 상품 상세');
 </script>

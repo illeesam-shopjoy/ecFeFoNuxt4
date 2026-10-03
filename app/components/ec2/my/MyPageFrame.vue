@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge v-if="filePath" :file-path="filePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="마이페이지" subtitle="마이페이지" />
 
     <!-- 2026-09-19 — 마이페이지 6개 화면(pages/my/{order,claim,coupon,cache,contact,chatt}.vue)이 함께 쓰는 틀:
@@ -76,8 +75,6 @@ const emit = defineEmits<{
 defineProps<{
   /** 현재 탭 (MY_TABS 의 key) */
   tab: MyTabKey;
-  /** 로컬 모드 파일경로 배지용 (useCurrentFilePath()) */
-  filePath?: string | null;
   /** useMyList() 반환값 */
   my: FoMyListStateType<object>;
   /** 목록이 비었을 때 문구 */

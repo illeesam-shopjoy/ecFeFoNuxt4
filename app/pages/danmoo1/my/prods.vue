@@ -9,7 +9,6 @@
         <button v-for="t in TABS" :key="t.key" type="button" class="dm-seg" :class="{ on: tab === t.key }" @click="tab = t.key">{{ t.label }} <span class="text-[12px] muted">{{ countOf(t.key) }}</span></button>
       </div>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <dm-empty v-if="ready && !authStore.isStLoggedIn" icon="far fa-clipboard" title="로그인하면 판매내역을 볼 수 있어요">
       <nuxt-link :to="{ path: '/login', query: { redirect: '/my/prods' } }" class="btn-primary mt-3 px-8">로그인</nuxt-link>
@@ -53,7 +52,6 @@ import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
@@ -62,7 +60,6 @@ import type { PdMyProdType, PdMyProdSaveType } from "~/types/pd/pdMyProdType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "판매내역" });
 const authStore = useAuthStore();
 const { openAlert } = useAlert();

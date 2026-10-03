@@ -1,6 +1,5 @@
 <template>
   <Form :validation-schema="schema" @submit="onSubmit">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="profile__edit-input">
       <p>이름</p>
       <Field name="name" type="text" placeholder="이름" />
@@ -28,10 +27,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('프로필 수정 폼');
 import { Field, Form, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import type { MbMemberType } from "~/types/mb/mbMemberType";

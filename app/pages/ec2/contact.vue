@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="문의하기" subtitle="문의하기" />
     <section class="contact__area pb-100 pt-[16px] md:pt-[95px]">
       <div class="max-w-7xl mx-auto px-4">
@@ -76,8 +75,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec2/Layout.vue";
 import BreadcrumbArea from "~/components/ec2/common/breadcrumb/BreadcrumbArea.vue";
 import Social from "~/components/ec2/social/Social.vue";
@@ -95,11 +92,9 @@ const HtmlEditor = defineAsyncComponent(() => import("~/components/ec2/ui/HtmlEd
 import AttachUploader from "~/components/ec2/ui/AttachUploader.vue";
 import OrderPickModal from "~/components/ec2/modals/OrderPickModal.vue";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "문의하기",
 });
-usePageTitle("문의하기");
 
 // 전시 위젯(area_cd=CONTACT_INFO_MAIN)에서 연락처 정보 로드 — 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).

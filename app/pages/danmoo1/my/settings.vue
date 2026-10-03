@@ -2,7 +2,6 @@
   <!-- 설정 — 내 동네·동네 범위 · 화면 테마 · 키워드 알림 관리 · 최근 검색어 삭제 · 계정(로그아웃) · 앱 정보(사이트·모듈·환경) -->
   <layout :tabs="false">
     <template #top><dm-title-bar title="설정" fallback="/my" /></template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <section class="px-4 pt-5">
       <h2 class="text-[15px] font-extrabold muted mb-1">동네</h2>
@@ -60,7 +59,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { readLocalList, useDmTown, writeLocalList } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -68,7 +66,6 @@ import { DM_KEYWORD_ALERT_KEY, DM_NEIGHBORHOODS, DM_RANGE_OPTIONS, DM_RECENT_SEA
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "설정" });
 const authStore = useAuthStore();
 const tenant = useTenant();

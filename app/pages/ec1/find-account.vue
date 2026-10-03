@@ -69,11 +69,9 @@
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import EmailVerifyBox from "~/components/ec1/fo/EmailVerifyBox.vue";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { authSvc } from "~/svc/co/auth/authSvc";
 
 useHead({ title: "아이디 · 비밀번호 찾기" });
-usePageTitle("아이디 · 비밀번호 찾기");
 
 // 2026-10-02: PASS 본인인증 → 이메일 링크 인증. 비밀번호 찾기는 이메일 인증 한 번으로 본인확인이 끝나므로 "확인번호" 단계가 없다.
 const TABS = [{ key: "id", label: "아이디 찾기" }, { key: "pw", label: "비밀번호 찾기" }] as const;

@@ -1,6 +1,5 @@
 <template>
   <section :class="`blog__area ${style_2 ? 'pt-90' : ''} pb-70`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div :class="`${style_3 ? 'custom-container' : 'container'} mx-auto`">
       <div class="row flex justify-center">
         <div class="col-xl-12">
@@ -45,10 +44,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('블로그 영역');
 import { computed } from "vue";
 import { Carousel, Slide } from "vue3-carousel";
 import BlogItem from "./BlogItem.vue";

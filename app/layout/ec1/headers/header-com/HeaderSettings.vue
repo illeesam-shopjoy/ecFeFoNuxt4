@@ -20,15 +20,11 @@
       <div class="my-1.5 border-t border-[#f0f0f0]"></div>
       <div class="px-4"><share-tools-buttons variant="menu" /></div>
 
-      <!-- 로컬 모드 전용: 경로 배지 / env 설정 -->
+      <!-- 로컬 모드 전용: 현재 주소 / env 설정 -->
       <template v-if="isLocal">
         <div class="my-1.5 border-t border-[#f0f0f0]"></div>
         <div class="px-4 py-1.5">
-          <span class="block text-[0.7rem] text-[#666] mb-1.5 break-all">{{ currentPagePath() }}</span>
-          <label class="flex items-center gap-1.5 text-[0.75rem] text-[#666] cursor-pointer">
-            <input v-model="showFilePathBadge" type="checkbox" class="cursor-pointer" />
-            <span>경로 표시</span>
-          </label>
+          <span class="block text-[0.7rem] text-[#666] break-all">{{ currentPagePath() }}</span>
         </div>
         <nuxt-link href="/dev/env-settings" class="hs-item"><span class="hs-ico">🛠️</span>env 설정</nuxt-link>
       </template>
@@ -51,7 +47,6 @@ const config = useRuntimeConfig();
 const isLocal = config.public.mode === "local";
 const route = useRoute();
 const theme = useTheme();
-const { showFilePathBadge } = useShowFilePathBadge();
 
 const open = ref(false);
 const wrapRef = ref<HTMLElement | null>(null);

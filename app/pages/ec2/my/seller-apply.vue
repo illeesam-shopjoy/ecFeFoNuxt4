@@ -1,7 +1,7 @@
 <template>
   <!-- 마이페이지 > 판매자 신청 (/my/seller-apply, 2026-09-30) — 회원가입 시 신청하지 않은 기존 회원용.
        신청 이력이 있으면 상태 카드, 없으면 신청 폼을 보여준다. -->
-  <my-shell active="seller-apply" title="판매자 신청" :file-path="currentFilePath">
+  <my-shell active="seller-apply" title="판매자 신청">
     <div v-if="loading" class="py-16 text-center text-gray-400">불러오는 중...</div>
 
     <div v-else-if="applied" class="rounded-2xl border border-[#e5e7eb] bg-white p-6">
@@ -62,8 +62,6 @@
 
 <script setup lang="ts">
 import MyShell from "~/components/ec2/my/MyShell.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { slSellerSvc } from "~/svc/fo/ec/sl/slSellerSvc";
 import { myInfoSvc } from "~/svc/fo/ec/my/myInfoSvc";
@@ -72,9 +70,7 @@ import AttachUploader from "~/components/ec2/ui/AttachUploader.vue";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 import type { SlSellerMyType, SlSellerStatusCd } from "~/types/sl/slSellerApplyType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 판매자 신청" });
-usePageTitle("마이페이지 - 판매자 신청");
 
 const authStore = useAuthStore();
 const loading = ref(true);

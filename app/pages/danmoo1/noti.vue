@@ -12,7 +12,6 @@
         <button v-for="t in TABS" :key="t.key" type="button" class="dm-seg" :class="{ on: tab === t.key }" @click="tab = t.key">{{ t.label }}</button>
       </div>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <!-- 활동 알림 -->
     <div v-if="tab === 'act'">
@@ -56,7 +55,6 @@ import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmProdCard from "~/components/danmoo1/dm/DmProdCard.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { readLocalList, writeLocalList } from "~/composables/useDmTown";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
@@ -69,7 +67,6 @@ import type { PdProdType } from "~/types/pd/pdProdType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "알림" });
 const authStore = useAuthStore();
 const route = useRoute();

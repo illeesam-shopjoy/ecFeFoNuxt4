@@ -16,7 +16,6 @@
         <dm-filter-bar v-if="tab === 'prod'" v-model="filter" />
       </template>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <!-- 검색 전: 최근/추천 -->
     <div v-if="!submitted" class="px-4 pt-5">
@@ -80,7 +79,6 @@ import Layout from "~/layout/danmoo1/Layout.vue";
 import DmProdCard from "~/components/danmoo1/dm/DmProdCard.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
 import DmFilterBar, { type DmFilterValue } from "~/components/danmoo1/dm/DmFilterBar.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { pushLocalList, readLocalList, useDmTown, writeLocalList } from "~/composables/useDmTown";
 import { DM_BLOG_CATE_ID, DM_KEYWORD_ALERT_KEY, DM_RECENT_SEARCH_KEY, DM_SEARCH_SUGGEST, DM_SORTS, dmStatusOf } from "~/conts/tenant/danmoo1";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
@@ -91,7 +89,6 @@ import type { CmBlogType } from "~/types/cm/cmBlogType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "검색" });
 const route = useRoute();
 const router = useRouter();

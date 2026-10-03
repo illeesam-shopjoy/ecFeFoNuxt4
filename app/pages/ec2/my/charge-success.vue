@@ -1,5 +1,5 @@
 <template>
-  <my-shell active="cache" title="캐쉬 충전 결과" :file-path="null">
+  <my-shell active="cache" title="캐쉬 충전 결과">
     <div class="mx-auto max-w-xl rounded-2xl border border-[#e5e7eb] bg-white p-8 text-center">
       <p v-if="state === 'loading'" class="m-0 text-gray-600">결제를 확인하고 충전하는 중입니다...</p>
       <template v-else-if="state === 'ok'">

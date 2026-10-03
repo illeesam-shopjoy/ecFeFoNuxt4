@@ -14,7 +14,6 @@
         <i class="fas fa-chevron-right text-[12px] muted"></i>
       </nuxt-link>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <div class="px-4 pt-4 pb-24 space-y-2.5">
       <p v-if="loading" class="text-center muted text-[13px]">불러오는 중…</p>
@@ -58,7 +57,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { dmStatusOf } from "~/conts/tenant/danmoo1";
@@ -73,7 +71,6 @@ import type { PdProdType } from "~/types/pd/pdProdType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "채팅" });
 const route = useRoute();
 const authStore = useAuthStore();

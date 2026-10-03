@@ -3,7 +3,7 @@
        2026-09-20 — ecFeBo 화면 구조(초기변수/액션 dispatch/내장함수/initPage)로 통일. 유형 필터 버튼은 공통코드 CLAIM_TYPE_CD 로 그린다.
        2026-10-03(클레임-부분환불 계약 §7) — 펼침에 품목(상품명·수량·금액)·금액 내역·환불 내역(od_refund 수단/금액/상태)·사유, [철회](REQUESTED/APPROVED) → withdraw → 재조회.
        펼칠 때 GET /fo/my/claim/{id} 로 상세(claimItems/refunds)를 1회 보충 조회한다(목록 응답은 요약만). 상태 배지 색은 claimStatusCd 기준. -->
-  <my-page-frame tab="claim" :my="my" :file-path="currentFilePath" empty-text="해당 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
+  <my-page-frame tab="claim" :my="my" empty-text="해당 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="flex flex-wrap gap-2 mb-4">
         <button v-for="c in claimFilters()" :key="c.codeValue" type="button" class="px-4 py-2 rounded-full border-2 text-[0.85rem] font-semibold cursor-pointer" :class="searchParam.claimTypeCd === c.codeValue ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-[#e5e7eb]'" @click="handleSelectAction('claims-type', c.codeValue)">
@@ -79,8 +79,6 @@
 <script setup lang="ts">
 import MyPageFrame from "~/components/ec2/my/MyPageFrame.vue";
 import FoGrid from "~/components/ec2/fo/FoGrid.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, ymd, kor, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import { myClaimSvc } from "~/svc/fo/my/myClaimSvc";
@@ -92,10 +90,8 @@ import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 const { formatPrice } = usePrice();
 useHead({ title: "마이페이지 - 취소/반품/교환" });
-usePageTitle("마이페이지 - 취소/반품/교환");
 
 const CLAIM_TYPE_KOR: Record<string, string> = { CANCEL: "취소", RETURN: "반품", EXCHANGE: "교환" };
 const CLAIM_TYPE_COLOR: Record<string, string> = { 취소: "#ef4444", 반품: "#f97316", 교환: "#3b82f6" };

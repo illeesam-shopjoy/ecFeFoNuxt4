@@ -1,5 +1,5 @@
 <template>
-  <my-shell active="card" title="결제카드 등록" :file-path="currentFilePath">
+  <my-shell active="card" title="결제카드 등록">
     <div class="mb-4 flex items-center justify-between">
       <p class="m-0 text-[0.85rem] text-gray-500">카드번호는 저장하지 않고 결제사(토스페이먼츠)에 안전하게 등록됩니다. 기본 카드가 먼저 사용됩니다.</p>
       <button type="button" class="cursor-pointer rounded-lg border-0 bg-gray-900 px-4 py-2 text-[0.85rem] font-bold text-white disabled:opacity-60" :disabled="busy" @click="registerCard">{{ busy ? "처리 중..." : "+ 카드 등록" }}</button>
@@ -25,16 +25,12 @@
 
 <script setup lang="ts">
 import MyShell from "~/components/ec1/my/MyShell.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myCardSvc } from "~/svc/fo/ec/my/myCardSvc";
 import { loadScriptOnce } from "~/utils/loadScript";
 import type { MbMemberCardType } from "~/types/mb/mbMemberCardType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 결제카드" });
-usePageTitle("마이페이지 - 결제카드");
 
 const cfg = useRuntimeConfig().public as { mode?: string; tossBillingClientKey?: string };
 const loading = ref(true);

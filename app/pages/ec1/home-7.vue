@@ -1,6 +1,5 @@
 <template>
   <layout-seven>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <!-- 히어로 슬라이더 7 -->
     <section class="slider__area slider__area-3 tp_hero relative">
@@ -338,8 +337,6 @@
 import type { DpTestimonialType } from "~/types/dp/dpTestimonialType";
 
 import { CDN_URL } from "~/conts/baseConst";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import LayoutSeven from "~/layout/ec1/LayoutSeven.vue";
 import { ref, computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
@@ -352,11 +349,9 @@ import VideoModal from "~/components/ec1/modals/VideoModal.vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import { dpAreaSvc } from "~/svc/fo/ec/dp/dpAreaSvc";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "홈 7",
 });
-usePageTitle("홈 7");
 
 // 히어로 슬라이더 7 — 전시 위젯(area_cd=HERO_SLIDER_HOME7)에서 로드, 미등록/조회실패 시 기본값 폴백
 // (2026-09-13, [[ecfefonuxt4-dp-widget-migration]]).

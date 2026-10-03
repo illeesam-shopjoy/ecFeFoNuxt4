@@ -1,6 +1,5 @@
 <template>
   <div class="blog__item mb-30">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="blog__thumb fix">
       <nuxt-link :to="`/blog-dtl/${item.blogId}`" class="w-img">
         <!-- AppImage: 스켈레톤 + noImage 내장 -->
@@ -31,10 +30,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('블로그 아이템');
 import { type CmBlogType } from "~/types/cm/cmBlogType";
 import AppImage from "~/components/ec2/ui/AppImage.vue";
 

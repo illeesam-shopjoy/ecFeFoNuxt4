@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="장바구니" subtitle="장바구니" />
     <client-only>
       <section class="cart-area pt-[16px] md:pt-[100px] pb-100">
@@ -96,8 +95,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec2/Layout.vue";
 import BreadcrumbArea from "~/components/ec2/common/breadcrumb/BreadcrumbArea.vue";
 import { useCartStore } from "~/store/useCartStore";
@@ -106,11 +103,9 @@ import FoGrid from "~/components/ec2/fo/FoGrid.vue";
 import { prodTypeLabel } from "~/conts/pdConst";
 import type { FoGridColumn } from "~/types/fo/foCompType";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "장바구니",
 });
-usePageTitle("장바구니");
 
 const state = useCartStore();
 const columns: FoGridColumn[] = [

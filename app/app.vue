@@ -1,6 +1,5 @@
 <template>
   <NuxtPage />
-  <XdevFilePathBadgeOverlay />
   <!-- 전역 확인/알림 다이얼로그 (useConfirm / useAlert) -->
   <ConfirmModal
     :open="confirmState.open"

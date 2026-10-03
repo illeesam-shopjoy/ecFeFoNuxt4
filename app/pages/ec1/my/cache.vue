@@ -2,7 +2,7 @@
   <!-- 2026-09-20 ecFeBo 화면 구조로 통일 / 2026-09-19 — 마이페이지 > 캐쉬 (/my/cache). ecFeBo MyCache.js 이식. 보유 캐쉬 + 적립/사용 이력(<fo-grid>, 서버 페이징).
        2026-09-23(요청사항: "캐시란에 캐시충전하기 기능넣어줘 캐시충전 버튼 클릭하면 모달로 캐시충전화면 띄워주고
        하단에 무료충전 란 넣어줘") — 충전 UI를 CashChargeModal 모달로 분리(실 결제 이동 + 무료충전/강제차감 테스트). -->
-  <my-page-frame tab="cache" :my="my" :file-path="currentFilePath" empty-text="캐쉬 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
+  <my-page-frame tab="cache" :my="my" empty-text="캐쉬 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="rounded-xl px-6 py-5 mb-4 text-gray-900" style="background: linear-gradient(135deg, #fbbf24, #f59e0b)">
         <div class="text-[0.85rem] font-semibold opacity-80">보유 캐쉬</div>
@@ -22,8 +22,6 @@
 import MyPageFrame from "~/components/ec1/my/MyPageFrame.vue";
 import FoGrid from "~/components/ec1/fo/FoGrid.vue";
 import CashChargeModal from "~/components/ec1/modals/CashChargeModal.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import type { SyCodeType } from "~/types/sy/syCodeType";
@@ -33,10 +31,8 @@ import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 const { formatPrice } = usePrice();
 useHead({ title: "마이페이지 - 캐쉬" });
-usePageTitle("마이페이지 - 캐쉬");
 
 const codes = reactive({ cache_types: [] as SyCodeType[] });
 const balance = ref(0);

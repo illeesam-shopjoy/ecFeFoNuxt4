@@ -1,6 +1,5 @@
 <template>
   <section :class="`product__offer ${style_2 ? 'pb-45' : 'pt-115 pb-50'}`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div :class="`${style_2 ? 'custom-container' : 'container'} mx-auto`">
       <div class="row flex justify-center">
         <!-- 인기 상품 시작 -->
@@ -107,10 +106,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('특가 상품');
 import { ref, computed } from "vue";
 import { Carousel, Slide } from "vue3-carousel";
 import SmProductItem from "./SmProductItem.vue";

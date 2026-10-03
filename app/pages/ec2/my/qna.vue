@@ -1,5 +1,5 @@
 <template>
-  <my-shell active="qna" title="상품문의 관리" :file-path="currentFilePath">
+  <my-shell active="qna" title="상품문의 관리">
     <div v-if="loading" class="py-12 text-center text-gray-400">불러오는 중...</div>
     <div v-else-if="!list.length" class="rounded-2xl border border-dashed border-gray-300 py-14 text-center text-gray-400">작성한 상품문의가 없습니다.</div>
     <ul v-else class="m-0 grid list-none gap-3 p-0">
@@ -26,17 +26,13 @@
 
 <script setup lang="ts">
 import MyShell from "~/components/ec2/my/MyShell.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myBoardSvc } from "~/svc/fo/ec/my/myBoardSvc";
 import { pdQnaSvc } from "~/svc/fo/ec/pd/pdQnaSvc";
 import { toSafeHtml } from "~/utils/htmlSafe";
 import type { PdMyQnaType } from "~/types/pd/pdMyReviewType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 상품문의 관리" });
-usePageTitle("마이페이지 - 상품문의 관리");
 
 const loading = ref(true);
 const list = ref<PdMyQnaType[]>([]);

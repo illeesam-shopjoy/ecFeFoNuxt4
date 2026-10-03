@@ -65,11 +65,9 @@ import { prodCouponSvc } from "~/svc/fo/ec/pm/prodCouponSvc";
 import { useAuthStore } from "~/store/useAuthStore";
 import { PROD_COUPON_STATUS, giftLink, ymd } from "~/conts/prodCoupon";
 import { useShareTools } from "~/composables/useShareTools";
-import { usePageTitle } from "~/composables/usePageTitle";
 import type { PmProdCouponType } from "~/types/pm/pmProdCouponType";
 
 useHead({ title: "마이페이지 - 선물 · 상품쿠폰" });
-usePageTitle("마이페이지 - 선물 · 상품쿠폰");
 const { shareKakaoUrl } = useShareTools();
 
 const TABS = [

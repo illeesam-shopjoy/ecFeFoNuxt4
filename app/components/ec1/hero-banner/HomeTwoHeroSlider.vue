@@ -3,7 +3,6 @@
        추가로 먹어서, 페이지 전체를 감싸는 box-25(25px)와 겹쳐 다른 섹션보다 유난히 좁아 보였다.
        box-25만으로 나머지 섹션과 통일. -->
   <section class="slider__area slider__area-2 tp_hero relative">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <Carousel :items-to-show="1" :wrap-around="true" class="slider-active">
       <Slide v-for="item in slider_data" :key="item.heroSliderId" class="single-slider single-slider-2 slider__height-2 flex items-center" :style="{ backgroundImage: `url(${item.bgImg})` }">
         <div class="container-fluid">
@@ -28,10 +27,6 @@
 
 <script setup lang="ts">
 import { CDN_URL } from "~/conts/baseConst";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('히어로 슬라이더 2');
 import { computed } from "vue";
 import { Carousel, Slide, Pagination } from "vue3-carousel";
 import { type CoHeroSliderDataTypeTwo } from "~/types/co/coHeroSliderDataTypeTwo";

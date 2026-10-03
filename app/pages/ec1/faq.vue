@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="FAQ" subtitle="FAQ" />
 
     <!-- 2026-09-19(요청사항: "FAQ / FAQ 반응형 … ecFeFoNuxt4 페이지에 만들어줘, 특정영역별 컴포넌트로 분리 안해도 되") —
@@ -92,18 +91,14 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { coFaqSvc } from "~/svc/fo/ec/cm/coFaqSvc";
 import type { CmFaqType } from "~/types/cm/cmFaqType";
 import type { CmFaqTreeType } from "~/types/cm/cmFaqTreeType";
 import FoPager from "~/components/ec1/fo/FoPager.vue";
-import { usePageTitle } from "~/composables/usePageTitle";
 
 useHead({ title: "FAQ" });
-usePageTitle("FAQ");
 
 const PAGE_SIZES = [5, 10, 20, 30, 50];
 

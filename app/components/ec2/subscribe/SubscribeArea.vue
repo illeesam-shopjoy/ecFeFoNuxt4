@@ -1,6 +1,5 @@
 <template>
   <section :class="`subscribe__area ${style_2 ? 'grey-bg box-m-15' : ''} pb-100 ${style_3 ? 'p-relative' : ''}`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div :class="`${style_3 ? 'custom-container' : 'container'} mx-auto`">
       <div :class="`subscribe__inner ${style_2 ? 'subscribe__inner-2 pt-120' : 'pt-95'}`">
         <div class="row flex justify-center">
@@ -23,10 +22,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('구독');
 import { ref } from "vue";
 
 defineProps({

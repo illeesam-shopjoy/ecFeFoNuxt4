@@ -1,6 +1,5 @@
 <template>
   <section class="blog__area pt-100 pb-100">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <div class="row flex justify-center">
         <div v-if="left_side" class="col-xl-3 col-lg-4">
@@ -38,10 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('블로그');
 import { ref, reactive, computed, onMounted, onBeforeUnmount, onActivated, onDeactivated, watch } from "vue";
 import { useCacheBlogs } from "~/composables/useCacheBlogs";
 import BlogSidebar from "../common/sidebar/BlogSidebar.vue";

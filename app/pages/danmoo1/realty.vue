@@ -8,7 +8,6 @@
       </dm-title-bar>
       <dm-chips v-model="chip" :items="DM_REALTY_TYPES.map((s) => ({ value: s, label: s }))" clearable />
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <div class="mx-4 mt-2 mb-1 rounded-xl bg-[var(--dm-primary-soft)] px-4 py-3 text-[13px]"><i class="fas fa-info-circle primary mr-1.5"></i>매물은 표시용 샘플이에요. 매물 등록·문의는 준비 중입니다.</div>
     <dm-empty v-if="chip && !KIND_CHIPS.has(chip) && chip !== '관심' && chip !== '전체'" icon="far fa-building" :title="`${chip}은 준비 중이에요`" />
@@ -65,11 +64,9 @@ import DmChips from "~/components/danmoo1/dm/DmChips.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
 import MapSwitch from "~/components/danmoo1/common/map/MapSwitch.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { readLocalList, toggleLocalList, useDmTown } from "~/composables/useDmTown";
 import { DM_REALTY_LIKE_KEY, DM_REALTY_SAMPLE, DM_REALTY_TYPES, coordsOf, type DmRealtySample } from "~/conts/tenant/danmoo1";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "부동산" });
 const { town } = useDmTown();
 const { openAlert } = useAlert();

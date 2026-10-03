@@ -1,7 +1,7 @@
 <template>
   <!-- 마이페이지 > 판매자 창고 관리 (/my/seller-warehouse, 2026-09-30) — 출고지/반품지 주소록 CRUD.
        판매자(승인대기 포함)만 사용 가능, 판매자가 아니면 판매자 신청 안내를 보여준다. 상품등록 시 출고창고로 지정된다. -->
-  <my-shell active="seller-warehouse" title="판매자 창고 관리" :file-path="currentFilePath">
+  <my-shell active="seller-warehouse" title="판매자 창고 관리">
     <div v-if="loading" class="py-16 text-center text-gray-400">불러오는 중...</div>
 
     <div v-else-if="notSeller" class="rounded-2xl border border-dashed border-gray-300 py-14 text-center">
@@ -82,8 +82,6 @@
 <script setup lang="ts">
 import MyShell from "~/components/ec1/my/MyShell.vue";
 import AddrSearchModal from "~/components/ec1/modals/AddrSearchModal.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { slSellerWarehouseSvc } from "~/svc/fo/ec/sl/slSellerWarehouseSvc";
 import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
@@ -91,9 +89,7 @@ import type { PdMyProdType } from "~/types/pd/pdMyProdType";
 import type { SlSellerWarehouseSaveType, SlSellerWarehouseType } from "~/types/sl/slSellerWarehouseType";
 import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 판매자 창고 관리" });
-usePageTitle("마이페이지 - 판매자 창고 관리");
 
 const loading = ref(true);
 const notSeller = ref(false);

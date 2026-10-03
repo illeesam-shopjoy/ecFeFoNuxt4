@@ -6,7 +6,6 @@
       <dm-chips v-model="cateId" :items="chips" clearable />
       <dm-filter-bar v-model="filter" />
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <!-- 안내 띠 -->
     <nuxt-link to="/services" class="mx-4 mt-1 mb-2 flex items-center gap-3 rounded-xl bg-[var(--dm-primary-soft)] px-4 py-3">
@@ -42,7 +41,6 @@ import DmChips, { type DmChipItem } from "~/components/danmoo1/dm/DmChips.vue";
 import DmFilterBar, { type DmFilterValue } from "~/components/danmoo1/dm/DmFilterBar.vue";
 import DmProdCard from "~/components/danmoo1/dm/DmProdCard.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { DM_HOME_SHORTCUTS, DM_SORTS, dmStatusOf } from "~/conts/tenant/danmoo1";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
@@ -53,7 +51,6 @@ import type { PdProdType } from "~/types/pd/pdProdType";
 
 // nuxt.config app.keepalive.include 의 이름 — 상세에서 뒤로 오면 목록·스크롤 그대로
 defineOptions({ name: "HomePage" });
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "홈" });
 
 const { town } = useDmTown();

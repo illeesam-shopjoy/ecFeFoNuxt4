@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="회사소개" subtitle="회사소개" />
 
     <!-- 2026-09-19(요청사항: "회사소개 … ecFeFoNuxt4 페이지에 만들어줘") — ecFeBo(pages/fo/About.js) 이식.
@@ -96,15 +95,11 @@
 
 <script setup lang="ts">
 import { BIZ_INFO, telHref } from "~/conts/bizInfo";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import MapSwitch from "~/components/ec1/common/map/MapSwitch.vue";
-import { usePageTitle } from "~/composables/usePageTitle";
 
 useHead({ title: "회사소개" });
-usePageTitle("회사소개");
 
 const stats = [
   { value: "2024", label: "설립년도" },

@@ -11,7 +11,6 @@
       </dm-title-bar>
       <dm-chips v-model="chip" :items="DM_JOB_SHORTCUTS.map((s) => ({ value: s, label: s }))" clearable />
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <div class="mx-4 mt-2 mb-1 rounded-xl bg-[var(--dm-primary-soft)] px-4 py-3 text-[13px]"><i class="fas fa-info-circle primary mr-1.5"></i>알바 공고는 표시용 샘플이에요. 지원·공고 등록은 준비 중입니다.</div>
     <ul>
@@ -61,11 +60,9 @@ import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmChips from "~/components/danmoo1/dm/DmChips.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { readLocalList, toggleLocalList, useDmTown } from "~/composables/useDmTown";
 import { DM_JOBS_SAMPLE, DM_JOB_LIKE_KEY, DM_JOB_SHORTCUTS, type DmJobSample } from "~/conts/tenant/danmoo1";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "알바" });
 const { town } = useDmTown();
 const { openAlert } = useAlert();

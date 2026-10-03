@@ -54,12 +54,10 @@
 <script setup lang="ts">
 import Layout from "~/layout/ec2/Layout.vue";
 import BreadcrumbArea from "~/components/ec2/common/breadcrumb/BreadcrumbArea.vue";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { emailVerifySvc } from "~/svc/co/auth/emailVerifySvc";
 import type { MbEmailVerifyPreviewType, MbEmailVerifyPurposeType, MbEmailVerifyReauthType } from "~/types/mb/mbEmailVerifyType";
 
 useHead({ title: "이메일 인증" });
-usePageTitle("이메일 인증");
 
 const PURPOSE_LABEL: Record<MbEmailVerifyPurposeType, string> = {
   JOIN: "회원가입",

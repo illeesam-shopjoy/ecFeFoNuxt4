@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <!-- 2026-09-20(요청사항: "블로그 상세 배너 있어야 하지 않어?") — 다른 상세 화면처럼 상단 배너 + 홈 / 블로그 목록 / 블로그 상세 -->
     <breadcrumb-area title="블로그 상세" subtitle="블로그 상세" parent-title="블로그 목록" parent-link="/blog" heading-tag="div" />
     <!-- 스켈레톤: SSR/CSR 로딩 중 -->
@@ -180,8 +179,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import SkeletonBlogDetail from "~/components/ec1/ui/SkeletonBlogDetail.vue";
@@ -205,7 +202,6 @@ const id = route.params.id as string;
 // SEO 단위화면(useSeoDetail): 서버 렌더링은 SEO 용 최소 정보(제목/요약/이미지)만, 화면이 뜬 뒤 브라우저가 ecBeBo 에서 본문까지 직접 조회한다.
 const { item, pending, seo } = await useSeoDetail<CmBlogType>(`blog-${id}`, id ? `/api/fo/ec/cm/bltn/${encodeURIComponent(id)}` : null, () => coBlogSvc.getById(id));
 
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useGa } from "~/composables/useGa";
 useSeoMeta({
   title: () => (item.value ? `${item.value.blogTitle} | Outstock 블로그` : "블로그 상세"),
@@ -214,7 +210,6 @@ useSeoMeta({
   ogDescription: () => item.value?.blogSummary,
   ogImage: () => item.value?.img,
 });
-usePageTitle("블로그 상세");
 if (seo.value) useCdnCache(300); // 서버 렌더 결과(SEO 정보 있음)만 Netlify CDN 5분 캐시 — 오류/빈 페이지는 캐시 안 함
 
 // GA4: 상세 조회 데이터 기준으로 page_view 전송

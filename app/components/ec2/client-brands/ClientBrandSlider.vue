@@ -1,6 +1,5 @@
 <template>
   <section :class="`client__area ${style_2 ? '' : 'pt-15 pb-140'}`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <div class="row">
         <div class="col-xl-12">
@@ -43,10 +42,6 @@
 
 <script setup lang="ts">
 import { CDN_URL } from "~/conts/baseConst";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('브랜드 슬라이더');
 import { computed } from "vue";
 import { Carousel, Slide } from "vue3-carousel";
 import AppImage from "~/components/ec2/ui/AppImage.vue";

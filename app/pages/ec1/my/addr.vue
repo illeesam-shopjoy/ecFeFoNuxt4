@@ -1,5 +1,5 @@
 <template>
-  <my-shell active="addr" title="주소정보 관리" :file-path="currentFilePath">
+  <my-shell active="addr" title="주소정보 관리">
     <div class="mb-4 flex items-center justify-between">
       <p class="m-0 text-[0.85rem] text-gray-500">기본 배송지는 주문할 때 자동으로 채워집니다.</p>
       <button type="button" class="cursor-pointer rounded-lg border-0 bg-gray-900 px-4 py-2 text-[0.85rem] font-bold text-white" @click="openForm()">+ 배송지 추가</button>
@@ -53,16 +53,12 @@
 <script setup lang="ts">
 import MyShell from "~/components/ec1/my/MyShell.vue";
 import AddrSearchModal from "~/components/ec1/modals/AddrSearchModal.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myAddrSvc } from "~/svc/fo/ec/my/myAddrSvc";
 import type { MbMemberAddrType } from "~/types/mb/mbMemberAddrType";
 import type { SyAddrSearchResultType } from "~/types/sy/syAddrSearchResultType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 주소정보 관리" });
-usePageTitle("마이페이지 - 주소정보 관리");
 
 const loading = ref(true);
 const list = ref<MbMemberAddrType[]>([]);

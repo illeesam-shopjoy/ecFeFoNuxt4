@@ -7,7 +7,6 @@
         <nuxt-link to="/search" class="icon-btn" aria-label="검색"><i class="far fa-search"></i></nuxt-link>
       </div>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <client-only>
       <map-switch :addr="`성남시 ${town}`" :lat="center.lat" :lng="center.lng" height-css="300px" toolbar-position="bottom" />
@@ -49,11 +48,9 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmSheet from "~/components/danmoo1/dm/DmSheet.vue";
 import MapSwitch from "~/components/danmoo1/common/map/MapSwitch.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useDmTown } from "~/composables/useDmTown";
 import { DM_MAP_CATEGORIES, DM_NEIGHBORHOODS, coordsOf } from "~/conts/tenant/danmoo1";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "동네지도" });
 const { town, setTown } = useDmTown();
 const { openAlert } = useAlert();

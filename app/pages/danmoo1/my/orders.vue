@@ -2,7 +2,6 @@
   <!-- 구매내역 — 이 계정의 주문(ShopJoy 결제 주문과 같은 데이터). danmoo1 자체는 채팅 직거래라 주문이 없을 수 있다 -->
   <layout :tabs="false">
     <template #top><dm-title-bar title="구매내역" fallback="/my" /></template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <dm-empty v-if="ready && !authStore.isStLoggedIn" icon="far fa-shopping-bag" title="로그인하면 구매내역을 볼 수 있어요">
       <nuxt-link :to="{ path: '/login', query: { redirect: '/my/orders' } }" class="btn-primary mt-3 px-8">로그인</nuxt-link>
@@ -23,14 +22,12 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myOrderSvc } from "~/svc/fo/my/myOrderSvc";
 import { formatWon } from "~/utils/timeAgo";
 import type { OdOrderType } from "~/types/od/odOrderType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "구매내역" });
 const authStore = useAuthStore();
 const orders = ref<OdOrderType[]>([]);

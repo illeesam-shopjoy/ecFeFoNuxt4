@@ -1,6 +1,5 @@
 <template>
   <div :class="`product__modal-content ${style_2 ? 'product__modal-content-2' : ''}`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <!-- 2026-09-20(요청사항: 상품상세를 ecFeBo 처럼) — 상품유형 + 카테고리 이름 칩(상품명 위) -->
     <div v-if="detail && (prodTypeNm || item.category?.categoryNm)" class="mb-2 flex flex-wrap items-center gap-1.5">
       <span v-if="prodTypeNm" class="rounded-full border border-[#e5e7eb] bg-[#f6f7f9] px-2.5 py-[3px] text-[0.72rem] font-semibold text-[#6b7280]">{{ prodTypeNm }}</span>
@@ -253,10 +252,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle("상품 상세 내용");
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { type PdProdType } from "~/types/pd/pdProdType";
 import { useCartStore } from "~/store/useCartStore";

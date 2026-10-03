@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="블로그 2단 메이슨리" subtitle="블로그 2단 메이슨리" />
     <section class="blog__area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
@@ -61,8 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
@@ -73,11 +70,9 @@ import AppImage from "~/components/ec1/ui/AppImage.vue";
 import MasonryWall from "@yeger/vue-masonry-wall";
 import SkeletonCard from "~/components/ec1/ui/SkeletonCard.vue";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "블로그 2단 메이슨리",
 });
-usePageTitle("블로그 2단 메이슨리");
 
 // 2026-09-17 버그수정/개선: 예전엔 useCacheBlogs()(전체 최대 200건 공유캐시)를 통째로 받아와
 // 마소너리에 다 흩뿌렸다 — 목록이 길어질수록 처음 화면 뜨는 속도가 느려지고 안 보이는

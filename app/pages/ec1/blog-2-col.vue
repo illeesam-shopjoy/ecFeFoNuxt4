@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="블로그 2단" subtitle="블로그 2단" />
     <section class="blog__area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
@@ -28,8 +27,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { ref, reactive, computed } from "vue";
@@ -40,11 +37,9 @@ import { useClientPager } from "~/composables/useClientPager";
 import BlogStandardItem from "~/components/ec1/blogs/BlogStandardItem.vue";
 import SkeletonCard from "~/components/ec1/ui/SkeletonCard.vue";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "블로그 2단",
 });
-usePageTitle("블로그 2단");
 
 const { blogs, pending } = useCacheBlogs();
 // 2026-09-13 버그수정: blogContent는 실제 블로그 본문 HTML이라 예전 목업 데이터 시절의

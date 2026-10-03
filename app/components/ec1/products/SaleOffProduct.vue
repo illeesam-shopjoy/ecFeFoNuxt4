@@ -1,6 +1,5 @@
 <template>
   <section class="sale__area pb-100">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div class="max-w-7xl mx-auto px-4">
       <div class="row">
         <div class="col-xl-12">
@@ -24,10 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('할인 상품');
 import ProductItem from "./ProductItem.vue";
 import { computed } from "vue";
 

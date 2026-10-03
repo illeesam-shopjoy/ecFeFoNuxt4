@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="회원가입" subtitle="회원가입" />
     <section class="login-area pt-[16px] md:pt-[100px] pb-100">
       <div class="max-w-7xl mx-auto px-4">
@@ -92,8 +91,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { ref } from "vue";
@@ -112,11 +109,9 @@ import EmailVerifyBox from "~/components/ec1/fo/EmailVerifyBox.vue";
 import AttachUploader from "~/components/ec1/ui/AttachUploader.vue";
 import type { SyAttachChangeType } from "~/types/sy/syAttachChangeType";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "회원가입",
 });
-usePageTitle("회원가입");
 
 const authStore = useAuthStore();
 const router = useRouter();

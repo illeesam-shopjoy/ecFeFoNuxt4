@@ -1,6 +1,5 @@
 <template>
   <layout-two>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <main class="box-25">
       <home-two-hero-slider />
       <category-area :style_2="true" />
@@ -91,8 +90,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import LayoutTwo from "~/layout/ec1/LayoutTwo.vue";
 import { computed } from "vue";
 import HomeTwoHeroSlider from "~/components/ec1/hero-banner/HomeTwoHeroSlider.vue";
@@ -104,11 +101,9 @@ import BlogArea from "~/components/ec1/blogs/BlogArea.vue";
 import ClientBrandSlider from "~/components/ec1/client-brands/ClientBrandSlider.vue";
 import SubscribeArea from "~/components/ec1/subscribe/SubscribeArea.vue";
 
-import { usePageTitle } from "~/composables/usePageTitle";
 useHead({
   title: "홈 2",
 });
-usePageTitle("홈 2");
 
 // 최신 상품 24개만 조회(전체 카탈로그 X) — trending 플래그는 실 스키마에 없어 항상 false(mapProduct.ts)라 최신순으로 노출.
 const products = useCacheProducts();

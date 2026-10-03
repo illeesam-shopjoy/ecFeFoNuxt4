@@ -1,7 +1,7 @@
 <template>
   <!-- 2026-09-20 ecFeBo 화면 구조로 통일 / 2026-09-19 — 마이페이지 > 채팅 (/my/chatt). ecFeBo MyChatt.js 이식. 기간 서버 페이징 채팅방 목록(<fo-grid>).
        실제 상담은 화면 우측 하단 채팅 위젯에서 이어서 진행한다. -->
-  <my-page-frame tab="chatt" :my="my" :file-path="currentFilePath" empty-text="채팅 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
+  <my-page-frame tab="chatt" :my="my" empty-text="채팅 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <div class="bg-white border border-[#e5e7eb] rounded-lg overflow-hidden">
       <fo-grid bare :columns="columns" :rows="my.rows" row-key="chatId" :loading="my.loading" />
     </div>
@@ -14,8 +14,6 @@
 <script setup lang="ts">
 import MyPageFrame from "~/components/ec1/my/MyPageFrame.vue";
 import FoGrid from "~/components/ec1/fo/FoGrid.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
 import { useCodeStore } from "~/store/useCodeStore";
 import type { SyCodeType } from "~/types/sy/syCodeType";
@@ -25,9 +23,7 @@ import type { FoGridColumn } from "~/types/fo/foCompType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 채팅" });
-usePageTitle("마이페이지 - 채팅");
 
 const codes = reactive({ chatt_status: [] as SyCodeType[] });
 

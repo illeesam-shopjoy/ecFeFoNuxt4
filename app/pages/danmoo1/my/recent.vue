@@ -6,7 +6,6 @@
         <template #right><button v-if="ids.length" type="button" class="text-[13px] muted px-2" @click="handleBtnAction('recent-clear')">지우기</button></template>
       </dm-title-bar>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <div v-if="loading" class="grid grid-cols-2 gap-x-3 gap-y-5 p-4"><div v-for="i in 4" :key="i" class="skeleton aspect-square rounded-xl"></div></div>
     <dm-empty v-else-if="!items.length" icon="far fa-clock" title="최근 본 물건이 없어요" desc="물건을 열어 보면 여기에 차례로 쌓여요">
@@ -23,13 +22,11 @@ import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmMiniCard from "~/components/danmoo1/dm/DmMiniCard.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { readLocalList, writeLocalList } from "~/composables/useDmTown";
 import { DM_RECENT_VIEW_KEY } from "~/conts/tenant/danmoo1";
 import { pdProductSvc } from "~/svc/fo/ec/pd/pdProductSvc";
 import type { PdProdType } from "~/types/pd/pdProdType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "최근 본 물건" });
 const ids = ref<string[]>([]);
 const items = ref<PdProdType[]>([]);

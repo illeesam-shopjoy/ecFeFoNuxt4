@@ -2,7 +2,6 @@
   <!-- 쿠폰함 — 이 계정이 가진 쿠폰(ShopJoy 와 같은 지갑). danmoo1 에서는 쓰는 곳이 없어 보기만 한다 -->
   <layout :tabs="false">
     <template #top><dm-title-bar title="쿠폰함" fallback="/my" /></template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <dm-empty v-if="ready && !authStore.isStLoggedIn" icon="far fa-ticket-alt" title="로그인하면 쿠폰을 볼 수 있어요">
       <nuxt-link :to="{ path: '/login', query: { redirect: '/my/coupons' } }" class="btn-primary mt-3 px-8">로그인</nuxt-link>
@@ -32,14 +31,12 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { myCouponSvc } from "~/svc/fo/my/myCouponSvc";
 import { formatWon } from "~/utils/timeAgo";
 import type { PmCouponType } from "~/types/pm/pmCouponType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "쿠폰함" });
 const authStore = useAuthStore();
 const coupons = ref<PmCouponType[]>([]);

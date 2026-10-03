@@ -1,6 +1,5 @@
 <template>
   <div :class="`banner__area ${style_2 ? 'pt-95' : ''} ${style_3 ? 'pt-20' : ''} ${style_4 ? 'pt-30' : ''}`">
-    <xdev-file-path-badge :file-path="currentFilePath" :absolute="true" />
     <div :class="`container mx-auto ${style_3 ? 'custom-container' : ''}`">
       <div :class="`${style_2 ? '' : !style_3 && !style_4 && 'banner__inner relative mt--95'} ${style_4 ? 'banner__inner-2 relative' : ''}`">
         <div class="row flex justify-center">
@@ -40,10 +39,6 @@
 <script setup lang="ts">
 /** 카테고리 배너 → 상품목록에서 그 카테고리가 선택된 상태로 열린다 (shop.vue 가 ?category= 를 읽는다) */
 const shopLink = (categoryId: string) => `/shop?category=${encodeURIComponent(categoryId)}`;
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
-import { useComponentTitle } from "~/composables/useComponentTitle";
-useComponentTitle('카테고리');
 import { computed } from "vue";
 import AppImage from "~/components/ec1/ui/AppImage.vue";
 import { pdCategorySvc } from "~/svc/fo/ec/pd/pdCategorySvc";

@@ -1,7 +1,7 @@
 <template>
   <!-- 마이페이지 > 프로모션 관리 (/my/promotion, 2026-10-02 · 셀러 Phase 2 · 2C) — 승인된 판매자가 내 상품 대상으로 할인·쿠폰·적립금·상품권을 등록한다.
        할인/적립금은 대상 상품(내 상품만)을 골라야 하고, 상품권은 상품 매핑 없이 내 상품 전체에 적용된다. 할인 비용은 판매자가 100% 부담한다. -->
-  <my-shell active="promotion" title="프로모션 관리" :file-path="currentFilePath">
+  <my-shell active="promotion" title="프로모션 관리">
     <div v-if="loading" class="py-16 text-center text-gray-400">불러오는 중...</div>
 
     <div v-else-if="!seller" class="rounded-2xl border border-dashed border-gray-300 py-14 text-center">
@@ -80,8 +80,6 @@
 
 <script setup lang="ts">
 import MyShell from "~/components/ec1/my/MyShell.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { useAuthStore } from "~/store/useAuthStore";
 import { pdMyProdSvc } from "~/svc/fo/ec/pd/pdMyProdSvc";
 import { pmSellerPromoSvc } from "~/svc/fo/ec/pm/pmSellerPromoSvc";
@@ -90,9 +88,7 @@ import type { PdMyProdType } from "~/types/pd/pdMyProdType";
 import type { PmSellerPromoKindType, PmSellerPromoSaveType, PmSellerPromoType } from "~/types/pm/pmSellerPromoType";
 import type { SlSellerMyType } from "~/types/sl/slSellerApplyType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "마이페이지 - 프로모션 관리" });
-usePageTitle("마이페이지 - 프로모션 관리");
 
 const TABS: { key: PmSellerPromoKindType; label: string }[] = [
   { key: "discnt", label: "할인" },

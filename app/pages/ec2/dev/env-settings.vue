@@ -69,7 +69,6 @@ import { envSvc } from "~/svc/co/dev/envSvc";
 import type { SyDevEnvFieldType } from "~/types/sy/syDevEnvType";
 
 definePageMeta({ layout: "admin" });
-usePageTitle("환경변수 설정");
 
 const config = useRuntimeConfig();
 const isLocal = config.public.mode === "local";

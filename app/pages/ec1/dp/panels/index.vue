@@ -141,7 +141,6 @@ import type { DpSlotDefType } from "~/types/dp/dpSlotDefType";
 
 import { reactive, ref, computed, onMounted } from "vue";
 import { CDN_URL } from "~/conts/baseConst";
-import { usePageTitle } from "~/composables/usePageTitle";
 import { dpAdminSvc } from "~/svc/fo/ec/dp/dpAdminSvc";
 import type { DpUiType } from "~/types/dp/dpUiType";
 import type { DpAreaType } from "~/types/dp/dpAreaType";
@@ -150,7 +149,6 @@ import type { DpPanelItemType } from "~/types/dp/dpPanelItemType";
 import { useAuthStore } from "~/store/useAuthStore";
 
 definePageMeta({ layout: "admin" });
-usePageTitle("전시패널관리");
 
 /**
  * 전시패널관리 — 2026-09-13 신설.

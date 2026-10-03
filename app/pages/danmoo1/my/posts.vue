@@ -6,7 +6,6 @@
         <template #right><nuxt-link to="/write?type=community" class="text-[14px] primary font-bold px-2">글쓰기</nuxt-link></template>
       </dm-title-bar>
     </template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <dm-empty v-if="ready && !authStore.isStLoggedIn" icon="far fa-folder-open" title="로그인하면 내가 쓴 글을 볼 수 있어요">
       <nuxt-link :to="{ path: '/login', query: { redirect: '/my/posts' } }" class="btn-primary mt-3 px-8">로그인</nuxt-link>
@@ -31,7 +30,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { DM_BLOG_CATE_ID } from "~/conts/tenant/danmoo1";
@@ -39,7 +37,6 @@ import { coBlogSvc } from "~/svc/fo/ec/cm/coBlogSvc";
 import { timeAgo } from "~/utils/timeAgo";
 import type { CmBlogType } from "~/types/cm/cmBlogType";
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "모아보기" });
 const authStore = useAuthStore();
 const mine = ref<CmBlogType[]>([]);

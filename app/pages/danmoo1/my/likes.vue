@@ -2,7 +2,6 @@
   <!-- 관심목록 — 내 찜(mb_like PRODUCT) 목록(2열 격자). 하트를 다시 누르면 해제 -->
   <layout :tabs="false">
     <template #top><dm-title-bar title="관심목록" fallback="/my" /></template>
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
 
     <dm-empty v-if="ready && !authStore.isStLoggedIn" icon="far fa-heart" title="로그인하면 관심목록을 볼 수 있어요">
       <nuxt-link :to="{ path: '/login', query: { redirect: '/my/likes' } }" class="btn-primary mt-3 px-8">로그인</nuxt-link>
@@ -29,7 +28,6 @@
 import Layout from "~/layout/danmoo1/Layout.vue";
 import DmTitleBar from "~/components/danmoo1/dm/DmTitleBar.vue";
 import DmEmpty from "~/components/danmoo1/dm/DmEmpty.vue";
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { useAuthReady } from "~/composables/useAuthReady";
 import { useAuthStore } from "~/store/useAuthStore";
 import { mbLikeSvc } from "~/svc/fo/ec/mb/mbLikeSvc";
@@ -38,7 +36,6 @@ import type { MbLikeType } from "~/types/mb/mbLikeType";
 
 /* ##### [01] 초기 변수 정의 ################################################## */
 
-const currentFilePath = useCurrentFilePath();
 useHead({ title: "관심목록" });
 const authStore = useAuthStore();
 const { openAlert } = useAlert();

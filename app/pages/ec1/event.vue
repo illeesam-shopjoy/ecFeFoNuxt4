@@ -1,6 +1,5 @@
 <template>
   <layout :transparent="true">
-    <xdev-file-path-badge :file-path="currentFilePath" position="top-right" :absolute="true" />
     <breadcrumb-area title="이벤트" subtitle="이벤트" />
 
     <!-- 2026-09-19(요청사항: "이벤트목록 … ecFeFoNuxt4 페이지에 만들어줘") — ecFeBo(pages/fo/Event.js) 이식.
@@ -99,18 +98,14 @@
 </template>
 
 <script setup lang="ts">
-import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
-const currentFilePath = useCurrentFilePath();
 import Layout from "~/layout/ec1/Layout.vue";
 import BreadcrumbArea from "~/components/ec1/common/breadcrumb/BreadcrumbArea.vue";
 import { foPmEventSvc } from "~/svc/fo/ec/pm/foPmEventSvc";
 import type { PmEventCardType } from "~/types/pm/pmEventViewType";
 import type { CoPagedResultType } from "~/types/co/coPagedResultType";
 import FoPager from "~/components/ec1/fo/FoPager.vue";
-import { usePageTitle } from "~/composables/usePageTitle";
 
 useHead({ title: "이벤트" });
-usePageTitle("이벤트");
 
 type TabKey = "ongoing" | "ended";
 type SortKey = "latest" | "deadline";
