@@ -1,4 +1,9 @@
-/** 클레임(취소/반품/교환). 필드명은 ecBeBo(JPA) OdClaimDto.Item(od_claim) 기준 — 서버가 내려주는 값을 그대로 담는다(대부분 optional). */
+import type { OdClaimItemType } from "~/types/od/odClaimItemType";
+import type { OdRefundType } from "~/types/od/odRefundType";
+
+/** 클레임(취소/반품/교환). 필드명은 ecBeBo(JPA) OdClaimDto.Item(od_claim) 기준 — 서버가 내려주는 값을 그대로 담는다(대부분 optional).
+ * 2026-10-03 클레임-부분환불 계약(z0docs/정책서/ec/od/od.13.클레임-부분환불.impl-2026-10-03.md §2/§4) — 금액 필드·claimItems·refunds 확장.
+ * 요청 본문은 OdClaimReqType(odClaimReqType.ts). */
 export interface OdClaimType {
   claimId: string; // 클레임ID (YYMMDDhhmmss+rand4)
   orderId?: string; // 주문ID
@@ -6,10 +11,10 @@ export interface OdClaimType {
   memberNm?: string; // 회원명
   claimTypeCd?: string; // 클레임유형 — CLAIM_TYPE_CD {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
   claimTypeCdNm?: string; // 클레임유형 코드 라벨
-  claimStatusCd?: string; // 클레임상태 — CLAIM_STATUS_CD {REQUESTED:요청, ACCEPTED:승인, APPROVED:승인, IN_PI…
+  claimStatusCd?: string; // 클레임상태 — CLAIM_STATUS_CD {REQUESTED:요청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:반려, CANCELLED:철회}
   claimStatusCdNm?: string; // 클레임상태 코드 라벨
   claimStatusCdBefore?: string; // 변경 전 클레임상태 — CLAIM_STATUS_CD
-  reasonCd?: string; // 사유코드 — REASON_CD {MIND_CHANGE:단순변심, WRONG_OPTION:옵션선택오류, CHEAPER_ELSEW…
+  reasonCd?: string; // 사유코드 — REASON_CD {CHANGE_MIND:단순변심, WRONG_ORDER:잘못 주문, DEFECT:상품 불량, WRONG_DELIVERY:오배송, DELIVERY_DELAY:배송 지연, ETC:기타} (고객 귀책 여부는 서버 판정)
   reasonCdNm?: string; // 사유코드 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   reasonDetail?: string; // 사유 상세
   prodNm?: string; // 대표 상품명
@@ -21,10 +26,12 @@ export interface OdClaimType {
   claimCancelReasonDetail?: string; // 클레임 철회사유상세
   refundMethodCd?: string; // 환불수단 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스, KAKAO:카카오…
   refundMethodCdNm?: string; // 환불수단 코드 라벨
-  refundAmt?: number; // 환불 합계금액 (상품금액+배송비-추가배송비-적립금복원)
-  refundProdAmt?: number; // 환불 상품금액
-  refundShippingAmt?: number; // 환불 배송비
-  refundSaveAmt?: number; // 환불 적립금 합계 (사용 적립금 복원액)
+  refundAmt?: number; // 현금성 환불액 = max(0, 상품금액 − 쿠폰 안분 − 적립/캐시 안분 + 배송비 환불 − 반품배송비). EXCHANGE 는 0
+  refundProdAmt?: number; // 환불 상품금액 (Σ 단가 × claimQty)
+  refundCouponAmt?: number; // 쿠폰 할인 안분 차감액 (floor(couponDiscountAmt × ratio))
+  refundShippingAmt?: number; // 배송비 환불 − 반품배송비 (취소·반품이 남은 수량 전부일 때만 배송비 환불)
+  refundSaveAmt?: number; // 적립금/캐시 복원액 (현금이 아니라 회원 캐시 잔액으로 복원)
+  fullClaimYn?: string; // 이 클레임으로 주문의 남은 수량 전부 소진 여부 Y/N (Y 면 배송비 환불 대상)
   refundBankCd?: string; // 환불 은행코드 — BANK_CODE (계좌이체 환불 시)
   refundBankCdNm?: string; // 환불은행 코드 라벨
   refundAccountNo?: string; // 환불 계좌번호
@@ -44,7 +51,7 @@ export interface OdClaimType {
   collectAddrDetail?: string; // 수거지 상세주소
   collectReqMemo?: string; // 수거 요청사항
   collectSchdDate?: string; // 수거 예정일시
-  returnShippingFee?: number; // 수거배송료
+  returnShippingFee?: number; // 반품/교환 배송비 (고객 귀책 RETURN·EXCHANGE 만, sy_prop app.claim.return-shipping-fee 기본 3000)
   returnCourierCd?: string; // 수거 택배사 — COURIER {CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배 외}
   returnCourierCdNm?: string; // 수거택배사 코드 라벨
   returnTrackingNo?: string; // 수거 송장번호
@@ -97,6 +104,9 @@ export interface OdClaimType {
   memberEmail?: string; // 회원 이메일 (mb_member 조인)
   memberPhoneOrigin?: string; // 회원 연락처 (mb_member 조인)
   claimItemCnt?: number; // 클레임항목 수 (상관 서브쿼리 집계)
+  claimQtySum?: number; // 클레임 수량 합계 (목록 요약)
+  claimItems?: OdClaimItemType[]; // 클레임 품목 (od_claim_item — 신청 응답·상세 조회에 포함)
+  refunds?: OdRefundType[]; // 환불 내역 (od_refund + refund_method — 상세 조회에 포함, COMPLT 후 생성)
   // ── 공통(감사) 컬럼 ──
   regBy?: string; // 등록자 (reg_by)
   regByNm?: string; // 등록자명 (reg_by_nm)

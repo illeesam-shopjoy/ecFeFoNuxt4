@@ -1,7 +1,8 @@
 <template>
   <!-- 2026-09-19(요청사항: "ecFeBo pages/fo/my/MyOrder.js 처럼 app/pages/my 아래 페이지") — 마이페이지 > 주문 (/my/order).
        ecFeBo MyOrder.js 이식. 기간 + 주문상태 서버 페이징, 행 클릭 시 상품/결제/배송 펼침. 목록은 <fo-grid>.
-       2026-09-20(요청사항: "ecFeBo DpDispWidgetPreview.js 처럼 구조 통일") — [01]초기변수 [02]액션모음(handleBtnAction/handleSelectAction/fnCallbackModal) [03]내장함수(fnLoadCodes/handleSearchList/initPage). -->
+       2026-09-20(요청사항: "ecFeBo DpDispWidgetPreview.js 처럼 구조 통일") — [01]초기변수 [02]액션모음(handleBtnAction/handleSelectAction/fnCallbackModal) [03]내장함수(fnLoadCodes/handleSearchList/initPage).
+       2026-10-03(클레임-부분환불 계약 §7) — 펼친 주문에 [취소 신청]/[반품 신청]/[교환 신청] 버튼(주문상품의 claimableTypeCds 로 노출) → ClaimRequestModal, 신청 완료 시 목록 재조회. 결제수단(payMethodCdNm) 표시. -->
   <my-page-frame tab="order" :my="my" :file-path="currentFilePath" empty-text="주문 내역이 없습니다." @btn-action="handleBtnAction" @select-action="handleSelectAction">
     <template #top>
       <div class="flex flex-wrap items-center gap-1 px-3.5 py-2.5 mb-4 bg-[#f4f6f8] rounded-lg text-[0.8rem]">
@@ -31,14 +32,25 @@
                 <div v-for="(it, ix) in row.items" :key="ix" class="flex items-center gap-3 py-2.5">
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold text-gray-900 truncate">{{ it.prodNm }}</div>
-                    <div class="text-[0.75rem] text-gray-400">{{ it.qty }}개</div>
+                    <div class="text-[0.75rem] text-gray-400">
+                      <span v-if="it.optNm">{{ it.optNm }} · </span>{{ it.qty }}개
+                      <template v-if="it.cancelQty"> · 취소 {{ it.cancelQty }}개</template>
+                      <template v-if="it.claimableQty != null && it.claimableQty < it.qty"> · 신청 가능 {{ it.claimableQty }}개</template>
+                    </div>
                   </div>
                   <div class="text-gray-700 whitespace-nowrap">{{ formatPrice(it.price * it.qty) }}</div>
                 </div>
                 <div v-if="!row.items.length" class="py-3 text-gray-400">주문 상품 정보가 없습니다.</div>
               </div>
+              <!-- 클레임 신청 버튼 — 주문상품의 claimableTypeCds(서버 판정)에 해당 유형이 하나라도 있을 때만 노출 -->
+              <div v-if="row.canCancel || row.canReturn || row.canExchange" class="mt-2 flex flex-wrap gap-1.5">
+                <button v-if="row.canCancel" type="button" class="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-[0.78rem] font-bold text-red-600 cursor-pointer hover:bg-red-100" @click.stop="handleBtnAction('claim-open', { orderId: row.orderId, type: 'CANCEL' })">취소 신청</button>
+                <button v-if="row.canReturn" type="button" class="rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-[0.78rem] font-bold text-orange-600 cursor-pointer hover:bg-orange-100" @click.stop="handleBtnAction('claim-open', { orderId: row.orderId, type: 'RETURN' })">반품 신청</button>
+                <button v-if="row.canExchange" type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-[0.78rem] font-bold text-blue-600 cursor-pointer hover:bg-blue-100" @click.stop="handleBtnAction('claim-open', { orderId: row.orderId, type: 'EXCHANGE' })">교환 신청</button>
+              </div>
               <!-- 결제/배송 -->
               <div class="mt-2 grid gap-1 text-[0.8rem] text-gray-500">
+                <div v-if="row.payMethod" class="flex justify-between"><span>결제수단</span><span class="font-semibold text-gray-800">{{ row.payMethod }}</span></div>
                 <div v-for="(p, pi) in row.pays" :key="pi" class="flex justify-between"><span>{{ p.type }}<template v-if="p.datetime"> · {{ p.datetime }}</template></span><span class="font-semibold text-gray-800">{{ formatPrice(p.amount) }}</span></div>
                 <div v-if="row.shippingFee" class="flex justify-between"><span>배송비</span><span>{{ formatPrice(row.shippingFee) }}</span></div>
                 <div v-if="row.cashPaid" class="flex justify-between"><span>캐쉬 사용</span><span>-{{ formatPrice(row.cashPaid) }}</span></div>
@@ -51,6 +63,8 @@
     </div>
 
     <template #modal>
+      <!-- 클레임(취소/반품/교환) 신청 모달 — 신청 완료 시 목록 재조회(claimableQty 갱신) -->
+      <ClaimRequestModal ref="claimModal" @done="fnCallbackModal('claim-request', {}, $event)" />
       <!-- 주문 진행 안내 모달 -->
       <Teleport to="body">
         <div v-if="uiState.helpOpen" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45" role="dialog" aria-modal="true" @click.self="fnCallbackModal('orders-help', {}, null)">
@@ -74,6 +88,7 @@
 <script setup lang="ts">
 import MyPageFrame from "~/components/ec1/my/MyPageFrame.vue";
 import FoGrid from "~/components/ec1/fo/FoGrid.vue";
+import ClaimRequestModal from "~/components/ec1/modals/ClaimRequestModal.vue";
 import { useCurrentFilePath } from "~/composables/useCurrentFilePath";
 import { usePageTitle } from "~/composables/usePageTitle";
 import { useMyList, kor, ymd, codeMap } from "~/composables/useMyList";
@@ -119,6 +134,7 @@ const FLOW_HELP = [
 
 const codes = reactive({ order_status: [] as SyCodeType[] });
 const uiState = reactive({ helpOpen: false });
+const claimModal = ref<InstanceType<typeof ClaimRequestModal> | null>(null);
 const searchParam = reactive({ orderStatusCd: "" });
 
 const columns: FoGridColumn[] = [
@@ -131,8 +147,16 @@ const columns: FoGridColumn[] = [
 // 백엔드 → 화면 어댑터 (ecFeBo foMyStore._adaptOrder) — 조회 시점에 1회 변환. 상태 라벨: 서버 한글명 → 공통코드(ORDER_STATUS_CD) → 기본 매핑
 function adapt(o: OdOrderType) {
   const dliv = Array.isArray(o.orderDlivs) && o.orderDlivs.length ? o.orderDlivs[0] : null;
+  const items = Array.isArray(o.orderItems) ? o.orderItems : [];
+  // 클레임 가능 유형 — 서버가 주문상품마다 채운 claimableTypeCds(남은 수량 claimableQty > 0 인 품목만)
+  const canType = (cd: string) => items.some((it) => Number(it.claimableQty ?? 0) > 0 && (it.claimableTypeCds ?? []).includes(cd));
   return {
+    raw: o, // 모달(ClaimRequestModal.show)에 넘길 원본 주문
     orderId: String(o.orderId),
+    payMethod: String(o.payMethodCdNm || o.payMethodCd || ""),
+    canCancel: canType("CANCEL"),
+    canReturn: canType("RETURN"),
+    canExchange: canType("EXCHANGE"),
     orderDate: ymd(o.orderDate),
     status: kor(o.orderStatusCdNm, o.orderStatusCd, { ...ORDER_STATUS_KOR, ...codeMap(codes.order_status) }),
     totalPrice: Number(o.payAmt ?? o.totalAmt ?? 0),
@@ -140,7 +164,14 @@ function adapt(o: OdOrderType) {
     cashPaid: Number(o.saveUseAmt ?? 0),
     courier: dliv ? dliv.outboundCourierCdNm || dliv.outboundCourierCd || "" : "",
     trackingNo: dliv ? dliv.outboundTrackingNo || "" : "",
-    items: (Array.isArray(o.orderItems) ? o.orderItems : []).map((it: OdOrderItemType) => ({ prodNm: it.prodNm, qty: Number(it.orderQty ?? 0), price: Number(it.unitPrice ?? 0) })),
+    items: items.map((it: OdOrderItemType) => ({
+      prodNm: it.prodNm,
+      optNm: [it.prodOptNm1, it.prodOptNm2].filter(Boolean).join(" / "),
+      qty: Number(it.orderQty ?? 0),
+      cancelQty: Number(it.cancelQty ?? 0),
+      claimableQty: it.claimableQty == null ? null : Number(it.claimableQty),
+      price: Number(it.unitPrice ?? 0),
+    })),
     pays: (Array.isArray(o.orderPays) ? o.orderPays : []).map((p: OdPayType) => ({ type: p.payMethodCdNm || p.payMethodCd || "결제", amount: Number(p.payAmt ?? 0), datetime: ymd(p.payDate) })),
   };
 }
@@ -169,6 +200,12 @@ const handleBtnAction = (cmd: string, param: unknown = {}) => {
     // 도움말 모달 열기
   } else if (cmd === "orders-helpOpen") {
     uiState.helpOpen = true;
+    // 클레임 신청 모달 열기 (param: { orderId, type: CANCEL|RETURN|EXCHANGE })
+  } else if (cmd === "claim-open") {
+    const { orderId, type } = param as { orderId: string; type: string };
+    const row = my.rows.find((r) => r.orderId === orderId);
+    if (!row) return;
+    claimModal.value?.show(row.raw, type);
   } else {
     console.warn("[handleBtnAction] unknown cmd:", cmd);
   }
@@ -204,6 +241,9 @@ const fnCallbackModal = (popCmd: string, param: unknown, result: unknown) => {
   // 주문 진행 안내 모달 닫기
   if (popCmd === "orders-help") {
     uiState.helpOpen = false;
+    // 클레임 신청 완료 → 목록 재조회(남은 수량/버튼 갱신)
+  } else if (popCmd === "claim-request") {
+    return handleSearchList();
   } else {
     console.warn("[fnCallbackModal] unknown popCmd:", popCmd);
   }

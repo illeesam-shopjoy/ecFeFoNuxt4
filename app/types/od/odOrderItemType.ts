@@ -76,6 +76,9 @@ export interface OdOrderItemType {
   claimTypeCdNm?: string; // 클레임유형 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
   claimStatusCd?: string; // 클레임상세상태 — 최신 클레임항목 1건 대표 표시, CLAIM_ITEM_STATUS_CD {REQUESTED:신청, APPRO…
   claimStatusCdNm?: string; // 클레임상세상태 코드 라벨 (서버가 내려주면 그 값, 아니면 공통코드 sy_code 로 채운다)
+  // ── 2026-10-03 클레임-부분환불 계약 §7 — FO 주문 목록 응답에서 서버가 채우는 클레임 가능 정보(DB 컬럼 아님) ──
+  claimableQty?: number; // 클레임 가능 남은 수량 = orderQty − cancelQty − (진행 중 클레임 claimQty 합)
+  claimableTypeCds?: string[]; // 지금 신청 가능한 클레임유형 — CLAIM_TYPE_CD {CANCEL:취소(출고 전), RETURN:반품, EXCHANGE:교환(배송완료 후 30일)}
   // ── 공통(감사) 컬럼 ──
   regBy?: string; // 등록자 (reg_by)
   regByNm?: string; // 등록자명 (reg_by_nm)
