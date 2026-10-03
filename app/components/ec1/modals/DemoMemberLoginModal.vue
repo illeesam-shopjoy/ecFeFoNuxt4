@@ -2,7 +2,7 @@
   <Teleport to="body">
     <Transition name="demo-login-fade">
       <div v-show="visible" class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-[#1a1410]/60 backdrop-blur-[3px]" role="dialog" aria-modal="true" aria-labelledby="demo-login-title" @click.self="close">
-        <div class="demo-login-dialog relative w-full max-w-[920px] max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
+        <div class="demo-login-dialog relative w-full max-w-[1200px] max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
           <!-- 헤더 -->
           <div class="relative shrink-0 px-6 pt-6 pb-4 text-white bg-[linear-gradient(135deg,#c08a4b_0%,#a06a2e_100%)]">
             <button type="button" class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-white/15 hover:bg-white/30 transition" @click="close" aria-label="닫기">
@@ -62,21 +62,24 @@
                   <th class="th">이름</th>
                   <th class="th">전화번호</th>
                   <th class="th">이메일</th>
-                  <th class="th">siteId</th>
+                  <th class="th">(기본)판매자</th>
+                  <th class="th">사이트</th>
                   <th class="th text-center">모듈</th>
                   <th class="th"></th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="!rows.length">
-                  <td colspan="7" class="py-10 text-center text-gray-400">{{ loading ? "조회 중…" : "조회 결과가 없습니다." }}</td>
+                  <td colspan="8" class="py-10 text-center text-gray-400">{{ loading ? "조회 중…" : "조회 결과가 없습니다." }}</td>
                 </tr>
                 <tr v-for="m in rows" :key="m.memberId" class="dml-row cursor-pointer" :class="{ 'opacity-50 pointer-events-none': loggingIn !== null && loggingIn !== m.loginId }" @click="loginAs(m)">
                   <td class="td font-mono font-semibold text-gray-900">{{ m.loginId }}</td>
                   <td class="td whitespace-nowrap">{{ m.memberNm || "-" }}</td>
                   <td class="td whitespace-nowrap">{{ m.memberPhone || "-" }}</td>
                   <td class="td font-mono">{{ m.memberEmail || "-" }}</td>
-                  <td class="td font-mono text-[0.72rem] whitespace-nowrap">{{ m.siteId || "-" }}<span v-if="m.siteNm" class="text-gray-400"> · {{ m.siteNm }}</span></td>
+                  <td class="td text-[0.72rem] whitespace-nowrap"><span v-if="m.defaultSellerNm" class="font-semibold text-[#1d4ed8]">{{ m.defaultSellerNm }}<span v-if="(m.sellerCnt ?? 0) > 1" class="font-normal text-gray-400"> 외 {{ (m.sellerCnt ?? 1) - 1 }}</span></span><span v-else class="text-gray-300">-</span></td>
+                  <!-- 2026-10-03(요청사항: "(기본)판매자, 사이트 있으면 우측에 보여줘", "이메일 우측에 판매자") — 이메일 오른쪽에 (기본)판매자 · 사이트명·ID · 모듈 -->
+                  <td class="td text-[0.72rem] whitespace-nowrap">{{ m.siteNm || "-" }}<span v-if="m.siteId" class="font-mono text-gray-400"> · {{ m.siteId }}</span></td>
                   <td class="td text-center"><span v-if="m.tenantModule" class="rounded-full bg-[#ede9fe] px-2 py-px text-[0.68rem] font-bold font-mono text-[#7c3aed]">{{ m.tenantModule }}</span><span v-else class="text-gray-300">-</span></td>
                   <td class="td text-right whitespace-nowrap">
                     <span v-if="loggingIn === m.loginId" class="text-[0.72rem] text-theme font-semibold">로그인 중…</span>
