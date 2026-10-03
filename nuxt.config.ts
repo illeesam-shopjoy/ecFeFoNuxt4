@@ -76,7 +76,7 @@ export default defineNuxtConfig({
   app: {
     keepalive: { include: ["HomePage", "ShopPage", "BlogListPage"] },
     head: {
-      title: "shopjoy",
+      title: APP_TITLE, // 2026-10-03: 모듈 설정(app/conts/tenant/<모듈>.ts appTitle) — 고정 "shopjoy" 라 danmoo1 도 shopjoy 로 나오던 것 수정
       link: [
         // 2026-09-13(성능 개선): 폰트 CDN에 미리 연결(DNS+TLS)해둬 실제 stylesheet 요청이
         // 시작될 때 그 연결 설정 시간을 기다리지 않게 한다 — 렌더 블로킹 스타일시트라 초기
